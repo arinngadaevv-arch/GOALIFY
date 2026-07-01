@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Goalify — אפליקציה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300;400;500;700;900&family=Assistant:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0a0908;
+    --bg-2: #100e0c;
+    --ink: #f4efe4;
+    --ink-dim: #a89f8e;
+    --ink-faint: #6b6459;
+    --amber-1: #e8a852;
+    --amber-2: #f3c98a;
+    --amber-deep: #b9722c;
+    --terracotta: #d17a5a;
+    --line: rgba(244,239,228,0.14);
+    --ease: cubic-bezier(.16,1,.3,1);
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; background:var(--bg); }
+  body{
+    color:var(--ink); font-family:'Assistant','Segoe UI',sans-serif;
+    overflow:hidden; display:flex; align-items:center; justify-content:center;
+    background:
+      radial-gradient(60% 50% at 50% 0%, rgba(232,168,82,.10), transparent 60%),
+      var(--bg);
+  }
+  h1,h2,h3,.serif,.num{ font-family:'Frank Ruhl Libre','Georgia',serif; }
+  button{ font-family:inherit; cursor:pointer; }
+  img{ display:none; }
+  input[type=number]{ -moz-appearance:textfield; }
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+
+  /* generated cinematic scenes — shared with landing page system */
+  .photo{ position:absolute; inset:0; background-size:cover; overflow:hidden; }
+  .photo::before{
+    content:''; position:absolute; inset:0; opacity:.5; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  }
+  .p-1{ background: radial-gradient(120% 90% at 85% 10%, rgba(232,168,82,.35), transparent 55%), linear-gradient(200deg, #1b1712 0%, #0a0908 55%, #060505 100%); }
+  .p-2{ background: linear-gradient(115deg, transparent 40%, rgba(232,168,82,.18) 52%, transparent 64%), linear-gradient(160deg, #14110d 0%, #0a0908 60%, #050403 100%); }
+  .p-3{ background: radial-gradient(90% 70% at 20% 85%, rgba(184,114,44,.32), transparent 60%), linear-gradient(210deg, #17130f 0%, #0a0908 55%, #050403 100%); }
+  .p-4{ background: radial-gradient(100% 80% at 50% 0%, rgba(243,201,138,.22), transparent 55%), linear-gradient(180deg, #100e0b 0%, #0a0908 100%); }
+  .p-5{ background: linear-gradient(60deg, rgba(232,168,82,.16) 0%, transparent 35%), radial-gradient(80% 60% at 75% 90%, rgba(184,114,44,.28), transparent 60%), linear-gradient(200deg, #15110d 0%, #0a0908 60%, #050403 100%); }
+  .p-6{ background: radial-gradient(140% 100% at 50% 100%, rgba(232,168,82,.4), transparent 60%), linear-gradient(180deg, #0a0908 0%, #050403 100%); }
+
+  /* ---------- outer chrome (browser preview only, not part of product) ---------- */
+  .stage{ display:flex; flex-direction:column; align-items:center; gap:16px; }
+  .stage-label{ font-size:.72rem; letter-spacing:.16em; color:var(--ink-faint); font-weight:600; }
+  .restart{ font-size:.72rem; color:var(--ink-faint); border:1px solid var(--line); border-radius:999px; padding:6px 14px; background:none; }
+  .restart:hover{ color:var(--amber-2); border-color:var(--amber-2); }
+
+  /* ---------- device frame ---------- */
+  .app{
+    width:412px; height:860px; max-height:92vh; position:relative; overflow:hidden;
+    background:var(--bg); border-radius:44px; border:1px solid rgba(244,239,228,.1);
+    box-shadow:0 40px 100px rgba(0,0,0,.6), 0 0 0 8px #050403;
+  }
+
+  /* ---------- onboarding screens ---------- */
+  .screen{
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    opacity:0; pointer-events:none; visibility:hidden;
+    transition:opacity .45s var(--ease), transform .45s var(--ease);
+    transform:translateY(16px);
+  }
+  .screen.active{ opacity:1; pointer-events:all; visibility:visible; transform:translateY(0); }
+
+  .ob-chrome{ position:relative; z-index:3; padding:26px 24px 0; display:flex; flex-direction:column; gap:22px; }
+  .ob-track{ display:flex; gap:8px; }
+  .ob-track span{ flex:1; height:1px; background:var(--line); position:relative; }
+  .ob-track span.done::after{ content:''; position:absolute; inset:0; background:var(--amber-2); }
+  .ob-back{ background:none; border:none; color:var(--ink-faint); font-size:.82rem; font-weight:600; align-self:flex-end; padding:0; }
+  .ob-back:hover{ color:var(--ink-dim); }
+
+  .ob-heading{ padding:34px 26px 0; position:relative; z-index:3; }
+  .ob-label{ font-size:.7rem; letter-spacing:.16em; color:var(--amber-2); font-weight:700; margin-bottom:14px; }
+  .ob-h{ font-weight:400; font-size:1.7rem; line-height:1.3; max-width:15ch; }
+
+  .ob-actions{ margin-top:auto; padding:22px 24px calc(env(safe-area-inset-bottom) + 22px); position:relative; z-index:3; display:flex; flex-direction:column; gap:14px; }
+
+  /* welcome */
+  #s-welcome{ justify-content:flex-end; }
+  #s-welcome .photo{ opacity:.9; }
+  .welcome-content{ position:relative; z-index:2; padding:0 28px calc(env(safe-area-inset-bottom) + 40px); }
+  .wordmark{ font-size:.72rem; letter-spacing:.24em; color:var(--amber-2); font-weight:700; margin-bottom:20px; }
+  .welcome-h{ font-weight:400; font-size:2.5rem; line-height:1.14; margin-bottom:20px; }
+  .welcome-sub{ color:var(--ink-dim); font-size:.98rem; line-height:1.6; font-weight:300; max-width:30ch; margin-bottom:34px; }
+
+  /* buttons */
+  .btn-primary{
+    width:100%; border:none; border-radius:999px; padding:17px 20px;
+    background:linear-gradient(135deg, var(--amber-2), var(--amber-1));
+    color:#1a1206; font-weight:700; font-size:.98rem;
+    box-shadow:0 14px 32px rgba(232,168,82,.22);
+    transition:transform .3s var(--ease), box-shadow .3s var(--ease);
+  }
+  .btn-primary:active{ transform:scale(.98); }
+  .btn-primary:disabled{ opacity:.35; box-shadow:none; }
+  .btn-ghost{
+    width:100%; border:1px solid var(--line); border-radius:999px; padding:16px 20px;
+    background:none; color:var(--ink-dim); font-weight:600; font-size:.92rem;
+  }
+  .link-skip{ text-align:center; color:var(--ink-faint); font-size:.84rem; font-weight:600; padding-top:2px; }
+  .link-skip:hover{ color:var(--amber-2); }
+
+  /* goal grid */
+  .goal-grid{ position:relative; z-index:3; flex:1; display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:22px 24px; overflow-y:auto; align-content:start; }
+  .goal-tile{ position:relative; aspect-ratio:1/1.05; border-radius:20px; overflow:hidden; border:1px solid var(--line); transition:transform .3s var(--ease), border-color .3s var(--ease); }
+  .goal-tile::after{ content:''; position:absolute; inset:0; background:linear-gradient(180deg, transparent 40%, rgba(10,9,8,.85) 100%); }
+  .goal-tile.selected{ border-color:var(--amber-2); transform:scale(1.02); box-shadow:0 12px 30px rgba(232,168,82,.18); }
+  .goal-tile-label{ position:absolute; right:14px; bottom:12px; left:14px; z-index:2; display:flex; align-items:center; gap:8px; }
+  .goal-tile-emoji{ font-size:1.1rem; }
+  .goal-tile-name{ font-size:.86rem; font-weight:600; }
+  .check-ring{
+    position:absolute; top:12px; left:12px; z-index:2; width:24px; height:24px; border-radius:50%;
+    border:1px solid rgba(244,239,228,.5); display:flex; align-items:center; justify-content:center;
+    font-size:.7rem; opacity:0; transition:opacity .25s var(--ease), background .25s var(--ease), border-color .25s var(--ease);
+  }
+  .goal-tile.selected .check-ring{ opacity:1; background:var(--amber-2); border-color:var(--amber-2); color:#1a1206; }
+
+  /* amount / wage */
+  .amount-stage{ position:relative; z-index:3; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0 28px; text-align:center; }
+  .amount-label{ font-size:.78rem; color:var(--ink-faint); font-weight:600; margin-bottom:26px; letter-spacing:.02em; }
+  .amount-display{ display:flex; align-items:baseline; gap:6px; margin-bottom:18px; }
+  .amount-currency{ font-size:2rem; color:var(--ink-dim); font-weight:400; }
+  .amount-input{
+    background:none; border:none; outline:none; color:var(--ink);
+    font-family:'Frank Ruhl Libre',serif; font-weight:700; font-size:4rem; width:220px; text-align:center;
+  }
+  .amount-input::placeholder{ color:rgba(244,239,228,.2); }
+  .amount-hint{ min-height:22px; font-size:.94rem; color:var(--amber-2); font-weight:600; opacity:0; transition:opacity .3s var(--ease); }
+  .amount-hint.active{ opacity:1; }
+  .quick-chips{ display:flex; gap:8px; margin-top:32px; flex-wrap:wrap; justify-content:center; }
+  .quick-chips button, .sheet-chip{
+    border:1px solid var(--line); background:none; color:var(--ink-dim); border-radius:999px;
+    padding:9px 16px; font-size:.82rem; font-weight:600; transition:border-color .25s var(--ease), color .25s var(--ease);
+  }
+  .quick-chips button:hover, .sheet-chip:hover{ border-color:var(--amber-2); color:var(--amber-2); }
+
+  /* celebration moment + income moment overlay share this look */
+  .mo-img-stage{ position:absolute; inset:0; z-index:0; }
+  .mo-img-stage .photo{ transition:filter 1.8s var(--ease); }
+  .mo-img-overlay{
+    position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(10,9,8,.15) 0%, rgba(10,9,8,.25) 40%, rgba(10,9,8,.95) 100%);
+  }
+  .mo-content{ position:relative; z-index:2; flex:1; display:flex; flex-direction:column; justify-content:flex-end; padding:30px 26px calc(env(safe-area-inset-bottom) + 30px); }
+  .mo-eyebrow{ font-size:.72rem; letter-spacing:.18em; color:var(--amber-2); font-weight:700; margin-bottom:16px;
+    opacity:0; transform:translateY(10px); animation:moUp .7s var(--ease) .1s forwards; }
+  .mo-goalname{ font-weight:400; font-size:1.9rem; margin-bottom:10px; line-height:1.2;
+    opacity:0; transform:translateY(10px); animation:moUp .7s var(--ease) .2s forwards; }
+  .mo-effort{ color:var(--amber-2); font-size:.94rem; font-weight:500; margin-bottom:22px;
+    opacity:0; transform:translateY(10px); animation:moUp .7s var(--ease) .3s forwards; }
+  .mo-card{
+    background:rgba(244,239,228,.06); backdrop-filter:blur(16px); border:1px solid var(--line);
+    border-radius:20px; padding:20px 22px; margin-bottom:26px;
+    opacity:0; transform:translateY(10px); animation:moUp .7s var(--ease) .45s forwards;
+  }
+  .mo-card-label{ font-size:.7rem; font-weight:700; letter-spacing:.06em; color:var(--ink-faint); margin-bottom:8px; }
+  .mo-card-days{ display:flex; align-items:baseline; gap:8px; }
+  .mo-card-days .num{ font-weight:700; font-size:2.6rem; }
+  .mo-card-wage{ font-size:.8rem; color:var(--ink-faint); margin-top:4px; }
+  .mo-cta{ opacity:0; transform:translateY(10px); animation:moUp .7s var(--ease) .6s forwards; }
+  @keyframes moUp{ to{ opacity:1; transform:translateY(0); } }
+
+  /* ---------- dashboard ---------- */
+  #dashboard{ position:absolute; inset:0; overflow-y:auto; display:none; }
+  #dashboard.active{ display:block; }
+  .hero{ position:relative; height:58%; min-height:400px; display:flex; flex-direction:column; }
+  .hero .photo{ transition:filter 1s var(--ease); }
+  .hero-overlay{ position:absolute; inset:0; background:linear-gradient(180deg, rgba(10,9,8,.15) 0%, rgba(10,9,8,.1) 40%, rgba(10,9,8,.94) 100%); }
+  .hero-top{ position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between; padding:26px 24px 0; }
+  .hero-greeting{ font-size:.92rem; font-weight:500; color:var(--ink-dim); }
+  .hero-avatar{ width:34px; height:34px; border-radius:50%; border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:.8rem; font-weight:700; color:var(--amber-2); }
+  .hero-content{ position:relative; z-index:2; margin-top:auto; padding:0 24px 26px; }
+  .hero-pace-label{ font-size:.72rem; color:var(--ink-faint); font-weight:600; letter-spacing:.06em; margin-bottom:4px; }
+  .hero-days{ font-weight:900; font-size:3.6rem; line-height:1; }
+  .hero-days-label{ font-size:.98rem; color:var(--ink-dim); margin-top:4px; margin-bottom:14px; }
+  .hero-effort{ font-size:.86rem; color:var(--amber-2); font-weight:600; margin-bottom:16px; min-height:1.2em; }
+
+  .hero-progress-track{ display:flex; align-items:center; gap:12px; margin-bottom:22px; }
+  .hero-progress-bar{ flex:1; height:1px; background:var(--line); position:relative; }
+  .hero-progress-fill{ position:absolute; top:0; right:0; height:1px; background:linear-gradient(90deg, var(--amber-2), var(--amber-1)); width:0%; transition:width 1s var(--ease); }
+  .hero-progress-dot{ position:absolute; top:50%; width:7px; height:7px; border-radius:50%; background:var(--amber-2); box-shadow:0 0 10px 2px rgba(232,168,82,.6); transform:translate(50%,-50%); right:0%; transition:right 1s var(--ease); }
+  .hero-pct{ font-size:.78rem; color:var(--ink-faint); font-weight:700; }
+
+  .hero-actions{ display:flex; gap:10px; }
+  .hero-action-primary{ flex:1; border:none; border-radius:999px; padding:15px; background:var(--ink); color:#1a1206; font-weight:700; font-size:.88rem; }
+  .hero-action-secondary{ flex:1; border:1px solid var(--line); border-radius:999px; padding:15px; background:rgba(244,239,228,.06); backdrop-filter:blur(8px); color:var(--ink); font-weight:700; font-size:.88rem; }
+
+  .dash-section{ padding:24px 24px 0; }
+  .dash-section-label{ font-size:.7rem; letter-spacing:.1em; color:var(--ink-faint); font-weight:700; margin-bottom:14px; }
+
+  .insight-row{ display:flex; gap:14px; align-items:flex-start; padding-bottom:22px; border-bottom:1px solid var(--line); }
+  .insight-avatar{ width:34px; height:34px; border-radius:50%; border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:.9rem; flex-shrink:0; }
+  .insight-text b{ display:block; font-size:.92rem; margin-bottom:4px; font-weight:700; }
+  .insight-text p{ font-size:.88rem; color:var(--ink-dim); line-height:1.55; font-weight:300; }
+
+  .activity-list{ display:flex; flex-direction:column; }
+  .activity-row{ display:flex; align-items:center; gap:14px; padding:14px 0; border-bottom:1px solid var(--line); }
+  .activity-row:last-child{ border-bottom:none; }
+  .activity-dot{ width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.85rem; border:1px solid var(--line); flex-shrink:0; }
+  .activity-info{ flex:1; }
+  .activity-info b{ display:block; font-size:.88rem; font-weight:600; }
+  .activity-info span{ font-size:.78rem; color:var(--ink-faint); }
+  .activity-impact{ font-size:.82rem; font-weight:700; }
+  .activity-impact.pos{ color:var(--amber-2); }
+  .activity-impact.neg{ color:var(--terracotta); }
+
+  .dash-pad{ height:110px; }
+
+  /* bottom nav */
+  .bottom-nav{ position:absolute; left:0; right:0; bottom:0; z-index:5; display:none; align-items:center; justify-content:space-around;
+    padding:14px 10px calc(env(safe-area-inset-bottom) + 10px); background:rgba(10,9,8,.82); backdrop-filter:blur(20px); border-top:1px solid var(--line); }
+  .bottom-nav.visible{ display:flex; }
+  .nav-item{ display:flex; flex-direction:column; align-items:center; gap:5px; font-size:.66rem; color:var(--ink-faint); font-weight:600; }
+  .nav-item .ni{ font-size:1.05rem; opacity:.7; }
+  .nav-item.active{ color:var(--amber-2); }
+  .nav-item.active .ni{ opacity:1; }
+
+  /* ---------- sheets ---------- */
+  .sheet-backdrop{
+    position:absolute; inset:0; z-index:20; background:rgba(6,5,4,.6);
+    display:flex; align-items:flex-end; opacity:0; pointer-events:none; transition:opacity .35s var(--ease);
+  }
+  .sheet-backdrop.visible{ opacity:1; pointer-events:all; }
+  .sheet{
+    width:100%; background:var(--bg-2); border:1px solid var(--line); border-bottom:none;
+    border-radius:28px 28px 0 0; padding:14px 24px calc(env(safe-area-inset-bottom) + 26px);
+    transform:translateY(100%); transition:transform .4s var(--ease);
+  }
+  .sheet-backdrop.visible .sheet{ transform:translateY(0); }
+  .sheet-handle{ width:36px; height:3px; border-radius:99px; background:var(--line); margin:0 auto 18px; }
+  .sheet-title{ font-weight:400; font-size:1.4rem; margin-bottom:6px; }
+  .sheet-sub{ color:var(--ink-dim); font-size:.9rem; line-height:1.5; margin-bottom:22px; font-weight:300; }
+  .sheet-amount-row{ display:flex; align-items:baseline; gap:6px; justify-content:center; margin-bottom:10px; }
+  .sheet-currency{ font-size:1.6rem; color:var(--ink-dim); }
+  .sheet-amount-input{ background:none; border:none; outline:none; color:var(--ink); font-family:'Frank Ruhl Libre',serif; font-weight:700; font-size:3rem; width:200px; text-align:center; }
+  .sheet-impact-preview{ text-align:center; font-size:.92rem; color:var(--amber-2); font-weight:600; min-height:24px; margin-bottom:18px; }
+  .sheet-impact-preview.negative{ color:var(--terracotta); }
+  .sheet-impact-preview b{ font-weight:400; color:var(--ink-faint); }
+  .sheet-chips{ display:flex; gap:8px; justify-content:center; margin-bottom:26px; flex-wrap:wrap; }
+  .sheet-actions{ display:flex; flex-direction:column; gap:12px; }
+
+  /* forward path */
+  .forward-path{ display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
+  .fp-card{ border:1px solid var(--line); border-radius:18px; padding:16px 18px; transition:border-color .25s var(--ease); }
+  .fp-card.primary{ border-color:rgba(232,168,82,.4); background:rgba(232,168,82,.06); }
+  .fp-card:active{ transform:scale(.99); }
+  .fp-card-title{ font-weight:700; font-size:.94rem; margin-bottom:5px; }
+  .fp-card-sub{ font-size:.82rem; color:var(--ink-faint); line-height:1.5; }
+
+  /* moment overlay (income) */
+  .moment-overlay{ position:absolute; inset:0; z-index:30; display:flex; flex-direction:column; opacity:0; pointer-events:none; transition:opacity .5s var(--ease); }
+  .moment-overlay.visible{ opacity:1; pointer-events:all; }
+  .mo-amount-big{ font-weight:900; font-size:3.2rem; margin-bottom:8px;
+    opacity:0; transform:translateY(10px); animation:moUp .7s var(--ease) .25s forwards; }
+  .mo-hours-line{ color:var(--amber-2); font-size:.92rem; font-weight:600; margin-bottom:22px; min-height:1.3em;
+    opacity:0; transform:translateY(10px); animation:moUp .7s var(--ease) .38s forwards; }
+  .mo-days-row{ display:flex; align-items:baseline; gap:12px; margin-bottom:30px;
+    opacity:0; transform:translateY(10px); animation:moUp .7s var(--ease) .5s forwards; }
+  .mo-days-before{ font-size:1.5rem; color:var(--ink-faint); text-decoration:line-through; font-weight:400; }
+  .mo-days-arrow{ color:var(--amber-2); font-size:1.2rem; }
+  .mo-days-after{ font-weight:900; font-size:2.8rem; }
+  .mo-days-label{ font-size:.78rem; color:var(--ink-faint); line-height:1.3; }
+
+  /* confetti */
+  .confetti-piece{ position:absolute; top:-20px; border-radius:2px; z-index:60; pointer-events:none; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:.01ms !important; transition-duration:.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="stage-label">GOALIFY · אב-טיפוס אפליקציה</div>
+  <div class="app" id="appFrame">
+
+    <!-- WELCOME -->
+    <div class="screen active" id="s-welcome">
+      <div class="mo-img-stage"><div class="photo p-1"></div></div>
+      <div class="mo-img-overlay"></div>
+      <div class="welcome-content">
+        <div class="wordmark">GOALIFY</div>
+        <h1 class="welcome-h">תמשיכו לחיות.<br>נראה לכם מה<br>כל בחירה בונה.</h1>
+        <p class="welcome-sub">לא צריך להפסיק ליהנות כדי להגיע למטרה. צריך רק לראות את התמונה המלאה.</p>
+        <button class="btn-primary" id="btnWelcome">בואו נתחיל ←</button>
+      </div>
+    </div>
+
+    <!-- STEP 1: CHOOSE GOAL -->
+    <div class="screen" id="s-dream">
+      <div class="ob-chrome">
+        <div class="ob-track"><span class="done"></span><span></span><span></span></div>
+        <button class="ob-back" id="backDream">→ חזרה</button>
+      </div>
+      <div class="ob-heading">
+        <div class="ob-label">שלב 1 מתוך 3</div>
+        <h2 class="ob-h">על מה אתם הכי חולמים עכשיו?</h2>
+      </div>
+      <div class="goal-grid" id="goalGrid">
+        <div class="goal-tile" data-name="רישיון נהיגה" data-emoji="🚗" data-cls="p-1">
+          <div class="photo p-1"></div><div class="check-ring">✓</div>
+          <div class="goal-tile-label"><span class="goal-tile-emoji">🚗</span><span class="goal-tile-name">רישיון נהיגה</span></div>
+        </div>
+        <div class="goal-tile" data-name="מחשב חדש" data-emoji="💻" data-cls="p-2">
+          <div class="photo p-2"></div><div class="check-ring">✓</div>
+          <div class="goal-tile-label"><span class="goal-tile-emoji">💻</span><span class="goal-tile-name">מחשב חדש</span></div>
+        </div>
+        <div class="goal-tile" data-name="טיול" data-emoji="✈️" data-cls="p-3">
+          <div class="photo p-3"></div><div class="check-ring">✓</div>
+          <div class="goal-tile-label"><span class="goal-tile-emoji">✈️</span><span class="goal-tile-name">טיול</span></div>
+        </div>
+        <div class="goal-tile" data-name="טלפון חדש" data-emoji="📱" data-cls="p-4">
+          <div class="photo p-4"></div><div class="check-ring">✓</div>
+          <div class="goal-tile-label"><span class="goal-tile-emoji">📱</span><span class="goal-tile-name">טלפון חדש</span></div>
+        </div>
+        <div class="goal-tile" data-name="גיימינג" data-emoji="🎮" data-cls="p-5">
+          <div class="photo p-5"></div><div class="check-ring">✓</div>
+          <div class="goal-tile-label"><span class="goal-tile-emoji">🎮</span><span class="goal-tile-name">גיימינג</span></div>
+        </div>
+        <div class="goal-tile" data-name="דירה ראשונה" data-emoji="🏠" data-cls="p-6">
+          <div class="photo p-6"></div><div class="check-ring">✓</div>
+          <div class="goal-tile-label"><span class="goal-tile-emoji">🏠</span><span class="goal-tile-name">דירה ראשונה</span></div>
+        </div>
+      </div>
+      <div class="ob-actions">
+        <button class="btn-primary" id="btnDream" disabled>המשך ←</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: AMOUNT -->
+    <div class="screen" id="s-amount">
+      <div class="ob-chrome">
+        <div class="ob-track"><span class="done"></span><span class="done"></span><span></span></div>
+        <button class="ob-back" id="backAmount">→ חזרה</button>
+      </div>
+      <div class="amount-stage">
+        <div class="amount-label">שלב 2 מתוך 3 · כמה עולה המטרה?</div>
+        <div class="amount-display">
+          <span class="amount-currency">₪</span>
+          <input class="amount-input" id="targetInput" type="number" inputmode="numeric" placeholder="0">
+        </div>
+        <div class="amount-hint" id="targetHint">בקצב ממוצע — כ- ימים</div>
+        <div class="quick-chips">
+          <button data-val="1500">₪1,500</button>
+          <button data-val="3500">₪3,500</button>
+          <button data-val="5000">₪5,000</button>
+          <button data-val="8000">₪8,000</button>
+        </div>
+      </div>
+      <div class="ob-actions">
+        <button class="btn-primary" id="btnAmount" disabled>המשך ←</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: WAGE -->
+    <div class="screen" id="s-wage">
+      <div class="ob-chrome">
+        <div class="ob-track"><span class="done"></span><span class="done"></span><span class="done"></span></div>
+        <button class="ob-back" id="backWage">→ חזרה</button>
+      </div>
+      <div class="amount-stage">
+        <div class="amount-label">שלב 3 מתוך 3 · כמה מרוויחים לשעה? (אופציונלי)</div>
+        <div class="amount-display">
+          <span class="amount-currency">₪</span>
+          <input class="amount-input" id="wageInput" type="number" inputmode="numeric" placeholder="35">
+        </div>
+        <div class="amount-hint" id="wageHint">המטרה שלכם שווה בערך שעות עבודה</div>
+      </div>
+      <div class="ob-actions">
+        <button class="btn-primary" id="btnWage">בואו נראה את ההתקדמות שלכם ←</button>
+        <div class="link-skip" id="skipWage">דלגו — אמשיך בלי שעות עבודה</div>
+      </div>
+    </div>
+
+    <!-- CELEBRATION MOMENT -->
+    <div class="screen" id="s-moment">
+      <div class="mo-img-stage"><div class="photo" id="momentPhoto"></div></div>
+      <div class="mo-img-overlay"></div>
+      <div class="mo-content">
+        <div class="mo-eyebrow" id="e1">המסע שלכם מתחיל</div>
+        <div class="mo-goalname" id="momentGoalName">—</div>
+        <div class="mo-effort" id="momentEffortLine"></div>
+        <div class="mo-card">
+          <div class="mo-card-label">בקצב שמירה ממוצע</div>
+          <div class="mo-card-days"><span class="num" id="momentDays">~0</span><span style="font-size:.95rem;color:var(--ink-dim);font-weight:600;">ימים</span></div>
+          <div class="mo-card-wage" id="momentWageNote"></div>
+        </div>
+        <button class="btn-primary mo-cta" id="btnMoment">בואו נתחיל לבנות ←</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard">
+      <div class="hero">
+        <div class="photo" id="heroPhoto"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-top">
+          <div class="hero-greeting" id="heroGreeting">בוקר טוב 👋</div>
+          <div class="hero-avatar">א</div>
+        </div>
+        <div class="hero-content">
+          <div class="hero-pace-label">בקצב הנוכחי</div>
+          <div class="hero-days" id="heroDays">~0</div>
+          <div class="hero-days-label" id="heroDaysLabel">ימים עד —</div>
+          <div class="hero-effort" id="heroEffort"></div>
+          <div class="hero-progress-track">
+            <div class="hero-progress-bar"><div class="hero-progress-fill" id="heroFill"></div><div class="hero-progress-dot" id="heroDot"></div></div>
+            <div class="hero-pct" id="heroPct">0%</div>
+          </div>
+          <div class="hero-actions">
+            <button class="hero-action-primary" id="openIncome">+ הוסיפו משמרת</button>
+            <button class="hero-action-secondary" id="openExpense">− הוצאה</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-section">
+        <div class="insight-row">
+          <div class="insight-avatar">✦</div>
+          <div class="insight-text">
+            <b id="insightTitle">ככה זה נראה עכשיו</b>
+            <p id="insightText">כשתוסיפו את הפעולה הראשונה שלכם, נראה לכם בדיוק מה היא משנה.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-section">
+        <div class="dash-section-label">פעילות אחרונה</div>
+        <div class="activity-list" id="activityList"></div>
+      </div>
+      <div class="dash-pad"></div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <div class="bottom-nav" id="bottomNav">
+      <div class="nav-item active"><span class="ni">◐</span>בית</div>
+      <div class="nav-item"><span class="ni">◈</span>מטרה</div>
+      <div class="nav-item"><span class="ni">≡</span>פעילות</div>
+      <div class="nav-item"><span class="ni">○</span>פרופיל</div>
+    </div>
+
+    <!-- INCOME SHEET -->
+    <div class="sheet-backdrop" id="incomeBackdrop">
+      <div class="sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title">+ הוספת הכנסה</div>
+        <div class="sheet-sub">כמה נכנס? נראה לכם מיד מה זה בונה.</div>
+        <div class="sheet-amount-row"><span class="sheet-currency">₪</span><input class="sheet-amount-input" id="incomeInput" type="number" inputmode="numeric" placeholder="0"></div>
+        <div class="sheet-impact-preview" id="incomePreview"><b>הכניסו סכום לתצוגה מקדימה</b></div>
+        <div class="sheet-chips">
+          <div class="sheet-chip" data-val="500">₪500</div>
+          <div class="sheet-chip" data-val="800">₪800</div>
+          <div class="sheet-chip" data-val="1400">₪1,400</div>
+        </div>
+        <div class="sheet-actions">
+          <button class="btn-primary" id="confirmIncome">ראו מה זה בנה ←</button>
+          <button class="btn-ghost" id="cancelIncome">ביטול</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXPENSE SHEET -->
+    <div class="sheet-backdrop" id="expenseBackdrop">
+      <div class="sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title">− הוספת הוצאה</div>
+        <div class="sheet-sub">יצאתם? בואו נראה את התמונה המלאה.</div>
+        <div class="sheet-amount-row"><span class="sheet-currency">₪</span><input class="sheet-amount-input" id="expenseInput" type="number" inputmode="numeric" placeholder="0"></div>
+        <div class="sheet-impact-preview negative" id="expensePreview"><b>הכניסו סכום לתצוגה מקדימה</b></div>
+        <div class="sheet-chips">
+          <div class="sheet-chip" data-val="50">₪50</div>
+          <div class="sheet-chip" data-val="120">₪120</div>
+          <div class="sheet-chip" data-val="180">₪180</div>
+          <div class="sheet-chip" data-val="250">₪250</div>
+        </div>
+        <div class="sheet-actions">
+          <button class="btn-primary" id="confirmExpense" style="background:linear-gradient(135deg,#c8815f,#d17a5a); color:#1a1206;">רשמו ובדקו איך ממשיכים ←</button>
+          <button class="btn-ghost" id="cancelExpense">ביטול</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- INCOME MOMENT OVERLAY -->
+    <div class="moment-overlay" id="incomeMoment">
+      <div class="mo-img-stage"><div class="photo" id="incomeMomentPhoto"></div></div>
+      <div class="mo-img-overlay"></div>
+      <div class="mo-content">
+        <div class="mo-eyebrow">המשמרות שלכם עובדות</div>
+        <div class="mo-amount-big" id="moIncomeAmount">+₪0</div>
+        <div class="mo-hours-line" id="moIncomeHours"></div>
+        <div class="mo-days-row">
+          <div class="mo-days-before" id="moDaysBefore">0</div>
+          <div class="mo-days-arrow">←</div>
+          <div class="mo-days-after" id="moDaysAfter">0</div>
+          <div class="mo-days-label">ימים<br>בקצב הנוכחי</div>
+        </div>
+        <button class="btn-primary mo-cta" id="btnIncomeMoment">בנינו! ←</button>
+      </div>
+    </div>
+
+    <!-- FORWARD PATH SHEET -->
+    <div class="sheet-backdrop" id="forwardBackdrop">
+      <div class="sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title" id="fwdTitle">הכל בסדר גמור. 🙂</div>
+        <div class="sheet-sub" id="fwdSub">—</div>
+        <div class="forward-path" id="forwardPath"></div>
+        <button class="btn-ghost" id="closeForward">סגירה</button>
+      </div>
+    </div>
+
+  </div>
+  <button class="restart" id="restartDemo">↻ איפוס דמו</button>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = id => document.getElementById(id);
+
+  const state = { goal:null, target:0, wage:0, saved:0, weeklyPace:350, milestonesHit:new Set() };
+
+  /* ---- core calculations (spec section 10) ---- */
+  function daysRemaining(target, saved, weeklyPace){
+    const remaining = Math.max(0, target - saved);
+    const dailyPace = weeklyPace / 7;
+    return Math.max(1, Math.round(remaining / dailyPace));
+  }
+  function daysMoved(amount, weeklyPace){
+    return Math.max(1, Math.round(amount / (weeklyPace / 7)));
+  }
+  function hoursForAmount(amount, wage){
+    if(!wage) return null;
+    return Math.round((amount / wage) * 10) / 10;
+  }
+  function imageFilter(pct){
+    const sat = Math.round(25 + pct*0.75);
+    const bri = Math.round(58 + pct*0.42);
+    const blur = Math.max(0, 8 - pct*0.085).toFixed(1);
+    return `saturate(${sat}%) brightness(${bri}%) blur(${blur}px)`;
+  }
+  function pctOf(saved, target){ return target>0 ? Math.min(100, Math.max(0,(saved/target)*100)) : 0; }
+  function fmt(n){ return Math.round(n).toLocaleString('he-IL'); }
+
+  /* ---- confetti (self-contained, brand palette) ---- */
+  function fireConfetti(){
+    if(reduced) return;
+    const colors = ['#e8a852','#f3c98a','#b9722c','#f4efe4'];
+    const host = $('appFrame');
+    const n = 34;
+    for(let i=0;i<n;i++){
+      const p = document.createElement('div');
+      p.className = 'confetti-piece';
+      const size = 5 + Math.random()*5;
+      p.style.width = size+'px';
+      p.style.height = (size*1.6)+'px';
+      p.style.left = (Math.random()*100)+'%';
+      p.style.background = colors[Math.floor(Math.random()*colors.length)];
+      const dur = 1.6 + Math.random()*1.2;
+      const delay = Math.random()*0.35;
+      const rot = (Math.random()*520 - 260);
+      p.style.transition = `transform ${dur}s cubic-bezier(.16,1,.3,1) ${delay}s, opacity ${dur}s ease ${delay}s`;
+      host.appendChild(p);
+      requestAnimationFrame(()=>{
+        p.style.transform = `translateY(${host.clientHeight+40}px) rotate(${rot}deg)`;
+        p.style.opacity = '0.15';
+      });
+      setTimeout(()=>p.remove(), (dur+delay)*1000+200);
+    }
+  }
+
+  /* ---- onboarding navigation ---- */
+  const order = ['s-welcome','s-dream','s-amount','s-wage','s-moment'];
+  function show(id){
+    order.forEach(s=> $(s).classList.toggle('active', s===id));
+  }
+  $('btnWelcome').onclick = ()=> show('s-dream');
+  $('backDream').onclick = ()=> show('s-welcome');
+  $('backAmount').onclick = ()=> show('s-dream');
+  $('backWage').onclick = ()=> show('s-amount');
+
+  /* step 1: goal */
+  document.querySelectorAll('.goal-tile').forEach(tile=>{
+    tile.addEventListener('click', ()=>{
+      document.querySelectorAll('.goal-tile').forEach(t=>t.classList.remove('selected'));
+      tile.classList.add('selected');
+      state.goal = { name: tile.dataset.name, emoji: tile.dataset.emoji, cls: tile.dataset.cls };
+      $('btnDream').disabled = false;
+    });
+  });
+  $('btnDream').onclick = ()=>{ if(state.goal) show('s-amount'); };
+
+  /* step 2: amount */
+  const targetInput = $('targetInput');
+  function updateTargetHint(){
+    const v = Number(targetInput.value)||0;
+    const hint = $('targetHint');
+    if(v>0){
+      const d = daysRemaining(v, 0, state.weeklyPace);
+      hint.textContent = `בקצב ממוצע — כ-${d} ימים`;
+      hint.classList.add('active');
+      $('btnAmount').disabled = false;
+    } else {
+      hint.classList.remove('active');
+      $('btnAmount').disabled = true;
+    }
+  }
+  targetInput.addEventListener('input', updateTargetHint);
+  document.querySelectorAll('#s-amount .quick-chips button').forEach(b=>{
+    b.onclick = ()=>{ targetInput.value = b.dataset.val; updateTargetHint(); };
+  });
+  $('btnAmount').onclick = ()=>{
+    state.target = Number(targetInput.value)||0;
+    if(state.target<=0) return;
+    show('s-wage');
+  };
+
+  /* step 3: wage */
+  const wageInput = $('wageInput');
+  function updateWageHint(){
+    const v = Number(wageInput.value)||0;
+    const hint = $('wageHint');
+    if(v>0 && state.target>0){
+      const h = Math.round(state.target/v);
+      hint.textContent = `המטרה שלכם שווה בערך ${h} שעות עבודה`;
+      hint.classList.add('active');
+    } else {
+      hint.classList.remove('active');
+    }
+  }
+  wageInput.addEventListener('input', updateWageHint);
+  function goToCelebration(){
+    state.wage = Number(wageInput.value)||0;
+    setupCelebration();
+    show('s-moment');
+  }
+  $('btnWage').onclick = goToCelebration;
+  $('skipWage').onclick = ()=>{ wageInput.value=''; state.wage=0; goToCelebration(); };
+
+  /* celebration moment */
+  function setupCelebration(){
+    const photo = $('momentPhoto');
+    photo.className = 'photo ' + state.goal.cls;
+    photo.style.filter = 'saturate(35%) brightness(55%)';
+    $('momentGoalName').textContent = state.goal.name;
+    const days = daysRemaining(state.target, 0, state.weeklyPace);
+    $('momentDays').textContent = '~' + days;
+    if(state.wage>0){
+      $('momentEffortLine').textContent = `כל משמרת שתוסיפו תקרב את ${state.goal.name} יום נוסף`;
+      $('momentWageNote').textContent = `המטרה שלכם שווה כ-${Math.round(state.target/state.wage)} שעות עבודה`;
+    } else {
+      $('momentEffortLine').textContent = '';
+      $('momentWageNote').textContent = '';
+    }
+    setTimeout(()=>{ photo.style.filter = imageFilter(0) === photo.style.filter ? photo.style.filter : 'saturate(55%) brightness(68%)'; }, 400);
+    setTimeout(fireConfetti, 450);
+  }
+  $('btnMoment').onclick = ()=>{
+    $('s-moment').classList.remove('active');
+    initDashboard();
+    $('dashboard').classList.add('active');
+    $('bottomNav').classList.add('visible');
+  };
+
+  /* ---- dashboard ---- */
+  const activity = [];
+  function addActivity(item){
+    activity.unshift(item);
+    renderActivity();
+  }
+  function renderActivity(){
+    const list = $('activityList');
+    list.innerHTML = '';
+    const items = activity.length ? activity : [{icon:'✦', label:'המטרה נוצרה', sub:'עכשיו', impact:''}];
+    items.slice(0,6).forEach(it=>{
+      const row = document.createElement('div');
+      row.className = 'activity-row';
+      row.innerHTML = `<div class="activity-dot">${it.icon}</div>
+        <div class="activity-info"><b>${it.label}</b><span>${it.sub}</span></div>
+        <div class="activity-impact ${it.cls||''}">${it.impact||''}</div>`;
+      list.appendChild(row);
+    });
+  }
+
+  function greeting(){
+    const h = new Date().getHours();
+    if(h<5) return 'לילה טוב 👋';
+    if(h<12) return 'בוקר טוב 👋';
+    if(h<18) return 'צהריים טובים 👋';
+    return 'ערב טוב 👋';
+  }
+
+  function initDashboard(){
+    $('heroPhoto').className = 'photo ' + state.goal.cls;
+    $('heroGreeting').textContent = greeting();
+    renderActivity();
+    updateDashboard();
+  }
+
+  function updateDashboard(){
+    const pct = pctOf(state.saved, state.target);
+    $('heroPhoto').style.filter = imageFilter(pct);
+    const days = daysRemaining(state.target, state.saved, state.weeklyPace);
+    $('heroDays').textContent = '~' + days;
+    $('heroDaysLabel').textContent = 'ימים עד ' + state.goal.name;
+    $('heroFill').style.width = pct + '%';
+    $('heroDot').style.right = pct + '%';
+    $('heroPct').textContent = Math.round(pct) + '%';
+    if(state.wage>0 && state.saved>0){
+      $('heroEffort').textContent = `המשמרות שלכם כבר בנו ${Math.round(pct)}% מהדרך`;
+    } else {
+      $('heroEffort').textContent = '';
+    }
+  }
+
+  /* ---- sheets ---- */
+  function openSheet(id){ $(id).classList.add('visible'); }
+  function closeSheet(id){ $(id).classList.remove('visible'); }
+
+  $('openIncome').onclick = ()=> openIncomeSheet();
+  $('cancelIncome').onclick = ()=> closeSheet('incomeBackdrop');
+  $('openExpense').onclick = ()=>{ $('expenseInput').value=''; $('expensePreview').innerHTML='<b>הכניסו סכום לתצוגה מקדימה</b>'; openSheet('expenseBackdrop'); };
+  $('cancelExpense').onclick = ()=> closeSheet('expenseBackdrop');
+  $('closeForward').onclick = ()=> closeSheet('forwardBackdrop');
+
+  function openIncomeSheet(prefill){
+    $('incomeInput').value = prefill || '';
+    updateIncomePreview();
+    openSheet('incomeBackdrop');
+  }
+
+  const incomeInput = $('incomeInput');
+  function updateIncomePreview(){
+    const amount = Number(incomeInput.value)||0;
+    const el = $('incomePreview');
+    if(amount>0){
+      const hours = hoursForAmount(amount, state.wage);
+      const days = daysMoved(amount, state.weeklyPace);
+      el.innerHTML = hours!=null
+        ? `≈ ${hours} שעות עבודה · כ-${days} ימים קדימה<br><span style="color:var(--ink-faint);font-weight:400;font-size:.85rem;">${state.goal.name} מתקרב.</span>`
+        : `כ-${days} ימים קדימה בקצב הנוכחי<br><span style="color:var(--ink-faint);font-weight:400;font-size:.85rem;">${state.goal.name} מתקרב.</span>`;
+    } else {
+      el.innerHTML = '<b>הכניסו סכום לתצוגה מקדימה</b>';
+    }
+  }
+  incomeInput.addEventListener('input', updateIncomePreview);
+  document.querySelectorAll('#incomeBackdrop .sheet-chip').forEach(c=>{
+    c.onclick = ()=>{ incomeInput.value = c.dataset.val; updateIncomePreview(); };
+  });
+
+  const expenseInput = $('expenseInput');
+  function updateExpensePreview(){
+    const amount = Number(expenseInput.value)||0;
+    const el = $('expensePreview');
+    if(amount>0){
+      const hours = hoursForAmount(amount, state.wage);
+      const days = daysMoved(amount, state.weeklyPace);
+      el.innerHTML = hours!=null
+        ? `≈ ${hours} שעות עבודה · כ-${days} ימים בקצב הנוכחי`
+        : `כ-${days} ימים בקצב הנוכחי`;
+    } else {
+      el.innerHTML = '<b>הכניסו סכום לתצוגה מקדימה</b>';
+    }
+  }
+  expenseInput.addEventListener('input', updateExpensePreview);
+  document.querySelectorAll('#expenseBackdrop .sheet-chip').forEach(c=>{
+    c.onclick = ()=>{ expenseInput.value = c.dataset.val; updateExpensePreview(); };
+  });
+
+  /* ---- income moment ---- */
+  const milestones = [25,50,75,90,100];
+  $('confirmIncome').onclick = ()=>{
+    const amount = Number(incomeInput.value)||0;
+    if(amount<=0) return;
+    closeSheet('incomeBackdrop');
+    runIncomeMoment(amount);
+  };
+
+  function runIncomeMoment(amount){
+    const beforeSaved = state.saved;
+    const beforePct = pctOf(beforeSaved, state.target);
+    const beforeDays = daysRemaining(state.target, beforeSaved, state.weeklyPace);
+    const afterSaved = beforeSaved + amount;
+    const afterPct = pctOf(afterSaved, state.target);
+    const afterDays = daysRemaining(state.target, afterSaved, state.weeklyPace);
+    const hours = hoursForAmount(amount, state.wage);
+
+    const photo = $('incomeMomentPhoto');
+    photo.className = 'photo ' + state.goal.cls;
+    photo.style.transition = 'none';
+    photo.style.filter = imageFilter(beforePct);
+    void photo.offsetWidth;
+    photo.style.transition = 'filter 1.8s var(--ease)';
+
+    $('moIncomeAmount').textContent = '+₪' + fmt(amount);
+    $('moIncomeHours').textContent = hours!=null ? `≈ ${hours} שעות עבודה שהפכו לימים קדימה` : '';
+    $('moDaysBefore').textContent = '~' + beforeDays;
+    $('moDaysAfter').textContent = '~' + afterDays;
+
+    // restart the staggered entrance animation
+    document.querySelectorAll('#incomeMoment [style*="animation"], #incomeMoment .mo-amount-big, #incomeMoment .mo-hours-line, #incomeMoment .mo-days-row, #incomeMoment .mo-cta, #incomeMoment .mo-eyebrow')
+      .forEach(el=>{ el.style.animation='none'; void el.offsetWidth; el.style.animation=''; });
+
+    $('incomeMoment').classList.add('visible');
+    requestAnimationFrame(()=> requestAnimationFrame(()=>{ photo.style.filter = imageFilter(afterPct); }));
+
+    const crossed = milestones.find(m => beforePct < m && afterPct >= m);
+    if(crossed) setTimeout(fireConfetti, 600);
+
+    $('btnIncomeMoment').onclick = ()=>{
+      state.saved = afterSaved;
+      const gained = Math.max(0, beforeDays - afterDays);
+      addActivity({ icon:'↑', label:'הכנסה נרשמה', sub:'₪'+fmt(amount) + (hours!=null?` · ${hours} שעות`:''), impact:`+${gained} ימים`, cls:'pos' });
+      $('insightTitle').textContent = 'המשמרות שלכם עובדות';
+      $('insightText').textContent = hours!=null
+        ? `₪${fmt(amount)} = כ-${hours} שעות עבודה שהפכו ל-כ-${gained} ימים קדימה.`
+        : `₪${fmt(amount)} = כ-${gained} ימים קדימה. ${state.goal.name} מתקרב.`;
+      $('incomeMoment').classList.remove('visible');
+      updateDashboard();
+    };
+  }
+
+  /* ---- expense + forward path ---- */
+  $('confirmExpense').onclick = ()=>{
+    const amount = Number(expenseInput.value)||0;
+    if(amount<=0) return;
+    closeSheet('expenseBackdrop');
+    runExpenseFlow(amount);
+  };
+
+  function runExpenseFlow(amount){
+    const beforeSaved = state.saved;
+    const beforeDays = daysRemaining(state.target, beforeSaved, state.weeklyPace);
+    const newSaved = Math.max(0, beforeSaved - amount);
+    const newDays = daysRemaining(state.target, newSaved, state.weeklyPace);
+    const daysLost = Math.max(0, newDays - beforeDays);
+    const hours = hoursForAmount(amount, state.wage);
+
+    state.saved = newSaved;
+    addActivity({ icon:'↓', label:'הוצאה נרשמה', sub:'₪'+fmt(amount) + (hours!=null?` · ${hours} שעות`:''), impact: daysLost>0 ? `-${daysLost} ימים` : '', cls:'neg' });
+    $('insightTitle').textContent = 'הכל בסדר גמור';
+    $('insightText').textContent = `בקצב הנוכחי — ${state.goal.name} עדיין בסביבות ~${newDays} ימים.`;
+    updateDashboard();
+
+    $('fwdSub').textContent = `₪${fmt(amount)}${hours!=null?' — כ-'+hours+' שעות עבודה':''} יצאו. בקצב הנוכחי, ${state.goal.name} עכשיו בסביבות ~${newDays} ימים.`;
+
+    const pathEl = $('forwardPath');
+    pathEl.innerHTML = '';
+    if(daysLost>0){
+      const a = document.createElement('div');
+      a.className = 'fp-card primary';
+      a.innerHTML = `<div class="fp-card-title">הוסיפו כ-₪${fmt(amount)} בשבוע הבא</div>
+        <div class="fp-card-sub">מחזיר כ-${daysLost} ימים — ${state.goal.name} חוזר לסביבות ~${beforeDays} ימים</div>`;
+      a.onclick = ()=>{ closeSheet('forwardBackdrop'); openIncomeSheet(amount); };
+      pathEl.appendChild(a);
+    }
+    const b = document.createElement('div');
+    b.className = 'fp-card';
+    b.innerHTML = `<div class="fp-card-title">המשיכו בקצב הנוכחי</div>
+      <div class="fp-card-sub">בקצב הנוכחי — ${state.goal.name} בסביבות ~${newDays} ימים. גם זו בחירה תקינה לחלוטין.</div>`;
+    b.onclick = ()=> closeSheet('forwardBackdrop');
+    pathEl.appendChild(b);
+
+    openSheet('forwardBackdrop');
+  }
+
+  /* ---- restart ---- */
+  $('restartDemo').onclick = ()=> location.reload();
+
+})();
+</script>
+</body>
+</html>
