@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { signOut } from "next-auth/react";
-import { LogOut, User } from "lucide-react";
+import { LogOut, Settings, User } from "lucide-react";
 
 export function UserMenu({
   name,
@@ -32,6 +33,14 @@ export function UserMenu({
               <p className="truncate text-sm font-medium">{name || "משתמש"}</p>
               <p className="truncate text-xs text-muted">{email}</p>
             </div>
+            <Link
+              href="/dashboard/account"
+              onClick={() => setOpen(false)}
+              className="mt-1 flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm transition-colors hover:bg-surface-2"
+            >
+              <Settings className="size-4" />
+              החשבון שלי
+            </Link>
             <button
               onClick={() => signOut({ callbackUrl: "/" })}
               className="mt-1 flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm text-red-400 transition-colors hover:bg-red-500/10"

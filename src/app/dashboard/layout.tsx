@@ -34,6 +34,12 @@ export default async function DashboardLayout({
                 הפרויקטים שלי
               </Link>
               <Link
+                href="/dashboard/account"
+                className="rounded-full px-3 py-1.5 text-muted transition-colors hover:bg-surface hover:text-foreground"
+              >
+                החשבון שלי
+              </Link>
+              <Link
                 href="/pricing"
                 className="rounded-full px-3 py-1.5 text-muted transition-colors hover:bg-surface hover:text-foreground"
               >
@@ -42,10 +48,13 @@ export default async function DashboardLayout({
             </nav>
           </div>
           <div className="flex items-center gap-3">
-            <span className="hidden rounded-full border border-border px-3 py-1 text-xs text-muted sm:inline-block">
+            <Link
+              href="/dashboard/account"
+              className="hidden rounded-full border border-border px-3 py-1 text-xs text-muted transition-colors hover:bg-surface hover:text-foreground sm:inline-block"
+            >
               {PLAN_LIMITS[plan].label}
               {limit !== Infinity ? ` · ${used}/${limit} יצירות היום` : " · ללא הגבלה"}
-            </span>
+            </Link>
             <Link
               href="/dashboard/new"
               className="flex items-center gap-1.5 rounded-full gradient-brand px-4 py-2 text-sm font-bold text-white shadow-md shadow-pink-500/20 transition-transform hover:scale-105"
