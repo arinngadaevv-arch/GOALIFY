@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0a0a12;
+  --surface: #12121e;
+  --surface-2: #191926;
+  --foreground: #f5f5fa;
+  --muted: #9797ad;
+  --border: #262636;
+
+  --neon-pink: #fe2c55;
+  --neon-purple: #a855f7;
+  --neon-blue: #25f4ee;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-neon-pink: var(--neon-pink);
+  --color-neon-purple: var(--neon-purple);
+  --color-neon-blue: var(--neon-blue);
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family:
+    "Segoe UI",
+    "Arial Hebrew",
+    "Noto Sans Hebrew",
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+.gradient-text {
+  background: linear-gradient(
+    90deg,
+    var(--neon-pink),
+    var(--neon-purple) 55%,
+    var(--neon-blue)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.gradient-brand {
+  background: linear-gradient(
+    135deg,
+    var(--neon-pink),
+    var(--neon-purple) 55%,
+    var(--neon-blue)
+  );
+}
+
+.gradient-border {
+  position: relative;
+  background: var(--surface);
+}
+
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    var(--neon-pink),
+    var(--neon-purple),
+    var(--neon-blue)
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.glow-pink {
+  box-shadow: 0 0 40px -12px rgba(254, 44, 85, 0.55);
+}
+
+::selection {
+  background: var(--neon-purple);
+  color: white;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--surface-2);
+  border-radius: 999px;
+}
