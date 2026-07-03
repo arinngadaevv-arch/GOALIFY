@@ -30,6 +30,41 @@ export const planDayGoalEnum = pgEnum("plan_day_goal", [
   "ENGAGEMENT",
 ]);
 
+// --- Vertical slice: Business / Decision / Outcome ---
+export const decisionStatusEnum = pgEnum("decision_status", [
+  "DRAFT",
+  "APPROVED",
+  "SENT",
+]);
+export const moveTypeEnum = pgEnum("move_type", ["EXPLOIT", "EXPLORE"]);
+export const confidenceLevelEnum = pgEnum("confidence_level", [
+  "LOW",
+  "MEDIUM",
+  "HIGH",
+]);
+export const moveChannelEnum = pgEnum("move_channel", [
+  "REEL",
+  "STORY",
+  "DM_OUTREACH",
+  "CALL",
+  "PRICE_CHANGE",
+  "REPLY_TO_COMMENTS",
+  "NONE",
+  "OTHER",
+]);
+export const executionTimeEnum = pgEnum("execution_time", [
+  "UNDER_10",
+  "TEN_TO_30",
+  "OVER_30",
+]);
+export const outcomeResultEnum = pgEnum("outcome_result", [
+  "MORE_VIEWS",
+  "MORE_MESSAGES",
+  "MORE_COMMENTS",
+  "NOTHING",
+  "OTHER",
+]);
+
 export const users = pgTable("user", {
   id: text("id")
     .primaryKey()
@@ -47,6 +82,8 @@ export const users = pgTable("user", {
   stripeCurrentPeriodEnd: timestamp("stripe_current_period_end"),
   subscriptionStatus: text("subscription_status"),
   cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false),
+  // Gates the analyst approval queue. Manual flag - no self-serve admin signup.
+  isAdmin: boolean("is_admin").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -181,6 +218,122 @@ export const usageLogs = pgTable("usage_log", {
   action: text("action").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+// --- Vertical slice ---
+
+/** Aggregate root. One business owner today; may support multiple businesses per user later. */
+export const businesses = pgTable("business", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  niche: text("niche").notNull().default("cosmetology"),
+  // Free-text operational assets gathered once at setup (e.g. "how do you reach past
+  // customers?"). Kept as a simple text blob for v1 - not a structured CRM.
+  reachNotes: text("reach_notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+/**
+ * The atomic, append-only event. Once status is SENT, the app layer must never
+ * mutate diagnosis/move/confidence/evidence/alternatives/falsification fields -
+ * only a new Decision may supersede it. approvedAt/sentAt are set exactly once,
+ * moving status forward, never backward.
+ */
+export const decisions = pgTable("decision", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  businessId: text("business_id")
+    .notNull()
+    .references(() => businesses.id, { onDelete: "cascade" }),
+  status: decisionStatusEnum("status").notNull().default("DRAFT"),
+
+  // Signals (Step 1) - raw self-reported inputs this diagnosis was based on.
+  signals: jsonb("signals").notNull(),
+
+  // Diagnosis (Step 2)
+  diagnosis: text("diagnosis").notNull(),
+
+  // Confidence (Step "Confidence") - qualitative until real hit-rate history exists.
+  confidence: confidenceLevelEnum("confidence").notNull(),
+  confidenceReasoning: text("confidence_reasoning").notNull(),
+
+  // Evidence - the specific signals that drove the diagnosis (subset/quote of `signals`).
+  evidence: jsonb("evidence").notNull(),
+
+  // Alternatives Considered - array of {hypothesis, whyRejected}, or [] if genuinely none.
+  alternativesConsidered: jsonb("alternatives_considered").notNull(),
+
+  // Decision (the move)
+  moveType: moveTypeEnum("move_type").notNull(),
+  moveChannel: moveChannelEnum("move_channel").notNull(),
+  moveDescription: text("move_description").notNull(),
+  estimatedMinutes: integer("estimated_minutes"),
+
+  // Falsification criteria - written before the outcome is known.
+  falsificationCriteria: text("falsification_criteria").notNull(),
+
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  approvedAt: timestamp("approved_at"),
+  approvedByUserId: text("approved_by_user_id").references(() => users.id),
+  sentAt: timestamp("sent_at"),
+});
+
+/**
+ * Append-only fact linked to a Decision. Filled in two passes (immediate close,
+ * then the 48h follow-up) but each pass only ever sets previously-null fields -
+ * never overwrites an answer already given.
+ */
+export const outcomes = pgTable("outcome", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  decisionId: text("decision_id")
+    .notNull()
+    .unique()
+    .references(() => decisions.id, { onDelete: "cascade" }),
+
+  didExecute: boolean("did_execute"),
+  executionTime: executionTimeEnum("execution_time"),
+  immediateAnsweredAt: timestamp("immediate_answered_at"),
+
+  result: outcomeResultEnum("result"),
+  resultNote: text("result_note"),
+  followupAnsweredAt: timestamp("followup_answered_at"),
+
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const businessesRelations = relations(businesses, ({ one, many }) => ({
+  user: one(users, { fields: [businesses.userId], references: [users.id] }),
+  decisions: many(decisions),
+}));
+
+export const decisionsRelations = relations(decisions, ({ one }) => ({
+  business: one(businesses, {
+    fields: [decisions.businessId],
+    references: [businesses.id],
+  }),
+  approvedBy: one(users, {
+    fields: [decisions.approvedByUserId],
+    references: [users.id],
+  }),
+  outcome: one(outcomes, {
+    fields: [decisions.id],
+    references: [outcomes.decisionId],
+  }),
+}));
+
+export const outcomesRelations = relations(outcomes, ({ one }) => ({
+  decision: one(decisions, {
+    fields: [outcomes.decisionId],
+    references: [decisions.id],
+  }),
+}));
 
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),

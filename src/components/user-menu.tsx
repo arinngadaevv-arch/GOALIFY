@@ -42,7 +42,7 @@ export function UserMenu({
               className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm transition-colors hover:bg-surface-2 md:hidden"
             >
               <FolderKanban className="size-4" />
-              הפרויקטים שלי
+              העסקים שלי
             </Link>
             <Link
               href="/dashboard/account"

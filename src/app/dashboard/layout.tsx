@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Plus } from "lucide-react";
+import { Plus, ShieldCheck } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { Logo } from "@/components/logo";
 import { UserMenu } from "@/components/user-menu";
-import { getUserPlan, PLAN_LIMITS, getTodayGenerationCount } from "@/lib/usage";
+import { getUserPlan, PLAN_LIMITS } from "@/lib/usage";
+import { isUserAdmin } from "@/lib/admin";
 
 export default async function DashboardLayout({
   children,
@@ -16,11 +17,10 @@ export default async function DashboardLayout({
     redirect("/sign-in");
   }
 
-  const [plan, used] = await Promise.all([
+  const [plan, admin] = await Promise.all([
     getUserPlan(session.user.id),
-    getTodayGenerationCount(session.user.id),
+    isUserAdmin(session.user.id),
   ]);
-  const limit = PLAN_LIMITS[plan].dailyGenerations;
 
   return (
     <div className="flex min-h-full flex-col bg-background">
@@ -33,7 +33,7 @@ export default async function DashboardLayout({
                 href="/dashboard"
                 className="rounded-full px-3 py-1.5 text-muted transition-colors hover:bg-surface hover:text-foreground"
               >
-                הפרויקטים שלי
+                העסקים שלי
               </Link>
               <Link
                 href="/dashboard/account"
@@ -47,6 +47,15 @@ export default async function DashboardLayout({
               >
                 מחירים
               </Link>
+              {admin && (
+                <Link
+                  href="/dashboard/admin"
+                  className="flex items-center gap-1 rounded-full px-3 py-1.5 text-muted transition-colors hover:bg-surface hover:text-foreground"
+                >
+                  <ShieldCheck className="size-3.5" />
+                  תור אישורים
+                </Link>
+              )}
             </nav>
           </div>
           <div className="flex items-center gap-3">
@@ -55,14 +64,13 @@ export default async function DashboardLayout({
               className="hidden rounded-full border border-border px-3 py-1 text-xs text-muted transition-colors hover:bg-surface hover:text-foreground sm:inline-block"
             >
               {PLAN_LIMITS[plan].label}
-              {limit !== Infinity ? ` · ${used}/${limit} יצירות היום` : " · ללא הגבלה"}
             </Link>
             <Link
-              href="/dashboard/new"
+              href="/dashboard/business/new"
               className="flex items-center gap-1.5 rounded-full gradient-brand px-4 py-2 text-sm font-bold text-white shadow-md shadow-pink-500/20 transition-transform hover:scale-105"
             >
               <Plus className="size-4" />
-              יצירה
+              הוספת עסק
             </Link>
             <UserMenu name={session.user.name} email={session.user.email} />
           </div>
