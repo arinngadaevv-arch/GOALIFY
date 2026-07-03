@@ -87,9 +87,17 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
         />
       </div>
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-muted">
-          סיסמה
-        </label>
+        <div className="mb-1.5 flex items-center justify-between">
+          <label className="block text-sm font-medium text-muted">סיסמה</label>
+          {mode === "sign-in" && (
+            <Link
+              href="/forgot-password"
+              className="text-xs text-muted hover:text-foreground hover:underline"
+            >
+              שכחתם סיסמה?
+            </Link>
+          )}
+        </div>
         <input
           required
           type="password"

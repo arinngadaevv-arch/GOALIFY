@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
+import { getClientIp, rateLimit, retryAfterSeconds } from "@/lib/rate-limit";
 
 const registerSchema = z.object({
   name: z.string().min(2, "השם חייב להכיל לפחות 2 תווים").max(80),
@@ -12,6 +13,14 @@ const registerSchema = z.object({
 });
 
 export async function POST(req: Request) {
+  const rl = await rateLimit("register", getClientIp(req));
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: "יותר מדי ניסיונות הרשמה. נסו שוב בעוד מספר דקות." },
+      { status: 429, headers: { "Retry-After": String(retryAfterSeconds(rl.reset)) } }
+    );
+  }
+
   const body = await req.json().catch(() => null);
   const parsed = registerSchema.safeParse(body);
 

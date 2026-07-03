@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { generatedContent, projects } from "@/lib/db/schema";
 import { generateContentIdeas } from "@/lib/ai/generate";
 import { assertCanGenerate, getUserPlan, logGeneration, UsageLimitError } from "@/lib/usage";
+import { rateLimit, retryAfterSeconds } from "@/lib/rate-limit";
 
 const businessInputSchema = z.object({
   businessType: z.string().min(2).max(120),
@@ -18,6 +19,15 @@ export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "יש להתחבר תחילה" }, { status: 401 });
+  }
+
+  // Burst protection per user (the daily plan quota is enforced separately below).
+  const rl = await rateLimit("generate", session.user.id);
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: "יותר מדי בקשות יצירה ברצף. המתינו רגע ונסו שוב." },
+      { status: 429, headers: { "Retry-After": String(retryAfterSeconds(rl.reset)) } }
+    );
   }
 
   const body = await req.json().catch(() => null);

@@ -103,6 +103,9 @@ stripe listen --forward-to localhost:3000/api/stripe/webhook
 | `STRIPE_WEBHOOK_SECRET` | חובה לתשלומים | סוד האימות של ה-Webhook |
 | `STRIPE_PRICE_ID_PRO` | חובה לתשלומים | Price ID (לא Product ID!) של מסלול פרו |
 | `STRIPE_PRICE_ID_BUSINESS` | חובה לתשלומים | Price ID של מסלול עסקי |
+| `RESEND_API_KEY` | חובה לאיפוס סיסמה בפרודקשן | מפתח מ-[resend.com](https://resend.com). ללא מפתח - קישור האיפוס נכתב ללוג השרת (דב בלבד) |
+| `EMAIL_FROM` | מומלץ | כתובת השולח לאימיילים (דומיין מאומת ב-Resend) |
+| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | מומלץ בפרודקשן | Rate limiting מבוזר ב-[Upstash](https://upstash.com). ללא הגדרה - fallback ל-in-memory |
 
 ---
 
@@ -314,16 +317,38 @@ DATABASE_URL="<connection string מ-5.1>" npx drizzle-kit push
   `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`,
   `Permissions-Policy` ו-`Strict-Transport-Security`, ומסיר את
   `X-Powered-By`.
+- **Rate limiting** מופעל על התחברות, הרשמה, שחזור/איפוס סיסמה ו-
+  `/api/generate` (ראו סעיף 9). ה-Webhook של Stripe **לא** מוגבל בכוונה -
+  הוא מאומת בחתימה, ו-Stripe זקוק למסירה אמינה עם retries.
 - `.env` לא נכלל ב-git (`.gitignore`); `.env.example` הוא תבנית בלבד.
 
 ### שיפורים מומלצים להמשך (לא חוסמים השקה)
 
-- **Rate limiting** על `/api/auth/register` ו-`/api/generate` (למשל דרך
-  Upstash Redis / Vercel KV) - מומלץ לפני חשיפה לתנועה ציבורית גבוהה.
 - **Content-Security-Policy** מחמירה - לא נכללה כברירת מחדל כדי לא לשבור
   רינדור; מומלץ להוסיף עם nonce לאחר בדיקה.
 - **תמונת OpenGraph** (`opengraph-image`) - כרגע מוגדרים תגי OG טקסטואליים
   בלבד; אפשר להוסיף תמונת שיתוף מעוצבת.
+- **אימות אימייל בהרשמה** ו-**2FA** - שכבות אבטחה נוספות לגרסה עתידית.
+
+## 9. איפוס סיסמה ו-Rate Limiting
+
+### איפוס סיסמה
+- זרימה: `/forgot-password` → אימייל עם קישור → `/reset-password?token=...`.
+- הטוקן נוצר עם `crypto.randomBytes(32)`, ובמסד נשמר רק **hash (sha256)** שלו
+  (הטוקן הגולמי קיים אך ורק בקישור שבאימייל). תוקף: שעה. **חד-פעמי** - נמחק
+  אחרי שימוש, וכל הטוקנים הקודמים של המשתמש נמחקים בעת בקשה חדשה.
+- מניעת enumeration: בקשת איפוס תמיד מחזירה תשובה גנרית, בין אם המשתמש קיים
+  ובין אם לא.
+- שליחת אימייל דרך Resend (`RESEND_API_KEY`). ללא מפתח - הקישור נכתב ללוג
+  השרת, כדי שאפשר לפתח ולבדוק בלי ספק אימייל.
+
+### Rate Limiting (`src/lib/rate-limit.ts`)
+- Backend: Upstash Redis כשמוגדר (`UPSTASH_REDIS_REST_URL/TOKEN`), אחרת
+  fallback ל-in-memory. שגיאת limiter **fail-open** (מאפשרת בקשה) כדי
+  שתקלה ב-Redis לא תפיל את האתר.
+- מכסות ברירת מחדל (ניתן לכוונן ב-`RATE_LIMITS`):
+  התחברות 10/5 דק', הרשמה 6/שעה, שחזור סיסמה 5/15 דק', איפוס 8/15 דק',
+  יצירה 20/דקה. חסימה מחזירה `429` עם הודעה ידידותית וכותרת `Retry-After`.
 
 ## 8. SEO ומוכנות למנועי חיפוש
 

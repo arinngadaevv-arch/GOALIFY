@@ -15,6 +15,13 @@
       "when": 1782995286749,
       "tag": "0001_military_clea",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783075556918,
+      "tag": "0002_sour_mojo",
+      "breakpoints": true
     }
   ]
 }

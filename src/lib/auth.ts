@@ -7,6 +7,7 @@ import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { users, accounts, sessions, verificationTokens } from "@/lib/db/schema";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 const providers: Provider[] = [
   Credentials({
@@ -15,10 +16,15 @@ const providers: Provider[] = [
       email: { label: "Email", type: "email" },
       password: { label: "Password", type: "password" },
     },
-    async authorize(credentials) {
+    async authorize(credentials, request) {
       const email = credentials?.email as string | undefined;
       const password = credentials?.password as string | undefined;
       if (!email || !password) return null;
+
+      // Throttle login attempts per IP to blunt credential-stuffing/brute force.
+      const ip = request ? getClientIp(request as Request) : "unknown";
+      const rl = await rateLimit("login", ip);
+      if (!rl.success) return null;
 
       const [user] = await db
         .select()
