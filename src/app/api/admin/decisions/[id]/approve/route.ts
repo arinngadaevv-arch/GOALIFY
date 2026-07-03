@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -60,35 +60,47 @@ export async function POST(
     );
   }
 
-  const [existing] = await db
-    .select({ status: decisions.status })
-    .from(decisions)
-    .where(eq(decisions.id, id))
-    .limit(1);
+  try {
+    const now = new Date();
 
-  if (!existing) {
-    return NextResponse.json({ error: "ההחלטה לא נמצאה" }, { status: 404 });
-  }
-  if (existing.status !== "DRAFT") {
+    // Atomic check-and-set: the WHERE clause requires status still DRAFT, so
+    // two concurrent approve clicks (or two admins) can't both succeed - only
+    // the first UPDATE actually matches a row.
+    const [decision] = await db
+      .update(decisions)
+      .set({
+        ...parsed.data,
+        status: "SENT",
+        approvedAt: now,
+        approvedByUserId: session.user.id,
+        sentAt: now,
+      })
+      .where(and(eq(decisions.id, id), eq(decisions.status, "DRAFT")))
+      .returning();
+
+    if (!decision) {
+      const [existing] = await db
+        .select({ status: decisions.status })
+        .from(decisions)
+        .where(eq(decisions.id, id))
+        .limit(1);
+
+      return NextResponse.json(
+        {
+          error: existing
+            ? "ההחלטה כבר אושרה ונשלחה - לא ניתן לערוך אותה שוב"
+            : "ההחלטה לא נמצאה",
+        },
+        { status: existing ? 409 : 404 }
+      );
+    }
+
+    return NextResponse.json({ decision });
+  } catch (error) {
+    console.error("[POST /api/admin/decisions/[id]/approve] failed", error);
     return NextResponse.json(
-      { error: "ההחלטה כבר אושרה ונשלחה - לא ניתן לערוך אותה שוב" },
-      { status: 409 }
+      { error: "אישור ההחלטה נכשל. נסו שוב בעוד רגע." },
+      { status: 500 }
     );
   }
-
-  const now = new Date();
-
-  const [decision] = await db
-    .update(decisions)
-    .set({
-      ...parsed.data,
-      status: "SENT",
-      approvedAt: now,
-      approvedByUserId: session.user.id,
-      sentAt: now,
-    })
-    .where(eq(decisions.id, id))
-    .returning();
-
-  return NextResponse.json({ decision });
 }

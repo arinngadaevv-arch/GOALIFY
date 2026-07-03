@@ -14,16 +14,24 @@ export async function GET() {
     return NextResponse.json({ error: "אין הרשאה" }, { status: 403 });
   }
 
-  const rows = await db
-    .select({
-      decision: decisions,
-      businessName: businesses.name,
-      businessNiche: businesses.niche,
-    })
-    .from(decisions)
-    .innerJoin(businesses, eq(decisions.businessId, businesses.id))
-    .where(eq(decisions.status, "DRAFT"))
-    .orderBy(asc(decisions.createdAt));
+  try {
+    const rows = await db
+      .select({
+        decision: decisions,
+        businessName: businesses.name,
+        businessNiche: businesses.niche,
+      })
+      .from(decisions)
+      .innerJoin(businesses, eq(decisions.businessId, businesses.id))
+      .where(eq(decisions.status, "DRAFT"))
+      .orderBy(asc(decisions.createdAt));
 
-  return NextResponse.json({ drafts: rows });
+    return NextResponse.json({ drafts: rows });
+  } catch (error) {
+    console.error("[GET /api/admin/decisions] failed", error);
+    return NextResponse.json(
+      { error: "טעינת התור נכשלה. נסו שוב בעוד רגע." },
+      { status: 500 }
+    );
+  }
 }

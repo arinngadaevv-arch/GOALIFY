@@ -17,13 +17,21 @@ export async function GET() {
     return NextResponse.json({ error: "יש להתחבר תחילה" }, { status: 401 });
   }
 
-  const rows = await db
-    .select()
-    .from(businesses)
-    .where(eq(businesses.userId, session.user.id))
-    .orderBy(desc(businesses.createdAt));
+  try {
+    const rows = await db
+      .select()
+      .from(businesses)
+      .where(eq(businesses.userId, session.user.id))
+      .orderBy(desc(businesses.createdAt));
 
-  return NextResponse.json({ businesses: rows });
+    return NextResponse.json({ businesses: rows });
+  } catch (error) {
+    console.error("[GET /api/businesses] failed", error);
+    return NextResponse.json(
+      { error: "טעינת העסקים נכשלה. נסו שוב בעוד רגע." },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(req: Request) {
@@ -41,15 +49,23 @@ export async function POST(req: Request) {
     );
   }
 
-  const [business] = await db
-    .insert(businesses)
-    .values({
-      userId: session.user.id,
-      name: parsed.data.name,
-      niche: parsed.data.niche,
-      reachNotes: parsed.data.reachNotes ?? null,
-    })
-    .returning();
+  try {
+    const [business] = await db
+      .insert(businesses)
+      .values({
+        userId: session.user.id,
+        name: parsed.data.name,
+        niche: parsed.data.niche,
+        reachNotes: parsed.data.reachNotes ?? null,
+      })
+      .returning();
 
-  return NextResponse.json({ business }, { status: 201 });
+    return NextResponse.json({ business }, { status: 201 });
+  } catch (error) {
+    console.error("[POST /api/businesses] failed", error);
+    return NextResponse.json(
+      { error: "יצירת העסק נכשלה. נסו שוב בעוד רגע." },
+      { status: 500 }
+    );
+  }
 }

@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { businesses, decisions } from "@/lib/db/schema";
+import { businesses, decisions, outcomes } from "@/lib/db/schema";
 import { generateDiagnosisDraft } from "@/lib/diagnosis/generate";
 import { getClientIp, rateLimit, retryAfterSeconds } from "@/lib/rate-limit";
 
@@ -52,6 +52,30 @@ export async function POST(
 
   if (!business) {
     return NextResponse.json({ error: "העסק לא נמצא" }, { status: 404 });
+  }
+
+  // Enforce "one decision at a time" at the API level, not just in the UI -
+  // a business with a still-open decision (DRAFT, or SENT awaiting outcome)
+  // must close that loop before a new check-in can start another.
+  const [latest] = await db
+    .select({
+      status: decisions.status,
+      followupAnsweredAt: outcomes.followupAnsweredAt,
+    })
+    .from(decisions)
+    .leftJoin(outcomes, eq(outcomes.decisionId, decisions.id))
+    .where(eq(decisions.businessId, business.id))
+    .orderBy(desc(decisions.createdAt))
+    .limit(1);
+
+  const hasOpenDecision =
+    latest && (latest.status !== "SENT" || !latest.followupAnsweredAt);
+
+  if (hasOpenDecision) {
+    return NextResponse.json(
+      { error: "יש כבר החלטה פעילה לעסק הזה. סגרו אותה לפני שמתחילים חדשה." },
+      { status: 409 }
+    );
   }
 
   try {

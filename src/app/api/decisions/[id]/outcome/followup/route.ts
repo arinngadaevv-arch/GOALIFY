@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -32,45 +32,56 @@ export async function POST(
     return NextResponse.json({ error: "קלט לא תקין" }, { status: 400 });
   }
 
-  const [row] = await db
-    .select({ businessUserId: businesses.userId })
-    .from(decisions)
-    .innerJoin(businesses, eq(decisions.businessId, businesses.id))
-    .where(eq(decisions.id, id))
-    .limit(1);
+  try {
+    const [row] = await db
+      .select({ businessUserId: businesses.userId })
+      .from(decisions)
+      .innerJoin(businesses, eq(decisions.businessId, businesses.id))
+      .where(eq(decisions.id, id))
+      .limit(1);
 
-  if (!row || row.businessUserId !== session.user.id) {
-    return NextResponse.json({ error: "ההחלטה לא נמצאה" }, { status: 404 });
-  }
+    if (!row || row.businessUserId !== session.user.id) {
+      return NextResponse.json({ error: "ההחלטה לא נמצאה" }, { status: 404 });
+    }
 
-  const [existingOutcome] = await db
-    .select()
-    .from(outcomes)
-    .where(eq(outcomes.decisionId, id))
-    .limit(1);
+    const [existingOutcome] = await db
+      .select({ id: outcomes.id })
+      .from(outcomes)
+      .where(eq(outcomes.decisionId, id))
+      .limit(1);
 
-  if (!existingOutcome) {
+    if (!existingOutcome) {
+      return NextResponse.json(
+        { error: "יש לענות קודם על השאלות המיידיות" },
+        { status: 409 }
+      );
+    }
+
+    // Atomic check-and-set: only succeeds if followupAnsweredAt is still null,
+    // so two concurrent submits can't both write a result.
+    const [outcome] = await db
+      .update(outcomes)
+      .set({
+        result: parsed.data.result,
+        resultNote: parsed.data.resultNote ?? null,
+        followupAnsweredAt: new Date(),
+      })
+      .where(and(eq(outcomes.decisionId, id), isNull(outcomes.followupAnsweredAt)))
+      .returning();
+
+    if (!outcome) {
+      return NextResponse.json(
+        { error: "כבר ענית על השאלה הזו" },
+        { status: 409 }
+      );
+    }
+
+    return NextResponse.json({ outcome });
+  } catch (error) {
+    console.error("[POST /api/decisions/[id]/outcome/followup] failed", error);
     return NextResponse.json(
-      { error: "יש לענות קודם על השאלות המיידיות" },
-      { status: 409 }
+      { error: "שמירת התשובה נכשלה. נסו שוב בעוד רגע." },
+      { status: 500 }
     );
   }
-  if (existingOutcome.followupAnsweredAt) {
-    return NextResponse.json(
-      { error: "כבר ענית על השאלה הזו" },
-      { status: 409 }
-    );
-  }
-
-  const [outcome] = await db
-    .update(outcomes)
-    .set({
-      result: parsed.data.result,
-      resultNote: parsed.data.resultNote ?? null,
-      followupAnsweredAt: new Date(),
-    })
-    .where(and(eq(outcomes.decisionId, id)))
-    .returning();
-
-  return NextResponse.json({ outcome });
 }
