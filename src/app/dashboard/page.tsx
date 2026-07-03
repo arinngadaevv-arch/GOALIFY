@@ -55,7 +55,7 @@ export default async function DashboardPage() {
             <Link
               key={project.id}
               href={`/dashboard/projects/${project.id}`}
-              className="group rounded-2xl border border-border bg-surface/60 p-5 transition-colors hover:border-neon-purple/50"
+              className="group hover-lift rounded-2xl border border-border bg-surface/60 p-5 hover:border-neon-purple/50"
             >
               <div className="flex items-center justify-between">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-2 px-2.5 py-1 text-xs text-muted">

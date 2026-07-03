@@ -111,11 +111,18 @@ stripe listen --forward-to localhost:3000/api/stripe/webhook
 ```
 src/
   app/
+    layout.tsx                # שורש + מטא-דאטה/SEO (OpenGraph, Twitter)
     page.tsx                  # עמוד נחיתה
+    error.tsx                 # גבול שגיאות גלובלי (Error Boundary)
+    not-found.tsx             # עמוד 404 מעוצב
+    robots.ts                 # robots.txt דינמי
+    sitemap.ts                # sitemap.xml דינמי
+    manifest.ts               # Web App Manifest (PWA)
     pricing/                  # עמוד מחירים (כפתורי Stripe Checkout)
     sign-in/, sign-up/        # אימות
     dashboard/
       layout.tsx              # שלד הדשבורד + מד שימוש יומי
+      loading.tsx             # שלד טעינה (skeleton)
       page.tsx                # רשימת פרויקטים
       new/                    # טופס יצירת תוכן (= onboarding)
       projects/[id]/          # תצוגת תוכן + מתכנן שבועי + ייצוא
@@ -129,7 +136,7 @@ src/
       stripe/checkout/         # POST - יצירת Stripe Checkout Session
       stripe/portal/           # POST - יצירת Billing Portal Session
       stripe/webhook/          # POST - קליטת אירועי Stripe (ציבורי, מאומת בחתימה)
-  components/                 # רכיבי UI
+  components/                 # רכיבי UI (כולל CheckoutStatusBanner, SubscriptionActions)
   lib/
     ai/                       # קליינט Claude + פרומפטים + סכמות zod
     db/                       # סכמת Drizzle + חיבור DB
@@ -138,6 +145,8 @@ src/
     usage.ts                  # אכיפת מכסת יצירות לפי תוכנית מנוי
   proxy.ts                    # הגנת נתיבי /dashboard (Next.js "proxy")
 drizzle/                      # מיגרציות SQL שנוצרו מהסכמה
+next.config.ts                # כותרות אבטחה (security headers)
+vercel.json                   # תצורת פריסה ל-Vercel (אזור, כותרות)
 ```
 
 ---
@@ -193,6 +202,11 @@ drizzle/                      # מיגרציות SQL שנוצרו מהסכמה
    `NEXTAUTH_SECRET`, `ANTHROPIC_API_KEY`.
 5. לחצו **Deploy**. תקבלו כתובת ציבורית זמנית כמו
    `https://trendspark-ai-xxxx.vercel.app`.
+
+> **הערה על `vercel.json`**: הפרויקט כולל `vercel.json` שמגדיר אזור פריסה
+> `fra1` (פרנקפורט - ההשהיה הנמוכה ביותר מישראל) ומוודא שנקודת ה-Webhook
+> לא נשמרת במטמון. Vercel קורא את הקובץ אוטומטית - אין צורך בפעולה ידנית.
+> אם מסד הנתונים שלכם נמצא באזור אחר, שקלו לעדכן את `regions` בהתאם.
 
 ### 5.3 יצירת טבלאות במסד הפרודקשן
 
@@ -296,4 +310,26 @@ DATABASE_URL="<connection string מ-5.1>" npx drizzle-kit push
   `stripe/portal`) בודקים session בעצמם ומחזירים 401 JSON.
 - אין לחשוף לעולם את `STRIPE_SECRET_KEY` ב-frontend - כל קריאות ה-Stripe
   נעשות אך ורק בצד השרת (`route.ts` handlers).
+- **כותרות אבטחה**: `next.config.ts` מוסיף לכל תגובה
+  `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`,
+  `Permissions-Policy` ו-`Strict-Transport-Security`, ומסיר את
+  `X-Powered-By`.
 - `.env` לא נכלל ב-git (`.gitignore`); `.env.example` הוא תבנית בלבד.
+
+### שיפורים מומלצים להמשך (לא חוסמים השקה)
+
+- **Rate limiting** על `/api/auth/register` ו-`/api/generate` (למשל דרך
+  Upstash Redis / Vercel KV) - מומלץ לפני חשיפה לתנועה ציבורית גבוהה.
+- **Content-Security-Policy** מחמירה - לא נכללה כברירת מחדל כדי לא לשבור
+  רינדור; מומלץ להוסיף עם nonce לאחר בדיקה.
+- **תמונת OpenGraph** (`opengraph-image`) - כרגע מוגדרים תגי OG טקסטואליים
+  בלבד; אפשר להוסיף תמונת שיתוף מעוצבת.
+
+## 8. SEO ומוכנות למנועי חיפוש
+
+- `src/app/layout.tsx` מגדיר `metadataBase`, כותרות דינמיות
+  (`title.template`), תיאור, מילות מפתח, ותגי OpenGraph/Twitter בעברית.
+- `robots.ts` ו-`sitemap.ts` מייצרים אוטומטית `robots.txt` ו-`sitemap.xml`
+  (מבוססים על `NEXT_PUBLIC_APP_URL`, לכן חשוב להגדיר אותו בפרודקשן).
+- `manifest.ts` מספק Web App Manifest להתקנה כ-PWA.
+- נתיבי `/dashboard` ו-`/api` חסומים ל-crawlers ב-`robots.txt`.

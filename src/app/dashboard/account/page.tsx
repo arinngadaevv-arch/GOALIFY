@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { getTodayGenerationCount, PLAN_LIMITS, type Plan } from "@/lib/usage";
 import { SubscriptionActions } from "@/components/subscription-actions";
+import { CheckoutStatusBanner } from "@/components/checkout-status-banner";
 
 const STATUS_LABELS: Record<string, string> = {
   active: "פעיל",
@@ -35,6 +36,10 @@ export default async function AccountPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
+      <Suspense>
+        <CheckoutStatusBanner />
+      </Suspense>
+
       <h1 className="text-2xl font-extrabold">החשבון שלי</h1>
       <p className="mt-1 text-sm text-muted">
         פרטי הפרופיל, המנוי והשימוש היומי שלכם.

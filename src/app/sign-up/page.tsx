@@ -1,6 +1,14 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Logo } from "@/components/logo";
 import { AuthForm } from "@/components/auth-form";
+
+export const metadata: Metadata = {
+  title: "הרשמה בחינם",
+  description:
+    "פתחו חשבון TrendSpark AI חינמי והתחילו ליצור תוכן ויראלי לרשתות החברתיות תוך דקה.",
+  alternates: { canonical: "/sign-up" },
+};
 
 export default function SignUpPage() {
   return (

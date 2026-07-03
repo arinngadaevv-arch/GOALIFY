@@ -1,11 +1,24 @@
+import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Navbar } from "@/components/navbar";
 import { PricingCards } from "@/components/pricing-cards";
+import { CheckoutStatusBanner } from "@/components/checkout-status-banner";
+
+export const metadata: Metadata = {
+  title: "מחירים",
+  description:
+    "תוכניות מחיר פשוטות: חינם, פרו ועסקי. התחילו בחינם ושדרגו כשתהיו מוכנים לפרסם בלי הגבלה.",
+  alternates: { canonical: "/pricing" },
+};
 
 export default function PricingPage() {
   return (
     <div className="flex min-h-full flex-col bg-background">
       <Navbar />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-16 sm:px-6">
+        <Suspense>
+          <CheckoutStatusBanner />
+        </Suspense>
         <div className="text-center">
           <h1 className="text-4xl font-extrabold">
             תוכניות <span className="gradient-text">מחיר</span>

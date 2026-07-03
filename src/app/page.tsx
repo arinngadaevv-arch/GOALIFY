@@ -82,7 +82,7 @@ export default function Home() {
                 "radial-gradient(60% 60% at 30% 20%, var(--neon-pink) 0%, transparent 60%), radial-gradient(50% 50% at 70% 10%, var(--neon-blue) 0%, transparent 60%), radial-gradient(50% 50% at 50% 40%, var(--neon-purple) 0%, transparent 60%)",
             }}
           />
-          <div className="mx-auto max-w-4xl text-center">
+          <div className="mx-auto max-w-4xl text-center animate-fade-in-up">
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-1.5 text-xs font-medium text-muted">
               <span className="size-1.5 rounded-full gradient-brand" />
               מבוסס על Claude AI
@@ -121,10 +121,10 @@ export default function Home() {
         {/* How it works */}
         <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
           <div className="grid gap-6 md:grid-cols-3">
-            {STEPS.map((item) => (
+            {STEPS.map((item, i) => (
               <div
                 key={item.step}
-                className="rounded-2xl border border-border bg-surface/60 p-6"
+                className={`hover-lift animate-fade-in-up delay-${i + 1} rounded-2xl border border-border bg-surface/60 p-6`}
               >
                 <div className="grid size-9 place-items-center rounded-full gradient-brand text-sm font-bold text-white">
                   {item.step}
@@ -152,7 +152,7 @@ export default function Home() {
             {FEATURES.map((feature) => (
               <div
                 key={feature.title}
-                className="rounded-2xl border border-border bg-surface/60 p-6 transition-colors hover:border-neon-purple/50"
+                className="hover-lift rounded-2xl border border-border bg-surface/60 p-6 hover:border-neon-purple/50"
               >
                 <div className="grid size-10 place-items-center rounded-xl bg-surface-2">
                   <feature.icon className="size-5 text-neon-blue" />

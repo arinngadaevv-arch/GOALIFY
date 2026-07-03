@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Logo } from "@/components/logo";
 import { AuthForm } from "@/components/auth-form";
+
+export const metadata: Metadata = {
+  title: "התחברות",
+  alternates: { canonical: "/sign-in" },
+};
 
 export default function SignInPage() {
   return (
