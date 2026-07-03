@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 import { PLATFORM_LABELS, TONE_LABELS } from "@/lib/ai/types";
 import type { BusinessInput } from "@/lib/ai/types";
@@ -10,6 +10,15 @@ const PLATFORMS = Object.entries(PLATFORM_LABELS) as [
   BusinessInput["platform"],
   string,
 ][];
+
+const LOADING_STEPS = [
+  "מנתחים את העסק וקהל היעד שלכם...",
+  "חוקרים טרנדים ויראליים רלוונטיים...",
+  "מייצרים 5 רעיונות לסרטונים...",
+  "כותבים תסריטים, הוקים וכיתובים...",
+  "מחשבים ציון ויראליות לכל רעיון...",
+  "כמעט מוכן - מסדרים הכל בשבילכם...",
+];
 
 export function BusinessForm({
   onSuccess,
@@ -22,11 +31,21 @@ export function BusinessForm({
   const [tone, setTone] = useState<BusinessInput["tone"]>("TRENDY");
   const [platform, setPlatform] = useState<BusinessInput["platform"]>("BOTH");
   const [loading, setLoading] = useState(false);
+  const [stepIndex, setStepIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!loading) return;
+    const id = setInterval(() => {
+      setStepIndex((i) => Math.min(i + 1, LOADING_STEPS.length - 1));
+    }, 3500);
+    return () => clearInterval(id);
+  }, [loading]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    setStepIndex(0);
     setLoading(true);
 
     try {
@@ -153,12 +172,14 @@ export function BusinessForm({
       <button
         type="submit"
         disabled={loading}
-        className="flex w-full items-center justify-center gap-2 rounded-full gradient-brand px-6 py-4 text-base font-bold text-white shadow-xl shadow-pink-500/25 transition-transform hover:scale-[1.01] disabled:opacity-60 disabled:hover:scale-100"
+        className="flex w-full items-center justify-center gap-2 rounded-full gradient-brand px-6 py-4 text-base font-bold text-white shadow-xl shadow-pink-500/25 transition-transform hover:scale-[1.01] disabled:opacity-80 disabled:hover:scale-100"
       >
         {loading ? (
           <>
             <Loader2 className="size-5 animate-spin" />
-            יוצר תוכן ויראלי בשבילכם...
+            <span key={stepIndex} className="animate-fade-in">
+              {LOADING_STEPS[stepIndex]}
+            </span>
           </>
         ) : (
           <>
@@ -167,6 +188,12 @@ export function BusinessForm({
           </>
         )}
       </button>
+
+      {loading && (
+        <p className="text-center text-xs text-muted">
+          היצירה נמשכת בדרך כלל 10-30 שניות. אל תסגרו את החלון.
+        </p>
+      )}
     </form>
   );
 }

@@ -57,6 +57,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     sessionsTable: sessions,
     verificationTokensTable: verificationTokens,
   }),
+  // Trust the deployment host. Auto-enabled on Vercel via the VERCEL env var,
+  // but set explicitly so login also works on any other host (Docker, other clouds).
+  trustHost: true,
   session: { strategy: "jwt" },
   pages: {
     signIn: "/sign-in",

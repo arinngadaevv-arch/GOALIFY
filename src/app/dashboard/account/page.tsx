@@ -21,13 +21,11 @@ const STATUS_LABELS: Record<string, string> = {
 export default async function AccountPage() {
   const session = await auth();
 
-  const [user] = await db
-    .select()
-    .from(users)
-    .where(eq(users.id, session!.user.id))
-    .limit(1);
-
-  const usedToday = await getTodayGenerationCount(user.id);
+  const [userRows, usedToday] = await Promise.all([
+    db.select().from(users).where(eq(users.id, session!.user.id)).limit(1),
+    getTodayGenerationCount(session!.user.id),
+  ]);
+  const user = userRows[0];
   const plan = user.plan as Plan;
   const limit = PLAN_LIMITS[plan].dailyGenerations;
   const statusLabel = user.subscriptionStatus

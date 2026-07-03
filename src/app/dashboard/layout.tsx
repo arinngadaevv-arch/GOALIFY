@@ -16,8 +16,10 @@ export default async function DashboardLayout({
     redirect("/sign-in");
   }
 
-  const plan = await getUserPlan(session.user.id);
-  const used = await getTodayGenerationCount(session.user.id);
+  const [plan, used] = await Promise.all([
+    getUserPlan(session.user.id),
+    getTodayGenerationCount(session.user.id),
+  ]);
   const limit = PLAN_LIMITS[plan].dailyGenerations;
 
   return (
@@ -25,7 +27,7 @@ export default async function DashboardLayout({
       <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-lg">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
           <div className="flex items-center gap-6">
-            <Logo />
+            <Logo href="/dashboard" />
             <nav className="hidden items-center gap-1 text-sm md:flex">
               <Link
                 href="/dashboard"
