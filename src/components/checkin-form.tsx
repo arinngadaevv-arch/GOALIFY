@@ -21,6 +21,17 @@ type Question = {
   allowOther?: boolean;
 };
 
+// Encouraging micro-copy that shifts as answers come in, so six questions feel
+// like quick momentum ("עוד קצת ויש לנו הכל") rather than a long form.
+function progressMessage(answered: number, total: number): string {
+  const remaining = total - answered;
+  if (answered === 0) return "כמה לחיצות מהירות ואנחנו מאבחנים";
+  if (remaining === 0) return "מושלם — יש לנו הכל ✨";
+  if (remaining === 1) return "עוד תשובה אחת וסיימנו! 🔥";
+  if (answered >= total / 2) return "עוד קצת ויש לנו כמעט הכל 🔥";
+  return "יופי, ממשיכים 💪";
+}
+
 const EMPTY_FIELDS = {
   exposureThisWeek: "",
   inquiriesThisWeek: "",
@@ -167,7 +178,9 @@ export function CheckinForm({ businessId }: { businessId: string }) {
       {/* Quick-quiz progress: makes six taps feel like fast momentum, not a form. */}
       <div className="sticky top-0 z-10 -mx-1 bg-background/80 px-1 py-2 backdrop-blur">
         <div className="mb-1.5 flex items-center justify-between text-xs text-muted">
-          <span>שאלה מהירה — כמה לחיצות ואנחנו מאבחנים</span>
+          <span key={answeredCount} className="animate-fade-in">
+            {progressMessage(answeredCount, QUESTIONS.length)}
+          </span>
           <span className="font-medium text-foreground">
             {answeredCount}/{QUESTIONS.length}
           </span>
