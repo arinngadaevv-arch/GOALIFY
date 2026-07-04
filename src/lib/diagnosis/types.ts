@@ -10,9 +10,10 @@ export type MoveChannel =
   | "NONE"
   | "OTHER";
 
-/** Step 1 - self-reported vital signs. Free-text on purpose: real answers are fuzzy
+/** Step 1 - self-reported vital signs. Collected as tapped qualitative bands
+ * (see checkin-form), stored as fuzzy Hebrew phrases: real answers are fuzzy
  * ("אני לא בודקת כל יום"), and forcing precise numbers would just invite invented
- * precision. The model works with what's actually given. */
+ * precision. The model works with what's actually given - still plain strings. */
 export interface BusinessSignals {
   exposureThisWeek: string;
   inquiriesThisWeek: string;
