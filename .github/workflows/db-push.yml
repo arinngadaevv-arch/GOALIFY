@@ -12,6 +12,6 @@ jobs:
         with:
           node-version: "20"
       - run: npm ci
-      - run: npx drizzle-kit push --force
+      - run: npx tsx scripts/migrate.ts
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
