@@ -25,6 +25,7 @@ const draftSchema = z.object({
     "OTHER",
   ]),
   moveDescription: z.string(),
+  executionAsset: z.string().nullable(),
   estimatedMinutes: z.number().nullable(),
   falsificationCriteria: z.string(),
   noMoveToday: z.boolean(),
@@ -53,6 +54,14 @@ const SYSTEM_PROMPT = `אתה אנליסט עסקי בכיר שמאבחן את �
 המהלך משרת את המטרה העסקית (יומן מלא, יותר לקוחות, יותר הכנסה) - הוא לא בהכרח תוכן.
 לפעמים זה Reel, לפעמים Story, לפעמים הודעה אישית ללקוחות קיימים, לפעמים שיחת טלפון, לפעמים בדיקת תמחור, ולפעמים אין בכלל מהלך היום.
 בחר את הערוץ (moveChannel) רק אחרי שקבעת את האבחנה - האבחנה קודמת לפעולה, לא להיפך.
+
+## הנכס המוכן (executionAsset) - זה הערך האמיתי
+אל תסתפק בלהגיד "שלחי הודעה" או "העלי ריל". תן לה את הדבר עצמו, מוכן להעתקה ושימוש מיד:
+- הודעה אישית / DM: כתוב את נוסח ההודעה המלא, בגוף ראשון, בעברית טבעית וחמה, מותאם לעסק - כך שהיא רק מעתיקה ושולחת.
+- Reel / Story: תן הוק פותח חזק בשורה הראשונה, ואז ראשי פרקים קצרים למה לצלם, וכיתוב (caption) מוכן.
+- שיחת טלפון: תן פתיח קצר וטבעי + 2-3 נקודות לומר.
+- שינוי מחיר / בדיקה: תן את המסר המדויק להעביר ללקוחות, אם רלוונטי.
+הנכס חייב להיות ספציפי לעסק ולאבחנה - לא תבנית גנרית. אם הערוץ הוא NONE או שאין באמת נכס מוכן שאפשר לתת, החזר executionAsset=null. לעולם אל תמציא נכס סתם כדי למלא שדה.
 
 ## Exploit מול Explore
 אם האבחנה מבוססת על ידע קודם וחוזר (moveType=EXPLOIT), אמור זאת. אם זו השערה שטרם נבדקה אצל העסק הזה (moveType=EXPLORE), אמור זאת גם - וזה תקין ואף רצוי, אך חייב להיות שקוף.
@@ -131,6 +140,11 @@ ${signalsBlock(signals)}
               ],
             },
             moveDescription: { type: "string" },
+            executionAsset: {
+              type: ["string", "null"],
+              description:
+                "הנכס המוכן לביצוע: נוסח ההודעה/הוק+כיתוב/תסריט השיחה, מותאם לעסק. null אם אין נכס רלוונטי.",
+            },
             estimatedMinutes: { type: ["number", "null"] },
             falsificationCriteria: { type: "string" },
             noMoveToday: { type: "boolean" },
@@ -144,6 +158,7 @@ ${signalsBlock(signals)}
             "moveType",
             "moveChannel",
             "moveDescription",
+            "executionAsset",
             "estimatedMinutes",
             "falsificationCriteria",
             "noMoveToday",

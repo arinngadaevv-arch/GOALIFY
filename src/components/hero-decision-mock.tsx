@@ -31,9 +31,15 @@ export function HeroDecisionMock() {
         </div>
       </div>
 
-      <p className="mt-3 text-xs text-muted">
-        למה זה המהלך? שלושה סימנים תומכים: פניות קיימות, סגירות אפס, יומן ריק.
-      </p>
+      <div className="mt-3.5 rounded-xl border border-neon-purple/30 bg-neon-purple/[0.06] p-3.5">
+        <p className="text-xs font-bold text-neon-purple">
+          מוכן לך - רק להעתיק ולשלוח
+        </p>
+        <p className="mt-2 text-sm leading-relaxed text-foreground/90">
+          &quot;היי מיכל! שמחתי שפנית השבוע 🙂 שמרתי לך מקום ביום שלישי ב-17:00 -
+          מתאים לך? אשמח לסגור לך תור.&quot;
+        </p>
+      </div>
     </div>
   );
 }

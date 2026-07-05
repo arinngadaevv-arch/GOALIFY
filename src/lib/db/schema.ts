@@ -272,6 +272,10 @@ export const decisions = pgTable("decision", {
   moveType: moveTypeEnum("move_type").notNull(),
   moveChannel: moveChannelEnum("move_channel").notNull(),
   moveDescription: text("move_description").notNull(),
+  // Ready-to-use asset for the move (the actual DM text / reel hook + caption /
+  // call script) so the owner can execute in one copy, not just be told what to
+  // do. Nullable: quiet days and some channels have no asset.
+  executionAsset: text("execution_asset"),
   estimatedMinutes: integer("estimated_minutes"),
 
   // Falsification criteria - written before the outcome is known.

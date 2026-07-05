@@ -34,6 +34,7 @@ const approveSchema = z.object({
     ])
     .optional(),
   moveDescription: z.string().min(1).optional(),
+  executionAsset: z.string().nullable().optional(),
   estimatedMinutes: z.number().nullable().optional(),
   falsificationCriteria: z.string().min(1).optional(),
 });

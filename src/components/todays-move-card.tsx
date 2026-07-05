@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, ChevronDown, Clock, Loader2, Target } from "lucide-react";
+import { Check, ChevronDown, Clock, Copy, Loader2, Target } from "lucide-react";
 import {
   CONFIDENCE_LABELS,
   MOVE_CHANNEL_LABELS,
@@ -27,6 +27,7 @@ interface DecisionView {
   moveType: MoveType;
   moveChannel: MoveChannel;
   moveDescription: string;
+  executionAsset: string | null;
   estimatedMinutes: number | null;
   falsificationCriteria: string;
 }
@@ -43,6 +44,18 @@ export function TodaysMoveCard({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [answered, setAnswered] = useState(initialAnswered);
+  const [copied, setCopied] = useState(false);
+
+  async function copyAsset() {
+    if (!decision.executionAsset) return;
+    try {
+      await navigator.clipboard.writeText(decision.executionAsset);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard can be blocked; silently ignore - the text is still visible.
+    }
+  }
 
   const isQuiet = decision.moveChannel === "NONE";
 
@@ -115,6 +128,36 @@ export function TodaysMoveCard({
           </span>
         </div>
       </div>
+
+      {decision.executionAsset && (
+        <div className="mt-4 rounded-xl border border-neon-purple/30 bg-neon-purple/[0.06] p-4">
+          <div className="flex items-center justify-between gap-2">
+            <p className="flex items-center gap-1.5 text-xs font-bold text-neon-purple">
+              <Check className="size-3.5" />
+              מוכן לך - רק להעתיק ולשלוח
+            </p>
+            <button
+              onClick={copyAsset}
+              className="flex items-center gap-1.5 rounded-full bg-surface-2 px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-surface"
+            >
+              {copied ? (
+                <>
+                  <Check className="size-3.5 text-emerald-400" />
+                  הועתק
+                </>
+              ) : (
+                <>
+                  <Copy className="size-3.5" />
+                  העתקה
+                </>
+              )}
+            </button>
+          </div>
+          <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
+            {decision.executionAsset}
+          </p>
+        </div>
+      )}
 
       <button
         onClick={() => setShowEvidence((s) => !s)}

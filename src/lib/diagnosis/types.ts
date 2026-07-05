@@ -39,6 +39,10 @@ export interface DiagnosisDraft {
   moveType: MoveType;
   moveChannel: MoveChannel;
   moveDescription: string;
+  /** Ready-to-use asset for the move: the actual DM text, reel hook + caption,
+   * or call script the owner can copy and use. null when the channel has no
+   * asset or on a quiet day. */
+  executionAsset: string | null;
   estimatedMinutes: number | null;
   falsificationCriteria: string;
   /** true when no real edge was found - the app must show the quiet-day message,

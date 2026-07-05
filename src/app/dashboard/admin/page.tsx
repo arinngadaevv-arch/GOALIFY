@@ -53,6 +53,7 @@ export default async function AdminPage() {
               moveType: decision.moveType,
               moveChannel: decision.moveChannel,
               moveDescription: decision.moveDescription,
+              executionAsset: decision.executionAsset,
               estimatedMinutes: decision.estimatedMinutes,
               falsificationCriteria: decision.falsificationCriteria,
             }}
