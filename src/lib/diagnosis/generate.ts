@@ -11,7 +11,7 @@ const draftSchema = z.object({
   diagnosis: z.string(),
   confidence: z.enum(["LOW", "MEDIUM", "HIGH"]),
   confidenceReasoning: z.string(),
-  evidence: z.array(z.string()).min(1),
+  evidence: z.array(z.string()), // may be [] on a genuine quiet day
   alternativesConsidered: z.array(alternativeSchema), // [] is valid
   moveType: z.enum(["EXPLOIT", "EXPLORE"]),
   moveChannel: z.enum([

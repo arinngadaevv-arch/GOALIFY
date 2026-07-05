@@ -5,7 +5,11 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { businesses, decisions, outcomes } from "@/lib/db/schema";
 import { generateDiagnosisDraft } from "@/lib/diagnosis/generate";
+import { diagnosisErrorMessage } from "@/lib/diagnosis/errors";
 import { getClientIp, rateLimit, retryAfterSeconds } from "@/lib/rate-limit";
+
+// A Claude call with tool use can take a while; give it room past the default.
+export const maxDuration = 60;
 
 const signalsSchema = z.object({
   exposureThisWeek: z.string().min(1).max(300),
@@ -108,8 +112,8 @@ export async function POST(
   } catch (error) {
     console.error("[/api/businesses/[id]/checkin] failed", error);
     return NextResponse.json(
-      { error: "יצירת האבחון נכשלה. נסו שוב בעוד רגע." },
-      { status: 500 }
+      { error: diagnosisErrorMessage(error) },
+      { status: 502 }
     );
   }
 }
