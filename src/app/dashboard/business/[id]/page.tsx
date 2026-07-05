@@ -7,6 +7,7 @@ import { businesses, decisions, outcomes } from "@/lib/db/schema";
 import { CheckinForm } from "@/components/checkin-form";
 import { TodaysMoveCard } from "@/components/todays-move-card";
 import { FollowupPrompt } from "@/components/followup-prompt";
+import { BusinessHeader } from "@/components/business-header";
 import { MOVE_CHANNEL_LABELS } from "@/lib/diagnosis/types";
 
 const FOLLOWUP_WINDOW_HOURS = 48;
@@ -75,10 +76,21 @@ export default async function BusinessPage({
     return !!outcome?.followupAnsweredAt;
   });
 
+  const movesSent = allDecisions.filter((d) => d.status === "SENT").length;
+  const executed = allOutcomes.filter((o) => o.didExecute === true).length;
+
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-extrabold">{business.name}</h1>
-      <p className="mt-1 text-sm text-muted">{business.niche}</p>
+      <BusinessHeader
+        name={business.name}
+        niche={business.niche}
+        ownerName={session?.user?.name ?? null}
+        stats={{
+          movesSent,
+          executed,
+          loopsClosed: historyDecisions.length,
+        }}
+      />
 
       <div className="mt-8">
         {noActiveDecision && (
