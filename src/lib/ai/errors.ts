@@ -18,7 +18,13 @@ export function diagnosisErrorMessage(
   }
 
   const status = (error as { status?: number } | undefined)?.status;
+  const message = error instanceof Error ? error.message : "";
 
+  // Anthropic returns this as a 400 invalid_request_error, not 401/403/429 -
+  // it's a billing state (no credit), not an auth or rate-limit problem.
+  if (status === 400 && /credit balance/i.test(message)) {
+    return "אין מספיק יתרת קרדיט בחשבון ה-AI. יש להוסיף אמצעי תשלום/קרדיט בחשבון Anthropic (Plans & Billing).";
+  }
   if (status === 401 || status === 403) {
     return "מפתח ה-API של ה-AI שגוי או לא פעיל. יש לעדכן אותו בהגדרות השרת.";
   }
