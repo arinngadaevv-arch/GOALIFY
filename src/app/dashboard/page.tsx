@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { desc, eq } from "drizzle-orm";
-import { Plus, Sparkles } from "lucide-react";
+import { Lock, Plus, Sparkles } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { businesses } from "@/lib/db/schema";
+import { getUserPlan } from "@/lib/usage";
+import { getPlanFeatures } from "@/lib/plan-features";
+import { nicheLabel } from "@/lib/niche";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -12,6 +15,9 @@ export default async function DashboardPage() {
     .from(businesses)
     .where(eq(businesses.userId, session!.user.id))
     .orderBy(desc(businesses.createdAt));
+
+  const features = getPlanFeatures(await getUserPlan(session!.user.id));
+  const atBusinessLimit = userBusinesses.length >= features.maxBusinesses;
 
   return (
     <div>
@@ -22,15 +28,24 @@ export default async function DashboardPage() {
             אבחון והחלטה אחת בכל פעם - לא עוד מסכי תוכן.
           </p>
         </div>
-        {userBusinesses.length > 0 && (
-          <Link
-            href="/dashboard/business/new"
-            className="flex items-center gap-2 rounded-full gradient-brand px-6 py-3 text-sm font-bold text-white shadow-lg shadow-pink-500/20 transition-transform hover:scale-105"
-          >
-            <Plus className="size-4" />
-            הוספת עסק
-          </Link>
-        )}
+        {userBusinesses.length > 0 &&
+          (atBusinessLimit ? (
+            <Link
+              href="/pricing"
+              className="flex items-center gap-2 rounded-full border border-neon-purple/50 bg-neon-purple/10 px-6 py-3 text-sm font-bold text-foreground transition-colors hover:bg-neon-purple/20"
+            >
+              <Lock className="size-4 text-neon-purple" />
+              נהלו עוד עסקים עם Pro
+            </Link>
+          ) : (
+            <Link
+              href="/dashboard/business/new"
+              className="flex items-center gap-2 rounded-full gradient-brand px-6 py-3 text-sm font-bold text-white shadow-lg shadow-pink-500/20 transition-transform hover:scale-105"
+            >
+              <Plus className="size-4" />
+              הוספת עסק
+            </Link>
+          ))}
       </div>
 
       {userBusinesses.length === 0 ? (
@@ -59,7 +74,7 @@ export default async function DashboardPage() {
               className="group hover-lift rounded-2xl border border-border bg-surface/60 p-5 hover:border-neon-purple/50"
             >
               <span className="inline-block rounded-full bg-surface-2 px-2.5 py-1 text-xs text-muted">
-                {business.niche}
+                {nicheLabel(business.niche)}
               </span>
               <h3 className="mt-3 font-bold group-hover:text-neon-purple transition-colors">
                 {business.name}

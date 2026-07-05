@@ -24,8 +24,8 @@ export default function PricingPage() {
             תוכניות <span className="gradient-text">מחיר</span>
           </h1>
           <p className="mx-auto mt-3 max-w-xl text-muted">
-            בחרו את התוכנית שמתאימה לקצב הפרסום שלכם. אפשר לשדרג או לבטל בכל
-            רגע.
+            בחרו את התוכנית שתעזור לכם להפסיק לנחש ולדעת מה באמת עובד. אפשר
+            לשדרג או לבטל בכל רגע.
           </p>
         </div>
         <div className="mt-12">
