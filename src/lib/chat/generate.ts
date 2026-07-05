@@ -1,4 +1,4 @@
-import { getAnthropicClient, CLAUDE_MODEL } from "@/lib/ai/client";
+import { generateText, type ChatTurn } from "@/lib/ai/client";
 import {
   CONFIDENCE_LABELS,
   MOVE_CHANNEL_LABELS,
@@ -69,31 +69,20 @@ export async function generateChatReply(
   history: ChatHistoryMessage[],
   userMessage: string
 ): Promise<string> {
-  const anthropic = getAnthropicClient();
+  const systemInstruction = `${SYSTEM_PROMPT}
 
-  const contextMessage = `עסק: ${business.name} (${business.niche})
+עסק: ${business.name} (${business.niche})
 
 היסטוריית האבחונים וההחלטות האמיתית של העסק הזה:
 ${decisionsBlock(decisions)}`;
 
-  const message = await anthropic.messages.create({
-    model: CLAUDE_MODEL,
-    max_tokens: 1024,
-    system: SYSTEM_PROMPT,
-    messages: [
-      { role: "user", content: contextMessage },
-      { role: "assistant", content: "הבנתי את הנתונים. מה תרצי לדעת?" },
-      ...history.map((m) => ({
-        role: m.role === "USER" ? ("user" as const) : ("assistant" as const),
-        content: m.content,
-      })),
-      { role: "user", content: userMessage },
-    ],
-  });
+  const turns: ChatTurn[] = [
+    ...history.map((m) => ({
+      role: m.role === "USER" ? ("user" as const) : ("model" as const),
+      text: m.content,
+    })),
+    { role: "user", text: userMessage },
+  ];
 
-  const textBlock = message.content.find((block) => block.type === "text");
-  if (!textBlock || textBlock.type !== "text") {
-    throw new Error("Claude did not return a text reply");
-  }
-  return textBlock.text;
+  return generateText({ systemInstruction, history: turns, maxOutputTokens: 1024 });
 }

@@ -8,7 +8,7 @@ import { generateChatReply } from "@/lib/chat/generate";
 import { diagnosisErrorMessage } from "@/lib/ai/errors";
 import { getClientIp, rateLimit, retryAfterSeconds } from "@/lib/rate-limit";
 
-// A Claude call can take a while; give it room past the default.
+// A Gemini call can take a while; give it room past the default.
 export const maxDuration = 60;
 
 const HISTORY_LIMIT = 30;
