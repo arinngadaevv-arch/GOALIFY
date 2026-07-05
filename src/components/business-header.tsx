@@ -1,12 +1,5 @@
 import { TrendingUp } from "lucide-react";
-
-const NICHE_LABELS: Record<string, string> = {
-  cosmetology: "קוסמטיקה ואסתטיקה",
-};
-
-function nicheLabel(niche: string): string {
-  return NICHE_LABELS[niche] ?? niche;
-}
+import { nicheLabel } from "@/lib/niche";
 
 function firstName(name: string | null | undefined): string | null {
   if (!name) return null;

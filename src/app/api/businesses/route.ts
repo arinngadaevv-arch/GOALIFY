@@ -4,6 +4,8 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { businesses } from "@/lib/db/schema";
+import { getUserPlan } from "@/lib/usage";
+import { getPlanFeatures } from "@/lib/plan-features";
 
 const createSchema = z.object({
   name: z.string().min(2).max(120),
@@ -50,6 +52,23 @@ export async function POST(req: Request) {
   }
 
   try {
+    // Plan gate: Free manages one business; Pro/Business manage more.
+    const features = getPlanFeatures(await getUserPlan(session.user.id));
+    const existing = await db
+      .select({ id: businesses.id })
+      .from(businesses)
+      .where(eq(businesses.userId, session.user.id));
+    if (existing.length >= features.maxBusinesses) {
+      return NextResponse.json(
+        {
+          error:
+            "בתוכנית החינמית אפשר לנהל עסק אחד. שדרגו ל-Pro כדי לנהל כמה עסקים ומותגים.",
+          upgrade: true,
+        },
+        { status: 403 }
+      );
+    }
+
     const [business] = await db
       .insert(businesses)
       .values({

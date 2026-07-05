@@ -8,6 +8,10 @@ import { CheckinForm } from "@/components/checkin-form";
 import { TodaysMoveCard } from "@/components/todays-move-card";
 import { FollowupPrompt } from "@/components/followup-prompt";
 import { BusinessHeader } from "@/components/business-header";
+import { InsightsCard } from "@/components/insights-card";
+import { computeInsights } from "@/lib/diagnosis/insights";
+import { getUserPlan } from "@/lib/usage";
+import { getPlanFeatures } from "@/lib/plan-features";
 import { MOVE_CHANNEL_LABELS } from "@/lib/diagnosis/types";
 
 const FOLLOWUP_WINDOW_HOURS = 48;
@@ -78,6 +82,9 @@ export default async function BusinessPage({
 
   const movesSent = allDecisions.filter((d) => d.status === "SENT").length;
   const executed = allOutcomes.filter((o) => o.didExecute === true).length;
+
+  const planFeatures = getPlanFeatures(await getUserPlan(session!.user.id));
+  const insights = computeInsights(allDecisions, allOutcomes);
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -155,8 +162,12 @@ export default async function BusinessPage({
         )}
       </div>
 
+      <section className="mt-10">
+        <InsightsCard unlocked={planFeatures.insights} insights={insights} />
+      </section>
+
       {historyDecisions.length > 0 && (
-        <section className="mt-12">
+        <section className="mt-10">
           <h2 className="text-lg font-bold">ההיסטוריה שלך</h2>
           <div className="mt-4 space-y-3">
             {historyDecisions.map((d) => {
