@@ -86,6 +86,14 @@ export default function Home() {
                 "radial-gradient(60% 60% at 30% 20%, var(--neon-pink) 0%, transparent 60%), radial-gradient(50% 50% at 70% 10%, var(--neon-blue) 0%, transparent 60%), radial-gradient(50% 50% at 50% 40%, var(--neon-purple) 0%, transparent 60%)",
             }}
           />
+          <div
+            aria-hidden
+            className="animate-float-slow pointer-events-none absolute -right-10 top-10 -z-10 size-72 rounded-full bg-neon-pink/20 blur-3xl"
+          />
+          <div
+            aria-hidden
+            className="animate-float-slower pointer-events-none absolute -left-16 top-40 -z-10 size-80 rounded-full bg-neon-blue/15 blur-3xl"
+          />
           <div className="mx-auto max-w-4xl text-center animate-fade-in-up">
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-1.5 text-xs font-medium text-muted">
               <span className="size-1.5 rounded-full gradient-brand" />
