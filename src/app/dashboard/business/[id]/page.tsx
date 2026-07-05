@@ -9,6 +9,7 @@ import { TodaysMoveCard } from "@/components/todays-move-card";
 import { FollowupPrompt } from "@/components/followup-prompt";
 import { BusinessHeader } from "@/components/business-header";
 import { InsightsCard } from "@/components/insights-card";
+import { BusinessChat } from "@/components/business-chat";
 import { computeInsights } from "@/lib/diagnosis/insights";
 import { getUserPlan } from "@/lib/usage";
 import { getPlanFeatures } from "@/lib/plan-features";
@@ -171,6 +172,10 @@ export default async function BusinessPage({
 
       <section className="mt-10 animate-fade-in-up delay-2">
         <InsightsCard unlocked={planFeatures.insights} insights={insights} />
+      </section>
+
+      <section className="mt-6 animate-fade-in-up delay-3">
+        <BusinessChat businessId={business.id} />
       </section>
 
       {historyDecisions.length > 0 && (

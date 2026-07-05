@@ -6,7 +6,10 @@ import { z } from "zod";
  * (and we) should see *why* - bad key, wrong model, quota - not an opaque
  * "try again". The Anthropic SDK throws errors carrying a numeric `.status`.
  */
-export function diagnosisErrorMessage(error: unknown): string {
+export function diagnosisErrorMessage(
+  error: unknown,
+  fallback = "יצירת האבחון נכשלה. נסו שוב בעוד רגע."
+): string {
   if (
     error instanceof Error &&
     error.message.includes("ANTHROPIC_API_KEY is not set")
@@ -32,5 +35,5 @@ export function diagnosisErrorMessage(error: unknown): string {
     return "התקבלה תשובה לא צפויה מה-AI. נסו שוב בעוד רגע.";
   }
 
-  return "יצירת האבחון נכשלה. נסו שוב בעוד רגע.";
+  return fallback;
 }

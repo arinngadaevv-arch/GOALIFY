@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { businesses, decisions, outcomes } from "@/lib/db/schema";
 import { generateDiagnosisDraft } from "@/lib/diagnosis/generate";
-import { diagnosisErrorMessage } from "@/lib/diagnosis/errors";
+import { diagnosisErrorMessage } from "@/lib/ai/errors";
 import { getClientIp, rateLimit, retryAfterSeconds } from "@/lib/rate-limit";
 
 // A Claude call with tool use can take a while; give it room past the default.

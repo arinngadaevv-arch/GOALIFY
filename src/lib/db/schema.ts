@@ -57,6 +57,8 @@ export const executionTimeEnum = pgEnum("execution_time", [
   "TEN_TO_30",
   "OVER_30",
 ]);
+export const chatRoleEnum = pgEnum("chat_role", ["USER", "ASSISTANT"]);
+
 export const outcomeResultEnum = pgEnum("outcome_result", [
   "MORE_VIEWS",
   "MORE_MESSAGES",
@@ -312,9 +314,34 @@ export const outcomes = pgTable("outcome", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+/**
+ * Live chat between the business owner and the AI assistant, grounded only in
+ * her own real signals/decisions/outcomes - the assistant explains existing
+ * data, it never improvises new business advice (see lib/chat/generate.ts).
+ */
+export const chatMessages = pgTable("chat_message", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  businessId: text("business_id")
+    .notNull()
+    .references(() => businesses.id, { onDelete: "cascade" }),
+  role: chatRoleEnum("role").notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const businessesRelations = relations(businesses, ({ one, many }) => ({
   user: one(users, { fields: [businesses.userId], references: [users.id] }),
   decisions: many(decisions),
+  chatMessages: many(chatMessages),
+}));
+
+export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
+  business: one(businesses, {
+    fields: [chatMessages.businessId],
+    references: [businesses.id],
+  }),
 }));
 
 export const decisionsRelations = relations(decisions, ({ one }) => ({
