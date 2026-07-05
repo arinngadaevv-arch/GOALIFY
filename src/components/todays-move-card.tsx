@@ -2,13 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ChevronDown,
-  Clock,
-  Loader2,
-  Sparkles,
-  Target,
-} from "lucide-react";
+import { Check, ChevronDown, Clock, Loader2, Target } from "lucide-react";
 import {
   CONFIDENCE_LABELS,
   MOVE_CHANNEL_LABELS,
@@ -205,7 +199,7 @@ export function TodaysMoveCard({
         </div>
       ) : (
         <p className="mt-5 flex items-center gap-1.5 border-t border-border pt-4 text-sm text-emerald-400">
-          <Sparkles className="size-4" />
+          <Check className="size-4" />
           תודה! נחזור לשאול בעוד יומיים מה קרה.
         </p>
       )}
