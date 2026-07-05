@@ -137,7 +137,7 @@ export default async function DashboardPage() {
                 href={`/dashboard/business/${business.id}`}
                 className={`group hover-lift relative overflow-hidden rounded-2xl border p-5 transition-colors ${
                   waiting
-                    ? "gradient-border glow-pink bg-surface"
+                    ? "gradient-border glow-pink animate-glow-pulse bg-surface"
                     : "border-border bg-surface/60 hover:border-neon-purple/50"
                 }`}
               >

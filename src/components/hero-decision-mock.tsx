@@ -7,7 +7,7 @@ import { Target } from "lucide-react";
  */
 export function HeroDecisionMock() {
   return (
-    <div className="gradient-border glow-pink mx-auto max-w-md rounded-2xl bg-surface p-5 text-right shadow-2xl">
+    <div className="gradient-border glow-pink animate-glow-pulse sheen animate-materialize mx-auto max-w-md rounded-2xl bg-surface p-5 text-right shadow-2xl">
       <div className="flex items-center gap-2 text-xs font-bold text-neon-pink">
         <Target className="size-3.5" />
         המהלך של היום

@@ -97,17 +97,17 @@ export function TodaysMoveCard({
   }
 
   return (
-    <div className="gradient-border glow-pink rounded-2xl bg-surface p-6">
+    <div className="gradient-border glow-pink animate-materialize rounded-2xl bg-surface p-6">
       <div className="flex items-center gap-2 text-xs font-bold text-neon-pink">
         <Target className="size-3.5" />
         המהלך של היום
       </div>
 
-      <p className="mt-3 text-sm leading-relaxed text-muted">
+      <p className="mt-3 animate-fade-in-up delay-1 text-sm leading-relaxed text-muted">
         {decision.diagnosis}
       </p>
 
-      <div className="mt-4 rounded-xl bg-surface-2 p-4">
+      <div className="mt-4 animate-fade-in-up delay-2 rounded-xl bg-surface-2 p-4">
         <p className="text-sm font-medium leading-relaxed">
           {decision.moveDescription}
         </p>
@@ -130,7 +130,7 @@ export function TodaysMoveCard({
       </div>
 
       {decision.executionAsset && (
-        <div className="mt-4 rounded-xl border border-neon-purple/30 bg-neon-purple/[0.06] p-4">
+        <div className="sheen mt-4 animate-fade-in-up delay-3 rounded-xl border border-neon-purple/30 bg-neon-purple/[0.06] p-4">
           <div className="flex items-center justify-between gap-2">
             <p className="flex items-center gap-1.5 text-xs font-bold text-neon-purple">
               <Check className="size-3.5" />
@@ -142,7 +142,7 @@ export function TodaysMoveCard({
             >
               {copied ? (
                 <>
-                  <Check className="size-3.5 text-emerald-400" />
+                  <Check key="copied" className="size-3.5 animate-pop text-emerald-400" />
                   הועתק
                 </>
               ) : (
