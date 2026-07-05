@@ -103,6 +103,7 @@ export async function POST(
         moveType: draft.moveType,
         moveChannel: draft.noMoveToday ? "NONE" : draft.moveChannel,
         moveDescription: draft.moveDescription,
+        executionAsset: draft.noMoveToday ? null : draft.executionAsset,
         estimatedMinutes: draft.estimatedMinutes,
         falsificationCriteria: draft.falsificationCriteria,
       })

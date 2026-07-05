@@ -146,6 +146,7 @@ export default async function BusinessPage({
                 moveType: current.moveType,
                 moveChannel: current.moveChannel,
                 moveDescription: current.moveDescription,
+                executionAsset: current.executionAsset,
                 estimatedMinutes: current.estimatedMinutes,
                 falsificationCriteria: current.falsificationCriteria,
               }}

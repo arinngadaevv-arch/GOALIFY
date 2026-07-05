@@ -29,6 +29,13 @@
       "when": 1783100110688,
       "tag": "0003_open_champions",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1783240573874,
+      "tag": "0004_first_bucky",
+      "breakpoints": true
     }
   ]
 }

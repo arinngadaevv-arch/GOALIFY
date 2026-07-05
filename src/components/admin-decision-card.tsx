@@ -21,6 +21,7 @@ interface DraftDecision {
   moveType: MoveType;
   moveChannel: MoveChannel;
   moveDescription: string;
+  executionAsset: string | null;
   estimatedMinutes: number | null;
   falsificationCriteria: string;
 }
@@ -40,6 +41,7 @@ export function AdminDecisionCard({
     moveType: draft.moveType,
     moveChannel: draft.moveChannel,
     moveDescription: draft.moveDescription,
+    executionAsset: draft.executionAsset ?? "",
     estimatedMinutes: draft.estimatedMinutes,
     falsificationCriteria: draft.falsificationCriteria,
   });
@@ -169,6 +171,20 @@ export function AdminDecisionCard({
         }
         rows={3}
         className="mt-1 w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-neon-purple"
+      />
+
+      <label className="mt-3 flex items-center gap-1.5 text-xs text-muted">
+        <span className="font-semibold text-neon-purple">הנכס המוכן</span>
+        <span>(ההודעה/תסריט שהלקוחה תעתיק - ערכו לפני שליחה)</span>
+      </label>
+      <textarea
+        value={fields.executionAsset}
+        onChange={(e) =>
+          setFields((f) => ({ ...f, executionAsset: e.target.value }))
+        }
+        rows={5}
+        placeholder="נוסח ההודעה / הוק + כיתוב / תסריט השיחה"
+        className="mt-1 w-full resize-y rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-neon-purple"
       />
 
       <label className="mt-3 block text-xs text-muted">קריטריון הפרכה</label>
