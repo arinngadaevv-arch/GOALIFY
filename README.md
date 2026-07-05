@@ -1,13 +1,13 @@
 # TrendSpark AI 📊
 
 מחולל תוכן AI לרשתות חברתיות לעסקים קטנים - הופכים בעלי עסקים ליוצרי תוכן
-ויראלי לטיקטוק ואינסטגרם תוך שניות, באמצעות Claude AI, עם מערכת מנויים
+ויראלי לטיקטוק ואינסטגרם תוך שניות, באמצעות Google Gemini, עם מערכת מנויים
 מלאה מבוססת Stripe.
 
 ## מה המוצר עושה
 
 1. **טופס עסק קצר** - סוג העסק, תיאור, קהל יעד, סגנון כתיבה ופלטפורמה.
-2. **מחולל תוכן AI** - Claude מפיק 5 רעיונות ויראליים, 3 תסריטים מלאים
+2. **מחולל תוכן AI** - Gemini מפיק 5 רעיונות ויראליים, 3 תסריטים מלאים
    (הוק, תסריט, פירוק צילום, כיתוב, האשטגים, CTA), עם **ציון ויראליות (1-100)**
    והסבר לכל רעיון.
 3. **מתכנן תוכן שבועי** - תוכנית ל-7 ימים עם רעיון, סוג תוכן ומטרה לכל יום.
@@ -24,7 +24,7 @@
 | Backend | Next.js API Routes |
 | Database | PostgreSQL (מומלץ Supabase/Neon/Vercel Postgres) + Drizzle ORM |
 | אימות | NextAuth v5 (Credentials + Google אופציונלי) |
-| AI | Anthropic Claude API (structured output דרך tool-use) |
+| AI | Google Gemini API (structured JSON output) |
 | תשלומים | Stripe Checkout + Billing Portal + Webhooks |
 | PDF export | html2canvas + jsPDF (רינדור בדפדפן, כולל תמיכה מלאה בעברית ו-RTL) |
 | Hosting | Vercel (מומלץ - ראו מדריך פריסה למטה) |
@@ -97,8 +97,8 @@ stripe listen --forward-to localhost:3000/api/stripe/webhook
 | `NEXTAUTH_URL` | חובה | כתובת האתר (זהה לכתובת שהאתר רץ עליה) |
 | `NEXTAUTH_SECRET` | חובה | מפתח אקראי - `openssl rand -hex 32` |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | אופציונלי | התחברות עם Google |
-| `ANTHROPIC_API_KEY` | חובה למחולל התוכן | מפתח מ-[console.anthropic.com](https://console.anthropic.com) |
-| `ANTHROPIC_MODEL` | אופציונלי | ברירת מחדל `claude-sonnet-5` |
+| `GEMINI_API_KEY` | חובה למחולל התוכן | מפתח מ-[aistudio.google.com/apikey](https://aistudio.google.com/apikey), עם חיוב (billing) פעיל |
+| `GEMINI_MODEL` | אופציונלי | ברירת מחדל `gemini-2.5-flash` |
 | `STRIPE_SECRET_KEY` | חובה לתשלומים | מפתח סודי מ-Stripe Dashboard |
 | `STRIPE_WEBHOOK_SECRET` | חובה לתשלומים | סוד האימות של ה-Webhook |
 | `STRIPE_PRICE_ID_PRO` | חובה לתשלומים | Price ID (לא Product ID!) של מסלול פרו |
@@ -133,15 +133,15 @@ src/
     api/
       auth/[...nextauth]/     # NextAuth handlers
       auth/register/          # הרשמה
-      generate/                # POST - יצירת חבילת תוכן (Claude)
-      plan/                    # POST - יצירת תוכנית שבועית (Claude)
+      generate/                # POST - יצירת חבילת תוכן (Gemini)
+      plan/                    # POST - יצירת תוכנית שבועית (Gemini)
       projects/                # GET - רשימת/פרטי פרויקטים
       stripe/checkout/         # POST - יצירת Stripe Checkout Session
       stripe/portal/           # POST - יצירת Billing Portal Session
       stripe/webhook/          # POST - קליטת אירועי Stripe (ציבורי, מאומת בחתימה)
   components/                 # רכיבי UI (כולל CheckoutStatusBanner, SubscriptionActions)
   lib/
-    ai/                       # קליינט Claude + פרומפטים + סכמות zod
+    ai/                       # קליינט Gemini + פרומפטים + סכמות zod
     db/                       # סכמת Drizzle + חיבור DB
     stripe/                   # קליינט Stripe + מיפוי price ↔ plan
     auth.ts                   # תצורת NextAuth
@@ -202,7 +202,7 @@ vercel.json                   # תצורת פריסה ל-Vercel (אזור, כו�
    Variables) - ראו טבלה בסעיף 2 למעלה. לפחות: `DATABASE_URL`,
    `NEXTAUTH_URL` (יהיה כתובת ה-Vercel הזמנית שתקבלו, למשל
    `https://trendspark-ai.vercel.app`, ותעדכנו שוב אחרי חיבור דומיין),
-   `NEXTAUTH_SECRET`, `ANTHROPIC_API_KEY`.
+   `NEXTAUTH_SECRET`, `GEMINI_API_KEY`.
 5. לחצו **Deploy**. תקבלו כתובת ציבורית זמנית כמו
    `https://trendspark-ai-xxxx.vercel.app`.
 

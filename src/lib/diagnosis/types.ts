@@ -28,7 +28,7 @@ export interface AlternativeConsidered {
   whyRejected: string;
 }
 
-/** A Draft produced by Claude - never shown to the business owner until a human
+/** A Draft produced by the AI - never shown to the business owner until a human
  * approves it (see decisions.status: DRAFT -> APPROVED -> SENT). */
 export interface DiagnosisDraft {
   diagnosis: string;

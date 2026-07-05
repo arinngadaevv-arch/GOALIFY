@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { getAnthropicClient, CLAUDE_MODEL } from "@/lib/ai/client";
+import { generateStructuredJson } from "@/lib/ai/client";
 import type { BusinessSignals, DiagnosisDraft } from "./types";
 
 const alternativeSchema = z.object({
@@ -79,100 +79,84 @@ falsificationCriteria חייב להיות כתוב מראש, לפני שידוע
 ## יום שקט
 אם באמת אין לך אבחנה אמינה מהנתונים שסופקו - החזר noMoveToday=true עם הסבר קצר ב-diagnosis למה, ושאר השדות יכולים להיות מינימליים. אל תמציא מהלך רק כדי "שיהיה תוכן".
 
-תמיד השב בעברית, ותמיד השתמש בכלי שסופק כדי להחזיר JSON מובנה.`;
+תמיד השב בעברית, ותמיד החזר JSON מובנה בדיוק לפי הסכמה שסופקה.`;
+
+const DRAFT_JSON_SCHEMA = {
+  type: "object",
+  properties: {
+    diagnosis: { type: "string" },
+    confidence: { type: "string", enum: ["LOW", "MEDIUM", "HIGH"] },
+    confidenceReasoning: { type: "string" },
+    evidence: { type: "array", items: { type: "string" } },
+    alternativesConsidered: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          hypothesis: { type: "string" },
+          whyRejected: { type: "string" },
+        },
+        required: ["hypothesis", "whyRejected"],
+      },
+    },
+    moveType: { type: "string", enum: ["EXPLOIT", "EXPLORE"] },
+    moveChannel: {
+      type: "string",
+      enum: [
+        "REEL",
+        "STORY",
+        "DM_OUTREACH",
+        "CALL",
+        "PRICE_CHANGE",
+        "REPLY_TO_COMMENTS",
+        "NONE",
+        "OTHER",
+      ],
+    },
+    moveDescription: { type: "string" },
+    executionAsset: {
+      anyOf: [{ type: "string" }, { type: "null" }],
+      description:
+        "הנכס המוכן לביצוע: נוסח ההודעה/הוק+כיתוב/תסריט השיחה, מותאם לעסק. null אם אין נכס רלוונטי.",
+    },
+    estimatedMinutes: { anyOf: [{ type: "number" }, { type: "null" }] },
+    falsificationCriteria: { type: "string" },
+    noMoveToday: { type: "boolean" },
+  },
+  required: [
+    "diagnosis",
+    "confidence",
+    "confidenceReasoning",
+    "evidence",
+    "alternativesConsidered",
+    "moveType",
+    "moveChannel",
+    "moveDescription",
+    "executionAsset",
+    "estimatedMinutes",
+    "falsificationCriteria",
+    "noMoveToday",
+  ],
+};
 
 export async function generateDiagnosisDraft(
   signals: BusinessSignals,
   businessContext: { name: string; niche: string; reachNotes: string | null }
 ): Promise<DiagnosisDraft> {
-  const anthropic = getAnthropicClient();
-
-  const message = await anthropic.messages.create({
-    model: CLAUDE_MODEL,
-    max_tokens: 4000,
-    system: SYSTEM_PROMPT,
-    messages: [
-      {
-        role: "user",
-        content: `עסק: ${businessContext.name} (${businessContext.niche})
+  const prompt = `עסק: ${businessContext.name} (${businessContext.niche})
 דרכי יצירת קשר עם לקוחות קיימים: ${businessContext.reachNotes || "לא ידוע - ציין זאת אם המהלך דורש זאת"}
 
 סימנים חיוניים השבוע:
 ${signalsBlock(signals)}
 
-אבחן את צוואר הבקבוק והפק Decision Draft מלא.`,
-      },
-    ],
-    tools: [
-      {
-        name: "submit_decision_draft",
-        description: "מגיש טיוטת החלטה מובנית (Diagnosis + Move + Confidence + Falsification)",
-        input_schema: {
-          type: "object",
-          properties: {
-            diagnosis: { type: "string" },
-            confidence: { type: "string", enum: ["LOW", "MEDIUM", "HIGH"] },
-            confidenceReasoning: { type: "string" },
-            evidence: { type: "array", items: { type: "string" } },
-            alternativesConsidered: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  hypothesis: { type: "string" },
-                  whyRejected: { type: "string" },
-                },
-                required: ["hypothesis", "whyRejected"],
-              },
-            },
-            moveType: { type: "string", enum: ["EXPLOIT", "EXPLORE"] },
-            moveChannel: {
-              type: "string",
-              enum: [
-                "REEL",
-                "STORY",
-                "DM_OUTREACH",
-                "CALL",
-                "PRICE_CHANGE",
-                "REPLY_TO_COMMENTS",
-                "NONE",
-                "OTHER",
-              ],
-            },
-            moveDescription: { type: "string" },
-            executionAsset: {
-              type: ["string", "null"],
-              description:
-                "הנכס המוכן לביצוע: נוסח ההודעה/הוק+כיתוב/תסריט השיחה, מותאם לעסק. null אם אין נכס רלוונטי.",
-            },
-            estimatedMinutes: { type: ["number", "null"] },
-            falsificationCriteria: { type: "string" },
-            noMoveToday: { type: "boolean" },
-          },
-          required: [
-            "diagnosis",
-            "confidence",
-            "confidenceReasoning",
-            "evidence",
-            "alternativesConsidered",
-            "moveType",
-            "moveChannel",
-            "moveDescription",
-            "executionAsset",
-            "estimatedMinutes",
-            "falsificationCriteria",
-            "noMoveToday",
-          ],
-        },
-      },
-    ],
-    tool_choice: { type: "tool", name: "submit_decision_draft" },
+אבחן את צוואר הבקבוק והפק Decision Draft מלא.`;
+
+  const parsed = await generateStructuredJson({
+    systemInstruction: SYSTEM_PROMPT,
+    prompt,
+    jsonSchema: DRAFT_JSON_SCHEMA,
+    maxOutputTokens: 4000,
   });
 
-  const toolUse = message.content.find((block) => block.type === "tool_use");
-  if (!toolUse || toolUse.type !== "tool_use") {
-    throw new Error("Claude did not return a structured decision draft");
-  }
-
-  return draftSchema.parse(toolUse.input);
+  return draftSchema.parse(parsed);
 }

@@ -97,7 +97,7 @@ export default function Home() {
           <div className="mx-auto max-w-4xl text-center animate-fade-in-up">
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-1.5 text-xs font-medium text-muted">
               <span className="size-1.5 rounded-full gradient-brand" />
-              נבנה עם Claude AI, מאושר בידי אדם לפני שהוא מגיע אליכם
+              נבנה עם Google Gemini, מאושר בידי אדם לפני שהוא מגיע אליכם
             </span>
             <h1 className="mt-6 text-4xl font-extrabold leading-tight sm:text-6xl">
               אנחנו לא עוזרים לכם
