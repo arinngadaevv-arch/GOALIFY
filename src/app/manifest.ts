@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "TrendSpark AI",
     short_name: "TrendSpark",
     description:
-      "מחולל תוכן ויראלי AI לטיקטוק ואינסטגרם לעסקים קטנים",
+      "מערכת קבלת החלטות לעסקים קטנים - מהלך אחד ברור בכל שבוע, עם ביטחון כנה",
     start_url: "/dashboard",
     display: "standalone",
     background_color: "#0a0a12",

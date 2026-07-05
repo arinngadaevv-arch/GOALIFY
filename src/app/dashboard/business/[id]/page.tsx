@@ -88,18 +88,20 @@ export default async function BusinessPage({
 
   return (
     <div className="mx-auto max-w-2xl">
-      <BusinessHeader
-        name={business.name}
-        niche={business.niche}
-        ownerName={session?.user?.name ?? null}
-        stats={{
-          movesSent,
-          executed,
-          loopsClosed: historyDecisions.length,
-        }}
-      />
+      <div className="animate-fade-in-up">
+        <BusinessHeader
+          name={business.name}
+          niche={business.niche}
+          ownerName={session?.user?.name ?? null}
+          stats={{
+            movesSent,
+            executed,
+            loopsClosed: historyDecisions.length,
+          }}
+        />
+      </div>
 
-      <div className="mt-8">
+      <div className="mt-8 animate-fade-in-up delay-1">
         {noActiveDecision && (
           <div className="rounded-2xl border border-border bg-surface/60 p-6 sm:p-8">
             <h2 className="text-lg font-bold">מה קורה השבוע?</h2>
@@ -114,10 +116,14 @@ export default async function BusinessPage({
 
         {current && current.status === "DRAFT" && (
           <div className="rounded-2xl border border-dashed border-border p-6 text-center">
-            <p className="text-sm text-muted">
-              קיבלנו את הנתונים - האבחון נמצא כרגע בבדיקה.
+            <p className="flex items-center justify-center gap-1.5 text-sm font-medium">
+              <span className="relative flex size-1.5">
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-neon-purple opacity-75" />
+                <span className="relative inline-flex size-1.5 rounded-full bg-neon-purple" />
+              </span>
+              קיבלנו את הנתונים - האבחון נמצא כרגע בבדיקה
             </p>
-            <p className="mt-1 flex items-center justify-center gap-1.5 text-xs text-muted">
+            <p className="mt-1.5 flex items-center justify-center gap-1.5 text-xs text-muted">
               <Clock className="size-3.5" />
               נחזור אליך בקרוב עם מהלך ברור.
             </p>
@@ -162,12 +168,12 @@ export default async function BusinessPage({
         )}
       </div>
 
-      <section className="mt-10">
+      <section className="mt-10 animate-fade-in-up delay-2">
         <InsightsCard unlocked={planFeatures.insights} insights={insights} />
       </section>
 
       {historyDecisions.length > 0 && (
-        <section className="mt-10">
+        <section className="mt-10 animate-fade-in-up delay-3">
           <h2 className="text-lg font-bold">ההיסטוריה שלך</h2>
           <div className="mt-4 space-y-3">
             {historyDecisions.map((d) => {

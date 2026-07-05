@@ -1,70 +1,74 @@
 import Link from "next/link";
 import {
   ArrowLeft,
-  Wand2,
-  CalendarDays,
-  Gauge,
-  Download,
-  Copy,
-  Clapperboard,
+  Compass,
+  Eye,
+  ShieldCheck,
+  Target,
+  TrendingUp,
+  UserCheck,
 } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { PricingCards } from "@/components/pricing-cards";
+import { HeroDecisionMock } from "@/components/hero-decision-mock";
 
 const FEATURES = [
   {
-    icon: Wand2,
-    title: "מחולל תוכן AI חכם",
+    icon: Target,
+    title: "מהלך אחד ברור, לא הצפה",
     description:
-      "5 רעיונות ויראליים, 3 תסריטים מלאים, הוקים, כיתובים והאשטגים - הכל מותאם אישית לעסק שלכם תוך שניות.",
+      "לא עוד רשימת רעיונות אינסופית. בכל צ׳ק-אין אנחנו מזהים את צוואר הבקבוק האחד שהכי מעכב אתכם, ונותנים דבר אחד ברור לעשות עכשיו.",
   },
   {
-    icon: Gauge,
-    title: "ציון ויראליות לכל רעיון",
+    icon: ShieldCheck,
+    title: "ביטחון אמיתי, לא מומצא",
     description:
-      "כל רעיון מקבל ציון 1-100 עם הסבר קצר וממוקד למה הוא עשוי לעבוד - כדי שתדעו על מה להתמקד קודם.",
+      "אין כאן אחוזים מפוברקים. כל אבחנה מגיעה עם רמת ביטחון כנה - נמוך, בינוני או גבוה - ונימוק אמיתי למה בדיוק.",
   },
   {
-    icon: CalendarDays,
-    title: "מתכנן תוכן שבועי",
+    icon: Eye,
+    title: "שקיפות מלאה על החשיבה",
     description:
-      "תוכנית מלאה ל-7 ימים עם רעיון, סוג תוכן ומטרה לכל יום - כדי שלעולם לא תשארו בלי מה לפרסם.",
+      "רואים בדיוק אילו חלופות נשקלו ונפסלו, ומה קריטריון ההפרכה - איך נדע אם טעינו - עוד לפני שהתוצאה ידועה.",
   },
   {
-    icon: Clapperboard,
-    title: "פירוק צילום שלב-אחר-שלב",
+    icon: UserCheck,
+    title: "אדם בודק לפני שמגיע אליכם",
     description:
-      "בדיוק מה לצלם, איך ובאיזה סדר - גם אם מעולם לא צילמתם תוכן לרשתות חברתיות.",
+      "כל אבחון עובר בדיקת אדם לפני שהוא נשלח. עוד לא הרווחנו את הזכות להפוך את זה לאוטומטי לגמרי - ואתם לא צריכים לשלם על הטעויות שבדרך.",
   },
   {
-    icon: Copy,
-    title: "כיתובים והאשטגים מוכנים",
+    icon: TrendingUp,
+    title: "לומדים מה עובד אצלכם",
     description:
-      "קאפשן שמותאם למקסימום אנגייג'מנט, יחד עם האשטגים רלוונטיים וטרנדיים לפלטפורמה שבחרתם.",
+      "כל מהלך שנשלח נבדק מול המציאות. עם הזמן אנחנו מזהים את הערוץ החזק שלכם ואת הדפוסים שבאמת מביאים תוצאה - ולא מנחשים שוב.",
   },
   {
-    icon: Download,
-    title: "ייצוא ושמירה",
+    icon: Compass,
+    title: "Exploit או Explore - בגלוי",
     description:
-      "העתיקו בלחיצה, הורידו כ-PDF, ושמרו את כל הפרויקטים שלכם בדשבורד אחד מסודר.",
+      "לפעמים ממליצים על מה שכבר הוכיח את עצמו אצלכם, ולפעמים בודקים השערה חדשה. תמיד תדעו איזה מהשניים, ולמה.",
   },
 ];
 
 const STEPS = [
   {
     step: "1",
-    title: "ספרו לנו על העסק",
-    description: "סוג העסק, קהל היעד, סגנון הכתיבה והפלטפורמה - דקה אחת בלבד.",
+    title: "כמה בחירות מהירות",
+    description:
+      "לא טפסים ארוכים. שש שאלות קצרות על השבוע שלכם - חשיפה, פניות, סגירות, יומן.",
   },
   {
     step: "2",
-    title: "קבלו חבילת תוכן מלאה",
-    description: "רעיונות, תסריטים, הוקים, כיתובים והאשטגים - מוכן להעלאה.",
+    title: "אבחון + מהלך אחד",
+    description:
+      "אנחנו מזהים את החוליה השבורה בשרשרת, ונותנים מהלך אחד קונקרטי - עם ביטחון כנה ושקיפות מלאה.",
   },
   {
     step: "3",
-    title: "צלמו, פרסמו, תצמחו",
-    description: "עקבו אחרי ציון הוויראליות ותוכנית השבוע, וצפו בעסק גדל.",
+    title: "מבצעים, ולומדים יחד",
+    description:
+      "מבצעים או לא - ומספרים לנו מה קרה. כך אנחנו נהיים מדויקים יותר בכל שבוע שעובר.",
   },
 ];
 
@@ -74,7 +78,7 @@ export default function Home() {
       <Navbar />
       <main className="flex-1">
         {/* Hero */}
-        <section className="relative overflow-hidden px-4 pb-20 pt-16 sm:px-6 sm:pt-24">
+        <section className="relative overflow-hidden px-4 pb-24 pt-16 sm:px-6 sm:pt-24">
           <div
             className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[560px] opacity-30 blur-3xl"
             style={{
@@ -85,24 +89,26 @@ export default function Home() {
           <div className="mx-auto max-w-4xl text-center animate-fade-in-up">
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-1.5 text-xs font-medium text-muted">
               <span className="size-1.5 rounded-full gradient-brand" />
-              מבוסס על Claude AI
+              נבנה עם Claude AI, מאושר בידי אדם לפני שהוא מגיע אליכם
             </span>
             <h1 className="mt-6 text-4xl font-extrabold leading-tight sm:text-6xl">
-              תוכן ויראלי לטיקטוק ואינסטגרם
+              אנחנו לא עוזרים לכם
               <br />
-              <span className="gradient-text">תוך שניות, לא שעות</span>
+              לקבל <span className="gradient-text">יותר החלטות</span>.
+              <br />
+              אנחנו עוזרים לכם <span className="gradient-text">להפסיק לנחש</span>.
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-lg text-muted">
-              TrendSpark AI הופך אתכם, בעלי עסקים קטנים, ליוצרי תוכן מקצועיים.
-              הזינו פרטים על העסק וקבלו רעיונות, תסריטים וכיתובים ויראליים
-              שמביאים לקוחות אמיתיים.
+              TrendSpark AI הוא השותף העסקי של הקוסמטיקאית והאסתטיקאית העצמאית.
+              כל שבוע אנחנו מאבחנים מה באמת מעכב את העסק שלכם, ונותנים לכם דבר
+              אחד ברור לעשות - עם ביטחון כנה, לא מומצא.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link
                 href="/sign-up"
                 className="group flex w-full items-center justify-center gap-2 rounded-full gradient-brand px-8 py-4 text-base font-bold text-white shadow-xl shadow-pink-500/25 transition-transform hover:scale-[1.03] sm:w-auto"
               >
-                צרו תוכן עכשיו - בחינם
+                תתחילו להפסיק לנחש - בחינם
                 <ArrowLeft className="size-5 transition-transform group-hover:-translate-x-1" />
               </Link>
               <Link
@@ -113,14 +119,27 @@ export default function Home() {
               </Link>
             </div>
             <p className="mt-4 text-sm text-muted">
-              בלי כרטיס אשראי · 3 יצירות חינם ביום · הקמה תוך דקה
+              בלי כרטיס אשראי · עסק אחד בחינם · הקמה תוך דקה
             </p>
+          </div>
+
+          {/* Live taste of the actual product - not an abstract mockup */}
+          <div className="relative mt-16 animate-fade-in-up delay-2">
+            <p className="mb-4 text-center text-xs font-medium text-muted">
+              ככה זה נראה כשמגיע אליכם
+            </p>
+            <HeroDecisionMock />
           </div>
         </section>
 
         {/* How it works */}
         <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="text-center">
+            <h2 className="text-3xl font-extrabold sm:text-4xl">
+              איך זה <span className="gradient-text">עובד בפועל</span>
+            </h2>
+          </div>
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
             {STEPS.map((item, i) => (
               <div
                 key={item.step}
@@ -140,12 +159,11 @@ export default function Home() {
         <section id="features" className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
           <div className="text-center">
             <h2 className="text-3xl font-extrabold sm:text-4xl">
-              כל מה שצריך כדי{" "}
-              <span className="gradient-text">להפוך לויראלי</span>
+              מערכת קבלת החלטות{" "}
+              <span className="gradient-text">לא עוד מחולל תוכן</span>
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-muted">
-              לא עוד מסך ריק. TrendSpark AI נותן לכם חבילת תוכן שלמה שאפשר
-              לצלם ולפרסם באותו יום.
+              המוצר בנוי סביב עיקרון אחד: לעולם לא להציג ביטחון שאין לנו.
             </p>
           </div>
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -173,7 +191,7 @@ export default function Home() {
               מחיר פשוט, <span className="gradient-text">בלי הפתעות</span>
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-muted">
-              התחילו בחינם, שדרגו כשתהיו מוכנים לפרסם בלי הגבלה.
+              התחילו בחינם עם עסק אחד, שדרגו כשתרצו לדעת מה באמת עובד אצלכם.
             </p>
           </div>
           <div className="mt-12">
@@ -185,10 +203,11 @@ export default function Home() {
         <section className="mx-auto max-w-4xl px-4 pb-24 sm:px-6">
           <div className="gradient-border glow-pink rounded-3xl p-10 text-center">
             <h2 className="text-2xl font-extrabold sm:text-3xl">
-              מוכנים ליצור את הפוסט הויראלי הבא שלכם?
+              מוכנות להפסיק לנחש מה יעבוד השבוע?
             </h2>
             <p className="mx-auto mt-3 max-w-md text-muted">
-              הצטרפו לבעלי עסקים קטנים שכבר יוצרים תוכן מקצועי בלי מאמץ.
+              הצטרפו לבעלות עסקים שכבר מקבלות מהלך אחד ברור, במקום עוד רשימת
+              משימות שאף אחד לא בטוח שתעבוד.
             </p>
             <Link
               href="/sign-up"
