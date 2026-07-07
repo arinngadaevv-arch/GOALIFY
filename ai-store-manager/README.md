@@ -25,17 +25,40 @@ deployable app.
   and handles `app/uninstalled`. Register additional topics as features land.
 - **Database schema** (`src/db/schema.ts`): shops, shop settings/automation
   mode, sessions, cached products, scans (per-category scores), recommendations
-  (the core "what's wrong / why / impact / fix" unit), background tasks,
-  webhook event log, daily reports, subscriptions.
-- **Dashboard shell** (`/dashboard`): store scores, revenue opportunities,
-  today's AI tasks, completed improvements, pending approvals, latest store
-  changes, traffic/sales/product stats. Currently backed by placeholder data
-  in `src/lib/mock-dashboard-data.ts` — swap for real queries as scanning and
-  recommendation generation land.
+  (severity + explanation + why-it-matters + impact + AI recommendation +
+  fix payload), background tasks, webhook event log, daily reports,
+  subscriptions. Initial migration lives in `drizzle/`.
+- **AI Store Scanner** (`src/lib/scanner/`): a real rule-based engine with
+  ~30 checks across products (titles, descriptions, images, ALT text, SEO
+  metadata, variants, pricing), collections, navigation menus, legal policies,
+  trust pages, homepage (title/meta/H1/og:image/ALT coverage/page weight/
+  script count), duplicate detection, and branding consistency. Each scan
+  computes per-category scores (conversion, SEO, design, accessibility,
+  trust, performance, …) plus an overall Store Health score, caches per-product
+  optimization scores, and persists everything. Data fetching degrades
+  gracefully when a scope is missing — those checks simply contribute nothing.
+- **Recommendation engine**: every finding becomes a recommendation row with
+  severity (Low/Medium/High/Critical), what's wrong, why it matters, expected
+  business impact, an AI recommendation, and a one-click fix payload. A fresh
+  scan supersedes pending recommendations; applied/dismissed ones are kept as
+  history.
+- **One-click fix engine** (`src/lib/fixes.ts` + `/api/recommendations/[id]/apply`):
+  automated fixes generate content with Claude (`@anthropic-ai/sdk`, structured
+  JSON output) and write it back through Shopify Admin GraphQL mutations —
+  rewrite title, rewrite description, generate SEO metadata, generate image
+  ALT text, generate collection descriptions. Manual fixes carry step-by-step
+  guidance instead. Failures are recorded on the recommendation row.
+- **Dashboard on real data** (`/dashboard`): first-run empty state with a
+  "Run my first scan" CTA; after a scan, real category scores, a severity-ranked
+  recommendation list with expandable detail (what's wrong / why it matters /
+  AI recommendation) and Apply/Dismiss actions, estimated recoverable revenue,
+  and completed-improvement history. Plus `/dashboard/scanner` (scan history),
+  `/dashboard/products` (per-product optimization scores), and
+  `/dashboard/settings` (working automation-mode setting).
 
-Everything else in the product spec (store scanner, product analysis,
-copywriter, SEO/accessibility AI, pricing intelligence, automation modes) is
-intentionally not built yet — this is the architecture to build it on top of.
+Still to come from the product spec: behavioral/conversion analytics, the
+full copywriter surface, pricing experiments, daily reports, Auto Mode
+execution, and webhook-driven re-scans.
 
 ## Local setup
 

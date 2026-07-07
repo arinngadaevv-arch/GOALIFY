@@ -1,25 +1,10 @@
 import Link from "next/link";
-import {
-  LayoutDashboard,
-  ScanSearch,
-  Package,
-  Search,
-  Palette,
-  TrendingUp,
-  PenLine,
-  Tag,
-  Settings,
-} from "lucide-react";
+import { LayoutDashboard, Package, ScanSearch, Settings } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/scanner", label: "Store Scanner", icon: ScanSearch },
   { href: "/dashboard/products", label: "Products", icon: Package },
-  { href: "/dashboard/seo", label: "SEO", icon: Search },
-  { href: "/dashboard/design", label: "Design", icon: Palette },
-  { href: "/dashboard/conversion", label: "Conversion", icon: TrendingUp },
-  { href: "/dashboard/copywriter", label: "Copywriter", icon: PenLine },
-  { href: "/dashboard/pricing", label: "Pricing", icon: Tag },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 

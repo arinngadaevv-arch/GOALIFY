@@ -127,6 +127,13 @@ export const recommendationStatusEnum = pgEnum("recommendation_status", [
   "failed",
 ]);
 
+export const recommendationSeverityEnum = pgEnum("recommendation_severity", [
+  "low",
+  "medium",
+  "high",
+  "critical",
+]);
+
 export const recommendationDifficultyEnum = pgEnum("recommendation_difficulty", [
   "easy",
   "medium",
@@ -143,16 +150,26 @@ export const recommendations = pgTable("recommendations", {
   scanId: uuid("scan_id").references(() => scans.id, { onDelete: "set null" }),
   productId: uuid("product_id").references(() => products.id, { onDelete: "cascade" }),
   category: recommendationCategoryEnum("category").notNull(),
+  severity: recommendationSeverityEnum("severity").notNull().default("medium"),
   title: text("title").notNull(),
-  problem: text("problem").notNull(),
-  reason: text("reason").notNull(),
-  estimatedImpact: text("estimated_impact"), // human-readable, e.g. "+2.1% conversion"
+  problem: text("problem").notNull(), // what is wrong (explanation)
+  reason: text("reason").notNull(), // why it matters
+  estimatedImpact: text("estimated_impact"), // expected business impact, human-readable
   estimatedRevenueCents: integer("estimated_revenue_cents"),
+  aiRecommendation: text("ai_recommendation").notNull().default(""), // what the AI suggests doing
   difficulty: recommendationDifficultyEnum("difficulty").notNull().default("easy"),
   estimatedTimeSavedMinutes: integer("estimated_time_saved_minutes"),
-  proposedChange: jsonb("proposed_change"), // structured payload the "Apply" action executes
+  // One-click fix payload. kind: "automated" fixes execute via /api/recommendations/[id]/apply;
+  // kind: "manual" fixes carry guidance the merchant follows in Shopify admin.
+  proposedChange: jsonb("proposed_change").$type<{
+    kind: "automated" | "manual";
+    action: string;
+    params?: Record<string, unknown>;
+  }>(),
   status: recommendationStatusEnum("status").notNull().default("pending"),
   appliedAt: timestamp("applied_at", { withTimezone: true }),
+  appliedResult: jsonb("applied_result"),
+  error: text("error"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
