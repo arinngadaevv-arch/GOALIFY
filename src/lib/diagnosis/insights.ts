@@ -1,4 +1,4 @@
-import { MOVE_CHANNEL_LABELS, type MoveChannel } from "./types";
+import { MOVE_CHANNEL_LABELS, POSITIVE_RESULTS, type MoveChannel } from "./types";
 
 type DecisionRow = { id: string; status: string; moveChannel: MoveChannel };
 type OutcomeRow = {
@@ -18,9 +18,6 @@ export type Insights = {
   /** The channel that most often led to a real result, or null if none did yet. */
   bestChannelLabel: string | null;
 };
-
-// A move "worked" only if the owner reported a concrete positive result.
-const POSITIVE_RESULTS = new Set(["MORE_VIEWS", "MORE_MESSAGES", "MORE_COMMENTS"]);
 
 /**
  * Honest aggregations over the real decision/outcome stream - never fabricated.

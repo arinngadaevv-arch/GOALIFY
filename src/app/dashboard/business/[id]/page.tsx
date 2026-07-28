@@ -13,17 +13,12 @@ import { BusinessChat } from "@/components/business-chat";
 import { computeInsights } from "@/lib/diagnosis/insights";
 import { getUserPlan } from "@/lib/usage";
 import { getPlanFeatures } from "@/lib/plan-features";
-import { MOVE_CHANNEL_LABELS } from "@/lib/diagnosis/types";
+import {
+  MOVE_CHANNEL_LABELS,
+  OUTCOME_RESULT_LABELS,
+} from "@/lib/diagnosis/types";
 
 const FOLLOWUP_WINDOW_HOURS = 48;
-
-const RESULT_LABELS: Record<string, string> = {
-  MORE_VIEWS: "יותר צפיות",
-  MORE_MESSAGES: "יותר הודעות",
-  MORE_COMMENTS: "יותר תגובות",
-  NOTHING: "כלום מיוחד",
-  OTHER: "משהו אחר",
-};
 
 function hoursSince(date: Date | null): number | null {
   if (!date) return null;
@@ -150,6 +145,7 @@ export default async function BusinessPage({
                 executionAsset: current.executionAsset,
                 estimatedMinutes: current.estimatedMinutes,
                 falsificationCriteria: current.falsificationCriteria,
+                learnedFromPrior: current.learnedFromPrior,
               }}
               initialAnswered={!!currentOutcome}
             />
@@ -198,7 +194,8 @@ export default async function BusinessPage({
                   {outcome && (
                     <p className="mt-2 text-xs text-muted">
                       {outcome.didExecute ? "בוצע" : "לא בוצע"}
-                      {outcome.result && ` · ${RESULT_LABELS[outcome.result]}`}
+                      {outcome.result &&
+                        ` · ${OUTCOME_RESULT_LABELS[outcome.result]}`}
                     </p>
                   )}
                 </div>

@@ -37,6 +37,7 @@ const approveSchema = z.object({
   executionAsset: z.string().nullable().optional(),
   estimatedMinutes: z.number().nullable().optional(),
   falsificationCriteria: z.string().min(1).optional(),
+  learnedFromPrior: z.string().nullable().optional(),
 });
 
 export async function POST(

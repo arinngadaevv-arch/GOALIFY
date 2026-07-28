@@ -283,6 +283,12 @@ export const decisions = pgTable("decision", {
   // Falsification criteria - written before the outcome is known.
   falsificationCriteria: text("falsification_criteria").notNull(),
 
+  // What this decision took from the business's own closed loops (which past
+  // move confirmed or falsified what). Nullable: null for a business's first
+  // decision, and forced to null by the app whenever there is no history, so
+  // the product can never imply a track record it doesn't have.
+  learnedFromPrior: text("learned_from_prior"),
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
   approvedAt: timestamp("approved_at"),
   approvedByUserId: text("approved_by_user_id").references(() => users.id),

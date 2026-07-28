@@ -11,6 +11,10 @@ import { getClientIp, rateLimit, retryAfterSeconds } from "@/lib/rate-limit";
 // A Gemini structured-output call can take a while; give it room past the default.
 export const maxDuration = 60;
 
+/** Upper bound on decisions pulled for the track record. buildTrackRecord
+ * trims further for the prompt; this just keeps the query bounded. */
+const HISTORY_LOOKBACK = 20;
+
 const signalsSchema = z.object({
   exposureThisWeek: z.string().min(1).max(300),
   inquiriesThisWeek: z.string().min(1).max(300),
@@ -82,12 +86,36 @@ export async function POST(
     );
   }
 
+  // The business's own closed loops, newest first - the only history the
+  // diagnosis is allowed to reason from.
+  const priorLoops = await db
+    .select({
+      sentAt: decisions.sentAt,
+      createdAt: decisions.createdAt,
+      diagnosis: decisions.diagnosis,
+      moveChannel: decisions.moveChannel,
+      moveDescription: decisions.moveDescription,
+      falsificationCriteria: decisions.falsificationCriteria,
+      didExecute: outcomes.didExecute,
+      result: outcomes.result,
+      resultNote: outcomes.resultNote,
+    })
+    .from(decisions)
+    .leftJoin(outcomes, eq(outcomes.decisionId, decisions.id))
+    .where(and(eq(decisions.businessId, business.id), eq(decisions.status, "SENT")))
+    .orderBy(desc(decisions.createdAt))
+    .limit(HISTORY_LOOKBACK);
+
   try {
-    const draft = await generateDiagnosisDraft(parsed.data, {
-      name: business.name,
-      niche: business.niche,
-      reachNotes: business.reachNotes,
-    });
+    const draft = await generateDiagnosisDraft(
+      parsed.data,
+      {
+        name: business.name,
+        niche: business.niche,
+        reachNotes: business.reachNotes,
+      },
+      priorLoops
+    );
 
     const [decision] = await db
       .insert(decisions)
@@ -106,6 +134,7 @@ export async function POST(
         executionAsset: draft.noMoveToday ? null : draft.executionAsset,
         estimatedMinutes: draft.estimatedMinutes,
         falsificationCriteria: draft.falsificationCriteria,
+        learnedFromPrior: draft.learnedFromPrior,
       })
       .returning();
 

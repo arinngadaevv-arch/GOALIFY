@@ -56,6 +56,7 @@ export default async function AdminPage() {
               executionAsset: decision.executionAsset,
               estimatedMinutes: decision.estimatedMinutes,
               falsificationCriteria: decision.falsificationCriteria,
+              learnedFromPrior: decision.learnedFromPrior,
             }}
           />
         ))}

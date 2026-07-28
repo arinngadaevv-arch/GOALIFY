@@ -24,6 +24,7 @@ interface DraftDecision {
   executionAsset: string | null;
   estimatedMinutes: number | null;
   falsificationCriteria: string;
+  learnedFromPrior: string | null;
 }
 
 export function AdminDecisionCard({
@@ -44,6 +45,7 @@ export function AdminDecisionCard({
     executionAsset: draft.executionAsset ?? "",
     estimatedMinutes: draft.estimatedMinutes,
     falsificationCriteria: draft.falsificationCriteria,
+    learnedFromPrior: draft.learnedFromPrior ?? "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +57,10 @@ export function AdminDecisionCard({
       const res = await fetch(`/api/admin/decisions/${draft.id}/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(fields),
+        body: JSON.stringify({
+          ...fields,
+          learnedFromPrior: fields.learnedFromPrior.trim() || null,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -196,6 +201,25 @@ export function AdminDecisionCard({
         rows={2}
         className="mt-1 w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-neon-purple"
       />
+
+      {/* Only editable when the draft already had history to learn from - an
+          empty field here would be an invitation to invent a track record. */}
+      {draft.learnedFromPrior !== null && (
+        <>
+          <label className="mt-3 flex items-center gap-1.5 text-xs text-muted">
+            <span className="font-semibold text-emerald-400">מה למדנו מקודם</span>
+            <span>(מוצג ללקוחה - ודאו שזה נכון מול ההיסטוריה שלה)</span>
+          </label>
+          <textarea
+            value={fields.learnedFromPrior}
+            onChange={(e) =>
+              setFields((f) => ({ ...f, learnedFromPrior: e.target.value }))
+            }
+            rows={2}
+            className="mt-1 w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-neon-purple"
+          />
+        </>
+      )}
 
       {draft.evidence.length > 0 && (
         <div className="mt-3 rounded-lg bg-surface-2 p-3 text-xs text-muted">

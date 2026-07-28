@@ -2,7 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, ChevronDown, Clock, Copy, Loader2, Target } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Clock,
+  Copy,
+  History,
+  Loader2,
+  Target,
+} from "lucide-react";
 import {
   CONFIDENCE_LABELS,
   MOVE_CHANNEL_LABELS,
@@ -30,6 +38,7 @@ interface DecisionView {
   executionAsset: string | null;
   estimatedMinutes: number | null;
   falsificationCriteria: string;
+  learnedFromPrior: string | null;
 }
 
 export function TodaysMoveCard({
@@ -128,6 +137,18 @@ export function TodaysMoveCard({
           </span>
         </div>
       </div>
+
+      {decision.learnedFromPrior && (
+        <div className="mt-4 animate-fade-in-up delay-2 rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] p-4">
+          <p className="flex items-center gap-1.5 text-xs font-bold text-emerald-400">
+            <History className="size-3.5" />
+            מבוסס על מה שכבר ניסינו אצלך
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-foreground/90">
+            {decision.learnedFromPrior}
+          </p>
+        </div>
+      )}
 
       {decision.executionAsset && (
         <div className="sheen mt-4 animate-fade-in-up delay-3 rounded-xl border border-neon-purple/30 bg-neon-purple/[0.06] p-4">

@@ -2,8 +2,10 @@ import { generateText, type ChatTurn } from "@/lib/ai/client";
 import {
   CONFIDENCE_LABELS,
   MOVE_CHANNEL_LABELS,
+  OUTCOME_RESULT_LABELS,
   type ConfidenceLevel,
   type MoveChannel,
+  type OutcomeResult,
 } from "@/lib/diagnosis/types";
 
 export type ChatHistoryMessage = { role: "USER" | "ASSISTANT"; content: string };
@@ -19,17 +21,9 @@ type DecisionContext = {
   falsificationCriteria: string;
   outcome: {
     didExecute: boolean | null;
-    result: string | null;
+    result: OutcomeResult | null;
     followupAnsweredAt: Date | null;
   } | null;
-};
-
-const RESULT_LABELS: Record<string, string> = {
-  MORE_VIEWS: "יותר צפיות",
-  MORE_MESSAGES: "יותר הודעות",
-  MORE_COMMENTS: "יותר תגובות",
-  NOTHING: "כלום מיוחד",
-  OTHER: "משהו אחר",
 };
 
 function decisionsBlock(decisions: DecisionContext[]): string {
@@ -40,7 +34,9 @@ function decisionsBlock(decisions: DecisionContext[]): string {
       const date = new Date(d.createdAt).toLocaleDateString("he-IL");
       const outcomeText = d.outcome
         ? `${d.outcome.didExecute ? "בוצע" : "לא בוצע"}${
-            d.outcome.result ? ` - תוצאה: ${RESULT_LABELS[d.outcome.result] ?? d.outcome.result}` : ""
+            d.outcome.result
+              ? ` - תוצאה: ${OUTCOME_RESULT_LABELS[d.outcome.result]}`
+              : ""
           }${d.outcome.followupAnsweredAt ? "" : " (מחכה עדיין למעקב 48 שעות)"}`
         : "עדיין אין תוצאה מדווחת";
 

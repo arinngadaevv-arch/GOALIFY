@@ -1,5 +1,11 @@
 export type MoveType = "EXPLOIT" | "EXPLORE";
 export type ConfidenceLevel = "LOW" | "MEDIUM" | "HIGH";
+export type OutcomeResult =
+  | "MORE_VIEWS"
+  | "MORE_MESSAGES"
+  | "MORE_COMMENTS"
+  | "NOTHING"
+  | "OTHER";
 export type MoveChannel =
   | "REEL"
   | "STORY"
@@ -45,6 +51,10 @@ export interface DiagnosisDraft {
   executionAsset: string | null;
   estimatedMinutes: number | null;
   falsificationCriteria: string;
+  /** What this decision took from the business's own closed loops - which past
+   * move confirmed or falsified what. null when there is no closed history yet,
+   * and forced to null by the app in that case so memory can't be fabricated. */
+  learnedFromPrior: string | null;
   /** true when no real edge was found - the app must show the quiet-day message,
    * never fabricate a move to keep up appearances. */
   noMoveToday: boolean;
@@ -55,6 +65,22 @@ export const CONFIDENCE_LABELS: Record<ConfidenceLevel, string> = {
   MEDIUM: "בינוני",
   HIGH: "גבוה",
 };
+
+export const OUTCOME_RESULT_LABELS: Record<OutcomeResult, string> = {
+  MORE_VIEWS: "יותר צפיות",
+  MORE_MESSAGES: "יותר הודעות",
+  MORE_COMMENTS: "יותר תגובות",
+  NOTHING: "כלום מיוחד",
+  OTHER: "משהו אחר",
+};
+
+/** A move "worked" only if the owner reported a concrete positive result -
+ * the single definition every consumer (insights, track record, prompts) uses. */
+export const POSITIVE_RESULTS: ReadonlySet<string> = new Set<OutcomeResult>([
+  "MORE_VIEWS",
+  "MORE_MESSAGES",
+  "MORE_COMMENTS",
+]);
 
 export const MOVE_CHANNEL_LABELS: Record<MoveChannel, string> = {
   REEL: "ריל",

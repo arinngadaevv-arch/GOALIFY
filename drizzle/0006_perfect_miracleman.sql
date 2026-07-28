@@ -1,0 +1,1 @@
+ALTER TABLE "decision" ADD COLUMN "learned_from_prior" text;
