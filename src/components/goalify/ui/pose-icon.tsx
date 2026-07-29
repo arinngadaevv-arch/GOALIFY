@@ -296,6 +296,63 @@ const POSES = {
       ],
     ],
   },
+  // Star pose: arms and legs spread wide overhead — the jumping-jack peak.
+  jack: {
+    head: [50, 16],
+    bones: [
+      [
+        [50, 26],
+        [50, 54],
+      ],
+      [
+        [50, 54],
+        [26, 88],
+      ],
+      [
+        [50, 54],
+        [74, 88],
+      ],
+      [
+        [50, 26],
+        [22, 10],
+      ],
+      [
+        [50, 26],
+        [78, 10],
+      ],
+    ],
+  },
+  // Seated rotation: knees bent, torso twisted, arms swept across — russian
+  // twist / rotational-core movements.
+  twist: {
+    head: [30, 30],
+    bones: [
+      [
+        [50, 74],
+        [36, 42],
+      ],
+      [
+        [36, 42],
+        [64, 30],
+      ],
+      [
+        [50, 74],
+        [70, 66],
+      ],
+      [
+        [70, 66],
+        [86, 78],
+      ],
+      [
+        [50, 74],
+        [66, 82],
+      ],
+      [
+        [66, 82],
+        [82, 72],
+      ],
+    ],
+  },
 } as const satisfies Record<string, PoseSpec>;
 
 export type PoseKey = keyof typeof POSES;
@@ -304,13 +361,17 @@ const NAME_PATTERNS: readonly [RegExp, PoseKey][] = [
   [/plank/i, "plank"],
   [/push[\s-]?up/i, "pushup"],
   [/dip/i, "dip"],
-  [/bridge/i, "bridge"],
+  [/(glute bridge|fire hydrant|clamshell|^bridge)/i, "bridge"],
   [/superman/i, "extension"],
+  [/jumping jack/i, "jack"],
+  [/twist/i, "twist"],
+  [/wall sit/i, "squat"],
   [/(squat|jump)/i, "squat"],
   [/lunge/i, "lunge"],
-  [/(dead bug|hollow|crunch|core)/i, "core"],
-  [/(mountain climber|high knee|march|climber)/i, "cardio"],
-  [/(stretch|warm-up|circle|mobility|cool down)/i, "mobility"],
+  [/(leg raise|leg lift|bicycle crunch|dead bug|hollow|crunch|core)/i, "core"],
+  [/(burpee|mountain climber|high knee|march|climber)/i, "cardio"],
+  [/calf raise/i, "mobility"],
+  [/(hip hinge|stretch|warm-up|circle|mobility|cool down)/i, "mobility"],
 ];
 
 /** Maps an exercise's name (falling back to its focus tag) to a pose. */

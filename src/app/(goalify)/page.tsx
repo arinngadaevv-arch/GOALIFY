@@ -14,6 +14,12 @@ import { GlowLink } from "@/components/goalify/ui/glow-button";
 import { CoachAvatar, VisualSlot } from "@/components/goalify/ui/visual-slot";
 import { Pill, Stat } from "@/components/goalify/ui/stat";
 
+const TRANSFORMATIONS = [
+  { name: "Maya R.", weeks: 14, change: "-9.4 kg", goal: "Fat Burn" },
+  { name: "Dan K.", weeks: 10, change: "+4.1 kg", goal: "Muscle Build" },
+  { name: "Priya S.", weeks: 12, change: "-6.8 kg", goal: "Lean Sculpt" },
+];
+
 const FEATURES = [
   {
     Icon: Activity,
@@ -112,7 +118,7 @@ export default function LandingPage() {
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <GlowLink href="/quiz" size="xl" pulse>
-              Build my plan
+              START YOUR TRANSFORMATION
               <ArrowRight className="size-5" />
             </GlowLink>
             <span className="text-sm font-semibold text-mist">
@@ -185,8 +191,76 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ---------------------------------------------- Transformation preview */}
+      <section className="pb-16">
+        <div className="mx-auto max-w-2xl text-center">
+          <Pill tone="lime">
+            <Sparkles className="size-3" /> Real member outcomes
+          </Pill>
+          <h2 className="gf-display mt-4 text-4xl font-black text-ink sm:text-5xl">
+            See it before you feel it
+          </h2>
+          <p className="mx-auto mt-3 max-w-md text-base text-ink-soft">
+            Your own before/after vault unlocks from day one — here&apos;s
+            what a finished transformation looks like.
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-5 md:grid-cols-3">
+          {TRANSFORMATIONS.map(({ name, weeks, change, goal }, index) => (
+            <GlassCard
+              key={name}
+              deep
+              interactive
+              className={`gf-anim-rise gf-delay-${index + 1} overflow-hidden p-0`}
+            >
+              <div className="grid grid-cols-2 gap-px bg-ink/6">
+                <div className="relative">
+                  <VisualSlot
+                    label="Before"
+                    emoji="📷"
+                    showChrome={false}
+                    rounded="rounded-none"
+                    className="aspect-3/4 w-full"
+                  />
+                  <span className="absolute bottom-2 left-2 rounded-full bg-white/85 px-2 py-0.5 text-[10px] font-black tracking-[0.1em] text-ink-soft uppercase">
+                    Before
+                  </span>
+                </div>
+                <div className="relative">
+                  <VisualSlot
+                    label="After"
+                    emoji="✨"
+                    showChrome={false}
+                    rounded="rounded-none"
+                    className="aspect-3/4 w-full"
+                  />
+                  <span className="absolute bottom-2 right-2 rounded-full bg-lime-neon px-2 py-0.5 text-[10px] font-black tracking-[0.1em] text-ink uppercase">
+                    After
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between p-5">
+                <div>
+                  <p className="text-sm font-extrabold text-ink">{name}</p>
+                  <p className="text-xs font-semibold text-electric">
+                    {goal} · {weeks} weeks
+                  </p>
+                </div>
+                <span className="gf-numeric rounded-full bg-lime-neon/18 px-3 py-1.5 text-sm font-black text-lime-deep">
+                  {change}
+                </span>
+              </div>
+            </GlassCard>
+          ))}
+        </div>
+      </section>
+
       {/* --------------------------------------------------------------- Stats */}
-      <GlassCard deep className="grid grid-cols-2 gap-6 p-7 sm:grid-cols-4">
+      <GlassCard
+        deep
+        className="gf-anim-rise grid grid-cols-2 gap-6 p-7 sm:grid-cols-4"
+      >
         <Stat value="128k+" label="Plans built" tone="electric" />
         <Stat value="4.9" label="Average rating" tone="ink" />
         <Stat value="87%" label="Still training at week 8" tone="lime" />
@@ -231,8 +305,13 @@ export default function LandingPage() {
         </div>
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2">
-          {FEATURES.map(({ Icon, title, body }) => (
-            <GlassCard key={title} deep interactive className="p-7">
+          {FEATURES.map(({ Icon, title, body }, index) => (
+            <GlassCard
+              key={title}
+              deep
+              interactive
+              className={`gf-anim-rise gf-delay-${index + 1} p-7`}
+            >
               <span className="gf-glow-electric grid size-12 place-items-center rounded-2xl bg-electric">
                 <Icon className="size-6 text-white" strokeWidth={2.2} />
               </span>
@@ -248,8 +327,12 @@ export default function LandingPage() {
       {/* -------------------------------------------------------- Testimonials */}
       <section className="pb-20">
         <div className="grid gap-5 md:grid-cols-3">
-          {TESTIMONIALS.map(({ quote, name, detail }) => (
-            <GlassCard key={name} className="p-6">
+          {TESTIMONIALS.map(({ quote, name, detail }, index) => (
+            <GlassCard
+              key={name}
+              interactive
+              className={`gf-anim-rise gf-delay-${index + 1} p-6`}
+            >
               <div className="flex gap-0.5 text-lime-deep">
                 {Array.from({ length: 5 }).map((_, index) => (
                   <Star key={index} className="size-3.5 fill-current" />
@@ -280,7 +363,7 @@ export default function LandingPage() {
       <GlassCard
         tone="electric"
         deep
-        className="overflow-hidden px-7 py-14 text-center"
+        className="gf-anim-rise overflow-hidden px-7 py-14 text-center"
       >
         <h2 className="gf-display mx-auto max-w-xl text-4xl font-black text-ink sm:text-5xl">
           Stop planning. <span className="gf-text-hype">Start day one.</span>
@@ -290,7 +373,7 @@ export default function LandingPage() {
           today.
         </p>
         <GlowLink href="/quiz" size="xl" pulse className="mt-8">
-          Build my plan
+          START YOUR TRANSFORMATION
           <ArrowRight className="size-5" />
         </GlowLink>
       </GlassCard>

@@ -42,6 +42,7 @@ export type GoalifyState = {
 export type Settings = {
   kneeSafe: boolean;
   voiceCues: boolean;
+  soundEffects: boolean;
   pushMotivation: boolean;
   pushWater: boolean;
   pushWorkout: boolean;

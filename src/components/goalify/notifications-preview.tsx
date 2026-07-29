@@ -142,7 +142,7 @@ export function NotificationsPreview() {
       </div>
 
       {/* ------------------------------------------------------------ Toggles */}
-      <section className="mt-8">
+      <section className="gf-anim-rise gf-delay-2 mt-8">
         <SectionHeading
           eyebrow="Three a day, no more"
           title="Reminder schedule"

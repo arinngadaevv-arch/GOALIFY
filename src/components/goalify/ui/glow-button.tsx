@@ -6,10 +6,10 @@ type Size = "sm" | "md" | "lg" | "xl";
 
 const VARIANTS: Record<Variant, string> = {
   electric:
-    "bg-electric text-white gf-glow-electric hover:bg-[#0047db] focus-visible:outline-electric",
-  lime: "bg-lime-neon text-ink gf-glow-lime hover:bg-[#2ef00c] focus-visible:outline-lime-deep",
+    "bg-electric text-white gf-glow-electric hover:bg-[#0047db] hover:shadow-[0_18px_40px_-10px_rgba(0,82,255,0.72)] focus-visible:outline-electric",
+  lime: "bg-lime-neon text-ink gf-glow-lime hover:bg-[#2ef00c] hover:shadow-[0_18px_40px_-10px_rgba(57,255,20,0.68)] focus-visible:outline-lime-deep",
   glass:
-    "gf-glass text-ink hover:border-electric/40 focus-visible:outline-electric",
+    "gf-glass text-ink hover:border-electric/40 hover:shadow-[0_18px_36px_-16px_rgba(8,22,66,0.38)] focus-visible:outline-electric",
   ghost:
     "text-ink-soft hover:text-electric hover:bg-electric/6 focus-visible:outline-electric",
 };
@@ -30,7 +30,7 @@ function classes(
 ) {
   return clsx(
     "inline-flex items-center justify-center gap-2.5 rounded-full font-bold tracking-tight",
-    "gf-press transition-colors duration-200 select-none",
+    "gf-press transition-all duration-200 select-none hover:-translate-y-0.5",
     "focus-visible:outline-2 focus-visible:outline-offset-3",
     "disabled:opacity-40 disabled:pointer-events-none",
     VARIANTS[variant],

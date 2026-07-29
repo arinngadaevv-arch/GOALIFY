@@ -22,6 +22,8 @@ export function AIFormGuide({
     <div
       className={clsx(
         "gf-slot relative flex flex-col items-center justify-center gap-3 overflow-hidden",
+        // Bottom room for the player's absolutely-positioned cue strip.
+        "pb-16",
         className,
       )}
     >

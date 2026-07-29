@@ -27,6 +27,7 @@ const INITIAL_STATE: GoalifyState = {
   settings: {
     kneeSafe: false,
     voiceCues: true,
+    soundEffects: true,
     pushMotivation: true,
     pushWater: true,
     pushWorkout: true,

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import clsx from "clsx";
 import {
   Check,
@@ -16,13 +17,14 @@ import {
   X,
 } from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
-import { resolveWorkout } from "@/lib/goalify/workouts";
+import { findWorkout, resolveWorkout } from "@/lib/goalify/workouts";
 import type { Exercise } from "@/lib/goalify/types";
 import { GlassCard } from "@/components/goalify/ui/glass-card";
 import { GlowLink } from "@/components/goalify/ui/glow-button";
 import { VisualSlot } from "@/components/goalify/ui/visual-slot";
 import { poseForExercise } from "@/components/goalify/ui/pose-icon";
 import { AIFormGuide } from "@/components/goalify/workout/ai-form-guide";
+import { useWorkoutSounds } from "@/components/goalify/workout/use-workout-sounds";
 import {
   ProgressRing,
   RING_ELECTRIC,
@@ -34,9 +36,15 @@ type Phase = "work" | "rest" | "done";
 
 export function LivePlayer() {
   const { state, todaysWorkout, completeWorkout, updateSettings } = useGoalify();
+  const searchParams = useSearchParams();
+  const selectedId = searchParams.get("workout");
+  const baseWorkout = useMemo(
+    () => (selectedId && findWorkout(selectedId)) || todaysWorkout,
+    [selectedId, todaysWorkout],
+  );
   const workout = useMemo(
-    () => resolveWorkout(todaysWorkout, state.settings.kneeSafe),
-    [todaysWorkout, state.settings.kneeSafe],
+    () => resolveWorkout(baseWorkout, state.settings.kneeSafe),
+    [baseWorkout, state.settings.kneeSafe],
   );
 
   const [index, setIndex] = useState(0);
@@ -59,6 +67,8 @@ export function LivePlayer() {
   const nextExercise = workout.exercises[index + 1];
   const isTimed = exercise.kind === "time";
   const voiceOn = state.settings.voiceCues;
+  const { countdownBeep, exerciseChime, completionCelebration } =
+    useWorkoutSounds();
 
   /* ------------------------------------------------------------- narration */
   const speak = useCallback(
@@ -89,8 +99,9 @@ export function LivePlayer() {
       setReps(0);
       setSeconds(target.kind === "time" ? target.amount : 0);
       speak(`${target.name}. ${target.cue}`);
+      exerciseChime();
     },
-    [workout.exercises, speak, setSeconds],
+    [workout.exercises, speak, setSeconds, exerciseChime],
   );
 
   const finishCurrent = useCallback(() => {
@@ -127,10 +138,21 @@ export function LivePlayer() {
         }
         return;
       }
-      setSeconds(secondsRef.current - 1);
+      const next = secondsRef.current - 1;
+      setSeconds(next);
+      if (next === 3 || next === 2 || next === 1) countdownBeep(next);
     }, 1000);
     return () => clearInterval(timer);
-  }, [phase, paused, isTimed, index, finishCurrent, goToExercise, setSeconds]);
+  }, [
+    phase,
+    paused,
+    isTimed,
+    index,
+    finishCurrent,
+    goToExercise,
+    setSeconds,
+    countdownBeep,
+  ]);
 
   /* ------------------------------------------------------------ completion */
   const savedRef = useRef(false);
@@ -139,8 +161,9 @@ export function LivePlayer() {
       savedRef.current = true;
       completeWorkout();
       speak("Session complete. Outstanding work.");
+      completionCelebration();
     }
-  }, [phase, completeWorkout, speak]);
+  }, [phase, completeWorkout, speak, completionCelebration]);
 
   if (phase === "done") {
     return <CompletionScreen workoutTitle={workout.title} calories={workout.calories} />;

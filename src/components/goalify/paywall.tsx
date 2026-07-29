@@ -107,7 +107,10 @@ export function Paywall() {
         </p>
       </section>
 
-      <GlassCard deep className="mt-8 grid grid-cols-3 gap-4 p-6">
+      <GlassCard
+        deep
+        className="gf-anim-rise gf-delay-1 mt-8 grid grid-cols-3 gap-4 p-6"
+      >
         <Stat
           value={targets.calories.toLocaleString()}
           label="kcal / day"
@@ -122,7 +125,7 @@ export function Paywall() {
       </GlassCard>
 
       {/* ------------------------------------------------------- Projection */}
-      <GlassCard deep className="mt-5 overflow-hidden p-6">
+      <GlassCard deep className="gf-anim-rise gf-delay-2 mt-5 overflow-hidden p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="gf-display text-lg font-extrabold text-ink">
@@ -144,7 +147,7 @@ export function Paywall() {
       </GlassCard>
 
       {/* ---------------------------------------------------------- Includes */}
-      <GlassCard deep className="mt-5 p-6">
+      <GlassCard deep className="gf-anim-rise gf-delay-3 mt-5 p-6">
         <h2 className="gf-display text-lg font-extrabold text-ink">
           What unlocks today
         </h2>
@@ -163,7 +166,11 @@ export function Paywall() {
       </GlassCard>
 
       {/* -------------------------------------------------------- Coach hype */}
-      <GlassCard tone="electric" deep className="mt-5 flex items-center gap-5 p-6">
+      <GlassCard
+        tone="electric"
+        deep
+        className="gf-anim-rise gf-delay-4 mt-5 flex items-center gap-5 p-6"
+      >
         <CoachAvatar
           label="Coach"
           hint=""
@@ -184,7 +191,7 @@ export function Paywall() {
       </GlassCard>
 
       {/* ------------------------------------------------------------- Offer */}
-      <section className="mt-10">
+      <section className="gf-anim-rise gf-delay-5 mt-10">
         <GlassCard tone="lime" deep className="p-5 text-center">
           <div className="flex items-center justify-center gap-2">
             <Flame className="size-4 text-lime-deep" strokeWidth={2.8} />

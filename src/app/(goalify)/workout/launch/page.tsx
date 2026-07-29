@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Launchpad } from "@/components/goalify/workout/launchpad";
+import { RouteLoading } from "@/components/goalify/ui/route-loading";
 
 export const metadata: Metadata = {
   title: "Get ready",
@@ -7,5 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default function LaunchPage() {
-  return <Launchpad />;
+  return (
+    <Suspense fallback={<RouteLoading />}>
+      <Launchpad />
+    </Suspense>
+  );
 }

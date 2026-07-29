@@ -2,18 +2,20 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import clsx from "clsx";
 import {
   ArrowRight,
   Check,
   Flame,
+  Library,
   ShieldCheck,
   Timer,
   Volume2,
   X,
 } from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
-import { resolveWorkout } from "@/lib/goalify/workouts";
+import { findWorkout, resolveWorkout } from "@/lib/goalify/workouts";
 import { GlassCard } from "@/components/goalify/ui/glass-card";
 import { GlowLink } from "@/components/goalify/ui/glow-button";
 import { CoachAvatar } from "@/components/goalify/ui/visual-slot";
@@ -28,7 +30,15 @@ const CHECKLIST = [
 
 export function Launchpad() {
   const { state, todaysWorkout } = useGoalify();
-  const workout = resolveWorkout(todaysWorkout, state.settings.kneeSafe);
+  const searchParams = useSearchParams();
+  const selectedId = searchParams.get("workout");
+  const baseWorkout =
+    (selectedId && findWorkout(selectedId)) || todaysWorkout;
+  const isLibraryPick = baseWorkout.id !== todaysWorkout.id;
+  const workout = resolveWorkout(baseWorkout, state.settings.kneeSafe);
+  const liveHref = isLibraryPick
+    ? `/workout/live?workout=${baseWorkout.id}`
+    : "/workout/live";
   const [checked, setChecked] = useState<string[]>([]);
 
   const toggle = (id: string) =>
@@ -42,8 +52,17 @@ export function Launchpad() {
     <main className="mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pt-6 pb-10">
       <header className="flex items-center justify-between">
         <Pill tone="electric">
-          <Flame className="size-3" strokeWidth={3} />
-          Day {state.programDay}
+          {isLibraryPick ? (
+            <>
+              <Library className="size-3" strokeWidth={3} />
+              Library pick
+            </>
+          ) : (
+            <>
+              <Flame className="size-3" strokeWidth={3} />
+              Day {state.programDay}
+            </>
+          )}
         </Pill>
         <Link
           href="/home"
@@ -109,7 +128,7 @@ export function Launchpad() {
       </GlassCard>
 
       {/* ----------------------------------------------------------- Checklist */}
-      <section className="mt-6">
+      <section className="gf-anim-rise gf-delay-3 mt-6">
         <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.16em] text-mist">
           Quick space check
         </p>
@@ -151,8 +170,8 @@ export function Launchpad() {
       </section>
 
       {/* ----------------------------------------------------------------- CTA */}
-      <div className="mt-8">
-        <GlowLink href="/workout/live" size="xl" fullWidth pulse>
+      <div className="gf-anim-rise gf-delay-4 mt-8">
+        <GlowLink href={liveHref} size="xl" fullWidth pulse>
           I&apos;M READY — LET&apos;S CRUSH IT!
           <ArrowRight className="size-5" />
         </GlowLink>

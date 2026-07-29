@@ -10,6 +10,7 @@ import {
   Droplets,
   Flame,
   LogOut,
+  Music2,
   Ruler,
   ShieldCheck,
   Sparkles,
@@ -65,7 +66,7 @@ export function SettingsScreen() {
       </GlassCard>
 
       {/* ------------------------------------------------------- Body details */}
-      <section className="mt-8">
+      <section className="gf-anim-rise gf-delay-2 mt-8">
         <SectionHeading
           eyebrow="Your numbers"
           title="Profile details"
@@ -89,7 +90,7 @@ export function SettingsScreen() {
       </section>
 
       {/* ---------------------------------------------------------- Training */}
-      <section className="mt-8">
+      <section className="gf-anim-rise gf-delay-3 mt-8">
         <SectionHeading eyebrow="Safety first" title="Training preferences" />
         <GlassCard
           tone={settings.kneeSafe ? "lime" : "plain"}
@@ -115,6 +116,13 @@ export function SettingsScreen() {
             icon={<Volume2 className="size-4" />}
           />
           <Toggle
+            checked={settings.soundEffects}
+            onChange={(next) => updateSettings({ soundEffects: next })}
+            label="Sound effects"
+            description="Countdown beeps, exercise chimes and a finish-line celebration."
+            icon={<Music2 className="size-4" />}
+          />
+          <Toggle
             checked={settings.units === "metric"}
             onChange={(next) =>
               updateSettings({ units: next ? "metric" : "imperial" })
@@ -127,7 +135,7 @@ export function SettingsScreen() {
       </section>
 
       {/* ----------------------------------------------------- Notifications */}
-      <section className="mt-8">
+      <section className="gf-anim-rise gf-delay-4 mt-8">
         <SectionHeading
           eyebrow="Three a day, max"
           title="Notifications"
@@ -163,7 +171,7 @@ export function SettingsScreen() {
       </section>
 
       {/* ------------------------------------------------------- Subscription */}
-      <section className="mt-8">
+      <section className="gf-anim-rise gf-delay-5 mt-8">
         <SectionHeading eyebrow="Billing" title="Subscription" />
         <GlassCard tone="electric" deep className="p-6">
           <div className="flex items-center gap-3">
@@ -211,7 +219,7 @@ export function SettingsScreen() {
       </section>
 
       {/* -------------------------------------------------------------- Reset */}
-      <section className="mt-8">
+      <section className="gf-anim-rise gf-delay-6 mt-8">
         <SectionHeading eyebrow="Danger zone" title="Device data" />
         <GlassCard className="p-5">
           <p className="text-xs leading-relaxed text-mist">

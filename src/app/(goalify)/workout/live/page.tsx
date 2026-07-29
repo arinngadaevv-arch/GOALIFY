@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { LivePlayer } from "@/components/goalify/workout/live-player";
+import { RouteLoading } from "@/components/goalify/ui/route-loading";
 
 export const metadata: Metadata = {
   title: "Live workout",
@@ -8,5 +10,9 @@ export const metadata: Metadata = {
 };
 
 export default function LiveWorkoutPage() {
-  return <LivePlayer />;
+  return (
+    <Suspense fallback={<RouteLoading />}>
+      <LivePlayer />
+    </Suspense>
+  );
 }

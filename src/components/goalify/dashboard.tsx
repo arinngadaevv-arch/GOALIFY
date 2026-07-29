@@ -8,6 +8,7 @@ import {
   Check,
   Droplets,
   Flame,
+  Library,
   Play,
   ShieldCheck,
   Timer,
@@ -160,6 +161,28 @@ export function Dashboard() {
         </GlassCard>
       </section>
 
+      {/* ------------------------------------------------------ Library link */}
+      <Link href="/workouts" className="mt-5 block">
+        <GlassCard
+          tone="lime"
+          interactive
+          className="gf-anim-rise gf-delay-3 flex items-center gap-4 p-5"
+        >
+          <span className="gf-glow-lime grid size-11 shrink-0 place-items-center rounded-2xl bg-lime-neon">
+            <Library className="size-5 text-ink" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-extrabold text-ink">
+              Explore more workouts
+            </p>
+            <p className="mt-0.5 text-xs text-ink-soft">
+              Full Body Burn, Core Crusher, Lower Body &amp; Joints Safe.
+            </p>
+          </div>
+          <ArrowRight className="size-4 shrink-0 text-lime-deep" />
+        </GlassCard>
+      </Link>
+
       {/* ----------------------------------------------- Nutrition targets card */}
       <section className="mt-8">
         <SectionHeading
@@ -175,7 +198,7 @@ export function Dashboard() {
           }
         />
 
-        <GlassCard deep className="gf-anim-rise gf-delay-3 p-6">
+        <GlassCard deep className="gf-anim-rise gf-delay-4 p-6">
           <div className="grid grid-cols-3 gap-3">
             <MacroTile
               Icon={Zap}
@@ -232,7 +255,7 @@ export function Dashboard() {
         <GlassCard
           tone="electric"
           interactive
-          className="gf-anim-rise gf-delay-4 flex items-center gap-4 p-5"
+          className="gf-anim-rise gf-delay-5 flex items-center gap-4 p-5"
         >
           <span className="gf-glow-electric grid size-11 shrink-0 place-items-center rounded-2xl bg-electric">
             <Bell className="size-5 text-white" />

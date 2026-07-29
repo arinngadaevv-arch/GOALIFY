@@ -39,7 +39,7 @@ export function Progress() {
       </GlassCard>
 
       {/* -------------------------------------------------------- Trendline */}
-      <section className="mt-8">
+      <section className="gf-anim-rise gf-delay-2 mt-8">
         <SectionHeading
           eyebrow="Projection"
           title="Weight trendline"
@@ -82,7 +82,7 @@ export function Progress() {
       </section>
 
       {/* ------------------------------------------------------ Completion grid */}
-      <section className="mt-8">
+      <section className="gf-anim-rise gf-delay-3 mt-8">
         <SectionHeading eyebrow="Consistency" title="30-day grid" />
         <GlassCard deep className="p-6">
           <div className="grid grid-cols-10 gap-1.5">
@@ -113,7 +113,7 @@ export function Progress() {
       </section>
 
       {/* -------------------------------------------------------- Photo vault */}
-      <section className="mt-8">
+      <section className="gf-anim-rise gf-delay-4 mt-8">
         <SectionHeading
           eyebrow="Private to you"
           title="Before / After vault"
@@ -169,7 +169,7 @@ export function Progress() {
       </section>
 
       {/* ------------------------------------------------------- Trophy shelf */}
-      <section className="mt-8">
+      <section className="gf-anim-rise gf-delay-5 mt-8">
         <SectionHeading
           eyebrow="Trophy shelf"
           title="Your badges"
@@ -232,7 +232,10 @@ export function Progress() {
         </GlassCard>
       </section>
 
-      <GlassCard tone="electric" className="mt-8 flex items-center gap-4 p-5">
+      <GlassCard
+        tone="electric"
+        className="gf-anim-rise gf-delay-6 mt-8 flex items-center gap-4 p-5"
+      >
         <Flame className="size-5 shrink-0 text-electric" strokeWidth={2.6} />
         <p className="text-xs leading-relaxed text-ink-soft">
           {completed === 0
