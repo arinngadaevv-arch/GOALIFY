@@ -17,7 +17,7 @@ export function Navbar() {
         <Logo />
 
         <nav className="hidden items-center gap-6 text-sm text-muted md:flex">
-          <Link href="/#features" className="hover:text-foreground transition-colors">
+          <Link href="/trendspark#features" className="hover:text-foreground transition-colors">
             יכולות
           </Link>
           <Link href="/pricing" className="hover:text-foreground transition-colors">
@@ -78,7 +78,7 @@ export function Navbar() {
         <div className="border-t border-border bg-background/95 px-4 py-4 md:hidden">
           <nav className="flex flex-col gap-1 text-sm">
             <Link
-              href="/#features"
+              href="/trendspark#features"
               onClick={() => setOpen(false)}
               className="rounded-lg px-3 py-2.5 text-muted hover:bg-surface hover:text-foreground"
             >

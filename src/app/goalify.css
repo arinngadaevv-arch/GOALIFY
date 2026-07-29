@@ -1,0 +1,465 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   GOALIFY — Neo-Glassmorphism 3D design system
+   Pure luminous white canvas · glossy frosted glass · electric blue + neon lime
+   ========================================================================== */
+
+@theme {
+  --color-electric: #0052ff;
+  --color-electric-soft: #4d85ff;
+  --color-lime-neon: #39ff14;
+  --color-lime-deep: #1faa06;
+  --color-ink: #06070c;
+  --color-ink-soft: #2a2f3c;
+  --color-mist: #6b7280;
+  --color-haze: #9aa1ae;
+  --color-canvas: #ffffff;
+
+  --radius-glass: 1.75rem;
+
+  --font-display:
+    "SF Pro Display", "Segoe UI Variable Display", "Segoe UI", Inter,
+    system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  --font-sans:
+    "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", Inter, system-ui,
+    -apple-system, "Helvetica Neue", sans-serif;
+  --font-numeric:
+    ui-rounded, "SF Pro Rounded", "Segoe UI Variable Display", Inter,
+    system-ui, sans-serif;
+}
+
+:root {
+  --gf-glass-top: rgba(255, 255, 255, 0.88);
+  --gf-glass-bottom: rgba(255, 255, 255, 0.55);
+  --gf-glass-edge: rgba(255, 255, 255, 0.95);
+  --gf-ring: rgba(10, 25, 70, 0.07);
+  --gf-shadow-lift: 0 28px 60px -28px rgba(8, 22, 66, 0.34),
+    0 6px 16px -8px rgba(8, 22, 66, 0.12);
+  --gf-shadow-rest: 0 18px 40px -22px rgba(8, 22, 66, 0.26),
+    0 2px 6px -3px rgba(8, 22, 66, 0.08);
+}
+
+html.goalify {
+  color-scheme: light;
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.goalify-body {
+  background: #ffffff;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  letter-spacing: -0.011em;
+  overflow-x: hidden;
+}
+
+/* Ambient light bloom — gives the frosted panels something to refract.
+   Fixed so it never scrolls out from under the glass. */
+.gf-ambience {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.gf-ambience::before,
+.gf-ambience::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+}
+
+.gf-ambience::before {
+  width: 46rem;
+  height: 46rem;
+  top: -16rem;
+  right: -12rem;
+  background: radial-gradient(
+    circle,
+    rgba(0, 82, 255, 0.22) 0%,
+    rgba(0, 82, 255, 0) 70%
+  );
+  animation: gf-drift 18s ease-in-out infinite;
+}
+
+.gf-ambience::after {
+  width: 38rem;
+  height: 38rem;
+  bottom: -14rem;
+  left: -10rem;
+  background: radial-gradient(
+    circle,
+    rgba(57, 255, 20, 0.2) 0%,
+    rgba(57, 255, 20, 0) 70%
+  );
+  animation: gf-drift 22s ease-in-out infinite reverse;
+}
+
+.gf-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* --- Glass surfaces ------------------------------------------------------ */
+
+.gf-glass {
+  position: relative;
+  background: linear-gradient(
+    155deg,
+    var(--gf-glass-top) 0%,
+    var(--gf-glass-bottom) 100%
+  );
+  backdrop-filter: blur(24px) saturate(165%);
+  -webkit-backdrop-filter: blur(24px) saturate(165%);
+  border: 1px solid var(--gf-glass-edge);
+  box-shadow:
+    var(--gf-shadow-rest),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    inset 0 0 0 1px var(--gf-ring);
+}
+
+/* Glossy specular sweep across the top edge — the "3D" read. */
+.gf-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    168deg,
+    rgba(255, 255, 255, 0.75) 0%,
+    rgba(255, 255, 255, 0.12) 38%,
+    rgba(255, 255, 255, 0) 60%
+  );
+  pointer-events: none;
+}
+
+.gf-glass > * {
+  position: relative;
+}
+
+.gf-glass-deep {
+  box-shadow:
+    var(--gf-shadow-lift),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    inset 0 0 0 1px var(--gf-ring);
+}
+
+/* Tinted glass variants for accent moments. */
+.gf-glass-electric {
+  background: linear-gradient(
+    155deg,
+    rgba(235, 241, 255, 0.92) 0%,
+    rgba(214, 227, 255, 0.62) 100%
+  );
+  border-color: rgba(0, 82, 255, 0.22);
+  box-shadow:
+    0 28px 60px -30px rgba(0, 82, 255, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.gf-glass-lime {
+  background: linear-gradient(
+    155deg,
+    rgba(240, 255, 235, 0.94) 0%,
+    rgba(219, 255, 205, 0.6) 100%
+  );
+  border-color: rgba(31, 170, 6, 0.26);
+  box-shadow:
+    0 28px 60px -30px rgba(31, 170, 6, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* --- Depth & interaction ------------------------------------------------- */
+
+.gf-lift {
+  transition:
+    transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.32s ease;
+}
+
+.gf-lift:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    var(--gf-shadow-lift),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+}
+
+.gf-press {
+  transition: transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.gf-press:active {
+  transform: scale(0.97);
+}
+
+/* --- Glow accents -------------------------------------------------------- */
+
+.gf-glow-electric {
+  box-shadow:
+    0 12px 34px -10px rgba(0, 82, 255, 0.6),
+    0 0 0 1px rgba(0, 82, 255, 0.18);
+}
+
+.gf-glow-lime {
+  box-shadow:
+    0 12px 34px -10px rgba(57, 255, 20, 0.65),
+    0 0 0 1px rgba(31, 170, 6, 0.24);
+}
+
+.gf-text-electric {
+  background: linear-gradient(120deg, #0052ff 0%, #4d85ff 55%, #0052ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.gf-text-hype {
+  background: linear-gradient(115deg, #0052ff 0%, #1faa06 52%, #39ff14 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* --- Placeholder slots for 3D art (coach avatars, meal renders) ---------- */
+
+.gf-slot {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 30% 22%,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 255, 255, 0) 55%
+    ),
+    linear-gradient(150deg, rgba(0, 82, 255, 0.14), rgba(57, 255, 20, 0.16));
+  border: 1px dashed rgba(0, 82, 255, 0.28);
+}
+
+.gf-slot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 80%
+  );
+  transform: translateX(-100%);
+  animation: gf-sheen 3.6s ease-in-out infinite;
+}
+
+/* --- Animation keyframes ------------------------------------------------- */
+
+@keyframes gf-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-40px, 30px) scale(1.08);
+  }
+}
+
+@keyframes gf-sheen {
+  0% {
+    transform: translateX(-100%);
+  }
+  55%,
+  100% {
+    transform: translateX(160%);
+  }
+}
+
+@keyframes gf-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes gf-pulse-ring {
+  0% {
+    box-shadow:
+      0 12px 34px -10px rgba(0, 82, 255, 0.6),
+      0 0 0 0 rgba(0, 82, 255, 0.42);
+  }
+  70% {
+    box-shadow:
+      0 12px 34px -10px rgba(0, 82, 255, 0.6),
+      0 0 0 22px rgba(0, 82, 255, 0);
+  }
+  100% {
+    box-shadow:
+      0 12px 34px -10px rgba(0, 82, 255, 0.6),
+      0 0 0 0 rgba(0, 82, 255, 0);
+  }
+}
+
+@keyframes gf-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gf-materialize {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(14px);
+    filter: blur(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes gf-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  65% {
+    opacity: 1;
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes gf-burst {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+}
+
+@keyframes gf-spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes gf-wave {
+  0%,
+  100% {
+    transform: translateX(-25%) translateY(0);
+  }
+  50% {
+    transform: translateX(-25%) translateY(-6px);
+  }
+}
+
+.gf-anim-float {
+  animation: gf-float 5.5s ease-in-out infinite;
+}
+.gf-anim-rise {
+  animation: gf-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.gf-anim-materialize {
+  animation: gf-materialize 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.gf-anim-pop {
+  animation: gf-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.gf-anim-pulse {
+  animation: gf-pulse-ring 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.gf-anim-spin-slow {
+  animation: gf-spin-slow 14s linear infinite;
+}
+.gf-anim-burst {
+  animation: gf-burst 1.4s ease-out infinite;
+}
+.gf-anim-wave {
+  animation: gf-wave 3.2s ease-in-out infinite;
+}
+
+.gf-delay-1 {
+  animation-delay: 0.07s;
+}
+.gf-delay-2 {
+  animation-delay: 0.14s;
+}
+.gf-delay-3 {
+  animation-delay: 0.21s;
+}
+.gf-delay-4 {
+  animation-delay: 0.28s;
+}
+.gf-delay-5 {
+  animation-delay: 0.35s;
+}
+.gf-delay-6 {
+  animation-delay: 0.42s;
+}
+
+/* --- Utilities ----------------------------------------------------------- */
+
+.gf-numeric {
+  font-family: var(--font-numeric);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+.gf-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.035em;
+  line-height: 0.98;
+}
+
+.gf-hide-scrollbar {
+  scrollbar-width: none;
+}
+.gf-hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+html.goalify ::selection {
+  background: var(--color-electric);
+  color: #fff;
+}
+
+html.goalify ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+html.goalify ::-webkit-scrollbar-track {
+  background: transparent;
+}
+html.goalify ::-webkit-scrollbar-thumb {
+  background: rgba(10, 25, 70, 0.16);
+  border-radius: 999px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.goalify *,
+  html.goalify *::before,
+  html.goalify *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .gf-lift:hover {
+    transform: none;
+  }
+}

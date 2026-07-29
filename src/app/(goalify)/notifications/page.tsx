@@ -1,0 +1,12 @@
+import type { Metadata } from "next";
+import { NotificationsPreview } from "@/components/goalify/notifications-preview";
+
+export const metadata: Metadata = {
+  title: "Daily reminders",
+  description:
+    "Preview the three daily lock-screen notifications: morning motivation, water check and workout alert.",
+};
+
+export default function NotificationsPage() {
+  return <NotificationsPreview />;
+}

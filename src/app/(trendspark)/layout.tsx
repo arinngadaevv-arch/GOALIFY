@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import "./globals.css";
+import "../globals.css";
 import { SessionProvider } from "@/components/session-provider";
 
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     "שיווק לעסקים קטנים",
   ],
   authors: [{ name: "TrendSpark AI" }],
-  alternates: { canonical: "/" },
+  alternates: { canonical: "/trendspark" },
   openGraph: {
     type: "website",
     locale: "he_IL",

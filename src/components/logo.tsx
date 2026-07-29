@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export function Logo({
   className = "",
-  href = "/",
+  href = "/trendspark",
 }: {
   className?: string;
   href?: string;

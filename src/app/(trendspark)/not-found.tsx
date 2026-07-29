@@ -12,7 +12,7 @@ export default function NotFound() {
         נראה שהקישור שהגעתם אליו לא קיים או הוסר.
       </p>
       <Link
-        href="/"
+        href="/trendspark"
         className="mt-8 inline-flex items-center gap-2 rounded-full gradient-brand px-6 py-3 text-sm font-bold text-white shadow-lg shadow-pink-500/20 transition-transform hover:scale-105"
       >
         חזרה לעמוד הבית
