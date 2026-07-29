@@ -21,6 +21,8 @@ import type { Exercise } from "@/lib/goalify/types";
 import { GlassCard } from "@/components/goalify/ui/glass-card";
 import { GlowLink } from "@/components/goalify/ui/glow-button";
 import { VisualSlot } from "@/components/goalify/ui/visual-slot";
+import { poseForExercise } from "@/components/goalify/ui/pose-icon";
+import { AIFormGuide } from "@/components/goalify/workout/ai-form-guide";
 import {
   ProgressRing,
   RING_ELECTRIC,
@@ -208,16 +210,19 @@ export function LivePlayer() {
       {/* --------------------------------------------- Form guide / animation */}
       <GlassCard deep className="mt-5 overflow-hidden p-0">
         <div className="relative">
-          <VisualSlot
+          <AIFormGuide
+            pose={
+              phase === "rest"
+                ? "mobility"
+                : poseForExercise(exercise.name, exercise.focus)
+            }
             label={phase === "rest" ? "Recovery" : "3D Coach Demonstration"}
             hint={
               phase === "rest"
                 ? "Coach idle / breathing loop"
-                : "Looping exercise animation renders here"
+                : `Looping ${exercise.name.toLowerCase()} demonstration renders here`
             }
-            emoji={phase === "rest" ? "🧘" : "🏋️"}
-            rounded="rounded-none"
-            className="h-64 w-full sm:h-72"
+            className="h-64 w-full rounded-none sm:h-72"
           />
 
           <div className="absolute top-3 left-3">

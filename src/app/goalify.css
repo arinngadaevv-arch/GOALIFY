@@ -358,6 +358,27 @@ body.goalify-body {
   }
 }
 
+@keyframes gf-scan {
+  0% {
+    transform: translateY(-10%);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.9;
+  }
+  88% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(110%);
+    opacity: 0;
+  }
+}
+
+.gf-anim-scan {
+  animation: gf-scan 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
 @keyframes gf-wave {
   0%,
   100% {
