@@ -92,8 +92,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     options: [
       {
         value: "burn",
-        image:
-          "https://commons.wikimedia.org/wiki/Special:FilePath/Hattie_James_Women%27s_fitness_Gym_girl,_Gym_Model,_Fitness_model_02.jpg",
+        image: "/quiz/lean.jpg",
         label: "Lean & shredded",
         description: "Strip fat fast while locking in every ounce of muscle",
         icon: "flame",
@@ -101,7 +100,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "build",
-        image: "https://commons.wikimedia.org/wiki/Special:FilePath/Bodybuilder_Larry_Scott.jpg",
+        image: "/quiz/muscle.jpg",
         label: "Bigger & stronger",
         description: "Pack on visible size and raw strength, week over week",
         icon: "dumbbell",
@@ -109,8 +108,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "tone",
-        image:
-          "https://commons.wikimedia.org/wiki/Special:FilePath/Hattie_James_Women%27s_fitness_Gym_girl,_Gym_Model,_Fitness_model_15.jpg",
+        image: "/quiz/toned.jpg",
         label: "Toned & defined",
         description: "Sculpted, visible definition — zero bulk",
         icon: "sparkles",
@@ -118,7 +116,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "athletic",
-        image: "https://commons.wikimedia.org/wiki/Special:FilePath/Central_Park_jogging.jpg",
+        image: "/quiz/athletic.jpg",
         label: "Athletic & unstoppable",
         description: "Move faster, last longer, hit harder than ever",
         icon: "zap",

@@ -1,36 +1,25 @@
 # Quiz answer photography
 
-Two ways to get a real photo onto an answer card — use whichever is easier
-for you. Until either is set, that card falls back to a large illustrated
-glyph. The layout is identical no matter which path you use, so you can add
+Local files only — no remote URLs. Drop a photo in this folder and it
+appears automatically on the matching answer card. Until a file exists,
+that card falls back to a small icon badge — never a broken image, never
+an external request. The layout is identical either way, so you can add
 photos one at a time.
-
-## Option A — local files (this folder)
-
-Drop cut-out photos in this folder and they appear automatically on the
-matching answer card.
-
-## Option B — remote URL
-
-Set the option's `image` field in `src/lib/goalify/quiz.ts` to a full
-`https://` URL instead of a local path (e.g. licensed stock photography).
-The host must be listed in `images.remotePatterns` in `next.config.ts` —
-`images.unsplash.com` and `plus.unsplash.com` are already allowed; add
-others there if you use a different source.
 
 ## Naming
 
-Files are named `<stepId>-<optionValue>.png`. The exact list the quiz looks
-for:
+Most cards are named `<stepId>-<optionValue>.png`. The `goal` step is a
+named exception (`lean.jpg` / `muscle.jpg` / `toned.jpg` / `athletic.jpg`).
+The exact list the quiz looks for:
 
 | File | Card |
 | --- | --- |
+| `lean.jpg` | Lean & shredded |
+| `muscle.jpg` | Bigger & stronger |
+| `toned.jpg` | Toned & defined |
+| `athletic.jpg` | Athletic & unstoppable |
 | `sex-female.png` | Female |
 | `sex-male.png` | Male |
-| `goal-burn.png` | Lean and cut |
-| `goal-build.png` | Bigger and stronger |
-| `goal-tone.png` | Toned and defined |
-| `goal-athletic.png` | Athletic and unstoppable |
 | `painTrigger-time.png` | I never have the time |
 | `painTrigger-motivation.png` | My motivation dies |
 | `painTrigger-confusion.png` | I never know what to do |
