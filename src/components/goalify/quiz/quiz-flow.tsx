@@ -123,30 +123,28 @@ export function QuizFlow() {
           <ChevronLeft className="size-6" strokeWidth={2.5} />
         </button>
 
-        {/* Segmented progress — one bar per third of the funnel. */}
+        {/* Ultra-thin per-question hairline — one segment per step. */}
         <div
-          className="flex flex-1 items-center gap-2"
+          className="flex flex-1 items-center gap-1"
           role="progressbar"
           aria-valuenow={Math.round(progress)}
           aria-valuemin={0}
           aria-valuemax={100}
           aria-label="Quiz progress"
         >
-          {[0, 1, 2].map((segment) => {
-            const filled = Math.max(
-              0,
-              Math.min(1, progress / 100 * 3 - segment),
-            );
+          {QUIZ_STEPS.map((quizStep, i) => {
+            const done = i < index;
+            const current = i === index;
             return (
               <span
-                key={segment}
-                className="h-1.5 flex-1 overflow-hidden rounded-full bg-ink/8"
-              >
-                <span
-                  className="gf-charge block h-full rounded-full bg-electric transition-[width] duration-500 ease-out"
-                  style={{ width: `${filled * 100}%` }}
-                />
-              </span>
+                key={quizStep.id}
+                className={clsx(
+                  "h-1 flex-1 rounded-full transition-colors duration-300",
+                  done && "bg-electric",
+                  current && "gf-charge bg-electric",
+                  !done && !current && "bg-ink/10",
+                )}
+              />
             );
           })}
         </div>
@@ -177,7 +175,7 @@ export function QuizFlow() {
         key={coachMessage}
         className="gf-tip gf-anim-rise relative mt-6 flex items-center gap-4 px-5 py-4"
       >
-        <CoachBadge size="md" />
+        <CoachBadge size="lg" />
         <p className="relative z-10 text-sm leading-snug font-semibold text-ink-soft">
           {coachMessage}
         </p>
@@ -338,7 +336,8 @@ function ChoiceStep({
     <div>
       <div
         className={clsx(
-          "grid grid-cols-2 gap-3",
+          "grid gap-3",
+          layout !== "wide" && "grid-cols-2",
           (layout === "portrait" || layout === "tile") && "gap-4",
           layout === "portrait" && "mt-14",
         )}
@@ -456,7 +455,7 @@ function PhotoOptionCard({
           alt={option.label}
           label={option.label}
           icon={option.icon}
-          className="h-36 w-40 shrink-0 self-end"
+          className="h-40 w-44 shrink-0 self-end"
         />
       </button>
     );

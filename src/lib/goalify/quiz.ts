@@ -84,7 +84,7 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "goal",
     kind: "choice",
-    layout: "tile",
+    layout: "wide",
     chapter: "The target",
     title: "Select your 30-day target physique",
     subtitle:
@@ -142,7 +142,7 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "painTrigger",
     kind: "choice",
-    layout: "tile",
+    layout: "wide",
     speedRound: true,
     chapter: "The obstacle",
     title: "What's your biggest obstacle to total confidence?",
@@ -193,7 +193,7 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "vision",
     kind: "choice",
-    layout: "tile",
+    layout: "wide",
     speedRound: true,
     chapter: "The payoff",
     title: "What will finally make you feel unstoppable?",
@@ -237,7 +237,7 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "level",
     kind: "choice",
-    layout: "tile",
+    layout: "wide",
     chapter: "Your starting line",
     title: "Where are you starting from?",
     subtitle: "Be honest — I'll calibrate your first week to guarantee early wins.",
@@ -456,7 +456,7 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "commitment",
     kind: "choice",
-    layout: "tile",
+    layout: "wide",
     speedRound: true,
     chapter: "The pact",
     title: "Are you ready to commit?",
