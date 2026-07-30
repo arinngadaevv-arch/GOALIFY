@@ -16,6 +16,16 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  images: {
+    // Lets quiz option photos reference real hosted stock photography by
+    // URL (see ChoiceOption.image in src/lib/goalify/quiz.ts) once real
+    // photo URLs are available, alongside the existing local /public/quiz
+    // file convention.
+    remotePatterns: [
+      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "plus.unsplash.com" },
+    ],
+  },
   async headers() {
     return [
       {

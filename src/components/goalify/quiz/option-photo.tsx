@@ -9,16 +9,18 @@ import { QUIZ_ICONS, type QuizIconKey } from "./quiz-icons";
 /**
  * The photo area of an answer card.
  *
- * Renders the real cut-out photograph when one has been dropped into
- * /public/quiz (see public/quiz/README.md). Which files exist is baked in at
- * build time by scripts/gen-quiz-images.mjs, so a card with no photo yet
- * shows a large illustrative glyph instead — never a request that 404s, and
- * never a small icon lost in a box. The onError guard is a second line of
- * defence if a file is removed later.
+ * Renders a real photograph two ways:
+ * - `src` starting with "http" — a remote URL (e.g. licensed stock
+ *   photography). Trusted as-is; add the host to `images.remotePatterns`
+ *   in next.config.ts first or next/image will refuse to load it.
+ * - a local path — only rendered once the file actually exists in
+ *   /public/quiz (see public/quiz/README.md), baked in at build time by
+ *   scripts/gen-quiz-images.mjs, so a card with no photo yet never fires a
+ *   request that 404s.
  *
- * This fallback is not photography — there's no image-generation tool
- * available here. It's the best placeholder until real photos are dropped
- * in per public/quiz/README.md.
+ * Either way, a missing/failed photo falls back to a large illustrative
+ * glyph — not a small icon lost in a box. That fallback is not
+ * photography — there's no image-generation tool available here.
  */
 export function OptionPhoto({
   src,
@@ -36,7 +38,9 @@ export function OptionPhoto({
   imageClassName?: string;
 }) {
   const [failed, setFailed] = useState(false);
-  const showPhoto = src !== undefined && AVAILABLE_QUIZ_IMAGES.has(src) && !failed;
+  const isRemote = src?.startsWith("http");
+  const showPhoto =
+    src !== undefined && (isRemote || AVAILABLE_QUIZ_IMAGES.has(src)) && !failed;
   const Icon = QUIZ_ICONS[icon];
 
   return (

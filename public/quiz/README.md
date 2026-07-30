@@ -1,9 +1,22 @@
 # Quiz answer photography
 
-Drop cut-out photos in this folder and they appear automatically on the
-matching answer card. Until a file exists, that card falls back to an
-illustrated figure — the layout is identical either way, so you can add the
+Two ways to get a real photo onto an answer card — use whichever is easier
+for you. Until either is set, that card falls back to a large illustrated
+glyph. The layout is identical no matter which path you use, so you can add
 photos one at a time.
+
+## Option A — local files (this folder)
+
+Drop cut-out photos in this folder and they appear automatically on the
+matching answer card.
+
+## Option B — remote URL
+
+Set the option's `image` field in `src/lib/goalify/quiz.ts` to a full
+`https://` URL instead of a local path (e.g. licensed stock photography).
+The host must be listed in `images.remotePatterns` in `next.config.ts` —
+`images.unsplash.com` and `plus.unsplash.com` are already allowed; add
+others there if you use a different source.
 
 ## Naming
 
@@ -54,8 +67,9 @@ Layout is per question, set by the `layout` field in
 `src/lib/goalify/quiz.ts`:
 
 - `portrait` — two columns, cut-out breaks above the card (used for `sex`)
-- `wide` — full-width row, photo bleeds off the right edge (`goal`, `level`)
-- `tile` — two columns, photo above the label (`painTrigger`, `vision`,
-  `commitment`)
-- `list` — compact icon row, no photo (`joints`, `sessionLength`,
+- `wide` — full-width horizontal banner, photo bleeds off the right edge
+  (`goal`, `painTrigger`, `vision`, `level`, `commitment`)
+- `tile` — two columns, photo above the label (not currently used, but
+  supported)
+- `list` — compact two-column tiles, no photo (`joints`, `sessionLength`,
   `daysPerWeek`)
