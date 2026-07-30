@@ -15,6 +15,14 @@ export type ChoiceOption = {
   socialProof?: string;
   /** Motivational badge that snaps in the instant this option is chosen. */
   badge?: string;
+  /**
+   * Cut-out photo for this option, served from /public (see
+   * public/quiz/README.md for the exact filenames each option expects).
+   * Falls back to an illustrated figure until the photo is dropped in.
+   */
+  image?: string;
+  /** Renders as a understated full-width pill under the main options. */
+  aside?: boolean;
 };
 
 export type QuizStep =
@@ -23,6 +31,14 @@ export type QuizStep =
       kind: "choice";
       /** `multi` collects an array of values instead of a single one. */
       multi?: boolean;
+      /**
+       * Card presentation:
+       * - `portrait` — two columns, photo bleeding above the card top
+       * - `wide` — full-width rows, label left and photo bleeding right
+       * - `tile` — two columns, photo inside the card above the label
+       * - `list` (default) — compact icon rows
+       */
+      layout?: "portrait" | "wide" | "tile" | "list";
       /** Short label shown in the coach's eyebrow above the question. */
       chapter: string;
       title: string;
@@ -52,14 +68,15 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "goal",
     kind: "choice",
+    layout: "wide",
     chapter: "The dream",
-    title:
-      "What is the #1 body transformation you want to unlock before everyone else notices?",
+    title: "What's your dream body?",
     subtitle:
-      "Not what sounds reasonable. The version of you that turns heads.",
+      "The #1 transformation you want to unlock before everyone else notices. Not what sounds reasonable — the version of you that turns heads.",
     options: [
       {
         value: "burn",
+        image: "/quiz/goal-burn.png",
         label: "Lean and cut",
         description: "Strip the fat, keep every ounce of muscle",
         emoji: "🔥",
@@ -68,6 +85,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "build",
+        image: "/quiz/goal-build.png",
         label: "Bigger and stronger",
         description: "Real size, real strength, visible power",
         emoji: "💪",
@@ -76,6 +94,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "tone",
+        image: "/quiz/goal-tone.png",
         label: "Toned and defined",
         description: "Sculpted definition without the bulk",
         emoji: "✨",
@@ -84,6 +103,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "athletic",
+        image: "/quiz/goal-athletic.png",
         label: "Athletic and unstoppable",
         description: "Move faster, last longer, hit harder",
         emoji: "⚡",
@@ -95,13 +115,15 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "painTrigger",
     kind: "choice",
+    layout: "tile",
     chapter: "The block",
-    title: "What has been standing between you and that body?",
+    title: "What's been stopping you?",
     subtitle:
       "Name it and I'll engineer it out. This is the answer your whole plan is built around.",
     options: [
       {
         value: "time",
+        image: "/quiz/painTrigger-time.png",
         label: "I never have the time",
         description: "Life fills up and training is the first thing cut",
         emoji: "⌛",
@@ -110,6 +132,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "motivation",
+        image: "/quiz/painTrigger-motivation.png",
         label: "My motivation dies",
         description: "Strong start, then week three hits",
         emoji: "📉",
@@ -118,6 +141,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "confusion",
+        image: "/quiz/painTrigger-confusion.png",
         label: "I never know what to do",
         description: "Too many plans, too much conflicting advice",
         emoji: "🤯",
@@ -126,6 +150,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "injury",
+        image: "/quiz/painTrigger-injury.png",
         label: "Pain keeps stopping me",
         description: "Something always flares up and I lose weeks",
         emoji: "🩹",
@@ -134,6 +159,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "restart",
+        image: "/quiz/painTrigger-restart.png",
         label: "I keep starting over",
         description: "I've begun a dozen times and never finished one",
         emoji: "🔁",
@@ -145,14 +171,15 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "vision",
     kind: "choice",
+    layout: "tile",
     chapter: "The vision",
-    title:
-      "How will you feel when you look in the mirror 30 days from now and see your dream body?",
+    title: "How do you want to feel?",
     subtitle:
-      "Sit with it for a second. That feeling is the whole reason we're here.",
+      "Picture the mirror 30 days from now, looking at your dream body. Sit with that feeling — it's the whole reason we're here.",
     options: [
       {
         value: "confident",
+        image: "/quiz/vision-confident.png",
         label: "Completely confident",
         description: "Clothes fit right and I stand taller",
         emoji: "🔥",
@@ -161,6 +188,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "strong",
+        image: "/quiz/vision-strong.png",
         label: "Genuinely strong",
         description: "Powerful, capable, hard to break",
         emoji: "🦾",
@@ -169,6 +197,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "energised",
+        image: "/quiz/vision-energised.png",
         label: "Full of energy",
         description: "No 3pm crash, no dragging myself around",
         emoji: "⚡",
@@ -177,6 +206,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "proud",
+        image: "/quiz/vision-proud.png",
         label: "Proud I finally did it",
         description: "I said I would, and this time I did",
         emoji: "🏆",
@@ -188,13 +218,15 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "level",
     kind: "choice",
+    layout: "wide",
     chapter: "The launch point",
-    title: "Where does your transformation begin?",
+    title: "Where do you start?",
     subtitle:
-      "Every great before-photo starts somewhere. Be honest and I'll pitch it perfectly.",
+      "Every great before-photo starts somewhere. Be honest and I'll pitch your first week perfectly.",
     options: [
       {
         value: "beginner",
+        image: "/quiz/level-beginner.png",
         label: "Total beginner",
         description: "New to real, structured training",
         emoji: "🌱",
@@ -203,6 +235,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "returning",
+        image: "/quiz/level-returning.png",
         label: "Coming back after a break",
         description: "I trained before. Then life happened.",
         emoji: "🔄",
@@ -211,6 +244,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "consistent",
+        image: "/quiz/level-consistent.png",
         label: "Training fairly consistently",
         description: "I show up most weeks already",
         emoji: "📈",
@@ -219,6 +253,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "advanced",
+        image: "/quiz/level-advanced.png",
         label: "Advanced",
         description: "Years in. Chasing the next level.",
         emoji: "🏆",
@@ -230,9 +265,10 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "joints",
     kind: "choice",
+    layout: "list",
     multi: true,
     chapter: "Your armour",
-    title: "What do I need to protect so nothing derails you?",
+    title: "Anything to protect?",
     subtitle:
       "I rebuild every single movement around this. Pick all that apply — or none.",
     options: [
@@ -270,8 +306,9 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "sessionLength",
     kind: "choice",
+    layout: "list",
     chapter: "Your window",
-    title: "How much time will you claim for yourself each day?",
+    title: "How much time?",
     subtitle:
       "This is your hour of power — even if it's fifteen minutes. I'll make every second count.",
     options: [
@@ -304,10 +341,11 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "daysPerWeek",
     kind: "choice",
+    layout: "list",
     chapter: "Your rhythm",
-    title: "How often do you want to feel unstoppable?",
+    title: "How often?",
     subtitle:
-      "Every session is a deposit. Pick the pace you'll genuinely keep.",
+      "Every session is a deposit into the body you want. Pick the pace you'll genuinely keep.",
     options: [
       {
         value: "3",
@@ -346,16 +384,18 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "sex",
     kind: "choice",
+    layout: "portrait",
     chapter: "The science",
-    title: "Let's dial in your engine",
+    title: "What's your gender?",
     subtitle:
-      "Biological sex sets your metabolic baseline — it's pure maths, nothing else.",
+      "This helps me tailor your plan to match your metabolic rate perfectly.",
     options: [
       { value: "female", label: "Female", emoji: "♀️" },
       { value: "male", label: "Male", emoji: "♂️" },
       {
         value: "unspecified",
-        label: "Prefer not to say",
+        label: "Other / I'd rather not say",
+        aside: true,
         description: "We'll use an average baseline",
         emoji: "•",
         badge: "ENGINE TUNED",
@@ -366,7 +406,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     id: "age",
     kind: "number",
     chapter: "The science",
-    title: "How many years of experience are we working with?",
+    title: "How old are you?",
     subtitle:
       "Age tunes your recovery windows and how fast I ramp your intensity.",
     unit: "years",
@@ -379,7 +419,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     id: "heightCm",
     kind: "number",
     chapter: "The science",
-    title: "Your frame",
+    title: "How tall are you?",
     subtitle: "This feeds straight into the calories and protein that build you.",
     unit: "cm",
     min: 140,
@@ -391,9 +431,9 @@ export const QUIZ_STEPS: QuizStep[] = [
     id: "weightKg",
     kind: "number",
     chapter: "The before",
-    title: "This is your day-one number",
+    title: "Your weight today",
     subtitle:
-      "Burn it into your memory. In four weeks you'll love how far it moved.",
+      "Burn this number into your memory. In four weeks you'll love how far it moved.",
     unit: "kg",
     min: 40,
     max: 180,
@@ -404,7 +444,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     id: "targetWeightKg",
     kind: "number",
     chapter: "The after",
-    title: "Now show me the number you're chasing",
+    title: "Your target weight",
     subtitle:
       "I'll map the safe, realistic route there — and show you the exact curve.",
     unit: "kg",
@@ -416,13 +456,15 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "commitment",
     kind: "choice",
+    layout: "tile",
     chapter: "The pact",
-    title: "Final question. Are you ready to become that person?",
+    title: "Are you in?",
     subtitle:
       "If I hold you accountable every single day, will you give me your session?",
     options: [
       {
         value: "allin",
+        image: "/quiz/commitment-allin.png",
         label: "I'm all in. Let's go.",
         description: "Hold me to it. Every day.",
         emoji: "🔥",
@@ -431,6 +473,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "most",
+        image: "/quiz/commitment-most.png",
         label: "Most days, honestly",
         description: "Life happens, but I'll show up",
         emoji: "💪",
@@ -439,6 +482,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "unsure",
+        image: "/quiz/commitment-unsure.png",
         label: "Show me it works first",
         description: "Prove it in week one",
         emoji: "🤔",

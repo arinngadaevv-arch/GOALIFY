@@ -47,7 +47,7 @@ html.goalify {
 }
 
 body.goalify-body {
-  background: #ffffff;
+  background: #f5f6fb;
   color: var(--color-ink);
   font-family: var(--font-sans);
   letter-spacing: -0.011em;
@@ -79,7 +79,7 @@ body.goalify-body {
   right: -12rem;
   background: radial-gradient(
     circle,
-    rgba(0, 82, 255, 0.22) 0%,
+    rgba(0, 82, 255, 0.09) 0%,
     rgba(0, 82, 255, 0) 70%
   );
   animation: gf-drift 18s ease-in-out infinite;
@@ -92,8 +92,8 @@ body.goalify-body {
   left: -10rem;
   background: radial-gradient(
     circle,
-    rgba(57, 255, 20, 0.2) 0%,
-    rgba(57, 255, 20, 0) 70%
+    rgba(0, 82, 255, 0.06) 0%,
+    rgba(0, 82, 255, 0) 70%
   );
   animation: gf-drift 22s ease-in-out infinite reverse;
 }
@@ -103,76 +103,41 @@ body.goalify-body {
   z-index: 1;
 }
 
-/* --- Glass surfaces ------------------------------------------------------ */
+/* --- Card surfaces -------------------------------------------------------- */
+/* Flat white with a wide, soft shadow — the photo-forward onboarding look.
+   These keep the historical `gf-glass*` names so every screen picks the new
+   treatment up without touching a single component. */
 
 .gf-glass {
   position: relative;
-  background: linear-gradient(
-    155deg,
-    var(--gf-glass-top) 0%,
-    var(--gf-glass-bottom) 100%
-  );
-  backdrop-filter: blur(24px) saturate(165%);
-  -webkit-backdrop-filter: blur(24px) saturate(165%);
-  border: 1px solid var(--gf-glass-edge);
+  background: #ffffff;
+  border: 1px solid rgba(18, 24, 60, 0.05);
   box-shadow:
-    var(--gf-shadow-rest),
-    inset 0 1px 0 rgba(255, 255, 255, 0.96),
-    inset 0 0 0 1px var(--gf-ring);
+    0 10px 30px -12px rgba(18, 24, 60, 0.13),
+    0 2px 8px -4px rgba(18, 24, 60, 0.06);
 }
 
-/* Glossy specular sweep across the top edge — the "3D" read. */
-.gf-glass::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(
-    168deg,
-    rgba(255, 255, 255, 0.75) 0%,
-    rgba(255, 255, 255, 0.12) 38%,
-    rgba(255, 255, 255, 0) 60%
-  );
-  pointer-events: none;
-}
-
-/* Lifts glass content above the ::before gloss overlay. Explicitly-positioned
-   children are excluded — otherwise this silently overrides `absolute`/`fixed`
-   utilities on anything nested in a glass surface. */
+/* Explicitly-positioned children keep their own positioning; everything else
+   is nudged into a stacking context so overlays behave predictably. */
 .gf-glass > *:not(.absolute):not(.fixed) {
   position: relative;
 }
 
 .gf-glass-deep {
   box-shadow:
-    var(--gf-shadow-lift),
-    inset 0 1px 0 rgba(255, 255, 255, 0.96),
-    inset 0 0 0 1px var(--gf-ring);
+    0 20px 44px -14px rgba(18, 24, 60, 0.18),
+    0 4px 12px -6px rgba(18, 24, 60, 0.07);
 }
 
-/* Tinted glass variants for accent moments. */
+/* Tinted variants for accent moments — pale, never saturated. */
 .gf-glass-electric {
-  background: linear-gradient(
-    155deg,
-    rgba(235, 241, 255, 0.92) 0%,
-    rgba(214, 227, 255, 0.62) 100%
-  );
-  border-color: rgba(0, 82, 255, 0.22);
-  box-shadow:
-    0 28px 60px -30px rgba(0, 82, 255, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  background: #eaf0fe;
+  border-color: rgba(0, 82, 255, 0.12);
 }
 
 .gf-glass-lime {
-  background: linear-gradient(
-    155deg,
-    rgba(240, 255, 235, 0.94) 0%,
-    rgba(219, 255, 205, 0.6) 100%
-  );
-  border-color: rgba(31, 170, 6, 0.26);
-  box-shadow:
-    0 28px 60px -30px rgba(31, 170, 6, 0.42),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  background: #eefbe9;
+  border-color: rgba(31, 170, 6, 0.16);
 }
 
 /* --- Depth & interaction ------------------------------------------------- */
@@ -185,10 +150,10 @@ body.goalify-body {
 }
 
 .gf-lift:hover {
-  transform: translateY(-4px);
+  transform: translateY(-3px);
   box-shadow:
-    var(--gf-shadow-lift),
-    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+    0 20px 44px -14px rgba(18, 24, 60, 0.2),
+    0 4px 12px -6px rgba(18, 24, 60, 0.08);
 }
 
 .gf-press {
@@ -238,8 +203,8 @@ body.goalify-body {
       rgba(255, 255, 255, 0.95) 0%,
       rgba(255, 255, 255, 0) 55%
     ),
-    linear-gradient(150deg, rgba(0, 82, 255, 0.14), rgba(57, 255, 20, 0.16));
-  border: 1px dashed rgba(0, 82, 255, 0.28);
+    linear-gradient(150deg, rgba(0, 82, 255, 0.09), rgba(0, 82, 255, 0.04));
+  border: 1px dashed rgba(0, 82, 255, 0.18);
 }
 
 .gf-slot::after {
@@ -669,4 +634,87 @@ html.goalify ::-webkit-scrollbar-thumb {
   .gf-lift:hover {
     transform: none;
   }
+}
+
+
+/* ==========================================================================
+   Clean card system — the photo-forward onboarding look.
+   Lighter and calmer than the glass surfaces: flat white, generous radius,
+   and a wide diffuse shadow instead of glow.
+   ========================================================================== */
+
+.gf-card {
+  background: #ffffff;
+  border-radius: 1.75rem;
+  box-shadow:
+    0 10px 30px -12px rgba(18, 24, 60, 0.13),
+    0 2px 8px -4px rgba(18, 24, 60, 0.06);
+  transition:
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gf-card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 20px 44px -14px rgba(18, 24, 60, 0.2),
+    0 4px 12px -6px rgba(18, 24, 60, 0.08);
+}
+
+/* Selected answer — a crisp ring rather than a neon halo. */
+.gf-card-active {
+  box-shadow:
+    0 0 0 2.5px var(--color-electric),
+    0 18px 40px -14px rgba(0, 82, 255, 0.32);
+}
+
+/* The pale-blue coach tip panel from the reference, quote mark included. */
+.gf-tip {
+  position: relative;
+  overflow: hidden;
+  background: #eaf0fe;
+  border-radius: 1.5rem;
+}
+
+.gf-tip::after {
+  content: "”";
+  position: absolute;
+  top: -0.75rem;
+  right: 0.9rem;
+  font-size: 5rem;
+  line-height: 1;
+  font-weight: 700;
+  color: rgba(0, 82, 255, 0.09);
+  pointer-events: none;
+}
+
+/* Diagonal accent that sits behind the big onboarding headline. */
+.gf-slash {
+  position: relative;
+}
+
+.gf-slash::before {
+  content: "";
+  position: absolute;
+  top: -0.6rem;
+  bottom: -0.6rem;
+  left: -1.6rem;
+  width: 5.5rem;
+  background: linear-gradient(
+    100deg,
+    rgba(0, 82, 255, 0.09),
+    rgba(0, 82, 255, 0.03)
+  );
+  transform: skewX(-14deg);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Soft tint behind a cut-out photo so it never floats on bare white. */
+.gf-photo-bed {
+  background: radial-gradient(
+    ellipse at 50% 82%,
+    rgba(0, 82, 255, 0.09) 0%,
+    rgba(0, 82, 255, 0) 62%
+  );
 }
