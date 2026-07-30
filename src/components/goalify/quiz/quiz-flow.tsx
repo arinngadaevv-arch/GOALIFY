@@ -20,7 +20,7 @@ import { CoachGuide, sayCoach } from "@/components/goalify/coach/coach-guide";
 import { useUiSounds } from "@/components/goalify/use-ui-sounds";
 import { OptionPhoto } from "./option-photo";
 import { QuizIconBadge, type QuizIconKey } from "./quiz-icons";
-import { SelectionBurst } from "./selection-burst";
+import { JointGlyph } from "./joint-glyph";
 import { AnalyzingScreen } from "./analyzing-screen";
 import { BodyMapStep } from "./body-map";
 import { SpeedRound } from "./speed-round";
@@ -40,8 +40,6 @@ export function QuizFlow() {
   const [analyzing, setAnalyzing] = useState(false);
   const [reaction, setReaction] = useState<string | null>(null);
   const [pending, setPending] = useState<Partial<QuizAnswers> | null>(null);
-  /** Badge that snaps in over the chosen card. */
-  const [badge, setBadge] = useState<string | null>(null);
   /** The persistent gamification HUD — ticks up as questions land. */
   const [hud, setHud] = useState({ burn: 0, precision: 0 });
   const [hudToast, setHudToast] = useState<string | null>(null);
@@ -68,11 +66,10 @@ export function QuizFlow() {
    * coach's reaction, and queues the advance so the reaction has a beat to land.
    */
   const pick = useCallback(
-    (patch: Partial<QuizAnswers>, value: unknown, wonBadge?: string) => {
+    (patch: Partial<QuizAnswers>, value: unknown) => {
       setDraft(patch);
       const line = coachReaction(String(step.id), value);
       setReaction(line);
-      setBadge(wonBadge ?? null);
       setPending(patch);
       hypeSelect();
       // Mirror the reaction into the floating coach so it stays in the corner
@@ -101,7 +98,6 @@ export function QuizFlow() {
       } else {
         setIndex((i) => i + 1);
         setReaction(null);
-        setBadge(null);
         setHudToast(null);
       }
       setPending(null);
@@ -168,7 +164,7 @@ export function QuizFlow() {
         <p className="text-[11px] font-black tracking-[0.16em] text-electric uppercase">
           {step.chapter}
         </p>
-        <h1 className="gf-slash gf-display gf-text-neon relative mt-2 text-4xl leading-[1.05] font-black sm:text-5xl">
+        <h1 className="gf-slash gf-display relative mt-2 text-4xl leading-[1.05] font-black text-ink sm:text-5xl">
           {step.title}
         </h1>
       </div>
@@ -201,7 +197,6 @@ export function QuizFlow() {
               onPick={pick}
               onSetDraft={setDraft}
               locked={pending !== null}
-              activeBadge={badge}
               onTap={clickPop}
             />
           ) : step.kind === "bodyMap" ? (
@@ -243,19 +238,13 @@ function ChoiceStep({
   onPick,
   onSetDraft,
   locked,
-  activeBadge,
   onTap,
 }: {
   step: Extract<QuizStep, { kind: "choice" }>;
   value: unknown;
-  onPick: (
-    patch: Partial<QuizAnswers>,
-    value: unknown,
-    badge?: string,
-  ) => void;
+  onPick: (patch: Partial<QuizAnswers>, value: unknown) => void;
   onSetDraft: (patch: Partial<QuizAnswers>) => void;
   locked: boolean;
-  activeBadge: string | null;
   onTap: () => void;
 }) {
   const selected = useMemo(
@@ -281,22 +270,37 @@ function ChoiceStep({
     return (
       <>
         <div className="grid gap-3">
-          {step.options.map((option) => (
-            <OptionCard
-              key={option.value}
-              icon={option.icon}
-              label={option.label}
-              description={option.description}
-              socialProof={option.socialProof}
-              selected={selected.includes(option.value)}
-              multi
-              disabled={locked}
-              onClick={() => {
-                onTap();
-                toggle(option.value);
-              }}
-            />
-          ))}
+          {step.options.map((option) => {
+            const isJointPart =
+              step.id === "joints" &&
+              (option.value === "knees" ||
+                option.value === "back" ||
+                option.value === "shoulders");
+            return (
+              <OptionCard
+                key={option.value}
+                icon={option.icon}
+                glyph={
+                  isJointPart ? (
+                    <JointGlyph
+                      part={option.value as "knees" | "back" | "shoulders"}
+                      active={selected.includes(option.value)}
+                    />
+                  ) : undefined
+                }
+                label={option.label}
+                description={option.description}
+                socialProof={option.socialProof}
+                selected={selected.includes(option.value)}
+                multi
+                disabled={locked}
+                onClick={() => {
+                  onTap();
+                  toggle(option.value);
+                }}
+              />
+            );
+          })}
         </div>
         <GlowButton
           size="lg"
@@ -307,11 +311,10 @@ function ChoiceStep({
             onPick(
               { [step.id]: selected as JointStatus[] } as Partial<QuizAnswers>,
               selected,
-              step.options.find((o) => o.value === selected[0])?.badge,
             )
           }
         >
-          Lock it in
+          Continue
           <ArrowRight className="size-5" />
         </GlowButton>
       </>
@@ -326,11 +329,7 @@ function ChoiceStep({
     const stored = NUMERIC_CHOICE_IDS.has(step.id)
       ? Number(option.value)
       : option.value;
-    onPick(
-      { [step.id]: stored } as Partial<QuizAnswers>,
-      option.value,
-      option.badge,
-    );
+    onPick({ [step.id]: stored } as Partial<QuizAnswers>, option.value);
   };
 
   return (
@@ -348,7 +347,6 @@ function ChoiceStep({
             option={option}
             layout={layout}
             selected={String(value) === option.value}
-            wonBadge={String(value) === option.value ? activeBadge : null}
             disabled={locked}
             onClick={() => choose(option)}
           />
@@ -390,23 +388,20 @@ function PhotoOptionCard({
   option,
   layout,
   selected,
-  wonBadge,
   disabled,
   onClick,
 }: {
   option: ChoiceOption;
   layout: "portrait" | "wide" | "tile" | "list";
   selected: boolean;
-  wonBadge: string | null;
   disabled: boolean;
   onClick: () => void;
 }) {
-  const badge = wonBadge && (
-    <span className="gf-anim-unlock absolute -top-2.5 right-3 z-20 rounded-full bg-linear-to-r from-[#22d3ee] via-[#a855f7] to-[#ff7a1a] px-2.5 py-1 text-[9px] font-black tracking-[0.12em] text-white uppercase shadow-md">
-      {wonBadge}
+  const checkBadge = selected && (
+    <span className="absolute top-3 right-3 z-20 grid size-6 place-items-center rounded-full bg-electric text-white shadow-md">
+      <Check className="size-3.5" strokeWidth={3.5} />
     </span>
   );
-  const burst = selected && <SelectionBurst />;
 
   if (layout === "list") {
     return (
@@ -416,7 +411,6 @@ function PhotoOptionCard({
         description={option.description}
         socialProof={option.socialProof}
         selected={selected}
-        wonBadge={wonBadge}
         disabled={disabled}
         onClick={onClick}
       />
@@ -424,8 +418,8 @@ function PhotoOptionCard({
   }
 
   const base = clsx(
-    "gf-card gf-card-hover gf-neon-ring gf-press relative text-left transition-all",
-    selected && "gf-neon-ring-active gf-anim-select-pop",
+    "gf-card gf-card-hover gf-press relative text-left transition-all duration-300",
+    selected && "gf-card-active scale-[1.015]",
     disabled && !selected && "opacity-50",
   );
 
@@ -438,8 +432,7 @@ function PhotoOptionCard({
         aria-pressed={selected}
         className={clsx(base, "flex items-stretch overflow-hidden")}
       >
-        {badge}
-        {burst}
+        {checkBadge}
         <span className="flex min-w-0 flex-1 flex-col justify-center py-7 pl-6">
           <span className="gf-display text-2xl leading-tight font-extrabold text-ink">
             {option.label}
@@ -475,8 +468,7 @@ function PhotoOptionCard({
         aria-pressed={selected}
         className={clsx(base, "flex flex-col items-center px-3 pt-0 pb-5")}
       >
-        {badge}
-        {burst}
+        {checkBadge}
         {/* The cut-out breaks above the card, exactly like the reference. */}
         <OptionPhoto
           src={option.image}
@@ -501,7 +493,7 @@ function PhotoOptionCard({
       aria-pressed={selected}
       className={clsx(base, "flex flex-col overflow-hidden pb-4")}
     >
-      {badge}
+      {checkBadge}
       <OptionPhoto
         src={option.image}
         alt={option.label}
@@ -523,21 +515,21 @@ function PhotoOptionCard({
 
 function OptionCard({
   icon,
+  glyph,
   label,
   description,
   socialProof,
   selected,
-  wonBadge = null,
   multi = false,
   disabled = false,
   onClick,
 }: {
   icon: QuizIconKey;
+  glyph?: React.ReactNode;
   label: string;
   description?: string;
   socialProof?: string;
   selected: boolean;
-  wonBadge?: string | null;
   multi?: boolean;
   disabled?: boolean;
   onClick: () => void;
@@ -549,23 +541,13 @@ function OptionCard({
       disabled={disabled}
       aria-pressed={selected}
       className={clsx(
-        "gf-glass gf-neon-ring gf-press relative rounded-3xl p-4 text-left transition-all duration-300",
+        "gf-glass gf-press relative rounded-3xl p-4 text-left transition-all duration-300",
         "flex items-center gap-4",
         !disabled && "hover:-translate-y-0.5",
-        selected
-          ? "gf-neon-ring-active gf-anim-select-pop"
-          : "disabled:opacity-45",
+        selected ? "gf-card-active" : "disabled:opacity-45",
       )}
     >
-      {selected && <SelectionBurst />}
-
-      {/* Motivational badge snaps in the instant the card is chosen. */}
-      {wonBadge && (
-        <span className="gf-anim-unlock absolute -top-2.5 right-4 z-20 rounded-full bg-linear-to-r from-[#22d3ee] via-[#a855f7] to-[#ff7a1a] px-2.5 py-1 text-[9px] font-black tracking-[0.12em] text-white uppercase shadow-md">
-          {wonBadge}
-        </span>
-      )}
-      <QuizIconBadge icon={icon} size="md" active={selected} />
+      {glyph ?? <QuizIconBadge icon={icon} size="md" active={selected} />}
       <span className="min-w-0 flex-1">
         <span className="block text-base font-extrabold tracking-tight text-ink">
           {label}
@@ -639,7 +621,7 @@ function NumberStep({
           onSubmit({ [step.id]: local } as Partial<QuizAnswers>, local)
         }
       >
-        Lock it in
+        Continue
         <ArrowRight className="size-5" />
       </GlowButton>
     </>

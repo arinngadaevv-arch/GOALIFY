@@ -6,7 +6,6 @@ import { ArrowRight } from "lucide-react";
 import type { QuizStep } from "@/lib/goalify/quiz";
 import type { QuizAnswers } from "@/lib/goalify/types";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
-import { SelectionBurst } from "./selection-burst";
 
 /** Percentage-based rects so the figure scales cleanly at any width. */
 const ZONE_SHAPES: Record<string, { left: number; top: number; width: number; height: number }[]> = {
@@ -39,7 +38,7 @@ export function BodyMapStep({
   step: Extract<QuizStep, { kind: "bodyMap" }>;
   value: unknown;
   onSetDraft: (patch: Partial<QuizAnswers>) => void;
-  onPick: (patch: Partial<QuizAnswers>, value: unknown, badge?: string) => void;
+  onPick: (patch: Partial<QuizAnswers>, value: unknown) => void;
   locked: boolean;
   onTap: () => void;
 }) {
@@ -60,9 +59,9 @@ export function BodyMapStep({
   return (
     <div>
       <div className="relative mx-auto w-full max-w-[280px]">
-        {/* Ambient glow so the silhouette reads as "high-tech" rather than flat. */}
+        {/* Soft ambient glow behind the silhouette. */}
         <div
-          className="absolute inset-0 -z-10 rounded-full bg-linear-to-b from-[#22d3ee]/25 via-[#a855f7]/15 to-transparent blur-3xl"
+          className="absolute inset-0 -z-10 rounded-full bg-electric/12 blur-3xl"
           aria-hidden
         />
 
@@ -96,7 +95,6 @@ export function BodyMapStep({
                   height: `${rect.height}%`,
                 }}
               >
-                {active && <SelectionBurst />}
                 <span
                   className={clsx(
                     "relative z-10 text-center text-[9px] leading-tight font-black tracking-[0.08em] uppercase transition-colors",
@@ -113,8 +111,8 @@ export function BodyMapStep({
 
       <p className="mt-6 text-center text-xs font-semibold text-mist">
         {selected.length === 0
-          ? "Tap every zone you want transformed"
-          : `${selected.length} zone${selected.length === 1 ? "" : "s"} targeted`}
+          ? "Tap the areas you want to prioritize"
+          : `${selected.length} area${selected.length === 1 ? "" : "s"} selected`}
       </p>
 
       <GlowButton
@@ -129,7 +127,7 @@ export function BodyMapStep({
           )
         }
       >
-        Lock in my targets
+        Continue
         <ArrowRight className="size-5" />
       </GlowButton>
     </div>

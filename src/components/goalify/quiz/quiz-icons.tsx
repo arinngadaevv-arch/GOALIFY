@@ -87,6 +87,12 @@ export function QuizIconBadge({
   className?: string;
 }) {
   return (
-    <IconBadge icon={QUIZ_ICONS[icon]} size={size} active={active} className={className} />
+    <IconBadge
+      icon={QUIZ_ICONS[icon]}
+      size={size}
+      active={active}
+      tone="flat"
+      className={className}
+    />
   );
 }

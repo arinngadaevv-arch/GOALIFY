@@ -36,7 +36,7 @@ export function SpeedRound({ locked }: { locked: boolean }) {
         <span
           className={clsx(
             "flex items-center gap-1.5 text-[11px] font-black tracking-[0.14em] uppercase",
-            urgent ? "text-[#ff7a1a]" : "text-electric",
+            urgent ? "text-[#d97706]" : "text-electric",
           )}
         >
           <Zap
@@ -48,7 +48,7 @@ export function SpeedRound({ locked }: { locked: boolean }) {
         <span
           className={clsx(
             "gf-numeric text-sm font-black",
-            urgent ? "gf-anim-urgent text-[#ff7a1a]" : "text-ink",
+            urgent ? "gf-anim-urgent text-[#d97706]" : "text-ink",
           )}
         >
           {expired ? "Go with your gut" : `${(msLeft / 1000).toFixed(1)}s`}
@@ -58,9 +58,7 @@ export function SpeedRound({ locked }: { locked: boolean }) {
         <div
           className={clsx(
             "h-full rounded-full transition-[width] duration-100 ease-linear",
-            urgent
-              ? "bg-[#ff7a1a]"
-              : "bg-linear-to-r from-[#22d3ee] via-[#a855f7] to-[#ff7a1a]",
+            urgent ? "bg-[#d97706]" : "bg-electric",
           )}
           style={{ width: `${percent}%` }}
         />

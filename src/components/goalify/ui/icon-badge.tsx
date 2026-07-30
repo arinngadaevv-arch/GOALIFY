@@ -16,37 +16,41 @@ const ICON_SIZE_CLASSES = {
 } as const;
 
 /**
- * A glossy, gradient-lit icon badge — the premium replacement for emoji
- * glyphs across the whole app. Cyan-to-purple-to-orange rim with a soft
- * glow that intensifies once `active` is set. Same treatment the quiz's
- * answer icons use, shared here so every screen speaks the same visual
- * language.
+ * The premium replacement for emoji glyphs. Two tones:
+ * - `neon` (default) — gradient-lit badge used across the app.
+ * - `flat` — a pale electric-blue tint the quiz uses instead, so the icon
+ *   shape (not a colourful blob) is what tells options apart.
  */
 export function IconBadge({
   icon: Icon,
   size = "md",
   active = false,
+  tone = "neon",
   className,
 }: {
   icon: LucideIcon;
   size?: keyof typeof SIZE_CLASSES;
   active?: boolean;
+  tone?: "neon" | "flat";
   className?: string;
 }) {
   return (
     <span
       className={clsx(
-        "gf-icon-badge relative grid shrink-0 place-items-center",
+        "relative grid shrink-0 place-items-center",
         SIZE_CLASSES[size],
-        active && "gf-icon-badge-active",
+        tone === "neon" && ["gf-icon-badge", active && "gf-icon-badge-active"],
+        tone === "flat" && ["gf-icon-flat", active && "gf-icon-flat-active"],
         className,
       )}
       aria-hidden
     >
       <Icon
         className={clsx(
-          "relative z-10 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.25)]",
+          "relative z-10",
           ICON_SIZE_CLASSES[size],
+          tone === "neon" && "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.25)]",
+          tone === "flat" && (active ? "text-white" : "text-electric"),
         )}
         strokeWidth={2.4}
       />

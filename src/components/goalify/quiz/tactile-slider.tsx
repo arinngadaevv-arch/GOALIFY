@@ -108,11 +108,11 @@ export function TactileSlider({
             if (event.key === "End") onChange(max);
           }}
         >
-          {/* Glowing fill track — the "target arc" burning toward the plate. */}
+          {/* Filled track showing progress toward the plate. */}
           <div
             className={clsx(
-              "h-full rounded-full bg-linear-to-r from-[#22d3ee] via-[#a855f7] to-[#ff7a1a] transition-[width] duration-150",
-              dragging && "shadow-[0_0_18px_rgba(168,85,247,0.65)]",
+              "h-full rounded-full bg-electric transition-[width] duration-150",
+              dragging && "shadow-[0_0_16px_rgba(0,82,255,0.55)]",
             )}
             style={{ width: `${percent}%` }}
           />

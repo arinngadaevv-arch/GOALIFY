@@ -38,11 +38,11 @@ export function BioStatHud({
   toast: string | null;
 }) {
   return (
-    <div className="gf-neon-ring relative mt-4 overflow-hidden rounded-2xl border border-white/60 bg-linear-to-br from-white/80 to-white/40 p-4 backdrop-blur">
+    <div className="gf-card relative mt-4 overflow-hidden rounded-2xl p-4">
       {toast && (
         <span
           key={toast}
-          className="gf-anim-hud-toast pointer-events-none absolute top-1.5 right-4 z-20 rounded-full bg-linear-to-r from-[#22d3ee] via-[#a855f7] to-[#ff7a1a] px-2.5 py-1 text-[10px] font-black text-white uppercase shadow-md"
+          className="gf-anim-hud-toast pointer-events-none absolute top-1.5 right-4 z-20 rounded-full bg-electric px-2.5 py-1 text-[10px] font-black text-white uppercase shadow-md"
         >
           {toast}
         </span>
@@ -52,15 +52,15 @@ export function BioStatHud({
         icon={Zap}
         label="Burn Potential"
         value={burn}
-        from="#ff7a1a"
-        to="#22d3ee"
+        from="#0052ff"
+        to="#4d85ff"
       />
       <HudBar
         icon={Gauge}
         label="Plan Precision"
         value={precision}
-        from="#a855f7"
-        to="#22d3ee"
+        from="#1faa06"
+        to="#39ff14"
         className="mt-3"
       />
     </div>
