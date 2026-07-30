@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import { useGoalify } from "@/lib/goalify/store";
 import {
   playClickPop,
+  playHypeSelect,
   playProgressPowerUp,
   playUnlockFanfare,
 } from "@/lib/goalify/sound";
@@ -25,9 +26,13 @@ export function useUiSounds() {
     if (enabled) playProgressPowerUp();
   }, [enabled]);
 
+  const hypeSelect = useCallback(() => {
+    if (enabled) playHypeSelect();
+  }, [enabled]);
+
   const unlockFanfare = useCallback(() => {
     if (enabled) playUnlockFanfare();
   }, [enabled]);
 
-  return { clickPop, progressPowerUp, unlockFanfare };
+  return { clickPop, progressPowerUp, hypeSelect, unlockFanfare };
 }

@@ -12,32 +12,33 @@ import {
 } from "@/components/goalify/ui/progress-ring";
 import { ParticleField } from "@/components/goalify/ui/particles";
 import { CoachBadge } from "@/components/goalify/coach/coach-bubble";
+import { QuizIconBadge } from "./quiz-icons";
 
 const STAGES = [
   {
     label: "Analyzing fat-burn potential…",
     badge: "Burn Profile Locked",
-    emoji: "🔥",
+    icon: "flame",
   },
   {
     label: "Optimizing muscle tone trajectory…",
     badge: "Tone Curve Mapped",
-    emoji: "💪",
+    icon: "biceps",
   },
   {
     label: "Calibrating metabolic engine…",
     badge: "Metabolism Solved",
-    emoji: "⚙️",
+    icon: "gauge",
   },
   {
     label: "Balancing fuel to your goal…",
     badge: "Macros Dialled In",
-    emoji: "🥩",
+    icon: "utensils",
   },
   {
     label: "Unlocking your custom plan…",
     badge: "Roadmap Unlocked",
-    emoji: "🗝️",
+    icon: "rocket",
   },
 ] as const;
 
@@ -207,8 +208,8 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
               </span>
               {/* Badge snaps in the moment its stage completes. */}
               {done && (
-                <span className="gf-anim-unlock flex shrink-0 items-center gap-1 rounded-full bg-lime-neon/18 px-2 py-1 text-[9px] font-black tracking-[0.08em] text-lime-deep uppercase">
-                  <span aria-hidden>{item.emoji}</span>
+                <span className="gf-anim-unlock flex shrink-0 items-center gap-1.5 rounded-full bg-linear-to-r from-[#22d3ee] via-[#a855f7] to-[#ff7a1a] py-1 pr-2.5 pl-1 text-[9px] font-black tracking-[0.08em] text-white uppercase shadow-sm">
+                  <QuizIconBadge icon={item.icon} size="xs" />
                   {item.badge}
                 </span>
               )}

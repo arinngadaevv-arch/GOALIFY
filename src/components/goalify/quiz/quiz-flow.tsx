@@ -26,6 +26,8 @@ import { CoachBadge } from "@/components/goalify/coach/coach-bubble";
 import { CoachGuide, sayCoach } from "@/components/goalify/coach/coach-guide";
 import { useUiSounds } from "@/components/goalify/use-ui-sounds";
 import { OptionPhoto } from "./option-photo";
+import { QuizIconBadge, type QuizIconKey } from "./quiz-icons";
+import { SelectionBurst } from "./selection-burst";
 import { AnalyzingScreen } from "./analyzing-screen";
 
 /** Steps whose stored value is a number even though it's picked as a choice. */
@@ -43,7 +45,7 @@ export function QuizFlow() {
   const [pending, setPending] = useState<Partial<QuizAnswers> | null>(null);
   /** Badge that snaps in over the chosen card. */
   const [badge, setBadge] = useState<string | null>(null);
-  const { clickPop, progressPowerUp } = useUiSounds();
+  const { clickPop, hypeSelect } = useUiSounds();
 
   const step = QUIZ_STEPS[index];
   const isLast = index === QUIZ_STEPS.length - 1;
@@ -72,12 +74,12 @@ export function QuizFlow() {
       setReaction(line);
       setBadge(wonBadge ?? null);
       setPending(patch);
-      progressPowerUp();
+      hypeSelect();
       // Mirror the reaction into the floating coach so it stays in the corner
       // even once the question has scrolled away.
       if (line) sayCoach(line);
     },
-    [setDraft, step.id, progressPowerUp],
+    [setDraft, step.id, hypeSelect],
   );
 
   // The advance itself happens in a timer callback, never synchronously in the
@@ -153,7 +155,7 @@ export function QuizFlow() {
         <p className="text-[11px] font-black tracking-[0.16em] text-electric uppercase">
           {step.chapter}
         </p>
-        <h1 className="gf-slash gf-display relative mt-2 text-4xl leading-[1.05] font-black text-ink sm:text-5xl">
+        <h1 className="gf-slash gf-display gf-text-neon relative mt-2 text-4xl leading-[1.05] font-black sm:text-5xl">
           {step.title}
         </h1>
       </div>
@@ -255,7 +257,7 @@ function ChoiceStep({
           {step.options.map((option) => (
             <OptionCard
               key={option.value}
-              emoji={option.emoji}
+              icon={option.icon}
               label={option.label}
               description={option.description}
               socialProof={option.socialProof}
@@ -373,15 +375,16 @@ function PhotoOptionCard({
   onClick: () => void;
 }) {
   const badge = wonBadge && (
-    <span className="gf-anim-unlock absolute -top-2.5 right-3 z-20 rounded-full bg-lime-neon px-2.5 py-1 text-[9px] font-black tracking-[0.12em] text-ink uppercase shadow-md">
+    <span className="gf-anim-unlock absolute -top-2.5 right-3 z-20 rounded-full bg-linear-to-r from-[#22d3ee] via-[#a855f7] to-[#ff7a1a] px-2.5 py-1 text-[9px] font-black tracking-[0.12em] text-white uppercase shadow-md">
       {wonBadge}
     </span>
   );
+  const burst = selected && <SelectionBurst />;
 
   if (layout === "list") {
     return (
       <OptionCard
-        emoji={option.emoji}
+        icon={option.icon}
         label={option.label}
         description={option.description}
         socialProof={option.socialProof}
@@ -394,8 +397,8 @@ function PhotoOptionCard({
   }
 
   const base = clsx(
-    "gf-card gf-card-hover gf-press relative text-left transition-all",
-    selected && "gf-card-active",
+    "gf-card gf-card-hover gf-neon-ring gf-press relative text-left transition-all",
+    selected && "gf-neon-ring-active gf-anim-select-pop",
     disabled && !selected && "opacity-50",
   );
 
@@ -409,6 +412,7 @@ function PhotoOptionCard({
         className={clsx(base, "flex items-stretch overflow-hidden")}
       >
         {badge}
+        {burst}
         <span className="flex min-w-0 flex-1 flex-col justify-center py-7 pl-6">
           <span className="gf-display text-2xl leading-tight font-extrabold text-ink">
             {option.label}
@@ -428,7 +432,7 @@ function PhotoOptionCard({
           src={option.image}
           alt={option.label}
           label={option.label}
-          emoji={option.emoji}
+          icon={option.icon}
           className="h-36 w-40 shrink-0 self-end"
         />
       </button>
@@ -445,12 +449,13 @@ function PhotoOptionCard({
         className={clsx(base, "flex flex-col items-center px-3 pt-0 pb-5")}
       >
         {badge}
+        {burst}
         {/* The cut-out breaks above the card, exactly like the reference. */}
         <OptionPhoto
           src={option.image}
           alt={option.label}
           label={option.label}
-          emoji={option.emoji}
+          icon={option.icon}
           className="-mt-14 h-56 w-full"
         />
         <span className="gf-display mt-2 text-xl font-extrabold text-ink">
@@ -474,7 +479,7 @@ function PhotoOptionCard({
         src={option.image}
         alt={option.label}
         label={option.label}
-        emoji={option.emoji}
+        icon={option.icon}
         className="h-36 w-full"
       />
       <span className="gf-display mt-2 px-3 text-center text-base leading-tight font-extrabold text-ink">
@@ -490,7 +495,7 @@ function PhotoOptionCard({
 }
 
 function OptionCard({
-  emoji,
+  icon,
   label,
   description,
   socialProof,
@@ -500,7 +505,7 @@ function OptionCard({
   disabled = false,
   onClick,
 }: {
-  emoji: string;
+  icon: QuizIconKey;
   label: string;
   description?: string;
   socialProof?: string;
@@ -517,29 +522,23 @@ function OptionCard({
       disabled={disabled}
       aria-pressed={selected}
       className={clsx(
-        "gf-glass gf-press relative rounded-3xl p-4 text-left transition-all duration-300",
+        "gf-glass gf-neon-ring gf-press relative rounded-3xl p-4 text-left transition-all duration-300",
         "flex items-center gap-4",
-        !disabled && "hover:-translate-y-0.5 hover:border-electric/30",
+        !disabled && "hover:-translate-y-0.5",
         selected
-          ? "gf-glow-border gf-glow-electric border-electric/50"
+          ? "gf-neon-ring-active gf-anim-select-pop"
           : "disabled:opacity-45",
       )}
     >
+      {selected && <SelectionBurst />}
+
       {/* Motivational badge snaps in the instant the card is chosen. */}
       {wonBadge && (
-        <span className="gf-anim-unlock gf-glow-lime absolute -top-2.5 right-4 z-10 rounded-full bg-lime-neon px-2.5 py-1 text-[9px] font-black tracking-[0.12em] text-ink uppercase">
+        <span className="gf-anim-unlock absolute -top-2.5 right-4 z-20 rounded-full bg-linear-to-r from-[#22d3ee] via-[#a855f7] to-[#ff7a1a] px-2.5 py-1 text-[9px] font-black tracking-[0.12em] text-white uppercase shadow-md">
           {wonBadge}
         </span>
       )}
-      <span
-        className={clsx(
-          "grid size-12 shrink-0 place-items-center rounded-2xl text-2xl transition-colors",
-          selected ? "bg-electric/12" : "bg-ink/4",
-        )}
-        aria-hidden
-      >
-        {emoji}
-      </span>
+      <QuizIconBadge icon={icon} size="md" active={selected} />
       <span className="min-w-0 flex-1">
         <span className="block text-base font-extrabold tracking-tight text-ink">
           {label}

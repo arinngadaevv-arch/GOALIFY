@@ -718,3 +718,177 @@ html.goalify ::-webkit-scrollbar-thumb {
     rgba(0, 82, 255, 0) 62%
   );
 }
+
+/* ==========================================================================
+   Quiz "AAA game" interaction layer — neon icon badges, glowing card
+   borders, selection pop, and a particle burst. Scoped to the quiz so the
+   rest of the app keeps the calmer electric/lime brand system.
+   ========================================================================== */
+
+:root {
+  --gf-neon-1: #22d3ee; /* cyan */
+  --gf-neon-2: #a855f7; /* purple */
+  --gf-neon-3: #ff7a1a; /* electric orange */
+}
+
+/* --- Icon badges (emoji replacement) ------------------------------------- */
+
+.gf-icon-badge {
+  background: linear-gradient(
+    135deg,
+    var(--gf-neon-1) 0%,
+    var(--gf-neon-2) 55%,
+    var(--gf-neon-3) 100%
+  );
+  box-shadow:
+    0 6px 16px -6px rgba(80, 40, 200, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition:
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.3s ease;
+}
+
+.gf-icon-badge-active {
+  transform: scale(1.08);
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.9),
+    0 8px 22px -6px rgba(80, 40, 200, 0.6),
+    0 0 24px -4px var(--gf-neon-2);
+}
+
+/* --- Neon card border ------------------------------------------------------
+   A conic gradient ring, masked down to a hairline, spinning slowly. Idle
+   hover gets a dim static rim; the selected state gets the full animated
+   sweep plus an outer glow. */
+
+/* A conic-gradient masked into a thin ring streaks badly on wide,
+   non-square cards (the angle-from-center doesn't map cleanly onto an
+   elongated border path) — so this uses the same animated linear-gradient
+   sweep as .gf-border-sweep, just recoloured, which handles any aspect
+   ratio cleanly. */
+.gf-neon-ring {
+  position: relative;
+  isolation: isolate;
+}
+
+.gf-neon-ring::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(
+    100deg,
+    var(--gf-neon-1),
+    var(--gf-neon-2),
+    var(--gf-neon-3),
+    var(--gf-neon-1)
+  );
+  background-size: 220% 100%;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.gf-neon-ring:hover::before {
+  opacity: 0.55;
+}
+
+.gf-neon-ring-active::before {
+  opacity: 1 !important;
+  animation: gf-border-sweep 2.4s linear infinite;
+}
+
+.gf-neon-ring-active {
+  box-shadow:
+    0 0 0 1px rgba(168, 85, 247, 0.15),
+    0 18px 40px -14px rgba(80, 40, 200, 0.4),
+    0 0 32px -10px var(--gf-neon-2);
+}
+
+/* --- Selection pop --------------------------------------------------------- */
+
+@keyframes gf-select-pop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.06);
+  }
+  70% {
+    transform: scale(0.99);
+  }
+  100% {
+    transform: scale(1.03);
+  }
+}
+
+.gf-anim-select-pop {
+  animation: gf-select-pop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* --- Particle burst --------------------------------------------------------
+   Each dot reads its flight path from --tx/--ty custom properties set
+   inline per-particle, so one keyframe covers every direction. */
+
+@keyframes gf-particle-fly {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tx), var(--ty)) scale(0.3);
+    opacity: 0;
+  }
+}
+
+.gf-particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 999px;
+  animation: gf-particle-fly 0.68s cubic-bezier(0.16, 1, 0.3, 1) both;
+  pointer-events: none;
+  z-index: 30;
+}
+
+/* --- Animated neon headline gradient --------------------------------------- */
+
+@keyframes gf-neon-text-sweep {
+  to {
+    background-position: 200% 50%;
+  }
+}
+
+.gf-text-neon {
+  background: linear-gradient(
+    100deg,
+    var(--gf-neon-1) 0%,
+    var(--gf-neon-2) 35%,
+    var(--gf-neon-3) 65%,
+    var(--gf-neon-1) 100%
+  );
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gf-neon-text-sweep 5s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gf-neon-ring-active::before,
+  .gf-text-neon,
+  .gf-particle,
+  .gf-anim-select-pop {
+    animation: none !important;
+  }
+}

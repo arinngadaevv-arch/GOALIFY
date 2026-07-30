@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import clsx from "clsx";
 import { AVAILABLE_QUIZ_IMAGES } from "@/lib/goalify/quiz-images.generated";
+import { QuizIconBadge, type QuizIconKey } from "./quiz-icons";
 
 /**
  * The photo area of an answer card.
@@ -11,21 +12,21 @@ import { AVAILABLE_QUIZ_IMAGES } from "@/lib/goalify/quiz-images.generated";
  * Renders the real cut-out photograph when one has been dropped into
  * /public/quiz (see public/quiz/README.md). Which files exist is baked in at
  * build time by scripts/gen-quiz-images.mjs, so a card with no photo yet
- * shows an illustrated figure without ever firing a request that 404s. The
+ * shows a premium icon badge instead — never a request that 404s. The
  * onError guard is a second line of defence if a file is removed later.
  */
 export function OptionPhoto({
   src,
   alt,
   label,
-  emoji,
+  icon,
   className,
   imageClassName,
 }: {
   src?: string;
   alt: string;
   label: string;
-  emoji: string;
+  icon: QuizIconKey;
   className?: string;
   imageClassName?: string;
 }) {
@@ -35,7 +36,7 @@ export function OptionPhoto({
   return (
     <div
       className={clsx("gf-photo-bed relative grid place-items-center", className)}
-      {...(showPhoto ? {} : { role: "img", "aria-label": `${label} — photo placeholder` })}
+      {...(showPhoto ? {} : { role: "img", "aria-label": `${label} — icon placeholder` })}
     >
       {showPhoto ? (
         <Image
@@ -47,12 +48,7 @@ export function OptionPhoto({
           className={clsx("object-contain object-bottom", imageClassName)}
         />
       ) : (
-        <span
-          className="gf-anim-float text-5xl opacity-80 drop-shadow-sm"
-          aria-hidden
-        >
-          {emoji}
-        </span>
+        <QuizIconBadge icon={icon} size="lg" className="gf-anim-float" />
       )}
     </div>
   );

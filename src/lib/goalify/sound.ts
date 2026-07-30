@@ -166,6 +166,39 @@ export function playProgressPowerUp() {
   ]);
 }
 
+/**
+ * The quiz's "hype" selection cue — a bright impact transient followed by a
+ * quick rising flick, tuned to land with the neon glow + particle burst.
+ * Punchier than the plain click pop used on utility taps (steppers etc).
+ */
+export function playHypeSelect() {
+  playTones([
+    // Low thump for physical weight, right on the hit.
+    {
+      frequency: 180,
+      startOffset: 0,
+      duration: 0.09,
+      gain: 0.14,
+      type: "sine",
+    },
+    ...wide({
+      frequency: 740,
+      glideTo: 1180,
+      startOffset: 0.005,
+      duration: 0.14,
+      gain: 0.15,
+      type: "triangle",
+    }),
+    ...wide({
+      frequency: 1480,
+      startOffset: 0.09,
+      duration: 0.1,
+      gain: 0.09,
+      type: "triangle",
+    }),
+  ]);
+}
+
 /** Big triumphant flourish for the plan-unlock moment. */
 export function playUnlockFanfare() {
   playTones([
