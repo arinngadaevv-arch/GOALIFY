@@ -126,9 +126,9 @@ export default function LandingPage() {
           </h1>
 
           <p className="mt-6 max-w-lg text-lg leading-relaxed text-ink-soft">
-            One coach. One plan. Built around your goal, your starting point
-            and the exact thing that stopped you last time — then drilled into
-            you rep by rep in 3D.
+            One coach. One plan. Built around your goal, your starting point,
+            and the exact thing that stopped you last time — then drilled
+            into you rep by rep until results are inevitable.
           </p>
 
           {/* The coach speaks before the user has done anything. */}
@@ -216,8 +216,8 @@ export default function LandingPage() {
             See it before you feel it
           </h2>
           <p className="mx-auto mt-3 max-w-md text-base text-ink-soft">
-            Your own before/after vault unlocks from day one — here&apos;s
-            what a finished transformation looks like.
+            Your own before/after vault unlocks from day one. This is what
+            &ldquo;it worked&rdquo; actually looks like.
           </p>
         </div>
 

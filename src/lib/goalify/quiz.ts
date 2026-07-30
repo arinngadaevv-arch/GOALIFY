@@ -8,7 +8,7 @@ export type ChoiceOption = {
   /** Key into QUIZ_ICONS — replaces raw emoji glyphs with real SVG icons. */
   icon: QuizIconKey;
   /**
-   * Social-proof line rendered under the option.
+   * Social-proof / stat callout rendered under the option.
    *
    * PLACEHOLDER MARKETING COPY — these figures are illustrative, not measured.
    * Replace every one of them with real, substantiated numbers (or delete the
@@ -41,7 +41,7 @@ export type QuizStep =
        * - `portrait` — two columns, photo bleeding above the card top
        * - `wide` — full-width rows, label left and photo bleeding right
        * - `tile` — two columns, photo inside the card above the label
-       * - `list` (default) — compact icon rows
+       * - `list` (default) — compact two-column icon tiles
        */
       layout?: "portrait" | "wide" | "tile" | "list";
       /** Short label shown in the coach's eyebrow above the question. */
@@ -74,61 +74,63 @@ export type QuizStep =
     };
 
 /**
- * Ordered as a funnel: goal first, then what's blocked it before, then the
- * outcome that matters most — and only once that's captured do we ask for
- * the numbers. The final step is an explicit commitment check.
+ * Ordered as a conversion funnel: the target outcome first, then the
+ * obstacle that's blocked it, then the payoff that matters most — and only
+ * once that's captured do we ask for the numbers. The final step is an
+ * explicit commitment check, so the last thing they do before the plan
+ * unlocks is say yes.
  */
 export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "goal",
     kind: "choice",
-    layout: "wide",
-    chapter: "Goal",
-    title: "What's your primary goal?",
+    layout: "tile",
+    chapter: "The target",
+    title: "Select your 30-day target physique",
     subtitle:
-      "This sets the direction for your entire program — exercise selection, volume, and calorie targets.",
+      "Every rep, every calorie in your program is engineered around this one choice. Pick the outcome you actually want.",
     options: [
       {
         value: "burn",
         image: "/quiz/goal-burn.png",
-        label: "Lean and cut",
-        description: "Reduce body fat while preserving muscle",
+        label: "Lean & shredded",
+        description: "Strip fat fast while locking in every ounce of muscle",
         icon: "flame",
-        socialProof: "Chosen by 41% of members",
+        socialProof: "41% choose this — the #1 goal on GOALIFY",
       },
       {
         value: "build",
         image: "/quiz/goal-build.png",
-        label: "Bigger and stronger",
-        description: "Build noticeable size and strength",
+        label: "Bigger & stronger",
+        description: "Pack on visible size and raw strength, week over week",
         icon: "dumbbell",
-        socialProof: "Fastest strength gains in weeks 3–6",
+        socialProof: "Fastest strength gains land in weeks 3–6",
       },
       {
         value: "tone",
         image: "/quiz/goal-tone.png",
-        label: "Toned and defined",
-        description: "Visible definition without added bulk",
+        label: "Toned & defined",
+        description: "Sculpted, visible definition — zero bulk",
         icon: "sparkles",
         socialProof: "Most popular first-time goal",
       },
       {
         value: "athletic",
         image: "/quiz/goal-athletic.png",
-        label: "Athletic performance",
-        description: "Improve speed, endurance, and power",
+        label: "Athletic & unstoppable",
+        description: "Move faster, last longer, hit harder than ever",
         icon: "zap",
-        socialProof: "Biggest reported energy increase",
+        socialProof: "Biggest reported energy jump in week 1",
       },
     ],
   },
   {
     id: "focusZones",
     kind: "bodyMap",
-    chapter: "Body focus",
-    title: "Select your body targets",
+    chapter: "The blueprint",
+    title: "Where do you want results first?",
     subtitle:
-      "Tap the areas you want to prioritize. Your program will emphasize these first.",
+      "Tap every zone you want transformed. Your program locks in and prioritizes these areas from day one.",
     zones: [
       { value: "chest", label: "Chest" },
       { value: "arms", label: "Arms" },
@@ -142,34 +144,33 @@ export const QUIZ_STEPS: QuizStep[] = [
     kind: "choice",
     layout: "tile",
     speedRound: true,
-    chapter: "Obstacles",
-    title: "What's held you back before?",
-    subtitle:
-      "This shapes how your program handles the thing that's derailed you in the past.",
+    chapter: "The obstacle",
+    title: "What's your biggest obstacle to total confidence?",
+    subtitle: "Name it. This is exactly what your plan is engineered to destroy.",
     options: [
       {
         value: "time",
         image: "/quiz/painTrigger-time.png",
-        label: "Not enough time",
+        label: "No time",
         description: "Schedule fills up and training gets cut first",
         icon: "hourglass",
-        socialProof: "Addressed with short, finishable sessions",
+        socialProof: "Solved: 92% finish our 15-minute sessions",
       },
       {
         value: "motivation",
         image: "/quiz/painTrigger-motivation.png",
-        label: "Motivation fades",
+        label: "Fading motivation",
         description: "Strong start, then momentum drops by week three",
         icon: "batteryLow",
-        socialProof: "A streak system helps members stay consistent past week 8",
+        socialProof: "Our streak system keeps members going past week 8",
       },
       {
         value: "confusion",
         image: "/quiz/painTrigger-confusion.png",
-        label: "Unclear what to do",
+        label: "No clear plan",
         description: "Too many conflicting plans and opinions",
         icon: "helpCircle",
-        socialProof: "Every session is pre-decided for you",
+        socialProof: "Every session is pre-decided — zero guesswork",
       },
       {
         value: "injury",
@@ -177,7 +178,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Pain or injury",
         description: "Flare-ups cause repeated setbacks",
         icon: "heartPulse",
-        socialProof: "Joint-safe swaps built into every movement",
+        socialProof: "Joint-safe swaps built into every single movement",
       },
       {
         value: "restart",
@@ -185,7 +186,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Repeated false starts",
         description: "Started many times, never followed through",
         icon: "rotateCcw",
-        socialProof: "Designed for long-term follow-through",
+        socialProof: "Engineered to be the last plan you ever start",
       },
     ],
   },
@@ -194,51 +195,52 @@ export const QUIZ_STEPS: QuizStep[] = [
     kind: "choice",
     layout: "tile",
     speedRound: true,
-    chapter: "Outcome",
-    title: "What result matters most?",
-    subtitle: "This helps prioritize what your program optimizes for first.",
+    chapter: "The payoff",
+    title: "What will finally make you feel unstoppable?",
+    subtitle:
+      "Picture it 30 days from now. This is what we're building toward — together.",
     options: [
       {
         value: "confident",
         image: "/quiz/vision-confident.png",
-        label: "Confidence",
+        label: "Total confidence",
         description: "Clothes fit better, posture improves",
         icon: "crown",
-        socialProof: "Most commonly reported change at day 30",
+        socialProof: "#1 reported change at day 30",
       },
       {
         value: "strong",
         image: "/quiz/vision-strong.png",
-        label: "Strength",
+        label: "Real strength",
         description: "Noticeably stronger and more capable",
         icon: "biceps",
-        socialProof: "Strength gains typically show before visual change",
+        socialProof: "Strength gains show up before the mirror does",
       },
       {
         value: "energised",
         image: "/quiz/vision-energised.png",
-        label: "Energy",
-        description: "Fewer energy crashes throughout the day",
+        label: "Nonstop energy",
+        description: "No 3pm crash, no dragging yourself around",
         icon: "zap",
         socialProof: "Most members notice this within week 1",
       },
       {
         value: "proud",
         image: "/quiz/vision-proud.png",
-        label: "Follow-through",
-        description: "Completing what you set out to do",
+        label: "Proof you followed through",
+        description: "You said you would — and this time you did",
         icon: "trophy",
-        socialProof: "Reported as the top reason members stay consistent",
+        socialProof: "The #1 reason members stay consistent",
       },
     ],
   },
   {
     id: "level",
     kind: "choice",
-    layout: "wide",
-    chapter: "Experience",
-    title: "What's your training experience?",
-    subtitle: "This calibrates your starting intensity and how quickly it progresses.",
+    layout: "tile",
+    chapter: "Your starting line",
+    title: "Where are you starting from?",
+    subtitle: "Be honest — I'll calibrate your first week to guarantee early wins.",
     options: [
       {
         value: "beginner",
@@ -246,15 +248,15 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Beginner",
         description: "New to structured training",
         icon: "sprout",
-        socialProof: "Beginners typically see the fastest visible change",
+        socialProof: "Beginners see the fastest visible change",
       },
       {
         value: "returning",
         image: "/quiz/level-returning.png",
         label: "Returning",
-        description: "Trained previously, took time off",
+        description: "Trained before, took time off",
         icon: "refresh",
-        socialProof: "Muscle memory typically returns within 2 weeks",
+        socialProof: "Muscle memory kicks back in within 2 weeks",
       },
       {
         value: "consistent",
@@ -262,7 +264,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Consistent",
         description: "Training most weeks already",
         icon: "award",
-        socialProof: "Ready to move from maintenance to progression",
+        socialProof: "Ready to move from maintaining to progressing",
       },
       {
         value: "advanced",
@@ -279,35 +281,38 @@ export const QUIZ_STEPS: QuizStep[] = [
     kind: "choice",
     layout: "list",
     multi: true,
-    chapter: "Safety",
-    title: "Injury & Joint History",
+    chapter: "Injury shielding",
+    title: "Anything we need to protect?",
     subtitle:
-      "Exercises are automatically adjusted around any areas you select. Choose all that apply.",
+      "Flag it and I'll auto-engineer every movement around it. Zero flare-ups, zero excuses.",
     options: [
       {
         value: "none",
         label: "Nothing hurts",
         description: "Full range of movement available",
         icon: "checkCircle",
+        socialProof: "Full-intensity programming unlocked",
       },
       {
         value: "knees",
         label: "Knees",
-        description: "Jumps and deep bends are automatically substituted",
+        description: "Jumps and deep bends auto-substituted",
         icon: "shieldCheck",
-        socialProof: "Reported to reduce knee discomfort during training",
+        socialProof: "Reported to cut knee discomfort fast",
       },
       {
         value: "back",
         label: "Lower back",
         description: "Spine-neutral variations only",
         icon: "shield",
+        socialProof: "Zero-risk movement patterns, guaranteed",
       },
       {
         value: "shoulders",
         label: "Shoulders",
-        description: "Overhead loading is limited",
+        description: "Overhead loading limited automatically",
         icon: "shieldAlert",
+        socialProof: "Built-in protection, every session",
       },
     ],
   },
@@ -315,16 +320,17 @@ export const QUIZ_STEPS: QuizStep[] = [
     id: "sessionLength",
     kind: "choice",
     layout: "list",
-    chapter: "Session length",
-    title: "Preferred session length",
-    subtitle: "Sessions are built to fit fully within this window.",
+    chapter: "Your window",
+    title: "How much time can you give me?",
+    subtitle:
+      "Even 15 minutes, done right, changes everything. I'll make every second count.",
     options: [
       {
         value: "15",
         label: "15 minutes",
-        description: "Short, equipment-free sessions",
+        description: "Short, equipment-free, brutally efficient",
         icon: "zap",
-        socialProof: "Highest completion rate of any session length",
+        socialProof: "92% completion rate — our highest",
       },
       {
         value: "25",
@@ -336,7 +342,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       {
         value: "40",
         label: "40 minutes",
-        description: "Full sessions with additional finishing work",
+        description: "Full sessions with extra finishing work",
         icon: "dumbbell",
         socialProof: "Fastest route to visible definition",
       },
@@ -346,9 +352,9 @@ export const QUIZ_STEPS: QuizStep[] = [
     id: "daysPerWeek",
     kind: "choice",
     layout: "list",
-    chapter: "Training frequency",
-    title: "Training days per week",
-    subtitle: "Choose a frequency you can realistically sustain.",
+    chapter: "Your rhythm",
+    title: "How many days a week?",
+    subtitle: "Pick the pace you'll actually keep — consistency beats intensity every time.",
     options: [
       {
         value: "3",
@@ -360,14 +366,14 @@ export const QUIZ_STEPS: QuizStep[] = [
       {
         value: "4",
         label: "4 days",
-        description: "The most common balance of results and effort",
+        description: "The results-to-effort sweet spot",
         icon: "calendarCheck",
         socialProof: "Best results-to-effort ratio",
       },
       {
         value: "5",
         label: "5 days",
-        description: "Faster progress with recovery managed carefully",
+        description: "Faster progress, recovery managed carefully",
         icon: "calendarClock",
         socialProof: "Fastest 30-day transformations",
       },
@@ -384,9 +390,9 @@ export const QUIZ_STEPS: QuizStep[] = [
     id: "sex",
     kind: "choice",
     layout: "portrait",
-    chapter: "Biometrics",
-    title: "Biological sex",
-    subtitle: "Used to calculate your metabolic rate accurately.",
+    chapter: "The science",
+    title: "What's your biological sex?",
+    subtitle: "This locks in your exact metabolic rate — no generic guesswork.",
     options: [
       { value: "female", label: "Female", icon: "venus" },
       { value: "male", label: "Male", icon: "mars" },
@@ -402,9 +408,9 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "age",
     kind: "number",
-    chapter: "Biometrics",
-    title: "Your age",
-    subtitle: "Used to calculate recovery time and intensity progression.",
+    chapter: "The science",
+    title: "How old are you?",
+    subtitle: "Age tunes your recovery windows and how fast I ramp your intensity.",
     unit: "years",
     min: 16,
     max: 80,
@@ -414,9 +420,9 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "heightCm",
     kind: "number",
-    chapter: "Biometrics",
-    title: "Your height",
-    subtitle: "Used to calculate your calorie and protein targets.",
+    chapter: "The science",
+    title: "How tall are you?",
+    subtitle: "Feeds straight into the exact calories and protein that build you.",
     unit: "cm",
     min: 140,
     max: 215,
@@ -426,9 +432,9 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "weightKg",
     kind: "number",
-    chapter: "Starting point",
-    title: "Current weight",
-    subtitle: "Your baseline for tracking progress over time.",
+    chapter: "The before",
+    title: "Your weight today",
+    subtitle: "Remember this number. In 4 weeks you'll love how far it's moved.",
     unit: "kg",
     min: 40,
     max: 180,
@@ -438,9 +444,9 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "targetWeightKg",
     kind: "number",
-    chapter: "Target",
-    title: "Target weight",
-    subtitle: "We'll map a safe, realistic path to this number.",
+    chapter: "The after",
+    title: "Your target weight",
+    subtitle: "I'll map the exact, safe route there — and show you the curve.",
     unit: "kg",
     min: 40,
     max: 180,
@@ -452,9 +458,9 @@ export const QUIZ_STEPS: QuizStep[] = [
     kind: "choice",
     layout: "tile",
     speedRound: true,
-    chapter: "Commitment",
-    title: "Training commitment",
-    subtitle: "This calibrates how your program handles accountability and flexibility.",
+    chapter: "The pact",
+    title: "Are you ready to commit?",
+    subtitle: "If I hold you accountable every single day, will you show up?",
     options: [
       {
         value: "allin",
@@ -462,13 +468,13 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "All in, every day",
         description: "Maximum accountability and structure",
         icon: "flame",
-        socialProof: "All-in members are the most likely to finish week 8",
+        socialProof: "All-in members are most likely to finish week 8",
       },
       {
         value: "most",
         image: "/quiz/commitment-most.png",
         label: "Most days, honestly",
-        description: "Consistent with some flexibility",
+        description: "Consistent, with room to breathe",
         icon: "thumbsUp",
         socialProof: "Flexible streaks keep this realistic",
       },
@@ -476,9 +482,9 @@ export const QUIZ_STEPS: QuizStep[] = [
         value: "unsure",
         image: "/quiz/commitment-unsure.png",
         label: "Show me it works first",
-        description: "Wants to see results before committing further",
+        description: "Wants proof before committing further",
         icon: "helpCircle",
-        socialProof: "Most sceptics convert after session 3",
+        socialProof: "Most sceptics convert by session 3",
       },
     ],
   },

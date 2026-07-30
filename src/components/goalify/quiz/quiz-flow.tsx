@@ -143,7 +143,7 @@ export function QuizFlow() {
                 className="h-1.5 flex-1 overflow-hidden rounded-full bg-ink/8"
               >
                 <span
-                  className="block h-full rounded-full bg-electric transition-[width] duration-500 ease-out"
+                  className="gf-charge block h-full rounded-full bg-electric transition-[width] duration-500 ease-out"
                   style={{ width: `${filled * 100}%` }}
                 />
               </span>
@@ -161,9 +161,12 @@ export function QuizFlow() {
 
       {/* ------------------------------------------------------- Big headline */}
       <div key={step.id} className="gf-anim-swoop relative pt-4">
-        <p className="text-[11px] font-black tracking-[0.16em] text-electric uppercase">
-          {step.chapter}
-        </p>
+        <div className="flex items-center gap-2">
+          <span className="gf-accent-line" aria-hidden />
+          <p className="text-[11px] font-black tracking-[0.16em] text-electric uppercase">
+            {step.chapter}
+          </p>
+        </div>
         <h1 className="gf-slash gf-display relative mt-2 text-4xl leading-[1.05] font-black text-ink sm:text-5xl">
           {step.title}
         </h1>
@@ -269,7 +272,7 @@ function ChoiceStep({
 
     return (
       <>
-        <div className="grid gap-3">
+        <div className="grid grid-cols-2 gap-3">
           {step.options.map((option) => {
             const isJointPart =
               step.id === "joints" &&
@@ -292,7 +295,6 @@ function ChoiceStep({
                 description={option.description}
                 socialProof={option.socialProof}
                 selected={selected.includes(option.value)}
-                multi
                 disabled={locked}
                 onClick={() => {
                   onTap();
@@ -336,8 +338,8 @@ function ChoiceStep({
     <div>
       <div
         className={clsx(
-          "grid gap-3",
-          (layout === "portrait" || layout === "tile") && "grid-cols-2 gap-4",
+          "grid grid-cols-2 gap-3",
+          (layout === "portrait" || layout === "tile") && "gap-4",
           layout === "portrait" && "mt-14",
         )}
       >
@@ -443,7 +445,8 @@ function PhotoOptionCard({
             </span>
           )}
           {option.socialProof && (
-            <span className="mt-2 text-[11px] font-bold text-lime-deep">
+            <span className="mt-2 inline-flex w-fit items-center gap-1 rounded-full bg-lime-neon/14 px-2 py-1 text-[10px] leading-none font-bold text-lime-deep">
+              <TrendingUp className="size-3 shrink-0" strokeWidth={3} />
               {option.socialProof}
             </span>
           )}
@@ -505,7 +508,8 @@ function PhotoOptionCard({
         {option.label}
       </span>
       {option.socialProof && (
-        <span className="mt-1 px-3 text-center text-[10px] font-bold text-lime-deep">
+        <span className="mx-auto mt-1.5 inline-flex w-fit items-center gap-1 rounded-full bg-lime-neon/14 px-2 py-1 text-[10px] leading-none font-bold text-lime-deep">
+          <TrendingUp className="size-3 shrink-0" strokeWidth={3} />
           {option.socialProof}
         </span>
       )}
@@ -520,7 +524,6 @@ function OptionCard({
   description,
   socialProof,
   selected,
-  multi = false,
   disabled = false,
   onClick,
 }: {
@@ -530,7 +533,6 @@ function OptionCard({
   description?: string;
   socialProof?: string;
   selected: boolean;
-  multi?: boolean;
   disabled?: boolean;
   onClick: () => void;
 }) {
@@ -541,41 +543,30 @@ function OptionCard({
       disabled={disabled}
       aria-pressed={selected}
       className={clsx(
-        "gf-glass gf-press relative rounded-3xl p-4 text-left transition-all duration-300",
-        "flex items-center gap-4",
-        !disabled && "hover:-translate-y-0.5",
-        selected ? "gf-card-active" : "disabled:opacity-45",
+        "gf-glass gf-card-hover gf-press relative flex flex-col items-center rounded-3xl p-4 text-center transition-all duration-300",
+        selected ? "gf-card-active scale-[1.015]" : "disabled:opacity-45",
       )}
     >
-      {glyph ?? <QuizIconBadge icon={icon} size="md" active={selected} />}
-      <span className="min-w-0 flex-1">
-        <span className="block text-base font-extrabold tracking-tight text-ink">
-          {label}
+      {selected && (
+        <span className="absolute top-3 right-3 z-20 grid size-6 place-items-center rounded-full bg-electric text-white shadow-md">
+          <Check className="size-3.5" strokeWidth={3.5} />
         </span>
-        {description && (
-          <span className="mt-0.5 block text-sm leading-snug text-mist">
-            {description}
-          </span>
-        )}
-        {socialProof && (
-          <span className="mt-1.5 flex items-center gap-1 text-[11px] font-bold text-lime-deep">
-            <TrendingUp className="size-3 shrink-0" strokeWidth={3} />
-            {socialProof}
-          </span>
-        )}
+      )}
+      {glyph ?? <QuizIconBadge icon={icon} size="md" active={selected} />}
+      <span className="mt-3 block text-sm leading-tight font-extrabold tracking-tight text-ink">
+        {label}
       </span>
-      <span
-        className={clsx(
-          "grid size-6 shrink-0 place-items-center transition-all duration-300",
-          multi ? "rounded-lg" : "rounded-full",
-          selected
-            ? "bg-lime-neon text-ink scale-100"
-            : "scale-90 border-2 border-ink/12",
-        )}
-        aria-hidden
-      >
-        {selected && <Check className="size-4" strokeWidth={3.5} />}
-      </span>
+      {description && (
+        <span className="mt-1 block text-xs leading-snug text-mist">
+          {description}
+        </span>
+      )}
+      {socialProof && (
+        <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-lime-neon/14 px-2 py-1 text-[10px] leading-none font-bold text-lime-deep">
+          <TrendingUp className="size-3 shrink-0" strokeWidth={3} />
+          {socialProof}
+        </span>
+      )}
     </button>
   );
 }

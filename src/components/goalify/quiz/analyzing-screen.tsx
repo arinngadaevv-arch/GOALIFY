@@ -102,7 +102,7 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
       <div className="relative flex items-center gap-2.5">
         <CoachBadge size="sm" />
         <p className="text-[11px] font-black tracking-[0.16em] text-electric uppercase">
-          {COACH.name} is building your plan
+          {COACH.name} is running your diagnostic
         </p>
       </div>
 

@@ -871,10 +871,37 @@ html.goalify ::-webkit-scrollbar-thumb {
   animation: gf-hud-toast 1.1s ease both;
 }
 
+/* --- Charging progress bar ---------------------------------------------------- */
+
+@keyframes gf-charge-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 6px 0 rgba(0, 82, 255, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 14px 2px rgba(0, 82, 255, 0.85);
+  }
+}
+
+.gf-charge {
+  animation: gf-charge-glow 1.4s ease-in-out infinite;
+}
+
+/* --- Dynamic accent line ------------------------------------------------------- */
+
+.gf-accent-line {
+  display: inline-block;
+  width: 2.25rem;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-electric), var(--color-lime-neon));
+}
+
 @media (prefers-reduced-motion: reduce) {
   .gf-zone-active::after,
   .gf-anim-urgent,
-  .gf-anim-hud-toast {
+  .gf-anim-hud-toast,
+  .gf-charge {
     animation: none !important;
   }
 }
