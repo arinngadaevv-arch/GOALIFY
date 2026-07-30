@@ -11,11 +11,14 @@ import {
 import { Brand } from "@/components/goalify/brand";
 import { GlassCard } from "@/components/goalify/ui/glass-card";
 import { GlowLink } from "@/components/goalify/ui/glow-button";
-import { CoachAvatar, VisualSlot } from "@/components/goalify/ui/visual-slot";
+import { VisualSlot } from "@/components/goalify/ui/visual-slot";
 import { CoachBubble } from "@/components/goalify/coach/coach-bubble";
 import { ParticleField } from "@/components/goalify/ui/particles";
 import { CountUp } from "@/components/goalify/ui/count-up";
 import { COACH_GREETINGS } from "@/lib/goalify/coach";
+import { TrainerSlideshow } from "@/components/goalify/coach/trainer-slideshow";
+import { TRAINERS, TrainerCard } from "@/components/goalify/coach/trainer-card";
+import { CoachGuide } from "@/components/goalify/coach/coach-guide";
 import { Pill } from "@/components/goalify/ui/stat";
 
 const TRANSFORMATIONS = [
@@ -50,7 +53,7 @@ const FEATURES = [
 const STEPS = [
   {
     number: "01",
-    title: "Answer 11 questions",
+    title: "Answer 13 questions",
     body: "Goals, training history, joints, and the time you actually have.",
   },
   {
@@ -110,10 +113,12 @@ export default function LandingPage() {
             <Sparkles className="size-3" /> No equipment required
           </Pill>
 
-          <h1 className="gf-display mt-5 text-5xl font-black text-ink sm:text-6xl lg:text-7xl">
-            Stop starting over.
+          <h1 className="gf-display mt-5 text-6xl font-black text-ink sm:text-7xl lg:text-8xl">
+            STOP
             <br />
-            <span className="gf-text-hype">Start finishing.</span>
+            STARTING
+            <br />
+            <span className="gf-text-hype">OVER.</span>
           </h1>
 
           <p className="mt-6 max-w-lg text-lg leading-relaxed text-ink-soft">
@@ -163,14 +168,11 @@ export default function LandingPage() {
         </div>
 
         <div className="gf-anim-materialize relative">
-          <CoachAvatar
-            hint="Hero coach render drops in here"
-            className="aspect-4/5 w-full"
-          />
+          <TrainerSlideshow />
 
           <GlassCard
             deep
-            className="gf-anim-float absolute -bottom-5 -left-3 w-52 p-4 sm:-left-6"
+            className="gf-anim-float absolute -bottom-2 -left-3 w-48 p-4 sm:-left-6"
           >
             <div className="flex items-center gap-2">
               <span className="grid size-9 place-items-center rounded-xl bg-lime-neon/20">
@@ -190,9 +192,9 @@ export default function LandingPage() {
           <GlassCard
             tone="electric"
             deep
-            className="gf-anim-float gf-delay-3 absolute -top-3 -right-2 w-44 p-4"
+            className="gf-anim-float gf-delay-3 absolute -top-3 -right-2 w-40 p-4"
           >
-            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-electric">
+            <p className="text-[11px] font-bold tracking-[0.14em] text-electric uppercase">
               Form score
             </p>
             <p className="gf-numeric mt-1 text-3xl font-black text-ink">96%</p>
@@ -304,6 +306,30 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ------------------------------------------------------- Coaching team */}
+      <section className="pb-20">
+        <div className="mx-auto max-w-2xl text-center">
+          <Pill tone="lime">Your corner</Pill>
+          <h2 className="gf-display mt-4 text-4xl font-black text-ink sm:text-5xl">
+            Meet the team in your pocket
+          </h2>
+          <p className="mx-auto mt-3 max-w-md text-base text-ink-soft">
+            Whatever your body needs on the day, one of them is already
+            warmed up and waiting.
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {TRAINERS.map((trainer, index) => (
+            <TrainerCard
+              key={trainer.id}
+              trainer={trainer}
+              className={`gf-anim-swoop gf-delay-${index + 1}`}
+            />
+          ))}
+        </div>
+      </section>
+
       {/* ------------------------------------------------------------ Features */}
       <section className="pb-20">
         <div className="mx-auto max-w-2xl text-center">
@@ -395,6 +421,8 @@ export default function LandingPage() {
           physician before starting any program.
         </p>
       </footer>
+
+      <CoachGuide />
     </main>
   );
 }

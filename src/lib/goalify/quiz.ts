@@ -13,6 +13,8 @@ export type ChoiceOption = {
    * field) before showing this funnel to paying customers.
    */
   socialProof?: string;
+  /** Motivational badge that snaps in the instant this option is chosen. */
+  badge?: string;
 };
 
 export type QuizStep =
@@ -50,9 +52,11 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "goal",
     kind: "choice",
-    chapter: "The goal",
-    title: "What body are you actually after?",
-    subtitle: "Not what sounds good. What you genuinely want to see.",
+    chapter: "The dream",
+    title:
+      "What is the #1 body transformation you want to unlock before everyone else notices?",
+    subtitle:
+      "Not what sounds reasonable. The version of you that turns heads.",
     options: [
       {
         value: "burn",
@@ -60,6 +64,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "Strip the fat, keep every ounce of muscle",
         emoji: "🔥",
         socialProof: "Chosen by 41% of members",
+        badge: "SHREDDED MODE",
       },
       {
         value: "build",
@@ -67,6 +72,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "Real size, real strength, visible power",
         emoji: "💪",
         socialProof: "Fastest strength gains in weeks 3–6",
+        badge: "MASS MODE",
       },
       {
         value: "tone",
@@ -74,6 +80,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "Sculpted definition without the bulk",
         emoji: "✨",
         socialProof: "Most popular first-time goal",
+        badge: "SCULPT MODE",
       },
       {
         value: "athletic",
@@ -81,15 +88,17 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "Move faster, last longer, hit harder",
         emoji: "⚡",
         socialProof: "Biggest reported energy jump",
+        badge: "ATHLETE MODE",
       },
     ],
   },
   {
     id: "painTrigger",
     kind: "choice",
-    chapter: "The blocker",
-    title: "What's been holding you back from your dream body?",
-    subtitle: "Be brutally honest. I build your plan around this answer.",
+    chapter: "The block",
+    title: "What has been standing between you and that body?",
+    subtitle:
+      "Name it and I'll engineer it out. This is the answer your whole plan is built around.",
     options: [
       {
         value: "time",
@@ -97,6 +106,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "Life fills up and training is the first thing cut",
         emoji: "⌛",
         socialProof: "Solved with 15-minute finishable sessions",
+        badge: "TIME UNLOCKED",
       },
       {
         value: "motivation",
@@ -104,6 +114,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "Strong start, then week three hits",
         emoji: "📉",
         socialProof: "Streak system keeps members going past week 8",
+        badge: "STREAK ARMED",
       },
       {
         value: "confusion",
@@ -111,6 +122,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "Too many plans, too much conflicting advice",
         emoji: "🤯",
         socialProof: "Every session is decided for you",
+        badge: "CLARITY LOCKED",
       },
       {
         value: "injury",
@@ -118,6 +130,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "Something always flares up and I lose weeks",
         emoji: "🩹",
         socialProof: "Joint-safe swaps built into every movement",
+        badge: "SHIELD UP",
       },
       {
         value: "restart",
@@ -125,6 +138,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "I've begun a dozen times and never finished one",
         emoji: "🔁",
         socialProof: "Built to be the last plan you start",
+        badge: "FINAL RESTART",
       },
     ],
   },
@@ -132,8 +146,10 @@ export const QUIZ_STEPS: QuizStep[] = [
     id: "vision",
     kind: "choice",
     chapter: "The vision",
-    title: "30 days from now, you look in the mirror. What do you feel?",
-    subtitle: "Close your eyes for a second. This is what we're building toward.",
+    title:
+      "How will you feel when you look in the mirror 30 days from now and see your dream body?",
+    subtitle:
+      "Sit with it for a second. That feeling is the whole reason we're here.",
     options: [
       {
         value: "confident",
@@ -141,6 +157,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "Clothes fit right and I stand taller",
         emoji: "🔥",
         socialProof: "The #1 reported change at day 30",
+        badge: "CONFIDENCE TARGET",
       },
       {
         value: "strong",
@@ -148,6 +165,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "Powerful, capable, hard to break",
         emoji: "🦾",
         socialProof: "Strength shows up before the mirror does",
+        badge: "POWER TARGET",
       },
       {
         value: "energised",
@@ -155,6 +173,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "No 3pm crash, no dragging myself around",
         emoji: "⚡",
         socialProof: "Most members notice this in week 1",
+        badge: "ENERGY TARGET",
       },
       {
         value: "proud",
@@ -162,15 +181,17 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "I said I would, and this time I did",
         emoji: "🏆",
         socialProof: "The feeling that keeps members training",
+        badge: "PRIDE TARGET",
       },
     ],
   },
   {
     id: "level",
     kind: "choice",
-    chapter: "The starting line",
-    title: "Where are you starting from — honestly?",
-    subtitle: "No judgement here. This sets your day-one intensity.",
+    chapter: "The launch point",
+    title: "Where does your transformation begin?",
+    subtitle:
+      "Every great before-photo starts somewhere. Be honest and I'll pitch it perfectly.",
     options: [
       {
         value: "beginner",
@@ -178,6 +199,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "New to real, structured training",
         emoji: "🌱",
         socialProof: "Beginners see the fastest visible change",
+        badge: "FRESH START",
       },
       {
         value: "returning",
@@ -185,6 +207,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "I trained before. Then life happened.",
         emoji: "🔄",
         socialProof: "Muscle memory kicks in within 2 weeks",
+        badge: "COMEBACK ARC",
       },
       {
         value: "consistent",
@@ -192,6 +215,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "I show up most weeks already",
         emoji: "📈",
         socialProof: "Time to stop maintaining and start progressing",
+        badge: "MOMENTUM MODE",
       },
       {
         value: "advanced",
@@ -199,6 +223,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "Years in. Chasing the next level.",
         emoji: "🏆",
         socialProof: "Highest-intensity programming unlocked",
+        badge: "ELITE TIER",
       },
     ],
   },
@@ -206,8 +231,8 @@ export const QUIZ_STEPS: QuizStep[] = [
     id: "joints",
     kind: "choice",
     multi: true,
-    chapter: "Your safety",
-    title: "Anything I need to protect?",
+    chapter: "Your armour",
+    title: "What do I need to protect so nothing derails you?",
     subtitle:
       "I rebuild every single movement around this. Pick all that apply — or none.",
     options: [
@@ -216,6 +241,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Nothing hurts",
         description: "Full range of movement available",
         emoji: "✅",
+        badge: "FULL RANGE",
       },
       {
         value: "knees",
@@ -223,27 +249,31 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "Auto-swaps every jump and deep bend",
         emoji: "🦵",
         socialProof: "Knee-safe mode keeps members training pain-free",
+        badge: "KNEES GUARDED",
       },
       {
         value: "back",
         label: "My lower back",
         description: "Spine-neutral variations only",
         emoji: "🧘",
+        badge: "SPINE GUARDED",
       },
       {
         value: "shoulders",
         label: "My shoulders",
         description: "No reckless overhead loading",
         emoji: "🫱",
+        badge: "SHOULDERS GUARDED",
       },
     ],
   },
   {
     id: "sessionLength",
     kind: "choice",
-    chapter: "Your time",
-    title: "How long can you realistically give me?",
-    subtitle: "Every plan is built to finish in the time you actually have.",
+    chapter: "Your window",
+    title: "How much time will you claim for yourself each day?",
+    subtitle:
+      "This is your hour of power — even if it's fifteen minutes. I'll make every second count.",
     options: [
       {
         value: "15",
@@ -251,6 +281,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "Express, no equipment, no excuses",
         emoji: "⚡",
         socialProof: "Highest completion rate of any session length",
+        badge: "EXPRESS POWER",
       },
       {
         value: "25",
@@ -258,6 +289,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "Balanced and complete",
         emoji: "⏱️",
         socialProof: "The sweet spot most members settle on",
+        badge: "SWEET SPOT",
       },
       {
         value: "40",
@@ -265,6 +297,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "Full session with finishers",
         emoji: "🏋️",
         socialProof: "Fastest route to visible definition",
+        badge: "FULL SEND",
       },
     ],
   },
@@ -272,8 +305,9 @@ export const QUIZ_STEPS: QuizStep[] = [
     id: "daysPerWeek",
     kind: "choice",
     chapter: "Your rhythm",
-    title: "How many days a week will you show up?",
-    subtitle: "Consistency beats intensity. Pick what you'll actually hit.",
+    title: "How often do you want to feel unstoppable?",
+    subtitle:
+      "Every session is a deposit. Pick the pace you'll genuinely keep.",
     options: [
       {
         value: "3",
@@ -281,6 +315,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "Steady and genuinely sustainable",
         emoji: "🗓️",
         socialProof: "Enough to change your body",
+        badge: "STEADY CLIMB",
       },
       {
         value: "4",
@@ -288,6 +323,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "The sweet spot",
         emoji: "🎯",
         socialProof: "Best results-to-effort ratio",
+        badge: "OPTIMAL PACE",
       },
       {
         value: "5",
@@ -295,6 +331,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "Fast-track results",
         emoji: "🚀",
         socialProof: "Fastest 30-day transformations",
+        badge: "FAST TRACK",
       },
       {
         value: "6",
@@ -302,15 +339,17 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "All in",
         emoji: "🔥",
         socialProof: "Recovery managed automatically",
+        badge: "MAXIMUM DRIVE",
       },
     ],
   },
   {
     id: "sex",
     kind: "choice",
-    chapter: "The maths",
-    title: "Biological sex",
-    subtitle: "Used only to calculate your metabolic baseline accurately.",
+    chapter: "The science",
+    title: "Let's dial in your engine",
+    subtitle:
+      "Biological sex sets your metabolic baseline — it's pure maths, nothing else.",
     options: [
       { value: "female", label: "Female", emoji: "♀️" },
       { value: "male", label: "Male", emoji: "♂️" },
@@ -319,15 +358,17 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Prefer not to say",
         description: "We'll use an average baseline",
         emoji: "•",
+        badge: "ENGINE TUNED",
       },
     ],
   },
   {
     id: "age",
     kind: "number",
-    chapter: "The maths",
-    title: "How old are you?",
-    subtitle: "Recovery windows and intensity ramps scale with age.",
+    chapter: "The science",
+    title: "How many years of experience are we working with?",
+    subtitle:
+      "Age tunes your recovery windows and how fast I ramp your intensity.",
     unit: "years",
     min: 16,
     max: 80,
@@ -337,9 +378,9 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "heightCm",
     kind: "number",
-    chapter: "The maths",
-    title: "Your height",
-    subtitle: "Feeds directly into your calorie and protein targets.",
+    chapter: "The science",
+    title: "Your frame",
+    subtitle: "This feeds straight into the calories and protein that build you.",
     unit: "cm",
     min: 140,
     max: 215,
@@ -349,9 +390,10 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "weightKg",
     kind: "number",
-    chapter: "The starting line",
-    title: "Where are you starting today?",
-    subtitle: "This is the number we're about to change. Write it down.",
+    chapter: "The before",
+    title: "This is your day-one number",
+    subtitle:
+      "Burn it into your memory. In four weeks you'll love how far it moved.",
     unit: "kg",
     min: 40,
     max: 180,
@@ -361,9 +403,10 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "targetWeightKg",
     kind: "number",
-    chapter: "The target",
-    title: "Where do you want to be?",
-    subtitle: "I'll map a realistic, safe route there — and show you the curve.",
+    chapter: "The after",
+    title: "Now show me the number you're chasing",
+    subtitle:
+      "I'll map the safe, realistic route there — and show you the exact curve.",
     unit: "kg",
     min: 40,
     max: 180,
@@ -373,8 +416,8 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "commitment",
     kind: "choice",
-    chapter: "The deal",
-    title: "Last question. Are you in?",
+    chapter: "The pact",
+    title: "Final question. Are you ready to become that person?",
     subtitle:
       "If I hold you accountable every single day, will you give me your session?",
     options: [
@@ -384,6 +427,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "Hold me to it. Every day.",
         emoji: "🔥",
         socialProof: "All-in members are the most likely to finish week 8",
+        badge: "ALL IN 🔥",
       },
       {
         value: "most",
@@ -391,6 +435,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "Life happens, but I'll show up",
         emoji: "💪",
         socialProof: "Flexible streaks keep this realistic",
+        badge: "REALISTIC WIN",
       },
       {
         value: "unsure",
@@ -398,6 +443,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         description: "Prove it in week one",
         emoji: "🤔",
         socialProof: "Most sceptics convert after session 3",
+        badge: "CHALLENGE ACCEPTED",
       },
     ],
   },

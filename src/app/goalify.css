@@ -136,7 +136,10 @@ body.goalify-body {
   pointer-events: none;
 }
 
-.gf-glass > * {
+/* Lifts glass content above the ::before gloss overlay. Explicitly-positioned
+   children are excluded — otherwise this silently overrides `absolute`/`fixed`
+   utilities on anything nested in a glass surface. */
+.gf-glass > *:not(.absolute):not(.fixed) {
   position: relative;
 }
 
@@ -356,6 +359,114 @@ body.goalify-body {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Vivid animated gradient border for premium selection cards. */
+@keyframes gf-border-sweep {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.gf-glow-border {
+  position: relative;
+}
+
+.gf-glow-border::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(
+    100deg,
+    #0052ff,
+    #39ff14,
+    #0052ff,
+    #39ff14
+  );
+  background-size: 200% 100%;
+  animation: gf-border-sweep 2.4s linear infinite;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Energetic gradient wash that breathes behind hype surfaces. */
+@keyframes gf-gradient-breathe {
+  0%,
+  100% {
+    background-position: 0% 50%;
+    opacity: 0.7;
+  }
+  50% {
+    background-position: 100% 50%;
+    opacity: 1;
+  }
+}
+
+.gf-gradient-pulse {
+  background: linear-gradient(
+    115deg,
+    rgba(0, 82, 255, 0.16),
+    rgba(57, 255, 20, 0.18),
+    rgba(0, 82, 255, 0.16)
+  );
+  background-size: 220% 220%;
+  animation: gf-gradient-breathe 6s ease-in-out infinite;
+}
+
+/* Slide-in entrance with a touch of scale — the "framer" feel. */
+@keyframes gf-swoop {
+  from {
+    opacity: 0;
+    transform: translateY(26px) scale(0.965);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.gf-anim-swoop {
+  animation: gf-swoop 0.55s cubic-bezier(0.22, 1.15, 0.36, 1) both;
+}
+
+/* Slide in from the right — used by the floating coach widget. */
+@keyframes gf-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(28px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.gf-anim-slide-in {
+  animation: gf-slide-in 0.42s cubic-bezier(0.22, 1.15, 0.36, 1) both;
+}
+
+/* Energy meter fill sweep for the loader. */
+@keyframes gf-meter {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.gf-anim-meter {
+  animation: gf-meter 1.3s cubic-bezier(0.45, 0, 0.55, 1) infinite;
 }
 
 /* Drifting glow motes for hero / hype moments. */

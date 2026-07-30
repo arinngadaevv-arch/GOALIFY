@@ -13,7 +13,9 @@ import { Brand } from "@/components/goalify/brand";
 import { GlassCard } from "@/components/goalify/ui/glass-card";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
 import { CoachBubble } from "@/components/goalify/coach/coach-bubble";
+import { CoachGuide, sayCoach } from "@/components/goalify/coach/coach-guide";
 import { ParticleField } from "@/components/goalify/ui/particles";
+import { useUiSounds } from "@/components/goalify/use-ui-sounds";
 import { AnalyzingScreen } from "./analyzing-screen";
 
 /** Steps whose stored value is a number even though it's picked as a choice. */
@@ -29,6 +31,9 @@ export function QuizFlow() {
   const [analyzing, setAnalyzing] = useState(false);
   const [reaction, setReaction] = useState<string | null>(null);
   const [pending, setPending] = useState<Partial<QuizAnswers> | null>(null);
+  /** Badge that snaps in over the chosen card. */
+  const [badge, setBadge] = useState<string | null>(null);
+  const { clickPop, progressPowerUp } = useUiSounds();
 
   const step = QUIZ_STEPS[index];
   const isLast = index === QUIZ_STEPS.length - 1;
@@ -51,12 +56,18 @@ export function QuizFlow() {
    * coach's reaction, and queues the advance so the reaction has a beat to land.
    */
   const pick = useCallback(
-    (patch: Partial<QuizAnswers>, value: unknown) => {
+    (patch: Partial<QuizAnswers>, value: unknown, wonBadge?: string) => {
       setDraft(patch);
-      setReaction(coachReaction(String(step.id), value));
+      const line = coachReaction(String(step.id), value);
+      setReaction(line);
+      setBadge(wonBadge ?? null);
       setPending(patch);
+      progressPowerUp();
+      // Mirror the reaction into the floating coach so it stays in the corner
+      // even once the question has scrolled away.
+      if (line) sayCoach(line);
     },
-    [setDraft, step.id],
+    [setDraft, step.id, progressPowerUp],
   );
 
   // The advance itself happens in a timer callback, never synchronously in the
@@ -69,6 +80,7 @@ export function QuizFlow() {
       } else {
         setIndex((i) => i + 1);
         setReaction(null);
+        setBadge(null);
       }
       setPending(null);
     }, REACTION_MS);
@@ -82,7 +94,7 @@ export function QuizFlow() {
   const coachMessage = reaction ?? coachProgressNudge(progress);
 
   return (
-    <main className="relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-16">
+    <main className="relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-28">
       <ParticleField />
 
       <header className="relative flex items-center justify-between py-6">
@@ -136,6 +148,8 @@ export function QuizFlow() {
               onPick={pick}
               onSetDraft={setDraft}
               locked={pending !== null}
+              activeBadge={badge}
+              onTap={clickPop}
             />
           ) : (
             <NumberStep
@@ -143,6 +157,7 @@ export function QuizFlow() {
               value={typeof currentValue === "number" ? currentValue : undefined}
               onSubmit={pick}
               locked={pending !== null}
+              onTap={clickPop}
             />
           )}
         </div>
@@ -159,6 +174,8 @@ export function QuizFlow() {
         </GlowButton>
         <p className="text-xs text-haze">Your answers stay on this device</p>
       </footer>
+
+      <CoachGuide autoOpen={false} />
     </main>
   );
 }
@@ -171,12 +188,20 @@ function ChoiceStep({
   onPick,
   onSetDraft,
   locked,
+  activeBadge,
+  onTap,
 }: {
   step: Extract<QuizStep, { kind: "choice" }>;
   value: unknown;
-  onPick: (patch: Partial<QuizAnswers>, value: unknown) => void;
+  onPick: (
+    patch: Partial<QuizAnswers>,
+    value: unknown,
+    badge?: string,
+  ) => void;
   onSetDraft: (patch: Partial<QuizAnswers>) => void;
   locked: boolean;
+  activeBadge: string | null;
+  onTap: () => void;
 }) {
   const selected = useMemo(
     () => (Array.isArray(value) ? (value as string[]) : []),
@@ -211,7 +236,10 @@ function ChoiceStep({
               selected={selected.includes(option.value)}
               multi
               disabled={locked}
-              onClick={() => toggle(option.value)}
+              onClick={() => {
+                onTap();
+                toggle(option.value);
+              }}
             />
           ))}
         </div>
@@ -224,6 +252,7 @@ function ChoiceStep({
             onPick(
               { [step.id]: selected as JointStatus[] } as Partial<QuizAnswers>,
               selected,
+              step.options.find((o) => o.value === selected[0])?.badge,
             )
           }
         >
@@ -244,12 +273,17 @@ function ChoiceStep({
           description={option.description}
           socialProof={option.socialProof}
           selected={String(value) === option.value}
+          wonBadge={String(value) === option.value ? activeBadge : null}
           disabled={locked}
           onClick={() => {
             const stored = NUMERIC_CHOICE_IDS.has(step.id)
               ? Number(option.value)
               : option.value;
-            onPick({ [step.id]: stored } as Partial<QuizAnswers>, option.value);
+            onPick(
+              { [step.id]: stored } as Partial<QuizAnswers>,
+              option.value,
+              option.badge,
+            );
           }}
         />
       ))}
@@ -263,6 +297,7 @@ function OptionCard({
   description,
   socialProof,
   selected,
+  wonBadge = null,
   multi = false,
   disabled = false,
   onClick,
@@ -272,6 +307,7 @@ function OptionCard({
   description?: string;
   socialProof?: string;
   selected: boolean;
+  wonBadge?: string | null;
   multi?: boolean;
   disabled?: boolean;
   onClick: () => void;
@@ -283,14 +319,20 @@ function OptionCard({
       disabled={disabled}
       aria-pressed={selected}
       className={clsx(
-        "gf-glass gf-press rounded-3xl p-4 text-left transition-all duration-300",
+        "gf-glass gf-press relative rounded-3xl p-4 text-left transition-all duration-300",
         "flex items-center gap-4",
         !disabled && "hover:-translate-y-0.5 hover:border-electric/30",
         selected
-          ? "border-electric/50 gf-glow-electric"
+          ? "gf-glow-border gf-glow-electric border-electric/50"
           : "disabled:opacity-45",
       )}
     >
+      {/* Motivational badge snaps in the instant the card is chosen. */}
+      {wonBadge && (
+        <span className="gf-anim-unlock gf-glow-lime absolute -top-2.5 right-4 z-10 rounded-full bg-lime-neon px-2.5 py-1 text-[9px] font-black tracking-[0.12em] text-ink uppercase">
+          {wonBadge}
+        </span>
+      )}
       <span
         className={clsx(
           "grid size-12 shrink-0 place-items-center rounded-2xl text-2xl transition-colors",
@@ -339,11 +381,13 @@ function NumberStep({
   value,
   onSubmit,
   locked,
+  onTap,
 }: {
   step: Extract<QuizStep, { kind: "number" }>;
   value?: number;
   onSubmit: (patch: Partial<QuizAnswers>, value: unknown) => void;
   locked: boolean;
+  onTap: () => void;
 }) {
   const [local, setLocal] = useState(value ?? step.defaultValue);
   const clamp = (next: number) =>
@@ -356,7 +400,10 @@ function NumberStep({
           <button
             type="button"
             aria-label={`Decrease ${step.title}`}
-            onClick={() => setLocal((v) => clamp(v - step.step))}
+            onClick={() => {
+              onTap();
+              setLocal((v) => clamp(v - step.step));
+            }}
             className="gf-glass gf-press grid size-12 place-items-center rounded-full text-ink-soft hover:text-electric"
           >
             <Minus className="size-5" strokeWidth={3} />
@@ -370,7 +417,10 @@ function NumberStep({
           <button
             type="button"
             aria-label={`Increase ${step.title}`}
-            onClick={() => setLocal((v) => clamp(v + step.step))}
+            onClick={() => {
+              onTap();
+              setLocal((v) => clamp(v + step.step));
+            }}
             className="gf-glass gf-press grid size-12 place-items-center rounded-full text-ink-soft hover:text-electric"
           >
             <Plus className="size-5" strokeWidth={3} />

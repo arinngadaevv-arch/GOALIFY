@@ -15,29 +15,29 @@ import { CoachBadge } from "@/components/goalify/coach/coach-bubble";
 
 const STAGES = [
   {
-    label: "Reading your training history",
-    badge: "Profile Locked",
-    emoji: "🧬",
-  },
-  {
-    label: "Mapping joint-safe movement patterns",
-    badge: "Safety Mapped",
-    emoji: "🛡️",
-  },
-  {
-    label: "Calculating metabolic baseline",
-    badge: "Metabolism Solved",
+    label: "Analyzing fat-burn potential…",
+    badge: "Burn Profile Locked",
     emoji: "🔥",
   },
   {
-    label: "Balancing macros to your goal",
-    badge: "Fuel Dialled In",
+    label: "Optimizing muscle tone trajectory…",
+    badge: "Tone Curve Mapped",
+    emoji: "💪",
+  },
+  {
+    label: "Calibrating metabolic engine…",
+    badge: "Metabolism Solved",
+    emoji: "⚙️",
+  },
+  {
+    label: "Balancing fuel to your goal…",
+    badge: "Macros Dialled In",
     emoji: "🥩",
   },
   {
-    label: "Sequencing your first 30 days",
-    badge: "Roadmap Built",
-    emoji: "🗺️",
+    label: "Unlocking your custom plan…",
+    badge: "Roadmap Unlocked",
+    emoji: "🗝️",
   },
 ] as const;
 
@@ -194,8 +194,16 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
                   />
                 )}
               </span>
-              <span className="flex-1 text-xs font-semibold text-ink-soft">
-                {item.label}
+              <span className="min-w-0 flex-1">
+                <span className="block text-xs font-semibold text-ink-soft">
+                  {item.label}
+                </span>
+                {/* Live energy meter while this stage computes. */}
+                {active && (
+                  <span className="mt-1.5 block h-1 w-full overflow-hidden rounded-full bg-ink/8">
+                    <span className="gf-anim-meter block h-full w-1/2 rounded-full bg-linear-to-r from-electric to-lime-neon" />
+                  </span>
+                )}
               </span>
               {/* Badge snaps in the moment its stage completes. */}
               {done && (
