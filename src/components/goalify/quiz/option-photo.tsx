@@ -4,23 +4,28 @@ import { useState } from "react";
 import Image from "next/image";
 import clsx from "clsx";
 import { AVAILABLE_QUIZ_IMAGES } from "@/lib/goalify/quiz-images.generated";
-import { QUIZ_ICONS, type QuizIconKey } from "./quiz-icons";
+import { QuizIconBadge, type QuizIconKey } from "./quiz-icons";
 
 /**
- * The photo area of an answer card.
- *
- * Renders a real photograph two ways:
- * - `src` starting with "http" — a remote URL (e.g. licensed stock
- *   photography). Trusted as-is; add the host to `images.remotePatterns`
- *   in next.config.ts first or next/image will refuse to load it.
- * - a local path — only rendered once the file actually exists in
- *   /public/quiz (see public/quiz/README.md), baked in at build time by
- *   scripts/gen-quiz-images.mjs, so a card with no photo yet never fires a
- *   request that 404s.
- *
- * Either way, a missing/failed photo falls back to a large illustrative
- * glyph — not a small icon lost in a box. That fallback is not
- * photography — there's no image-generation tool available here.
+ * Whether a real photo is actually available for this src — either a
+ * remote `https://` URL, or a local file confirmed to exist in
+ * /public/quiz at build time (see public/quiz/README.md). Callers use this
+ * to decide whether to reserve a photo slot at all, rather than falling
+ * back to an icon inside one.
+ */
+export function hasRealPhoto(src?: string): boolean {
+  if (!src) return false;
+  if (src.startsWith("http")) return true;
+  return AVAILABLE_QUIZ_IMAGES.has(src);
+}
+
+/**
+ * The photo area of an answer card. Only ever call this once `hasRealPhoto`
+ * is true — callers without a real photo should render a small icon badge
+ * inline instead of reserving this slot (see PhotoOptionCard in
+ * quiz-flow.tsx). The modest icon fallback here only fires on a genuine
+ * runtime load failure (the onError guard), and stays deliberately small —
+ * never a large glyph filling the card.
  */
 export function OptionPhoto({
   src,
@@ -38,19 +43,16 @@ export function OptionPhoto({
   imageClassName?: string;
 }) {
   const [failed, setFailed] = useState(false);
-  const isRemote = src?.startsWith("http");
-  const showPhoto =
-    src !== undefined && (isRemote || AVAILABLE_QUIZ_IMAGES.has(src)) && !failed;
-  const Icon = QUIZ_ICONS[icon];
+  const showPhoto = hasRealPhoto(src) && !failed;
 
   return (
     <div
       className={clsx("gf-photo-bed relative grid place-items-center overflow-hidden", className)}
-      {...(showPhoto ? {} : { role: "img", "aria-label": `${label} — illustration placeholder` })}
+      {...(showPhoto ? {} : { role: "img", "aria-label": `${label} — placeholder` })}
     >
       {showPhoto ? (
         <Image
-          src={src}
+          src={src as string}
           alt={alt}
           fill
           sizes="(max-width: 640px) 50vw, 240px"
@@ -58,11 +60,7 @@ export function OptionPhoto({
           className={clsx("object-contain object-bottom", imageClassName)}
         />
       ) : (
-        <Icon
-          className="gf-anim-float relative z-10 h-[80%] w-[80%] text-electric/80"
-          strokeWidth={1.1}
-          aria-hidden
-        />
+        <QuizIconBadge icon={icon} size="md" />
       )}
     </div>
   );

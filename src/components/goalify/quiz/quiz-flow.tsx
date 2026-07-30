@@ -18,7 +18,7 @@ import { GlowButton } from "@/components/goalify/ui/glow-button";
 import { CoachBadge } from "@/components/goalify/coach/coach-bubble";
 import { CoachGuide, sayCoach } from "@/components/goalify/coach/coach-guide";
 import { useUiSounds } from "@/components/goalify/use-ui-sounds";
-import { OptionPhoto } from "./option-photo";
+import { hasRealPhoto, OptionPhoto } from "./option-photo";
 import { QuizIconBadge, type QuizIconKey } from "./quiz-icons";
 import { JointGlyph } from "./joint-glyph";
 import { AnalyzingScreen } from "./analyzing-screen";
@@ -423,6 +423,7 @@ function PhotoOptionCard({
     selected && "gf-card-active scale-[1.015]",
     disabled && !selected && "opacity-50",
   );
+  const hasPhoto = hasRealPhoto(option.image);
 
   if (layout === "wide") {
     return (
@@ -434,7 +435,12 @@ function PhotoOptionCard({
         className={clsx(base, "flex items-stretch overflow-hidden")}
       >
         {checkBadge}
-        <span className="flex min-w-0 flex-1 flex-col justify-center py-7 pl-6">
+        <span
+          className={clsx(
+            "flex min-w-0 flex-1 flex-col justify-center py-7 pl-6",
+            !hasPhoto && "pr-6",
+          )}
+        >
           <span className="gf-display text-2xl leading-tight font-extrabold text-ink">
             {option.label}
           </span>
@@ -450,18 +456,41 @@ function PhotoOptionCard({
             </span>
           )}
         </span>
-        <OptionPhoto
-          src={option.image}
-          alt={option.label}
-          label={option.label}
-          icon={option.icon}
-          className="h-40 w-44 shrink-0 self-end"
-        />
+        {hasPhoto ? (
+          <OptionPhoto
+            src={option.image}
+            alt={option.label}
+            label={option.label}
+            icon={option.icon}
+            className="h-40 w-44 shrink-0 self-end"
+          />
+        ) : (
+          <span className="mr-6 flex shrink-0 items-center">
+            <QuizIconBadge icon={option.icon} size="md" active={selected} />
+          </span>
+        )}
       </button>
     );
   }
 
   if (layout === "portrait") {
+    if (!hasPhoto) {
+      return (
+        <button
+          type="button"
+          onClick={onClick}
+          disabled={disabled}
+          aria-pressed={selected}
+          className={clsx(base, "flex flex-col items-center gap-3 px-4 py-8")}
+        >
+          {checkBadge}
+          <QuizIconBadge icon={option.icon} size="md" active={selected} />
+          <span className="gf-display text-lg font-extrabold text-ink">
+            {option.label}
+          </span>
+        </button>
+      );
+    }
     return (
       <button
         type="button"
@@ -487,6 +516,29 @@ function PhotoOptionCard({
   }
 
   // tile
+  if (!hasPhoto) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        aria-pressed={selected}
+        className={clsx(base, "flex flex-col items-center gap-2 p-5 text-center")}
+      >
+        {checkBadge}
+        <QuizIconBadge icon={option.icon} size="md" active={selected} />
+        <span className="gf-display text-base leading-tight font-extrabold text-ink">
+          {option.label}
+        </span>
+        {option.socialProof && (
+          <span className="mx-auto mt-0.5 inline-flex w-fit items-center gap-1 rounded-full bg-lime-neon/14 px-2 py-1 text-[10px] leading-none font-bold text-lime-deep">
+            <TrendingUp className="size-3 shrink-0" strokeWidth={3} />
+            {option.socialProof}
+          </span>
+        )}
+      </button>
+    );
+  }
   return (
     <button
       type="button"
