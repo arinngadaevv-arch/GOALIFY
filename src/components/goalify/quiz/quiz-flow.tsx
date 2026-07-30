@@ -3,14 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
-import {
-  ArrowRight,
-  Check,
-  ChevronLeft,
-  Minus,
-  Plus,
-  TrendingUp,
-} from "lucide-react";
+import { ArrowRight, Check, ChevronLeft, TrendingUp } from "lucide-react";
 import {
   QUIZ_STEPS,
   type ChoiceOption,
@@ -29,6 +22,10 @@ import { OptionPhoto } from "./option-photo";
 import { QuizIconBadge, type QuizIconKey } from "./quiz-icons";
 import { SelectionBurst } from "./selection-burst";
 import { AnalyzingScreen } from "./analyzing-screen";
+import { BodyMapStep } from "./body-map";
+import { SpeedRound } from "./speed-round";
+import { BioStatHud, HUD_STEP_META } from "./bio-stat-hud";
+import { TactileSlider } from "./tactile-slider";
 
 /** Steps whose stored value is a number even though it's picked as a choice. */
 const NUMERIC_CHOICE_IDS = new Set<keyof QuizAnswers>(["daysPerWeek"]);
@@ -45,7 +42,10 @@ export function QuizFlow() {
   const [pending, setPending] = useState<Partial<QuizAnswers> | null>(null);
   /** Badge that snaps in over the chosen card. */
   const [badge, setBadge] = useState<string | null>(null);
-  const { clickPop, hypeSelect } = useUiSounds();
+  /** The persistent gamification HUD — ticks up as questions land. */
+  const [hud, setHud] = useState({ burn: 0, precision: 0 });
+  const [hudToast, setHudToast] = useState<string | null>(null);
+  const { clickPop, hypeSelect, sliderTick } = useUiSounds();
 
   const step = QUIZ_STEPS[index];
   const isLast = index === QUIZ_STEPS.length - 1;
@@ -78,6 +78,15 @@ export function QuizFlow() {
       // Mirror the reaction into the floating coach so it stays in the corner
       // even once the question has scrolled away.
       if (line) sayCoach(line);
+
+      const meta = HUD_STEP_META[step.id];
+      if (meta) {
+        setHud((prev) => ({
+          burn: Math.min(100, prev.burn + meta.burn),
+          precision: Math.min(100, prev.precision + meta.precision),
+        }));
+        setHudToast(`+${meta.burn}% ${meta.label}`);
+      }
     },
     [setDraft, step.id, hypeSelect],
   );
@@ -93,6 +102,7 @@ export function QuizFlow() {
         setIndex((i) => i + 1);
         setReaction(null);
         setBadge(null);
+        setHudToast(null);
       }
       setPending(null);
     }, REACTION_MS);
@@ -150,6 +160,9 @@ export function QuizFlow() {
         </span>
       </header>
 
+      {/* ------------------------------------------------- Persistent stat HUD */}
+      <BioStatHud burn={hud.burn} precision={hud.precision} toast={hudToast} />
+
       {/* ------------------------------------------------------- Big headline */}
       <div key={step.id} className="gf-anim-swoop relative pt-4">
         <p className="text-[11px] font-black tracking-[0.16em] text-electric uppercase">
@@ -176,6 +189,10 @@ export function QuizFlow() {
           {step.subtitle}
         </p>
 
+        {step.kind === "choice" && step.speedRound && (
+          <SpeedRound key={step.id} locked={pending !== null} />
+        )}
+
         <div>
           {step.kind === "choice" ? (
             <ChoiceStep
@@ -187,13 +204,23 @@ export function QuizFlow() {
               activeBadge={badge}
               onTap={clickPop}
             />
+          ) : step.kind === "bodyMap" ? (
+            <BodyMapStep
+              step={step}
+              value={currentValue}
+              onSetDraft={setDraft}
+              onPick={pick}
+              locked={pending !== null}
+              onTap={clickPop}
+            />
           ) : (
             <NumberStep
+              key={step.id}
               step={step}
               value={typeof currentValue === "number" ? currentValue : undefined}
               onSubmit={pick}
               locked={pending !== null}
-              onTap={clickPop}
+              onTick={sliderTick}
             />
           )}
         </div>
@@ -578,70 +605,29 @@ function NumberStep({
   value,
   onSubmit,
   locked,
-  onTap,
+  onTick,
 }: {
   step: Extract<QuizStep, { kind: "number" }>;
   value?: number;
   onSubmit: (patch: Partial<QuizAnswers>, value: unknown) => void;
   locked: boolean;
-  onTap: () => void;
+  onTick: () => void;
 }) {
   const [local, setLocal] = useState(value ?? step.defaultValue);
-  const clamp = (next: number) =>
-    Math.min(step.max, Math.max(step.min, Math.round(next)));
 
   return (
     <>
-      <GlassCard deep className="p-8 text-center">
-        <div className="flex items-center justify-center gap-6">
-          <button
-            type="button"
-            aria-label={`Decrease ${step.title}`}
-            onClick={() => {
-              onTap();
-              setLocal((v) => clamp(v - step.step));
-            }}
-            className="gf-glass gf-press grid size-12 place-items-center rounded-full text-ink-soft hover:text-electric"
-          >
-            <Minus className="size-5" strokeWidth={3} />
-          </button>
-
-          <p className="gf-numeric min-w-36 text-6xl font-black text-ink">
-            {local}
-            <span className="ml-1 text-xl font-bold text-mist">{step.unit}</span>
-          </p>
-
-          <button
-            type="button"
-            aria-label={`Increase ${step.title}`}
-            onClick={() => {
-              onTap();
-              setLocal((v) => clamp(v + step.step));
-            }}
-            className="gf-glass gf-press grid size-12 place-items-center rounded-full text-ink-soft hover:text-electric"
-          >
-            <Plus className="size-5" strokeWidth={3} />
-          </button>
-        </div>
-
-        <input
-          type="range"
+      <GlassCard deep className="p-8">
+        <TactileSlider
+          value={local}
           min={step.min}
           max={step.max}
           step={step.step}
-          value={local}
-          aria-label={step.title}
-          onChange={(event) => setLocal(Number(event.target.value))}
-          className="mt-8 w-full accent-[#0052FF]"
+          unit={step.unit}
+          onChange={setLocal}
+          onTick={onTick}
+          disabled={locked}
         />
-        <div className="mt-2 flex justify-between text-xs font-semibold text-haze">
-          <span>
-            {step.min} {step.unit}
-          </span>
-          <span>
-            {step.max} {step.unit}
-          </span>
-        </div>
       </GlassCard>
 
       <GlowButton

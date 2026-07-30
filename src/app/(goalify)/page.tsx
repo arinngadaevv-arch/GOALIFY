@@ -57,7 +57,7 @@ const FEATURES = [
 const STEPS = [
   {
     number: "01",
-    title: "Answer 13 questions",
+    title: "Answer 14 questions",
     body: "Goals, training history, joints, and the time you actually have.",
   },
   {
@@ -279,7 +279,7 @@ export default function LandingPage() {
         <TickerStat to={128400} suffix="+" label="Plans built" tone="electric" />
         <TickerStat to={4.9} decimals={1} label="Average rating" tone="ink" />
         <TickerStat to={87} suffix="%" label="Still training at week 8" tone="lime" />
-        <TickerStat to={13} label="Questions to start" tone="ink" />
+        <TickerStat to={14} label="Questions to start" tone="ink" />
       </GlassCard>
 
       {/* ----------------------------------------------------------- How it works */}

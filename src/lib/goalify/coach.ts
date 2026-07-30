@@ -27,6 +27,13 @@ const REACTIONS: Record<string, Record<string, string>> = {
     tone: "Love it. Lean and defined — I'm dialling in volume and definition work.",
     athletic: "Now we're talking. Conditioning focus locked. Your engine is about to change.",
   },
+  focusZones: {
+    chest: "Chest, locked. Every push movement in your plan just moved up the priority list.",
+    abs: "Abs, noted. Core work is now front-loaded into every single session.",
+    arms: "Arms, got it. Expect visible pump work every week.",
+    glutes: "Glutes, locked in. Your lower-body volume just went up.",
+    legs: "Legs, noted — nothing changes a physique faster than strong legs.",
+  },
   painTrigger: {
     time: "I hear you — time is the number one killer. That's exactly why your sessions are built to finish, not to impress.",
     motivation: "Week three is where most plans die. I'm engineering your streak so it doesn't.",

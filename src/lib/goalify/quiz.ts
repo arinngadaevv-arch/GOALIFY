@@ -27,6 +27,11 @@ export type ChoiceOption = {
   aside?: boolean;
 };
 
+export type BodyZone = {
+  value: string;
+  label: string;
+};
+
 export type QuizStep =
   | {
       id: keyof QuizAnswers;
@@ -46,6 +51,8 @@ export type QuizStep =
       title: string;
       subtitle: string;
       options: ChoiceOption[];
+      /** Renders as a 5-second "instinct round" with a burning countdown. */
+      speedRound?: boolean;
     }
   | {
       id: keyof QuizAnswers;
@@ -58,6 +65,14 @@ export type QuizStep =
       max: number;
       step: number;
       defaultValue: number;
+    }
+  | {
+      id: keyof QuizAnswers;
+      kind: "bodyMap";
+      chapter: string;
+      title: string;
+      subtitle: string;
+      zones: BodyZone[];
     };
 
 /**
@@ -115,9 +130,25 @@ export const QUIZ_STEPS: QuizStep[] = [
     ],
   },
   {
+    id: "focusZones",
+    kind: "bodyMap",
+    chapter: "The target",
+    title: "Where should it show first?",
+    subtitle:
+      "Tap every zone you want transformed. I'll weight your entire program toward exactly these.",
+    zones: [
+      { value: "chest", label: "Chest" },
+      { value: "arms", label: "Arms" },
+      { value: "abs", label: "Abs" },
+      { value: "glutes", label: "Glutes" },
+      { value: "legs", label: "Legs" },
+    ],
+  },
+  {
     id: "painTrigger",
     kind: "choice",
     layout: "tile",
+    speedRound: true,
     chapter: "The block",
     title: "What's been stopping you?",
     subtitle:
@@ -174,6 +205,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     id: "vision",
     kind: "choice",
     layout: "tile",
+    speedRound: true,
     chapter: "The vision",
     title: "How do you want to feel?",
     subtitle:
@@ -459,6 +491,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     id: "commitment",
     kind: "choice",
     layout: "tile",
+    speedRound: true,
     chapter: "The pact",
     title: "Are you in?",
     subtitle:

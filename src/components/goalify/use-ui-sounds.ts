@@ -6,6 +6,7 @@ import {
   playClickPop,
   playHypeSelect,
   playProgressPowerUp,
+  playSliderTick,
   playUnlockFanfare,
 } from "@/lib/goalify/sound";
 
@@ -34,5 +35,9 @@ export function useUiSounds() {
     if (enabled) playUnlockFanfare();
   }, [enabled]);
 
-  return { clickPop, progressPowerUp, hypeSelect, unlockFanfare };
+  const sliderTick = useCallback(() => {
+    if (enabled) playSliderTick();
+  }, [enabled]);
+
+  return { clickPop, progressPowerUp, hypeSelect, unlockFanfare, sliderTick };
 }

@@ -199,6 +199,18 @@ export function playHypeSelect() {
   ]);
 }
 
+/**
+ * Mechanical "click-clack" for the tactile weight slider — a short high
+ * transient followed by a lower knock, tuned to feel like a gym plate
+ * notching into place rather than a UI beep.
+ */
+export function playSliderTick() {
+  playTones([
+    { frequency: 2100, startOffset: 0, duration: 0.018, gain: 0.09, type: "square" },
+    { frequency: 260, startOffset: 0.01, duration: 0.035, gain: 0.11, type: "square" },
+  ]);
+}
+
 /** Big triumphant flourish for the plan-unlock moment. */
 export function playUnlockFanfare() {
   playTones([

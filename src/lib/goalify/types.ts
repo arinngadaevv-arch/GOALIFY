@@ -20,6 +20,8 @@ export type Commitment = "allin" | "most" | "unsure";
 
 export type QuizAnswers = {
   goal: Goal;
+  /** Body zones tapped on the interactive target map — drives programming emphasis. */
+  focusZones: string[];
   level: Level;
   joints: JointStatus[];
   daysPerWeek: number;
