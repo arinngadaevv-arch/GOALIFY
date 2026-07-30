@@ -1,11 +1,22 @@
 "use client";
 
-import { Beef, Droplets, Flame, Info, Salad, Wheat } from "lucide-react";
+import {
+  Apple,
+  Beef,
+  Droplets,
+  Egg,
+  Flame,
+  Info,
+  Salad,
+  UtensilsCrossed,
+  Wheat,
+} from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
 import { goalLabel } from "@/lib/goalify/plan";
 import { AppShell } from "./app-shell";
 import { GlassCard } from "./ui/glass-card";
 import { VisualSlot } from "./ui/visual-slot";
+import { IconBadge } from "./ui/icon-badge";
 import { WaterTracker } from "./water-tracker";
 import { Pill, SectionHeading } from "./ui/stat";
 
@@ -15,7 +26,7 @@ const RULES = [
     title: "Pre-workout",
     body: "Carbs plus a little protein. Keep fat low so it clears your stomach before you move.",
     example: "Banana + Greek yoghurt",
-    emoji: "🍌",
+    icon: Apple,
     tone: "electric" as const,
   },
   {
@@ -23,7 +34,7 @@ const RULES = [
     title: "Post-workout",
     body: "Protein first, then carbs to refill what you burned. This is the window that turns effort into muscle.",
     example: "Chicken + rice, or a shake",
-    emoji: "🍗",
+    icon: Beef,
     tone: "lime" as const,
   },
 ];
@@ -34,9 +45,9 @@ export function Nutrition() {
   const isDeficit = targets.deficitOrSurplus < 0;
 
   const meals = [
-    { name: "Breakfast", kcal: Math.round(targets.calories * 0.28), emoji: "🥣" },
-    { name: "Lunch", kcal: Math.round(targets.calories * 0.36), emoji: "🥗" },
-    { name: "Dinner", kcal: Math.round(targets.calories * 0.36), emoji: "🍽️" },
+    { name: "Breakfast", kcal: Math.round(targets.calories * 0.28), icon: Egg },
+    { name: "Lunch", kcal: Math.round(targets.calories * 0.36), icon: Salad },
+    { name: "Dinner", kcal: Math.round(targets.calories * 0.36), icon: UtensilsCrossed },
   ];
 
   return (
@@ -109,7 +120,7 @@ export function Nutrition() {
             <GlassCard key={meal.name} className="overflow-hidden p-0">
               <VisualSlot
                 label="Meal"
-                emoji={meal.emoji}
+                icon={meal.icon}
                 rounded="rounded-none"
                 showChrome={false}
                 className="h-24 w-full"
@@ -134,12 +145,7 @@ export function Nutrition() {
         <div className="grid gap-3">
           {RULES.map((rule) => (
             <GlassCard key={rule.title} tone={rule.tone} className="flex gap-4 p-5">
-              <span
-                className="grid size-12 shrink-0 place-items-center rounded-2xl bg-white/70 text-2xl"
-                aria-hidden
-              >
-                {rule.emoji}
-              </span>
+              <IconBadge icon={rule.icon} size="md" />
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="text-sm font-extrabold text-ink">{rule.title}</p>

@@ -6,6 +6,7 @@ import {
   Beef,
   Bell,
   Check,
+  Dumbbell,
   Droplets,
   Flame,
   Library,
@@ -114,7 +115,7 @@ export function Dashboard() {
             <VisualSlot
               label="Workout Preview"
               hint="3D coach loop for this session"
-              emoji="🤸"
+              icon={Dumbbell}
               rounded="rounded-none"
               className="h-44 w-full"
             />

@@ -7,12 +7,16 @@ import clsx from "clsx";
 import {
   ArrowRight,
   Check,
+  Droplets,
   Flame,
   Library,
+  Ruler,
   ShieldCheck,
+  Smartphone,
   Timer,
   Volume2,
   X,
+  type LucideIcon,
 } from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
 import { findWorkout, resolveWorkout } from "@/lib/goalify/workouts";
@@ -21,11 +25,11 @@ import { GlowLink } from "@/components/goalify/ui/glow-button";
 import { CoachAvatar } from "@/components/goalify/ui/visual-slot";
 import { Pill, Stat } from "@/components/goalify/ui/stat";
 
-const CHECKLIST = [
-  { id: "space", label: "2×2 metres of clear floor", emoji: "📐" },
-  { id: "water", label: "Water within reach", emoji: "💧" },
-  { id: "sound", label: "Sound on for voice cues", emoji: "🔊" },
-  { id: "phone", label: "Phone propped where you can see it", emoji: "📱" },
+const CHECKLIST: { id: string; label: string; icon: LucideIcon }[] = [
+  { id: "space", label: "2×2 metres of clear floor", icon: Ruler },
+  { id: "water", label: "Water within reach", icon: Droplets },
+  { id: "sound", label: "Sound on for voice cues", icon: Volume2 },
+  { id: "phone", label: "Phone propped where you can see it", icon: Smartphone },
 ];
 
 export function Launchpad() {
@@ -147,8 +151,14 @@ export function Launchpad() {
                   active ? "border-lime-neon/50" : "hover:border-electric/25",
                 )}
               >
-                <span className="text-lg" aria-hidden>
-                  {item.emoji}
+                <span
+                  className={clsx(
+                    "grid size-9 shrink-0 place-items-center rounded-xl transition-colors",
+                    active ? "bg-lime-neon/20 text-lime-deep" : "bg-electric/8 text-electric",
+                  )}
+                  aria-hidden
+                >
+                  <item.icon className="size-4" strokeWidth={2.4} />
                 </span>
                 <span className="flex-1 text-sm font-semibold text-ink-soft">
                   {item.label}

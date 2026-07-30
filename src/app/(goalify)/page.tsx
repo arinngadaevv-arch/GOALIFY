@@ -2,11 +2,15 @@ import {
   Activity,
   Apple,
   ArrowRight,
+  Camera,
+  Dumbbell,
+  Flame,
   ShieldCheck,
   Sparkles,
   Star,
   Timer,
   TrendingUp,
+  UserRound,
 } from "lucide-react";
 import { Brand } from "@/components/goalify/brand";
 import { GlassCard } from "@/components/goalify/ui/glass-card";
@@ -142,11 +146,11 @@ export default function LandingPage() {
 
           <div className="mt-10 flex items-center gap-5">
             <div className="flex -space-x-3">
-              {["🏃", "🧘", "🤸", "🏋️"].map((emoji) => (
+              {[Activity, Flame, Dumbbell, UserRound].map((MemberIcon, index) => (
                 <VisualSlot
-                  key={emoji}
+                  key={index}
                   label="Member"
-                  emoji={emoji}
+                  icon={MemberIcon}
                   rounded="rounded-full"
                   showChrome={false}
                   className="size-11 ring-2 ring-white"
@@ -229,7 +233,7 @@ export default function LandingPage() {
                 <div className="relative">
                   <VisualSlot
                     label="Before"
-                    emoji="📷"
+                    icon={Camera}
                     showChrome={false}
                     rounded="rounded-none"
                     className="aspect-3/4 w-full"
@@ -241,7 +245,7 @@ export default function LandingPage() {
                 <div className="relative">
                   <VisualSlot
                     label="After"
-                    emoji="✨"
+                    icon={Sparkles}
                     showChrome={false}
                     rounded="rounded-none"
                     className="aspect-3/4 w-full"
@@ -379,7 +383,7 @@ export default function LandingPage() {
               <div className="mt-5 flex items-center gap-3">
                 <VisualSlot
                   label="Member"
-                  emoji="👤"
+                  icon={UserRound}
                   rounded="rounded-full"
                   showChrome={false}
                   className="size-9"

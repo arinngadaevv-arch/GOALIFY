@@ -14,6 +14,7 @@ import {
   Ruler,
   ShieldCheck,
   Sparkles,
+  UserRound,
   Volume2,
   Zap,
 } from "lucide-react";
@@ -46,7 +47,7 @@ export function SettingsScreen() {
       <GlassCard deep className="gf-anim-rise flex items-center gap-4 p-6">
         <VisualSlot
           label="Avatar"
-          emoji="🧑‍🚀"
+          icon={UserRound}
           rounded="rounded-3xl"
           showChrome={false}
           className="size-20 shrink-0 border-electric/30"

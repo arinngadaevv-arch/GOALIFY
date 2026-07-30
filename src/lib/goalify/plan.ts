@@ -1,3 +1,4 @@
+import { Search, Trophy, Zap, type LucideIcon } from "lucide-react";
 import type { NutritionTargets, Profile, QuizAnswers } from "./types";
 
 const ACTIVITY_BY_DAYS: Record<number, number> = {
@@ -176,7 +177,7 @@ export type Milestone = {
   week: string;
   title: string;
   body: string;
-  emoji: string;
+  icon: LucideIcon;
 };
 
 /**
@@ -194,19 +195,19 @@ export function milestones(p: QuizAnswers): Milestone[] {
       week: "Week 1",
       title: "Energy Boost",
       body: "Sleep improves, the 3pm crash fades, and showing up stops feeling like a fight.",
-      emoji: "⚡",
+      icon: Zap,
     },
     {
       week: "Week 2",
       title: "Visible Definition",
       body: definition,
-      emoji: "🔍",
+      icon: Search,
     },
     {
       week: "Week 4",
       title: "Total Transformation",
       body: `Clothes fit differently and you feel ${VISION_LABEL[p.vision]} looking back at yourself.`,
-      emoji: "🏆",
+      icon: Trophy,
     },
   ];
 }

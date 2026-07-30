@@ -2,21 +2,36 @@
 
 import { useMemo } from "react";
 import clsx from "clsx";
-import { Camera, Flame, Lock, Plus, TrendingDown, Trophy } from "lucide-react";
+import {
+  Camera,
+  Crown,
+  Flame,
+  Gem,
+  Image as ImageIcon,
+  Lock,
+  Medal,
+  Plus,
+  Sparkles,
+  Star,
+  TrendingDown,
+  Trophy,
+  type LucideIcon,
+} from "lucide-react";
 import { useGoalify, todayKey } from "@/lib/goalify/store";
 import { projectWeight, weeksToTarget } from "@/lib/goalify/plan";
 import { AppShell } from "./app-shell";
 import { GlassCard } from "./ui/glass-card";
 import { VisualSlot } from "./ui/visual-slot";
+import { IconBadge } from "./ui/icon-badge";
 import { Pill, SectionHeading, Stat } from "./ui/stat";
 
 const BADGES = [
-  { id: "first", name: "First Rep", emoji: "🥇", requirement: 1 },
-  { id: "three", name: "Hat-Trick", emoji: "🔥", requirement: 3 },
-  { id: "week", name: "Week One", emoji: "⭐", requirement: 7 },
-  { id: "fortnight", name: "Fortnight", emoji: "💎", requirement: 14 },
-  { id: "month", name: "Month Strong", emoji: "🏆", requirement: 30 },
-  { id: "legend", name: "Legend", emoji: "👑", requirement: 60 },
+  { id: "first", name: "First Rep", icon: Medal, requirement: 1 },
+  { id: "three", name: "Hat-Trick", icon: Flame, requirement: 3 },
+  { id: "week", name: "Week One", icon: Star, requirement: 7 },
+  { id: "fortnight", name: "Fortnight", icon: Gem, requirement: 14 },
+  { id: "month", name: "Month Strong", icon: Trophy, requirement: 30 },
+  { id: "legend", name: "Legend", icon: Crown, requirement: 60 },
 ];
 
 export function Progress() {
@@ -131,11 +146,11 @@ export function Progress() {
           }
         />
         <div className="grid grid-cols-2 gap-3">
-          <PhotoTile label="Before" caption="Day 1" emoji="📷" />
+          <PhotoTile label="Before" caption="Day 1" icon={Camera} />
           <PhotoTile
             label="After"
             caption={completed > 0 ? `Day ${completed}` : "Not yet"}
-            emoji="✨"
+            icon={Sparkles}
             locked={completed < 7}
           />
         </div>
@@ -146,7 +161,7 @@ export function Progress() {
               <div key={photo.id}>
                 <VisualSlot
                   label={photo.label}
-                  emoji="🖼️"
+                  icon={ImageIcon}
                   showChrome={false}
                   rounded="rounded-2xl"
                   className="aspect-3/4 w-full"
@@ -190,26 +205,14 @@ export function Progress() {
                   <div
                     className={clsx(
                       "relative mx-auto grid size-20 place-items-center rounded-3xl transition-all duration-500",
-                      earned
-                        ? "gf-glow-lime bg-linear-to-br from-lime-neon/30 to-electric/20"
-                        : "bg-ink/4",
+                      earned ? "gf-anim-float" : "bg-ink/4",
                     )}
                   >
-                    {earned && (
-                      <span
-                        className="absolute inset-0 rounded-3xl border border-lime-neon/40"
-                        aria-hidden
-                      />
+                    {earned ? (
+                      <IconBadge icon={badge.icon} size="lg" active />
+                    ) : (
+                      <badge.icon className="size-8 text-haze opacity-30" strokeWidth={2.2} />
                     )}
-                    <span
-                      className={clsx(
-                        "text-3xl transition-all",
-                        earned ? "gf-anim-float" : "opacity-25 grayscale",
-                      )}
-                      aria-hidden
-                    >
-                      {badge.emoji}
-                    </span>
                     {!earned && (
                       <Lock className="absolute right-2 bottom-2 size-3.5 text-haze" />
                     )}
@@ -250,12 +253,12 @@ export function Progress() {
 function PhotoTile({
   label,
   caption,
-  emoji,
+  icon,
   locked = false,
 }: {
   label: string;
   caption: string;
-  emoji: string;
+  icon: LucideIcon;
   locked?: boolean;
 }) {
   return (
@@ -263,7 +266,7 @@ function PhotoTile({
       <VisualSlot
         label={label}
         hint={locked ? "Unlocks at 7 sessions" : "Tap to add a photo"}
-        emoji={locked ? "🔒" : emoji}
+        icon={locked ? Lock : icon}
         className="aspect-3/4 w-full"
       />
       <div className="absolute inset-x-3 bottom-3 flex items-center justify-between">

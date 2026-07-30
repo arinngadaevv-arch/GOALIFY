@@ -2,22 +2,32 @@
 
 import { useEffect, useState } from "react";
 import clsx from "clsx";
-import { ArrowRight, Check, Sparkles, Unlock } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  Flame,
+  Sparkles,
+  Target,
+  Trophy,
+  Unlock,
+  Zap,
+} from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
 import { planName } from "@/lib/goalify/plan";
 import { GlassCard } from "@/components/goalify/ui/glass-card";
 import { GlowLink } from "@/components/goalify/ui/glow-button";
+import { IconBadge } from "@/components/goalify/ui/icon-badge";
 import { CoachBubble } from "@/components/goalify/coach/coach-bubble";
 import { Stat } from "@/components/goalify/ui/stat";
 
 /** Fixed positions keep the burst identical on server and client. */
 const PARTICLES = [
-  { emoji: "💪", left: "8%", top: "18%", delay: "0.15s" },
-  { emoji: "🔥", left: "86%", top: "22%", delay: "0.35s" },
-  { emoji: "⚡", left: "18%", top: "68%", delay: "0.55s" },
-  { emoji: "🏆", left: "78%", top: "72%", delay: "0.25s" },
-  { emoji: "✨", left: "50%", top: "8%", delay: "0.45s" },
-  { emoji: "🎯", left: "6%", top: "44%", delay: "0.65s" },
+  { icon: Zap, left: "8%", top: "18%", delay: "0.15s" },
+  { icon: Flame, left: "86%", top: "22%", delay: "0.35s" },
+  { icon: Sparkles, left: "18%", top: "68%", delay: "0.55s" },
+  { icon: Trophy, left: "78%", top: "72%", delay: "0.25s" },
+  { icon: Target, left: "50%", top: "8%", delay: "0.45s" },
+  { icon: Sparkles, left: "6%", top: "44%", delay: "0.65s" },
 ];
 
 const UNLOCKED = [
@@ -40,17 +50,17 @@ export function UnlockCelebration() {
     <main className="relative mx-auto flex min-h-dvh w-full max-w-lg flex-col items-center justify-center px-5 py-14 text-center">
       {/* Floating celebration particles */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-        {PARTICLES.map((particle) => (
+        {PARTICLES.map((particle, index) => (
           <span
-            key={particle.emoji}
-            className="gf-anim-pop absolute text-2xl"
+            key={index}
+            className="gf-anim-pop absolute"
             style={{
               left: particle.left,
               top: particle.top,
               animationDelay: particle.delay,
             }}
           >
-            <span className="gf-anim-float block">{particle.emoji}</span>
+            <IconBadge icon={particle.icon} size="sm" className="gf-anim-float" />
           </span>
         ))}
       </div>

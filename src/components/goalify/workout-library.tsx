@@ -1,19 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Flame, Play, ShieldCheck, Zap } from "lucide-react";
+import {
+  ArrowRight,
+  BicepsFlexed,
+  Dumbbell,
+  Flame,
+  Play,
+  ShieldCheck,
+  Sparkles,
+  Target,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
 import { PROGRAM, LIBRARY } from "@/lib/goalify/workouts";
 import type { Workout } from "@/lib/goalify/types";
 import { AppShell } from "./app-shell";
 import { GlassCard } from "./ui/glass-card";
-import { VisualSlot } from "./ui/visual-slot";
+import { IconBadge } from "./ui/icon-badge";
 import { Pill, SectionHeading, Stat } from "./ui/stat";
 
-const TRACK_EMOJI: Record<string, string> = {
-  "full-body-burn": "🔥",
-  "core-crusher": "🌀",
-  "lower-body-joint-safe": "🦵",
+const PROGRAM_ICONS: LucideIcon[] = [Dumbbell, BicepsFlexed, Zap];
+
+const TRACK_ICON: Record<string, LucideIcon> = {
+  "full-body-burn": Flame,
+  "core-crusher": Target,
+  "lower-body-joint-safe": ShieldCheck,
 };
 
 export function WorkoutLibrary() {
@@ -36,7 +49,7 @@ export function WorkoutLibrary() {
             <TrackCard
               key={workout.id}
               workout={workout}
-              emoji={["🏋️", "💪", "⚡"][index] ?? "🏋️"}
+              icon={PROGRAM_ICONS[index] ?? Dumbbell}
               isToday={workout.id === todaysWorkout.id}
               kneeSafe={state.settings.kneeSafe}
             />
@@ -51,7 +64,7 @@ export function WorkoutLibrary() {
             <TrackCard
               key={workout.id}
               workout={workout}
-              emoji={TRACK_EMOJI[workout.id] ?? "✨"}
+              icon={TRACK_ICON[workout.id] ?? Sparkles}
               isToday={false}
               kneeSafe={state.settings.kneeSafe}
             />
@@ -64,12 +77,12 @@ export function WorkoutLibrary() {
 
 function TrackCard({
   workout,
-  emoji,
+  icon,
   isToday,
   kneeSafe,
 }: {
   workout: Workout;
-  emoji: string;
+  icon: LucideIcon;
   isToday: boolean;
   kneeSafe: boolean;
 }) {
@@ -78,13 +91,7 @@ function TrackCard({
       <GlassCard deep interactive className="overflow-hidden p-0">
         <div className="p-4">
           <div className="flex items-center gap-4">
-            <VisualSlot
-              label="Track"
-              emoji={emoji}
-              showChrome={false}
-              rounded="rounded-2xl"
-              className="size-16 shrink-0"
-            />
+            <IconBadge icon={icon} size="lg" />
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-1.5">
                 <p className="text-base font-extrabold text-ink">

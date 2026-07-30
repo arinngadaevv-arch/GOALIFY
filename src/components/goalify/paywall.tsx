@@ -12,6 +12,7 @@ import {
   Star,
   Timer,
   TrendingDown,
+  Trophy,
 } from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
 import {
@@ -29,6 +30,7 @@ import { COACH } from "@/lib/goalify/coach";
 import { Brand } from "@/components/goalify/brand";
 import { GlassCard } from "@/components/goalify/ui/glass-card";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
+import { IconBadge } from "@/components/goalify/ui/icon-badge";
 import { CoachAvatar } from "@/components/goalify/ui/visual-slot";
 import { CoachBubble } from "@/components/goalify/coach/coach-bubble";
 import { ParticleField } from "@/components/goalify/ui/particles";
@@ -114,9 +116,11 @@ export function Paywall() {
             style={{ animationDelay: "0.6s" }}
             aria-hidden
           />
-          <span className="gf-glow-lime relative grid size-16 place-items-center rounded-full bg-lime-neon text-3xl">
-            🏆
-          </span>
+          <IconBadge
+            icon={Trophy}
+            size="lg"
+            className="gf-glow-lime relative rounded-full"
+          />
         </div>
 
         <p className="mt-5 text-[11px] font-black tracking-[0.2em] text-lime-deep uppercase">
@@ -233,9 +237,7 @@ export function Paywall() {
                 deep
                 className={`gf-anim-rise gf-delay-${index + 1} relative flex items-start gap-4 p-5`}
               >
-                <span className="gf-glow-electric relative z-10 grid size-12 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-electric to-[#0038b0] text-xl">
-                  {milestone.emoji}
-                </span>
+                <IconBadge icon={milestone.icon} size="md" className="gf-glow-electric relative z-10" />
                 <div className="min-w-0">
                   <p className="text-[10px] font-black tracking-[0.14em] text-electric uppercase">
                     {milestone.week}
