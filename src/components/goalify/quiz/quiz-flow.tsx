@@ -1,30 +1,38 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
-import { ArrowLeft, ArrowRight, Check, Minus, Plus } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Minus, Plus, TrendingUp } from "lucide-react";
 import { QUIZ_STEPS, type QuizStep } from "@/lib/goalify/quiz";
 import { DEFAULT_ANSWERS } from "@/lib/goalify/plan";
+import { coachProgressNudge, coachReaction } from "@/lib/goalify/coach";
 import type { JointStatus, QuizAnswers } from "@/lib/goalify/types";
 import { useGoalify } from "@/lib/goalify/store";
 import { Brand } from "@/components/goalify/brand";
 import { GlassCard } from "@/components/goalify/ui/glass-card";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
+import { CoachBubble } from "@/components/goalify/coach/coach-bubble";
+import { ParticleField } from "@/components/goalify/ui/particles";
 import { AnalyzingScreen } from "./analyzing-screen";
 
 /** Steps whose stored value is a number even though it's picked as a choice. */
 const NUMERIC_CHOICE_IDS = new Set<keyof QuizAnswers>(["daysPerWeek"]);
+
+/** How long the coach's reaction stays on screen before the next question. */
+const REACTION_MS = 1050;
 
 export function QuizFlow() {
   const router = useRouter();
   const { state, setDraft, completeQuiz } = useGoalify();
   const [index, setIndex] = useState(0);
   const [analyzing, setAnalyzing] = useState(false);
+  const [reaction, setReaction] = useState<string | null>(null);
+  const [pending, setPending] = useState<Partial<QuizAnswers> | null>(null);
 
   const step = QUIZ_STEPS[index];
   const isLast = index === QUIZ_STEPS.length - 1;
-  const progress = ((index + (analyzing ? 1 : 0)) / QUIZ_STEPS.length) * 100;
+  const progress = (index / QUIZ_STEPS.length) * 100;
 
   const draft = state.draft;
   const currentValue = draft[step.id];
@@ -38,34 +46,60 @@ export function QuizFlow() {
     [draft, completeQuiz],
   );
 
-  const advance = useCallback(
-    (patch: Partial<QuizAnswers>) => {
+  /**
+   * Writes the answer immediately (so the option shows as selected), fires the
+   * coach's reaction, and queues the advance so the reaction has a beat to land.
+   */
+  const pick = useCallback(
+    (patch: Partial<QuizAnswers>, value: unknown) => {
       setDraft(patch);
-      if (isLast) {
-        finish(patch);
-        return;
-      }
-      setIndex((i) => i + 1);
+      setReaction(coachReaction(String(step.id), value));
+      setPending(patch);
     },
-    [setDraft, isLast, finish],
+    [setDraft, step.id],
   );
+
+  // The advance itself happens in a timer callback, never synchronously in the
+  // effect body, so this stays clear of cascading-render lint rules.
+  useEffect(() => {
+    if (!pending) return;
+    const timer = setTimeout(() => {
+      if (isLast) {
+        finish(pending);
+      } else {
+        setIndex((i) => i + 1);
+        setReaction(null);
+      }
+      setPending(null);
+    }, REACTION_MS);
+    return () => clearTimeout(timer);
+  }, [pending, isLast, finish]);
 
   if (analyzing) {
     return <AnalyzingScreen onDone={() => router.push("/plan")} />;
   }
 
+  const coachMessage = reaction ?? coachProgressNudge(progress);
+
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-16">
-      <header className="flex items-center justify-between py-6">
+    <main className="relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-16">
+      <ParticleField />
+
+      <header className="relative flex items-center justify-between py-6">
         <Brand />
-        <span className="gf-numeric text-sm font-bold text-mist">
-          {index + 1}
-          <span className="text-haze"> / {QUIZ_STEPS.length}</span>
-        </span>
+        <div className="text-right">
+          <span className="gf-numeric block text-sm font-bold text-mist">
+            {index + 1}
+            <span className="text-haze"> / {QUIZ_STEPS.length}</span>
+          </span>
+          <span className="text-[10px] font-bold tracking-[0.14em] text-electric uppercase">
+            {step.chapter}
+          </span>
+        </div>
       </header>
 
       <div
-        className="h-2 w-full overflow-hidden rounded-full bg-ink/6"
+        className="relative h-2.5 w-full overflow-hidden rounded-full bg-ink/6"
         role="progressbar"
         aria-valuenow={Math.round(progress)}
         aria-valuemin={0}
@@ -73,12 +107,20 @@ export function QuizFlow() {
         aria-label="Quiz progress"
       >
         <div
-          className="h-full rounded-full bg-linear-to-r from-electric to-lime-neon transition-[width] duration-500 ease-out"
-          style={{ width: `${Math.max(6, progress)}%` }}
+          className="h-full rounded-full bg-linear-to-r from-electric to-lime-neon shadow-[0_0_12px_rgba(57,255,20,0.6)] transition-[width] duration-500 ease-out"
+          style={{ width: `${Math.max(5, progress)}%` }}
         />
       </div>
 
-      <div key={step.id} className="gf-anim-rise flex-1 pt-10">
+      {/* The coach speaks on every single step. */}
+      <CoachBubble
+        key={coachMessage}
+        message={coachMessage}
+        tone={reaction ? "lime" : "plain"}
+        className="relative mt-6"
+      />
+
+      <div key={step.id} className="gf-anim-rise relative flex-1 pt-8">
         <h1 className="gf-display text-3xl font-black text-ink sm:text-4xl">
           {step.title}
         </h1>
@@ -91,20 +133,22 @@ export function QuizFlow() {
             <ChoiceStep
               step={step}
               value={currentValue}
-              onPick={advance}
+              onPick={pick}
               onSetDraft={setDraft}
+              locked={pending !== null}
             />
           ) : (
             <NumberStep
               step={step}
               value={typeof currentValue === "number" ? currentValue : undefined}
-              onSubmit={advance}
+              onSubmit={pick}
+              locked={pending !== null}
             />
           )}
         </div>
       </div>
 
-      <footer className="flex items-center justify-between pt-8">
+      <footer className="relative flex items-center justify-between pt-8">
         <GlowButton
           variant="ghost"
           size="sm"
@@ -126,11 +170,13 @@ function ChoiceStep({
   value,
   onPick,
   onSetDraft,
+  locked,
 }: {
   step: Extract<QuizStep, { kind: "choice" }>;
   value: unknown;
-  onPick: (patch: Partial<QuizAnswers>) => void;
+  onPick: (patch: Partial<QuizAnswers>, value: unknown) => void;
   onSetDraft: (patch: Partial<QuizAnswers>) => void;
+  locked: boolean;
 }) {
   const selected = useMemo(
     () => (Array.isArray(value) ? (value as string[]) : []),
@@ -161,8 +207,10 @@ function ChoiceStep({
               emoji={option.emoji}
               label={option.label}
               description={option.description}
+              socialProof={option.socialProof}
               selected={selected.includes(option.value)}
               multi
+              disabled={locked}
               onClick={() => toggle(option.value)}
             />
           ))}
@@ -171,12 +219,15 @@ function ChoiceStep({
           size="lg"
           fullWidth
           className="mt-6"
-          disabled={selected.length === 0}
+          disabled={selected.length === 0 || locked}
           onClick={() =>
-            onPick({ [step.id]: selected as JointStatus[] } as Partial<QuizAnswers>)
+            onPick(
+              { [step.id]: selected as JointStatus[] } as Partial<QuizAnswers>,
+              selected,
+            )
           }
         >
-          Continue
+          Lock it in
           <ArrowRight className="size-5" />
         </GlowButton>
       </>
@@ -191,14 +242,15 @@ function ChoiceStep({
           emoji={option.emoji}
           label={option.label}
           description={option.description}
+          socialProof={option.socialProof}
           selected={String(value) === option.value}
-          onClick={() =>
-            onPick({
-              [step.id]: NUMERIC_CHOICE_IDS.has(step.id)
-                ? Number(option.value)
-                : option.value,
-            } as Partial<QuizAnswers>)
-          }
+          disabled={locked}
+          onClick={() => {
+            const stored = NUMERIC_CHOICE_IDS.has(step.id)
+              ? Number(option.value)
+              : option.value;
+            onPick({ [step.id]: stored } as Partial<QuizAnswers>, option.value);
+          }}
         />
       ))}
     </div>
@@ -209,28 +261,34 @@ function OptionCard({
   emoji,
   label,
   description,
+  socialProof,
   selected,
   multi = false,
+  disabled = false,
   onClick,
 }: {
   emoji: string;
   label: string;
   description?: string;
+  socialProof?: string;
   selected: boolean;
   multi?: boolean;
+  disabled?: boolean;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       aria-pressed={selected}
       className={clsx(
         "gf-glass gf-press rounded-3xl p-4 text-left transition-all duration-300",
-        "flex items-center gap-4 hover:-translate-y-0.5",
+        "flex items-center gap-4",
+        !disabled && "hover:-translate-y-0.5 hover:border-electric/30",
         selected
           ? "border-electric/50 gf-glow-electric"
-          : "hover:border-electric/25",
+          : "disabled:opacity-45",
       )}
     >
       <span
@@ -249,6 +307,12 @@ function OptionCard({
         {description && (
           <span className="mt-0.5 block text-sm leading-snug text-mist">
             {description}
+          </span>
+        )}
+        {socialProof && (
+          <span className="mt-1.5 flex items-center gap-1 text-[11px] font-bold text-lime-deep">
+            <TrendingUp className="size-3 shrink-0" strokeWidth={3} />
+            {socialProof}
           </span>
         )}
       </span>
@@ -274,10 +338,12 @@ function NumberStep({
   step,
   value,
   onSubmit,
+  locked,
 }: {
   step: Extract<QuizStep, { kind: "number" }>;
   value?: number;
-  onSubmit: (patch: Partial<QuizAnswers>) => void;
+  onSubmit: (patch: Partial<QuizAnswers>, value: unknown) => void;
+  locked: boolean;
 }) {
   const [local, setLocal] = useState(value ?? step.defaultValue);
   const clamp = (next: number) =>
@@ -335,9 +401,12 @@ function NumberStep({
         size="lg"
         fullWidth
         className="mt-6"
-        onClick={() => onSubmit({ [step.id]: local } as Partial<QuizAnswers>)}
+        disabled={locked}
+        onClick={() =>
+          onSubmit({ [step.id]: local } as Partial<QuizAnswers>, local)
+        }
       >
-        Continue
+        Lock it in
         <ArrowRight className="size-5" />
       </GlowButton>
     </>

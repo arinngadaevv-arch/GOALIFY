@@ -17,15 +17,23 @@ import { useGoalify } from "@/lib/goalify/store";
 import {
   goalLabel,
   levelLabel,
+  milestones,
+  painLabel,
   planHighlights,
   planName,
   projectWeight,
+  visionLabel,
   weeksToTarget,
 } from "@/lib/goalify/plan";
+import { COACH } from "@/lib/goalify/coach";
 import { Brand } from "@/components/goalify/brand";
 import { GlassCard } from "@/components/goalify/ui/glass-card";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
 import { CoachAvatar } from "@/components/goalify/ui/visual-slot";
+import { CoachBubble } from "@/components/goalify/coach/coach-bubble";
+import { ParticleField } from "@/components/goalify/ui/particles";
+import { CountUp } from "@/components/goalify/ui/count-up";
+import { BuyerTicker } from "@/components/goalify/buyer-ticker";
 import { Pill, Stat } from "@/components/goalify/ui/stat";
 
 const OFFER_SECONDS = 15 * 60;
@@ -84,45 +92,83 @@ export function Paywall() {
   };
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-5 pb-40">
-      <header className="flex items-center justify-between py-6">
+    <main className="relative mx-auto w-full max-w-2xl px-5 pb-40">
+      <ParticleField />
+
+      <header className="relative flex items-center justify-between py-6">
         <Brand />
         <Pill tone="lime">
           <Check className="size-3" strokeWidth={3} /> Analysis complete
         </Pill>
       </header>
 
-      {/* ------------------------------------------------- Personalised result */}
-      <section className="gf-anim-materialize text-center">
-        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-electric">
-          Your personalised blueprint
+      {/* ------------------------------------------- Victory / unlock moment */}
+      <section className="gf-anim-materialize relative text-center">
+        <div className="relative mx-auto grid size-24 place-items-center">
+          <span
+            className="gf-anim-burst absolute size-20 rounded-full border-2 border-lime-neon/50"
+            aria-hidden
+          />
+          <span
+            className="gf-anim-burst absolute size-20 rounded-full border-2 border-electric/40"
+            style={{ animationDelay: "0.6s" }}
+            aria-hidden
+          />
+          <span className="gf-glow-lime relative grid size-16 place-items-center rounded-full bg-lime-neon text-3xl">
+            🏆
+          </span>
+        </div>
+
+        <p className="mt-5 text-[11px] font-black tracking-[0.2em] text-lime-deep uppercase">
+          Your plan is ready
         </p>
         <h1 className="gf-display mt-3 text-4xl font-black text-ink sm:text-5xl">
           The <span className="gf-text-hype">{planName(answers)}</span> plan
         </h1>
         <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-ink-soft">
           Built for a {levelLabel(answers.level).toLowerCase()}-stage athlete
-          chasing {goalLabel(answers.goal).toLowerCase()}, training{" "}
-          {answers.daysPerWeek} days a week for {answers.sessionLength} minutes.
+          chasing {goalLabel(answers.goal).toLowerCase()} — designed around{" "}
+          {painLabel(answers.painTrigger)}, so this time it sticks.
         </p>
       </section>
 
+      <CoachBubble
+        message={`I've got everything I need. This plan is built to make you feel ${visionLabel(answers.vision)} in 30 days — but it only works if you start today.`}
+        tone="electric"
+        className="relative mt-7"
+      />
+
       <GlassCard
         deep
-        className="gf-anim-rise gf-delay-1 mt-8 grid grid-cols-3 gap-4 p-6"
+        className="gf-anim-rise gf-delay-1 relative mt-6 grid grid-cols-3 gap-4 p-6"
       >
-        <Stat
-          value={targets.calories.toLocaleString()}
-          label="kcal / day"
-          tone="electric"
-        />
-        <Stat value={targets.protein} label="g protein" suffix="" tone="lime" />
+        <div className="text-center">
+          <p className="gf-numeric text-2xl font-extrabold text-electric">
+            <CountUp to={targets.calories} />
+          </p>
+          <p className="mt-1 text-[11px] font-semibold tracking-[0.12em] text-mist uppercase">
+            kcal / day
+          </p>
+        </div>
+        <div className="text-center">
+          <p className="gf-numeric text-2xl font-extrabold text-lime-deep">
+            <CountUp to={targets.protein} />
+          </p>
+          <p className="mt-1 text-[11px] font-semibold tracking-[0.12em] text-mist uppercase">
+            g protein
+          </p>
+        </div>
         <Stat
           value={weeks > 0 ? weeks : "—"}
           label="weeks to target"
           tone="ink"
         />
       </GlassCard>
+
+      {/* ------------------------------------------------ Live proof ticker */}
+      <div className="relative mt-4">
+        <BuyerTicker />
+      </div>
 
       {/* ------------------------------------------------------- Projection */}
       <GlassCard deep className="gf-anim-rise gf-delay-2 mt-5 overflow-hidden p-6">
@@ -165,11 +211,53 @@ export function Paywall() {
         </ul>
       </GlassCard>
 
+      {/* --------------------------------------------- Transformation timeline */}
+      <section className="gf-anim-rise gf-delay-4 relative mt-8">
+        <div className="text-center">
+          <Pill tone="lime">Your transformation timeline</Pill>
+          <h2 className="gf-display mt-3 text-2xl font-black text-ink">
+            What happens once you start
+          </h2>
+        </div>
+
+        <div className="relative mt-6">
+          {/* Spine connecting the milestones. */}
+          <span
+            className="absolute top-6 bottom-6 left-[1.65rem] w-0.5 bg-linear-to-b from-electric via-electric/40 to-lime-neon"
+            aria-hidden
+          />
+          <div className="grid gap-3">
+            {milestones(answers).map((milestone, index) => (
+              <GlassCard
+                key={milestone.week}
+                deep
+                className={`gf-anim-rise gf-delay-${index + 1} relative flex items-start gap-4 p-5`}
+              >
+                <span className="gf-glow-electric relative z-10 grid size-12 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-electric to-[#0038b0] text-xl">
+                  {milestone.emoji}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-black tracking-[0.14em] text-electric uppercase">
+                    {milestone.week}
+                  </p>
+                  <p className="gf-display mt-0.5 text-lg font-extrabold text-ink">
+                    {milestone.title}
+                  </p>
+                  <p className="mt-1 text-sm leading-relaxed text-ink-soft">
+                    {milestone.body}
+                  </p>
+                </div>
+              </GlassCard>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* -------------------------------------------------------- Coach hype */}
       <GlassCard
         tone="electric"
         deep
-        className="gf-anim-rise gf-delay-4 mt-5 flex items-center gap-5 p-6"
+        className="gf-anim-rise gf-delay-5 relative mt-8 flex items-center gap-5 p-6"
       >
         <CoachAvatar
           label="Coach"
@@ -178,28 +266,34 @@ export function Paywall() {
         />
         <div>
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-electric">
-            Your coach
+            {COACH.name} · {COACH.role}
           </p>
           <p className="gf-display mt-1 text-xl font-extrabold text-ink">
-            &ldquo;I&apos;ll count you in on every rep.&rdquo;
+            &ldquo;I&apos;ll count you in on every single rep.&rdquo;
           </p>
           <p className="mt-2 text-sm text-ink-soft">
-            Live 3D form guidance, voice cues and a session that adapts when
-            something hurts.
+            Live 3D form guidance, voice cues, and a session that adapts the
+            second something hurts. You bring the effort. I&apos;ll bring
+            everything else.
           </p>
         </div>
       </GlassCard>
 
       {/* ------------------------------------------------------------- Offer */}
-      <section className="gf-anim-rise gf-delay-5 mt-10">
+      <section className="relative mt-10">
         <GlassCard tone="lime" deep className="p-5 text-center">
           <div className="flex items-center justify-center gap-2">
             <Flame className="size-4 text-lime-deep" strokeWidth={2.8} />
-            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-lime-deep">
+            <p className="text-[11px] font-black tracking-[0.16em] text-lime-deep uppercase">
               Launch offer — 50% off
             </p>
           </div>
-          <p className="gf-numeric mt-2 text-4xl font-black text-ink">
+          <p
+            className={clsx(
+              "gf-numeric mt-2 text-5xl font-black text-ink",
+              remaining > 0 && remaining < 120 && "gf-anim-flicker text-electric",
+            )}
+          >
             {formatCountdown(remaining)}
           </p>
           <p className="mt-1 text-xs font-semibold text-ink-soft">
@@ -275,14 +369,16 @@ export function Paywall() {
         <GlowButton
           size="xl"
           fullWidth
-          pulse
-          className="mt-6"
+          className="gf-anim-hype mt-6"
           disabled={!hydrated}
           onClick={checkout}
         >
           <Lock className="size-5" />
-          Unlock my plan — ${selected.price.toFixed(2)}
+          UNLOCK MY PLAN — ${selected.price.toFixed(2)}
         </GlowButton>
+        <p className="mt-2.5 text-center text-xs font-bold text-lime-deep">
+          Day 1 starts the second you tap that button.
+        </p>
 
         <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-semibold text-mist">
           <span className="flex items-center gap-1.5">

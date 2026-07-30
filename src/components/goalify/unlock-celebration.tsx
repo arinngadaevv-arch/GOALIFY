@@ -7,6 +7,7 @@ import { useGoalify } from "@/lib/goalify/store";
 import { planName } from "@/lib/goalify/plan";
 import { GlassCard } from "@/components/goalify/ui/glass-card";
 import { GlowLink } from "@/components/goalify/ui/glow-button";
+import { CoachBubble } from "@/components/goalify/coach/coach-bubble";
 import { Stat } from "@/components/goalify/ui/stat";
 
 /** Fixed positions keep the burst identical on server and client. */
@@ -96,8 +97,15 @@ export function UnlockCelebration() {
       </h1>
       <p className="gf-anim-rise gf-delay-4 mt-4 max-w-sm text-base leading-relaxed text-ink-soft">
         The <strong className="text-ink">{planName(answers)}</strong> plan is
-        unlocked and waiting. Day 1 starts the moment you press the button.
+        unlocked. No more planning, no more waiting — Day 1 starts the second
+        you hit that button.
       </p>
+
+      <CoachBubble
+        message="This is the part where most people close the app and 'start Monday'. Not you. Press it."
+        tone="lime"
+        className="gf-anim-rise gf-delay-4 mt-6 w-full text-left"
+      />
 
       <GlassCard deep className="gf-anim-rise gf-delay-5 mt-8 w-full p-6">
         <div className="grid grid-cols-3 gap-4">

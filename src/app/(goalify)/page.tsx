@@ -12,7 +12,11 @@ import { Brand } from "@/components/goalify/brand";
 import { GlassCard } from "@/components/goalify/ui/glass-card";
 import { GlowLink } from "@/components/goalify/ui/glow-button";
 import { CoachAvatar, VisualSlot } from "@/components/goalify/ui/visual-slot";
-import { Pill, Stat } from "@/components/goalify/ui/stat";
+import { CoachBubble } from "@/components/goalify/coach/coach-bubble";
+import { ParticleField } from "@/components/goalify/ui/particles";
+import { CountUp } from "@/components/goalify/ui/count-up";
+import { COACH_GREETINGS } from "@/lib/goalify/coach";
+import { Pill } from "@/components/goalify/ui/stat";
 
 const TRANSFORMATIONS = [
   { name: "Maya R.", weeks: 14, change: "-9.4 kg", goal: "Fat Burn" },
@@ -84,8 +88,10 @@ const TESTIMONIALS = [
 
 export default function LandingPage() {
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 pb-24">
-      <nav className="flex items-center justify-between py-6">
+    <main className="relative mx-auto w-full max-w-6xl px-5 pb-24">
+      <ParticleField />
+
+      <nav className="relative flex items-center justify-between py-6">
         <Brand />
         <div className="flex items-center gap-2">
           <GlowLink href="/quiz" variant="ghost" size="sm" className="max-sm:hidden">
@@ -98,31 +104,34 @@ export default function LandingPage() {
       </nav>
 
       {/* ---------------------------------------------------------------- Hero */}
-      <section className="grid items-center gap-10 py-10 lg:grid-cols-[1.1fr_0.9fr] lg:py-16">
+      <section className="relative grid items-center gap-10 py-10 lg:grid-cols-[1.1fr_0.9fr] lg:py-16">
         <div className="gf-anim-rise">
           <Pill tone="lime">
             <Sparkles className="size-3" /> No equipment required
           </Pill>
 
           <h1 className="gf-display mt-5 text-5xl font-black text-ink sm:text-6xl lg:text-7xl">
-            Your body,
+            Stop starting over.
             <br />
-            <span className="gf-text-hype">engineered.</span>
+            <span className="gf-text-hype">Start finishing.</span>
           </h1>
 
           <p className="mt-6 max-w-lg text-lg leading-relaxed text-ink-soft">
-            GOALIFY builds a training and nutrition system around your goal,
-            your starting point and your joints — then coaches you through
-            every single rep in 3D.
+            One coach. One plan. Built around your goal, your starting point
+            and the exact thing that stopped you last time — then drilled into
+            you rep by rep in 3D.
           </p>
 
+          {/* The coach speaks before the user has done anything. */}
+          <CoachBubble message={COACH_GREETINGS[0]} className="mt-7 max-w-lg" />
+
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <GlowLink href="/quiz" size="xl" pulse>
+            <GlowLink href="/quiz" size="xl" className="gf-anim-hype">
               START YOUR TRANSFORMATION
               <ArrowRight className="size-5" />
             </GlowLink>
             <span className="text-sm font-semibold text-mist">
-              Takes 90 seconds · Free
+              90 seconds · Free · No card
             </span>
           </div>
 
@@ -259,12 +268,12 @@ export default function LandingPage() {
       {/* --------------------------------------------------------------- Stats */}
       <GlassCard
         deep
-        className="gf-anim-rise grid grid-cols-2 gap-6 p-7 sm:grid-cols-4"
+        className="gf-anim-rise relative grid grid-cols-2 gap-6 p-7 sm:grid-cols-4"
       >
-        <Stat value="128k+" label="Plans built" tone="electric" />
-        <Stat value="4.9" label="Average rating" tone="ink" />
-        <Stat value="87%" label="Still training at week 8" tone="lime" />
-        <Stat value="11" label="Questions to start" tone="ink" />
+        <TickerStat to={128400} suffix="+" label="Plans built" tone="electric" />
+        <TickerStat to={4.9} decimals={1} label="Average rating" tone="ink" />
+        <TickerStat to={87} suffix="%" label="Still training at week 8" tone="lime" />
+        <TickerStat to={13} label="Questions to start" tone="ink" />
       </GlassCard>
 
       {/* ----------------------------------------------------------- How it works */}
@@ -272,7 +281,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-2xl text-center">
           <Pill>How it works</Pill>
           <h2 className="gf-display mt-4 text-4xl font-black text-ink sm:text-5xl">
-            Three steps to day one
+            90 seconds from now, you&apos;re training
           </h2>
         </div>
 
@@ -300,7 +309,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-2xl text-center">
           <Pill tone="lime">Inside the app</Pill>
           <h2 className="gf-display mt-4 text-4xl font-black text-ink sm:text-5xl">
-            Built to remove every excuse
+            Every excuse. Engineered out.
           </h2>
         </div>
 
@@ -366,11 +375,12 @@ export default function LandingPage() {
         className="gf-anim-rise overflow-hidden px-7 py-14 text-center"
       >
         <h2 className="gf-display mx-auto max-w-xl text-4xl font-black text-ink sm:text-5xl">
-          Stop planning. <span className="gf-text-hype">Start day one.</span>
+          You&apos;ve read enough.{" "}
+          <span className="gf-text-hype">Go earn it.</span>
         </h2>
         <p className="mx-auto mt-4 max-w-md text-base text-ink-soft">
-          Your free analysis takes 90 seconds and ends with a plan you can run
-          today.
+          90 seconds of honest answers. A plan you can run today. And a coach
+          who won&apos;t let you disappear in week three.
         </p>
         <GlowLink href="/quiz" size="xl" pulse className="mt-8">
           START YOUR TRANSFORMATION
@@ -378,7 +388,7 @@ export default function LandingPage() {
         </GlowLink>
       </GlassCard>
 
-      <footer className="mt-16 flex flex-col items-center gap-4 border-t border-ink/8 pt-8 text-center sm:flex-row sm:justify-between sm:text-left">
+      <footer className="relative mt-16 flex flex-col items-center gap-4 border-t border-ink/8 pt-8 text-center sm:flex-row sm:justify-between sm:text-left">
         <Brand />
         <p className="text-xs text-mist">
           GOALIFY is a fitness education product, not medical advice. Consult a
@@ -386,5 +396,38 @@ export default function LandingPage() {
         </p>
       </footer>
     </main>
+  );
+}
+
+/** A headline stat that ticks up into place on first paint. */
+function TickerStat({
+  to,
+  label,
+  decimals = 0,
+  suffix = "",
+  tone = "ink",
+}: {
+  to: number;
+  label: string;
+  decimals?: number;
+  suffix?: string;
+  tone?: "ink" | "electric" | "lime";
+}) {
+  const toneClass =
+    tone === "electric"
+      ? "text-electric"
+      : tone === "lime"
+        ? "text-lime-deep"
+        : "text-ink";
+
+  return (
+    <div className="text-center">
+      <p className={`gf-numeric text-2xl font-extrabold ${toneClass}`}>
+        <CountUp to={to} decimals={decimals} suffix={suffix} />
+      </p>
+      <p className="mt-1 text-[11px] font-semibold tracking-[0.12em] text-mist uppercase">
+        {label}
+      </p>
+    </div>
   );
 }

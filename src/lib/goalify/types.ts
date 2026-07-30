@@ -4,6 +4,20 @@ export type JointStatus = "none" | "knees" | "back" | "shoulders";
 export type Sex = "female" | "male" | "unspecified";
 export type SessionLength = "15" | "25" | "40";
 
+/** What has stopped them before — drives the motivational framing. */
+export type PainTrigger =
+  | "time"
+  | "motivation"
+  | "confusion"
+  | "injury"
+  | "restart";
+
+/** The feeling they're chasing, echoed back throughout the app. */
+export type Vision = "confident" | "strong" | "energised" | "proud";
+
+/** How hard they committed — sets the accountability tone. */
+export type Commitment = "allin" | "most" | "unsure";
+
 export type QuizAnswers = {
   goal: Goal;
   level: Level;
@@ -15,7 +29,9 @@ export type QuizAnswers = {
   heightCm: number;
   weightKg: number;
   targetWeightKg: number;
-  blocker: string;
+  painTrigger: PainTrigger;
+  vision: Vision;
+  commitment: Commitment;
 };
 
 export type Profile = QuizAnswers & {

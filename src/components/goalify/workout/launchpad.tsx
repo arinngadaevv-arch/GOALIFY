@@ -98,7 +98,8 @@ export function Launchpad() {
           className="gf-anim-float absolute right-0 bottom-4 max-w-[62%] p-4"
         >
           <p className="text-sm leading-snug font-extrabold text-ink">
-            &ldquo;No warm-up excuses. I&apos;ll take you in slow.&rdquo;
+            &ldquo;{workout.durationMinutes} minutes. That&apos;s all I&apos;m
+            asking for. Let&apos;s go.&rdquo;
           </p>
         </GlassCard>
       </div>

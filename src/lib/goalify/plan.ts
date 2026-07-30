@@ -144,8 +144,71 @@ export function planHighlights(p: QuizAnswers): string[] {
     highlights.push("Full-range programming with progressive overload");
   }
 
+  highlights.push(`Built around your #1 blocker: ${painLabel(p.painTrigger)}`);
   highlights.push("3D AI form coach on every single rep");
   return highlights;
+}
+
+const PAIN_LABEL: Record<QuizAnswers["painTrigger"], string> = {
+  time: "never having enough time",
+  motivation: "motivation fading",
+  confusion: "not knowing what to do",
+  injury: "pain interrupting progress",
+  restart: "starting over and over",
+};
+
+export function painLabel(trigger: QuizAnswers["painTrigger"]): string {
+  return PAIN_LABEL[trigger];
+}
+
+const VISION_LABEL: Record<QuizAnswers["vision"], string> = {
+  confident: "totally confident",
+  strong: "genuinely strong",
+  energised: "full of energy",
+  proud: "proud you finally did it",
+};
+
+export function visionLabel(vision: QuizAnswers["vision"]): string {
+  return VISION_LABEL[vision];
+}
+
+export type Milestone = {
+  week: string;
+  title: string;
+  body: string;
+  emoji: string;
+};
+
+/**
+ * The transformation timeline sold on the paywall. Framing adapts to the
+ * user's goal so the promise matches what they actually asked for.
+ */
+export function milestones(p: QuizAnswers): Milestone[] {
+  const definition =
+    p.goal === "build"
+      ? "Strength climbing — you'll add reps to every movement"
+      : "Visible definition starting to show, especially in the mirror";
+
+  return [
+    {
+      week: "Week 1",
+      title: "Energy Boost",
+      body: "Sleep improves, the 3pm crash fades, and showing up stops feeling like a fight.",
+      emoji: "⚡",
+    },
+    {
+      week: "Week 2",
+      title: "Visible Definition",
+      body: definition,
+      emoji: "🔍",
+    },
+    {
+      week: "Week 4",
+      title: "Total Transformation",
+      body: `Clothes fit differently and you feel ${VISION_LABEL[p.vision]} looking back at yourself.`,
+      emoji: "🏆",
+    },
+  ];
 }
 
 export const DEFAULT_ANSWERS: QuizAnswers = {
@@ -159,7 +222,9 @@ export const DEFAULT_ANSWERS: QuizAnswers = {
   heightCm: 175,
   weightKg: 78,
   targetWeightKg: 70,
-  blocker: "motivation",
+  painTrigger: "motivation",
+  vision: "confident",
+  commitment: "allin",
 };
 
 export function toProfile(answers: QuizAnswers, name = "Athlete"): Profile {
