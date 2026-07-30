@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { Zap } from "lucide-react";
+import { Bot } from "lucide-react";
 import { COACH } from "@/lib/goalify/coach";
 
 /** The coach's face — a glowing avatar badge with a live activity dot. */
@@ -26,7 +26,7 @@ export function CoachBadge({
           dimensions,
         )}
       >
-        <Zap className="size-1/2 text-lime-neon" strokeWidth={2.8} />
+        <Bot className="size-1/2 text-lime-neon" strokeWidth={2.4} />
       </span>
       {/* Live dot — signals the coach is "active", not a static illustration. */}
       <span className="absolute -right-0.5 -bottom-0.5 grid size-4 place-items-center rounded-full bg-white">
