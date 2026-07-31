@@ -22,7 +22,7 @@ export function CoachBadge({
     <span className={clsx("relative shrink-0", className)}>
       <span
         className={clsx(
-          "gf-glow-electric grid place-items-center rounded-2xl bg-linear-to-br from-electric to-[#0038b0] [.gf-cyber-scope_&]:to-[#0a1440]",
+          "gf-glow-electric grid place-items-center rounded-2xl bg-linear-to-br from-electric to-[#0038b0] [.gf-cyber-scope_&]:from-[#00c2e0] [.gf-cyber-scope_&]:to-[#0a1440]",
           dimensions,
         )}
       >

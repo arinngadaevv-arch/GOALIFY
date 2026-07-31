@@ -907,23 +907,25 @@ html.goalify ::-webkit-scrollbar-thumb {
 }
 
 /* ==========================================================================
-   Cyberpunk HUD scope — the quiz's dark "Nike Training × Cyberpunk Gym" skin.
+   Light Neon scope — the quiz's bright "Nike Training × HUD" skin.
    Overriding the shared @theme tokens here re-themes every existing
-   gf-* / text-ink / bg-electric utility used inside the quiz — electric
-   becomes neon cyan, lime becomes gold — without touching any other screen,
-   since nothing outside .gf-cyber-scope ever sees these variables.
+   gf-* / text-ink / bg-electric utility used inside the quiz — electric is a
+   vibrant cyan-teal, lime is a deep amber-gold — without touching any other
+   screen, since nothing outside .gf-cyber-scope ever sees these variables.
+   Canvas is bright white/near-white; neon shows up as sharp, saturated
+   borders, glows and progress fills instead of a dark backdrop.
    ========================================================================== */
 
 .gf-cyber-scope {
-  --color-canvas: #05060d;
-  --color-ink: #eafcff;
-  --color-ink-soft: #b6c6e8;
-  --color-mist: #8291b8;
-  --color-haze: #576089;
-  --color-electric: #00e5ff;
-  --color-electric-soft: #7df9ff;
-  --color-lime-neon: #ffcc33;
-  --color-lime-deep: #e0a300;
+  --color-canvas: #ffffff;
+  --color-ink: #0b0d17;
+  --color-ink-soft: #333a4d;
+  --color-mist: #5c6479;
+  --color-haze: #8891a3;
+  --color-electric: #0098b3;
+  --color-electric-soft: #00c2e0;
+  --color-lime-neon: #f5a623;
+  --color-lime-deep: #8a5a00;
 
   position: relative;
   isolation: isolate;
@@ -939,10 +941,10 @@ html.goalify ::-webkit-scrollbar-thumb {
   z-index: -2;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 70% 40% at 12% -8%, rgba(0, 229, 255, 0.22), transparent 60%),
-    radial-gradient(ellipse 60% 38% at 105% 18%, rgba(255, 204, 51, 0.14), transparent 60%),
-    radial-gradient(ellipse 55% 42% at 50% 118%, rgba(0, 229, 255, 0.16), transparent 60%),
-    linear-gradient(180deg, #05060d 0%, #0a0d1c 55%, #05060d 100%);
+    radial-gradient(ellipse 70% 40% at 12% -8%, rgba(0, 184, 217, 0.12), transparent 60%),
+    radial-gradient(ellipse 60% 38% at 105% 18%, rgba(245, 166, 35, 0.09), transparent 60%),
+    radial-gradient(ellipse 55% 42% at 50% 118%, rgba(0, 184, 217, 0.1), transparent 60%),
+    linear-gradient(180deg, #ffffff 0%, #f4f8fb 55%, #ffffff 100%);
 }
 
 .gf-cyber-scope::after {
@@ -951,89 +953,86 @@ html.goalify ::-webkit-scrollbar-thumb {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.4;
+  opacity: 0.5;
   background-image:
-    linear-gradient(rgba(0, 229, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 229, 255, 0.06) 1px, transparent 1px);
+    linear-gradient(rgba(0, 152, 179, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 152, 179, 0.05) 1px, transparent 1px);
   background-size: 40px 40px;
   mask-image: radial-gradient(ellipse 80% 55% at 50% 0%, black 35%, transparent 88%);
   -webkit-mask-image: radial-gradient(ellipse 80% 55% at 50% 0%, black 35%, transparent 88%);
 }
 
-/* --- Glass panels: frosted dark instead of frosted white ----------------- */
+/* --- Glass panels: crisp white with a vibrant neon edge ------------------- */
 
 .gf-cyber-scope .gf-card,
 .gf-cyber-scope .gf-glass {
-  background: rgba(13, 18, 36, 0.72);
-  border: 1px solid rgba(0, 229, 255, 0.16);
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  background: #ffffff;
+  border: 1.5px solid rgba(0, 184, 217, 0.35);
   box-shadow:
-    0 24px 54px -22px rgba(0, 0, 0, 0.75),
-    0 0 0 1px rgba(0, 229, 255, 0.05) inset;
+    0 10px 28px -16px rgba(0, 152, 179, 0.3),
+    0 2px 8px -4px rgba(15, 23, 42, 0.07);
 }
 
 .gf-cyber-scope .gf-card-hover:hover {
-  border-color: rgba(0, 229, 255, 0.4);
+  border-color: rgba(0, 184, 217, 0.65);
   box-shadow:
-    0 28px 64px -20px rgba(0, 0, 0, 0.8),
-    0 0 26px -4px rgba(0, 229, 255, 0.4);
+    0 18px 38px -16px rgba(0, 152, 179, 0.4),
+    0 4px 12px -6px rgba(15, 23, 42, 0.1);
 }
 
 .gf-cyber-scope .gf-card-active {
   border-color: var(--color-electric);
   box-shadow:
-    0 0 0 1.5px var(--color-electric),
-    0 0 30px -2px rgba(0, 229, 255, 0.7),
-    0 24px 54px -22px rgba(0, 0, 0, 0.8);
+    0 0 0 2px var(--color-electric),
+    0 16px 36px -16px rgba(0, 152, 179, 0.45);
 }
 
 .gf-cyber-scope .gf-glass-electric {
-  background: rgba(0, 229, 255, 0.1);
-  border-color: rgba(0, 229, 255, 0.28);
+  background: rgba(0, 184, 217, 0.08);
+  border-color: rgba(0, 184, 217, 0.24);
 }
 
 .gf-cyber-scope .gf-glass-lime {
-  background: rgba(255, 204, 51, 0.1);
-  border-color: rgba(255, 204, 51, 0.3);
+  background: rgba(245, 166, 35, 0.1);
+  border-color: rgba(245, 166, 35, 0.28);
 }
 
 .gf-cyber-scope .gf-tip {
   background: linear-gradient(
     135deg,
-    rgba(0, 229, 255, 0.16),
-    rgba(13, 18, 36, 0.6)
+    rgba(0, 184, 217, 0.1),
+    rgba(255, 255, 255, 0.9)
   );
-  border: 1px solid rgba(0, 229, 255, 0.24);
+  border: 1px solid rgba(0, 184, 217, 0.22);
 }
 
 .gf-cyber-scope .gf-tip::after {
-  color: rgba(0, 229, 255, 0.16);
+  color: rgba(0, 184, 217, 0.14);
 }
 
 .gf-cyber-scope .gf-photo-bed {
   background: radial-gradient(
     ellipse at 50% 82%,
-    rgba(0, 229, 255, 0.26) 0%,
-    rgba(0, 229, 255, 0) 62%
+    rgba(0, 184, 217, 0.14) 0%,
+    rgba(0, 184, 217, 0) 62%
   );
 }
 
 .gf-cyber-scope .gf-icon-flat {
-  background: rgba(0, 229, 255, 0.12);
-  box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.32);
+  background: rgba(0, 184, 217, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(0, 184, 217, 0.24);
 }
 
 .gf-cyber-scope .gf-icon-flat-active {
   background: var(--color-electric);
-  box-shadow: 0 0 22px -2px rgba(0, 229, 255, 0.9);
+  box-shadow: 0 6px 18px -6px rgba(0, 152, 179, 0.55);
 }
 
 .gf-cyber-scope .gf-icon-badge {
-  background: linear-gradient(135deg, #00e5ff 0%, #7c3aed 55%, #ffcc33 100%);
+  background: linear-gradient(135deg, #00b8d9 0%, #7c3aed 55%, #f5a623 100%);
   box-shadow:
-    0 6px 18px -6px rgba(0, 229, 255, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    0 6px 18px -6px rgba(0, 152, 179, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
 /* --- Animated sweeping-gradient border, HUD-panel style ------------------- */
@@ -1081,24 +1080,20 @@ html.goalify ::-webkit-scrollbar-thumb {
 /* --- Neon glow text -------------------------------------------------------- */
 
 .gf-cyber-scope .gf-text-electric {
-  background: linear-gradient(120deg, #00e5ff 0%, #7df9ff 55%, #00e5ff 100%);
+  background: linear-gradient(120deg, #0098b3 0%, #00c2e0 55%, #0098b3 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
 .gf-cyber-glow-text {
-  color: #b6faff;
-  text-shadow:
-    0 0 8px rgba(0, 229, 255, 0.85),
-    0 0 22px rgba(0, 229, 255, 0.45);
+  color: #00758a;
+  text-shadow: 0 0 14px rgba(0, 184, 217, 0.35);
 }
 
 .gf-cyber-gold-text {
-  color: #ffe27a;
-  text-shadow:
-    0 0 8px rgba(255, 204, 51, 0.75),
-    0 0 20px rgba(255, 204, 51, 0.4);
+  color: #8a5a00;
+  text-shadow: 0 0 14px rgba(245, 166, 35, 0.3);
 }
 
 /* --- HUD hype badge pop (TARGET LOCKED / METABOLISM PEAK) ---------------- */
@@ -1159,27 +1154,28 @@ html.goalify ::-webkit-scrollbar-thumb {
 /* --- Body-map: neon target panels ----------------------------------------- */
 
 .gf-cyber-scope .gf-zone {
-  border: 1px solid rgba(0, 229, 255, 0.28);
-  background: rgba(0, 229, 255, 0.04);
-  box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.06) inset;
+  border: 1px solid rgba(0, 184, 217, 0.32);
+  background: rgba(0, 184, 217, 0.05);
+  box-shadow: 0 0 0 1px rgba(0, 184, 217, 0.05) inset;
 }
 
 .gf-cyber-scope .gf-zone:hover {
-  background: rgba(0, 229, 255, 0.12);
-  border-color: rgba(0, 229, 255, 0.55);
+  background: rgba(0, 184, 217, 0.14);
+  border-color: rgba(0, 184, 217, 0.6);
 }
 
 .gf-cyber-scope .gf-zone-active {
-  background: rgba(0, 229, 255, 0.22);
-  border-color: #00e5ff;
+  /* Solid-ish fill (not just a pale tint) so the white zone label painted
+     by body-map.tsx for the active state stays legible on a bright page. */
+  background: rgba(0, 184, 217, 0.85);
+  border-color: #00b8d9;
   box-shadow:
-    0 0 0 1px rgba(0, 229, 255, 0.5),
-    0 0 26px -2px rgba(0, 229, 255, 0.85),
-    inset 0 0 20px -4px rgba(0, 229, 255, 0.6);
+    0 0 0 1px rgba(0, 184, 217, 0.5),
+    0 0 22px -4px rgba(0, 184, 217, 0.7);
 }
 
 .gf-cyber-scope .gf-zone-active::after {
-  border-color: rgba(0, 229, 255, 0.6);
+  border-color: rgba(0, 184, 217, 0.55);
 }
 
 .gf-cyber-skeleton-line {
@@ -1187,23 +1183,23 @@ html.goalify ::-webkit-scrollbar-thumb {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(0, 229, 255, 0.5),
+    rgba(0, 152, 179, 0.6),
     transparent
   );
-  box-shadow: 0 0 6px rgba(0, 229, 255, 0.5);
+  box-shadow: 0 0 6px rgba(0, 152, 179, 0.4);
 }
 
 .gf-cyber-skeleton-node {
   position: absolute;
   border-radius: 999px;
-  background: #00e5ff;
-  box-shadow: 0 0 10px 2px rgba(0, 229, 255, 0.8);
+  background: #00b8d9;
+  box-shadow: 0 0 10px 2px rgba(0, 184, 217, 0.6);
 }
 
 /* --- Tactile arc gauge ------------------------------------------------------ */
 
 .gf-cyber-gauge-fill {
-  filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.85));
+  filter: drop-shadow(0 0 6px rgba(0, 184, 217, 0.6));
 }
 
 .gf-cyber-gauge-handle {
@@ -1215,6 +1211,23 @@ html.goalify ::-webkit-scrollbar-thumb {
 .gf-cyber-ring-fill {
   filter: drop-shadow(0 0 6px rgba(255, 204, 51, 0.8));
   transition: stroke-dashoffset 0.1s linear;
+}
+
+/* Recolor the shared "current step" progress-segment pulse (.gf-charge,
+   defined earlier for the light default theme in blue) to match the
+   scope's cyan accent instead of leaking the old brand blue in here. */
+.gf-cyber-scope .gf-charge {
+  animation-name: gf-cyber-charge-glow;
+}
+
+@keyframes gf-cyber-charge-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 6px 0 rgba(0, 184, 217, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 14px 2px rgba(0, 184, 217, 0.85);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

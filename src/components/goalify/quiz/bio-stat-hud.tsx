@@ -42,7 +42,7 @@ export function BioStatHud({
       {toast && (
         <span
           key={toast}
-          className="gf-cyber-hype-badge pointer-events-none absolute top-1.5 right-4 z-20 rounded-full bg-gradient-to-r from-electric to-[#00a8cc] px-3 py-1 text-[10px] font-black tracking-[0.04em] text-[#02131a] uppercase shadow-[0_0_16px_-2px_rgba(0,229,255,0.85)]"
+          className="gf-cyber-hype-badge pointer-events-none absolute top-1.5 right-4 z-20 rounded-full bg-gradient-to-r from-[#00c2e0] to-[#00e5ff] px-3 py-1 text-[10px] font-black tracking-[0.04em] text-[#02131a] uppercase shadow-[0_0_16px_-2px_rgba(0,229,255,0.6)]"
         >
           {toast}
         </span>
