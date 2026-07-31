@@ -44,12 +44,12 @@ export function OptionPhoto({
 }) {
   const [failed, setFailed] = useState(false);
   const showPhoto = hasRealPhoto(src) && !failed;
-  // Remote photos skip Next's server-side image-optimization proxy — many
-  // CDNs (Unsplash included) rate-limit or block that proxy-to-proxy
-  // traffic even when a real browser loading the same URL directly is
-  // fine. `unoptimized` makes the browser fetch it straight from the
-  // source instead.
-  const isRemote = src?.startsWith("http");
+  // Skip Next's server-side image-optimization proxy entirely, for both
+  // remote and local photos. Remote CDNs (Unsplash included) rate-limit or
+  // block that proxy-to-proxy traffic even when a browser loading the same
+  // URL directly is fine, and locally these are already pre-sized static
+  // assets, so there's nothing to gain from server-side re-encoding.
+  // `unoptimized` makes the browser fetch the file straight from the source.
 
   return (
     <div
@@ -61,7 +61,7 @@ export function OptionPhoto({
           src={src as string}
           alt={alt}
           fill
-          unoptimized={isRemote}
+          unoptimized
           sizes="(max-width: 640px) 50vw, 240px"
           onError={() => setFailed(true)}
           className={clsx("object-contain object-bottom", imageClassName)}

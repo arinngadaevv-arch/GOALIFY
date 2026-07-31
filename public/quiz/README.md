@@ -20,11 +20,11 @@ for:
 | `athletic.jpg` | Athletic & unstoppable |
 | `sex-female.png` | Female |
 | `sex-male.png` | Male |
-| `no-time.jpg` | No time |
+| `no-time.png` | No time |
 | `motivation.jpg` | Fading motivation |
-| `no-plan.jpg` | No clear plan |
-| `injury.jpg` | Pain or injury |
-| `false-starts.jpg` | Repeated false starts |
+| `no-plan.png` | No clear plan |
+| `injury.png` | Pain or injury |
+| `false-starts.png` | Repeated false starts |
 | `vision-confident.png` | Completely confident |
 | `vision-strong.png` | Genuinely strong |
 | `vision-energised.png` | Full of energy |

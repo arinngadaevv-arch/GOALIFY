@@ -150,7 +150,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     options: [
       {
         value: "time",
-        image: "/quiz/no-time.jpg",
+        image: "/quiz/no-time.png",
         label: "No time",
         description: "Schedule fills up and training gets cut first",
         icon: "hourglass",
@@ -166,7 +166,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "confusion",
-        image: "/quiz/no-plan.jpg",
+        image: "/quiz/no-plan.png",
         label: "No clear plan",
         description: "Too many conflicting plans and opinions",
         icon: "helpCircle",
@@ -174,7 +174,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "injury",
-        image: "/quiz/injury.jpg",
+        image: "/quiz/injury.png",
         label: "Pain or injury",
         description: "Flare-ups cause repeated setbacks",
         icon: "heartPulse",
@@ -182,7 +182,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "restart",
-        image: "/quiz/false-starts.jpg",
+        image: "/quiz/false-starts.png",
         label: "Repeated false starts",
         description: "Started many times, never followed through",
         icon: "rotateCcw",
