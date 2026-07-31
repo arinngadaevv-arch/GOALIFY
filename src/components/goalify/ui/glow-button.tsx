@@ -1,7 +1,7 @@
 import Link from "next/link";
 import clsx from "clsx";
 
-type Variant = "electric" | "lime" | "glass" | "ghost";
+type Variant = "electric" | "lime" | "glass" | "ghost" | "cyber";
 type Size = "sm" | "md" | "lg" | "xl";
 
 const VARIANTS: Record<Variant, string> = {
@@ -12,6 +12,8 @@ const VARIANTS: Record<Variant, string> = {
     "gf-glass text-ink hover:border-electric/40 hover:shadow-[0_18px_36px_-16px_rgba(8,22,66,0.38)] focus-visible:outline-electric",
   ghost:
     "text-ink-soft hover:text-electric hover:bg-electric/6 focus-visible:outline-electric",
+  cyber:
+    "bg-gradient-to-r from-[#00e5ff] to-[#00a8cc] text-[#02131a] shadow-[0_0_0_1px_rgba(0,229,255,0.55),0_18px_40px_-10px_rgba(0,229,255,0.7)] hover:shadow-[0_0_0_1px_rgba(0,229,255,0.8),0_22px_50px_-8px_rgba(0,229,255,0.9)] focus-visible:outline-[#00e5ff]",
 };
 
 const SIZES: Record<Size, string> = {

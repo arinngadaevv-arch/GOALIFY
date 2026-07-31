@@ -905,3 +905,322 @@ html.goalify ::-webkit-scrollbar-thumb {
     animation: none !important;
   }
 }
+
+/* ==========================================================================
+   Cyberpunk HUD scope — the quiz's dark "Nike Training × Cyberpunk Gym" skin.
+   Overriding the shared @theme tokens here re-themes every existing
+   gf-* / text-ink / bg-electric utility used inside the quiz — electric
+   becomes neon cyan, lime becomes gold — without touching any other screen,
+   since nothing outside .gf-cyber-scope ever sees these variables.
+   ========================================================================== */
+
+.gf-cyber-scope {
+  --color-canvas: #05060d;
+  --color-ink: #eafcff;
+  --color-ink-soft: #b6c6e8;
+  --color-mist: #8291b8;
+  --color-haze: #576089;
+  --color-electric: #00e5ff;
+  --color-electric-soft: #7df9ff;
+  --color-lime-neon: #ffcc33;
+  --color-lime-deep: #e0a300;
+
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+}
+
+.gf-cyber-scope::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 40% at 12% -8%, rgba(0, 229, 255, 0.22), transparent 60%),
+    radial-gradient(ellipse 60% 38% at 105% 18%, rgba(255, 204, 51, 0.14), transparent 60%),
+    radial-gradient(ellipse 55% 42% at 50% 118%, rgba(0, 229, 255, 0.16), transparent 60%),
+    linear-gradient(180deg, #05060d 0%, #0a0d1c 55%, #05060d 100%);
+}
+
+.gf-cyber-scope::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.4;
+  background-image:
+    linear-gradient(rgba(0, 229, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 229, 255, 0.06) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(ellipse 80% 55% at 50% 0%, black 35%, transparent 88%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 55% at 50% 0%, black 35%, transparent 88%);
+}
+
+/* --- Glass panels: frosted dark instead of frosted white ----------------- */
+
+.gf-cyber-scope .gf-card,
+.gf-cyber-scope .gf-glass {
+  background: rgba(13, 18, 36, 0.72);
+  border: 1px solid rgba(0, 229, 255, 0.16);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow:
+    0 24px 54px -22px rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(0, 229, 255, 0.05) inset;
+}
+
+.gf-cyber-scope .gf-card-hover:hover {
+  border-color: rgba(0, 229, 255, 0.4);
+  box-shadow:
+    0 28px 64px -20px rgba(0, 0, 0, 0.8),
+    0 0 26px -4px rgba(0, 229, 255, 0.4);
+}
+
+.gf-cyber-scope .gf-card-active {
+  border-color: var(--color-electric);
+  box-shadow:
+    0 0 0 1.5px var(--color-electric),
+    0 0 30px -2px rgba(0, 229, 255, 0.7),
+    0 24px 54px -22px rgba(0, 0, 0, 0.8);
+}
+
+.gf-cyber-scope .gf-glass-electric {
+  background: rgba(0, 229, 255, 0.1);
+  border-color: rgba(0, 229, 255, 0.28);
+}
+
+.gf-cyber-scope .gf-glass-lime {
+  background: rgba(255, 204, 51, 0.1);
+  border-color: rgba(255, 204, 51, 0.3);
+}
+
+.gf-cyber-scope .gf-tip {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 229, 255, 0.16),
+    rgba(13, 18, 36, 0.6)
+  );
+  border: 1px solid rgba(0, 229, 255, 0.24);
+}
+
+.gf-cyber-scope .gf-tip::after {
+  color: rgba(0, 229, 255, 0.16);
+}
+
+.gf-cyber-scope .gf-photo-bed {
+  background: radial-gradient(
+    ellipse at 50% 82%,
+    rgba(0, 229, 255, 0.26) 0%,
+    rgba(0, 229, 255, 0) 62%
+  );
+}
+
+.gf-cyber-scope .gf-icon-flat {
+  background: rgba(0, 229, 255, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.32);
+}
+
+.gf-cyber-scope .gf-icon-flat-active {
+  background: var(--color-electric);
+  box-shadow: 0 0 22px -2px rgba(0, 229, 255, 0.9);
+}
+
+.gf-cyber-scope .gf-icon-badge {
+  background: linear-gradient(135deg, #00e5ff 0%, #7c3aed 55%, #ffcc33 100%);
+  box-shadow:
+    0 6px 18px -6px rgba(0, 229, 255, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* --- Animated sweeping-gradient border, HUD-panel style ------------------- */
+/* Same content-box/xor mask trick as .gf-glow-border above — a
+   background-position sweep instead of a rotation, which is what keeps the
+   masked ring a ring instead of momentarily exposing the full gradient. */
+
+@keyframes gf-cyber-border-sweep {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 300% 50%;
+  }
+}
+
+.gf-cyber-border {
+  position: relative;
+}
+
+.gf-cyber-border::before {
+  content: "";
+  position: absolute;
+  inset: -1.5px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(
+    100deg,
+    #00e5ff,
+    #ffcc33,
+    #7c3aed,
+    #00e5ff
+  );
+  background-size: 300% 100%;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: gf-cyber-border-sweep 3.6s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* --- Neon glow text -------------------------------------------------------- */
+
+.gf-cyber-scope .gf-text-electric {
+  background: linear-gradient(120deg, #00e5ff 0%, #7df9ff 55%, #00e5ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.gf-cyber-glow-text {
+  color: #b6faff;
+  text-shadow:
+    0 0 8px rgba(0, 229, 255, 0.85),
+    0 0 22px rgba(0, 229, 255, 0.45);
+}
+
+.gf-cyber-gold-text {
+  color: #ffe27a;
+  text-shadow:
+    0 0 8px rgba(255, 204, 51, 0.75),
+    0 0 20px rgba(255, 204, 51, 0.4);
+}
+
+/* --- HUD hype badge pop (TARGET LOCKED / METABOLISM PEAK) ---------------- */
+
+@keyframes gf-cyber-hype-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.85);
+  }
+  18% {
+    opacity: 1;
+    transform: translateY(0) scale(1.06);
+  }
+  30% {
+    transform: scale(1);
+  }
+  82% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.94);
+  }
+}
+
+.gf-cyber-hype-badge {
+  animation: gf-cyber-hype-pop 1.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* --- Click particle burst (fired on option selection) --------------------- */
+
+@keyframes gf-cyber-particle {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(var(--gf-p-angle)) translateX(0)
+      scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--gf-p-angle))
+      translateX(var(--gf-p-dist)) scale(0.2);
+  }
+}
+
+.gf-cyber-particle {
+  position: absolute;
+  top: var(--gf-p-y, 50%);
+  left: var(--gf-p-x, 50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--gf-p-color, #00e5ff);
+  box-shadow: 0 0 8px 1px var(--gf-p-color, #00e5ff);
+  pointer-events: none;
+  animation: gf-cyber-particle 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* --- Body-map: neon target panels ----------------------------------------- */
+
+.gf-cyber-scope .gf-zone {
+  border: 1px solid rgba(0, 229, 255, 0.28);
+  background: rgba(0, 229, 255, 0.04);
+  box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.06) inset;
+}
+
+.gf-cyber-scope .gf-zone:hover {
+  background: rgba(0, 229, 255, 0.12);
+  border-color: rgba(0, 229, 255, 0.55);
+}
+
+.gf-cyber-scope .gf-zone-active {
+  background: rgba(0, 229, 255, 0.22);
+  border-color: #00e5ff;
+  box-shadow:
+    0 0 0 1px rgba(0, 229, 255, 0.5),
+    0 0 26px -2px rgba(0, 229, 255, 0.85),
+    inset 0 0 20px -4px rgba(0, 229, 255, 0.6);
+}
+
+.gf-cyber-scope .gf-zone-active::after {
+  border-color: rgba(0, 229, 255, 0.6);
+}
+
+.gf-cyber-skeleton-line {
+  position: absolute;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 229, 255, 0.5),
+    transparent
+  );
+  box-shadow: 0 0 6px rgba(0, 229, 255, 0.5);
+}
+
+.gf-cyber-skeleton-node {
+  position: absolute;
+  border-radius: 999px;
+  background: #00e5ff;
+  box-shadow: 0 0 10px 2px rgba(0, 229, 255, 0.8);
+}
+
+/* --- Tactile arc gauge ------------------------------------------------------ */
+
+.gf-cyber-gauge-fill {
+  filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.85));
+}
+
+.gf-cyber-gauge-handle {
+  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.6));
+}
+
+/* --- Countdown ring --------------------------------------------------------- */
+
+.gf-cyber-ring-fill {
+  filter: drop-shadow(0 0 6px rgba(255, 204, 51, 0.8));
+  transition: stroke-dashoffset 0.1s linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gf-cyber-border::before,
+  .gf-cyber-hype-badge,
+  .gf-cyber-particle {
+    animation: none !important;
+  }
+}

@@ -26,6 +26,16 @@ import { BodyMapStep } from "./body-map";
 import { SpeedRound } from "./speed-round";
 import { BioStatHud, HUD_STEP_META } from "./bio-stat-hud";
 import { TactileSlider } from "./tactile-slider";
+import { fireBurst, ParticleBurstLayer } from "./particle-burst";
+
+/** Wraps a click handler so every tap also fires a micro-particle burst
+ * from the exact point of contact. */
+function withBurst(handler: () => void, gold = false) {
+  return (event: React.MouseEvent) => {
+    fireBurst(event.clientX, event.clientY, gold);
+    handler();
+  };
+}
 
 /** Steps whose stored value is a number even though it's picked as a choice. */
 const NUMERIC_CHOICE_IDS = new Set<keyof QuizAnswers>(["daysPerWeek"]);
@@ -43,7 +53,7 @@ export function QuizFlow() {
   /** The persistent gamification HUD — ticks up as questions land. */
   const [hud, setHud] = useState({ burn: 0, precision: 0 });
   const [hudToast, setHudToast] = useState<string | null>(null);
-  const { clickPop, hypeSelect, sliderTick } = useUiSounds();
+  const { clickPop, hypeSelect, sliderTick, progressPowerUp } = useUiSounds();
 
   const step = QUIZ_STEPS[index];
   const isLast = index === QUIZ_STEPS.length - 1;
@@ -78,14 +88,20 @@ export function QuizFlow() {
 
       const meta = HUD_STEP_META[step.id];
       if (meta) {
+        const peaked = hud.burn < 100 && hud.burn + meta.burn >= 100;
         setHud((prev) => ({
           burn: Math.min(100, prev.burn + meta.burn),
           precision: Math.min(100, prev.precision + meta.precision),
         }));
-        setHudToast(`+${meta.burn}% ${meta.label}`);
+        if (peaked) {
+          setHudToast("METABOLISM PEAK ⚡");
+          progressPowerUp();
+        } else {
+          setHudToast(meta.hype);
+        }
       }
     },
-    [setDraft, step.id, hypeSelect],
+    [setDraft, step.id, hud.burn, hypeSelect, progressPowerUp],
   );
 
   // The advance itself happens in a timer callback, never synchronously in the
@@ -112,7 +128,8 @@ export function QuizFlow() {
   const coachMessage = reaction ?? coachProgressNudge(progress);
 
   return (
-    <main className="relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-28">
+    <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-28">
+      <ParticleBurstLayer />
       <header className="relative flex items-center gap-4 py-5">
         <button
           type="button"
@@ -161,7 +178,7 @@ export function QuizFlow() {
       <div key={step.id} className="gf-anim-swoop relative pt-4">
         <div className="flex items-center gap-2">
           <span className="gf-accent-line" aria-hidden />
-          <p className="text-[11px] font-black tracking-[0.16em] text-electric uppercase">
+          <p className="gf-cyber-glow-text text-[11px] font-black tracking-[0.16em] uppercase">
             {step.chapter}
           </p>
         </div>
@@ -303,16 +320,17 @@ function ChoiceStep({
           })}
         </div>
         <GlowButton
+          variant="cyber"
           size="lg"
           fullWidth
           className="mt-6"
           disabled={selected.length === 0 || locked}
-          onClick={() =>
+          onClick={withBurst(() => {
             onPick(
               { [step.id]: selected as JointStatus[] } as Partial<QuizAnswers>,
               selected,
-            )
-          }
+            );
+          }, true)}
         >
           Continue
           <ArrowRight className="size-5" />
@@ -362,7 +380,7 @@ function ChoiceStep({
               type="button"
               disabled={locked}
               aria-pressed={String(value) === option.value}
-              onClick={() => choose(option)}
+              onClick={withBurst(() => choose(option))}
               className={clsx(
                 "gf-card gf-press rounded-full px-7 py-3.5 text-sm font-semibold transition-all",
                 String(value) === option.value
@@ -429,7 +447,7 @@ function PhotoOptionCard({
     return (
       <button
         type="button"
-        onClick={onClick}
+        onClick={withBurst(onClick)}
         disabled={disabled}
         aria-pressed={selected}
         className={clsx(base, "flex items-stretch overflow-hidden")}
@@ -478,7 +496,7 @@ function PhotoOptionCard({
       return (
         <button
           type="button"
-          onClick={onClick}
+          onClick={withBurst(onClick)}
           disabled={disabled}
           aria-pressed={selected}
           className={clsx(base, "flex flex-col items-center gap-3 px-4 py-8")}
@@ -494,7 +512,7 @@ function PhotoOptionCard({
     return (
       <button
         type="button"
-        onClick={onClick}
+        onClick={withBurst(onClick)}
         disabled={disabled}
         aria-pressed={selected}
         className={clsx(base, "flex flex-col items-center px-3 pt-0 pb-5")}
@@ -520,7 +538,7 @@ function PhotoOptionCard({
     return (
       <button
         type="button"
-        onClick={onClick}
+        onClick={withBurst(onClick)}
         disabled={disabled}
         aria-pressed={selected}
         className={clsx(base, "flex flex-col items-center gap-2 p-5 text-center")}
@@ -542,7 +560,7 @@ function PhotoOptionCard({
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={withBurst(onClick)}
       disabled={disabled}
       aria-pressed={selected}
       className={clsx(base, "flex flex-col overflow-hidden pb-4")}
@@ -590,7 +608,7 @@ function OptionCard({
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={withBurst(onClick)}
       disabled={disabled}
       aria-pressed={selected}
       className={clsx(
@@ -641,7 +659,7 @@ function NumberStep({
 
   return (
     <>
-      <GlassCard deep className="p-8">
+      <GlassCard deep className="gf-cyber-border p-8">
         <TactileSlider
           value={local}
           min={step.min}
@@ -655,13 +673,15 @@ function NumberStep({
       </GlassCard>
 
       <GlowButton
+        variant="cyber"
         size="lg"
         fullWidth
         className="mt-6"
         disabled={locked}
-        onClick={() =>
-          onSubmit({ [step.id]: local } as Partial<QuizAnswers>, local)
-        }
+        onClick={withBurst(
+          () => onSubmit({ [step.id]: local } as Partial<QuizAnswers>, local),
+          true,
+        )}
       >
         Continue
         <ArrowRight className="size-5" />

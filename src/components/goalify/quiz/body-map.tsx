@@ -6,6 +6,7 @@ import { ArrowRight } from "lucide-react";
 import type { QuizStep } from "@/lib/goalify/quiz";
 import type { QuizAnswers } from "@/lib/goalify/types";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
+import { fireBurst } from "./particle-burst";
 
 /** Percentage-based rects so the figure scales cleanly at any width. */
 const ZONE_SHAPES: Record<string, { left: number; top: number; width: number; height: number }[]> = {
@@ -22,10 +23,35 @@ const ZONE_SHAPES: Record<string, { left: number; top: number; width: number; he
   ],
 };
 
+/** Decorative skeleton connectors — pure line art, not interactive targets,
+ * that tie the floating zone panels together into a readable HUD figure. */
+const SKELETON_LINES: {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}[] = [
+  { left: 49.5, top: 13.95, width: 1, height: 1.86 }, // neck
+  { left: 10.08, top: 16.9, width: 79.84, height: 0.6 }, // shoulder line
+  { left: 49.5, top: 15.81, width: 1, height: 38.14 }, // spine
+  { left: 37.15, top: 48.7, width: 25.7, height: 0.6 }, // hip line
+];
+
+const SKELETON_NODES: { left: number; top: number }[] = [
+  { left: 50, top: 13.95 },
+  { left: 10.83, top: 17.2 },
+  { left: 89.17, top: 17.2 },
+  { left: 37.9, top: 49 },
+  { left: 62.08, top: 49 },
+  { left: 50, top: 49 },
+];
+
 /**
  * The interactive body-target selector: a stylized humanoid built from
  * plain positioned divs (not SVG artwork) so every zone can reuse the same
- * glow, hover, and particle-burst treatment as the rest of the quiz.
+ * glow, hover, and particle-burst treatment as the rest of the quiz. A
+ * skeleton of glowing connector lines ties the floating panels together
+ * into a single scannable HUD figure.
  */
 export function BodyMapStep({
   step,
@@ -61,17 +87,39 @@ export function BodyMapStep({
       <div className="relative mx-auto w-full max-w-[280px]">
         {/* Soft ambient glow behind the silhouette. */}
         <div
-          className="absolute inset-0 -z-10 rounded-full bg-electric/12 blur-3xl"
+          className="absolute inset-0 -z-10 rounded-full bg-electric/16 blur-3xl"
           aria-hidden
         />
 
         <div className="relative" style={{ aspectRatio: "240 / 430" }}>
           {/* Head — decorative, not a target zone. */}
           <div
-            className="absolute rounded-full bg-ink/8"
+            className="absolute rounded-full border border-electric/40 bg-electric/10 shadow-[0_0_18px_-2px_rgba(0,229,255,0.6)]"
             style={{ left: "39.17%", top: "1.86%", width: "21.67%", height: "12.09%" }}
             aria-hidden
           />
+
+          {SKELETON_LINES.map((line, i) => (
+            <span
+              key={i}
+              className="gf-cyber-skeleton-line absolute"
+              style={{
+                left: `${line.left}%`,
+                top: `${line.top}%`,
+                width: `${line.width}%`,
+                height: `${line.height}%`,
+              }}
+              aria-hidden
+            />
+          ))}
+          {SKELETON_NODES.map((node, i) => (
+            <span
+              key={i}
+              className="gf-cyber-skeleton-node absolute size-1.5 -translate-x-1/2 -translate-y-1/2"
+              style={{ left: `${node.left}%`, top: `${node.top}%` }}
+              aria-hidden
+            />
+          ))}
 
           {step.zones.map((zone) => {
             const active = selected.includes(zone.value);
@@ -83,7 +131,10 @@ export function BodyMapStep({
                 aria-pressed={active}
                 aria-label={zone.label}
                 disabled={locked}
-                onClick={() => toggle(zone.value)}
+                onClick={(event) => {
+                  fireBurst(event.clientX, event.clientY);
+                  toggle(zone.value);
+                }}
                 className={clsx(
                   "gf-zone gf-press absolute grid place-items-center rounded-[22px]",
                   active && "gf-zone-active",
@@ -116,16 +167,15 @@ export function BodyMapStep({
       </p>
 
       <GlowButton
+        variant="cyber"
         size="lg"
         fullWidth
         className="mt-6"
         disabled={selected.length === 0 || locked}
-        onClick={() =>
-          onPick(
-            { [step.id]: selected } as Partial<QuizAnswers>,
-            selected,
-          )
-        }
+        onClick={(event) => {
+          fireBurst(event.clientX, event.clientY, true);
+          onPick({ [step.id]: selected } as Partial<QuizAnswers>, selected);
+        }}
       >
         Continue
         <ArrowRight className="size-5" />

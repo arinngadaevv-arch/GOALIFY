@@ -22,15 +22,15 @@ export function CoachBadge({
     <span className={clsx("relative shrink-0", className)}>
       <span
         className={clsx(
-          "gf-glow-electric grid place-items-center rounded-2xl bg-linear-to-br from-electric to-[#0038b0]",
+          "gf-glow-electric grid place-items-center rounded-2xl bg-linear-to-br from-electric to-[#0038b0] [.gf-cyber-scope_&]:to-[#0a1440]",
           dimensions,
         )}
       >
         <Bot className="size-1/2 text-lime-neon" strokeWidth={2.4} />
       </span>
       {/* Live dot — signals the coach is "active", not a static illustration. */}
-      <span className="absolute -right-0.5 -bottom-0.5 grid size-4 place-items-center rounded-full bg-white">
-        <span className="size-2.5 animate-pulse rounded-full bg-lime-neon shadow-[0_0_8px_#39FF14]" />
+      <span className="absolute -right-0.5 -bottom-0.5 grid size-4 place-items-center rounded-full bg-white [.gf-cyber-scope_&]:bg-[#0a0d1c]">
+        <span className="size-2.5 animate-pulse rounded-full bg-lime-neon shadow-[0_0_8px_#39FF14] [.gf-cyber-scope_&]:shadow-[0_0_8px_#ffcc33]" />
       </span>
     </span>
   );

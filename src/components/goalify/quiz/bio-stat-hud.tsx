@@ -2,32 +2,32 @@ import { Gauge, Zap, type LucideIcon } from "lucide-react";
 import type { QuizAnswers } from "@/lib/goalify/types";
 
 /**
- * How much each answer contributes to the two HUD meters, plus the label
- * shown in the floating "+N%" toast the instant it's picked. Deltas sum a
- * little past 100 on purpose — both bars read as "maxed out" before the
- * very last question, which is the point.
+ * How much each answer contributes to the two HUD meters, plus the hype
+ * badge that pops the instant it's picked. Deltas sum a little past 100 on
+ * purpose — both meters read as "maxed out" before the very last question,
+ * which is the point.
  */
 export const HUD_STEP_META: Record<
   keyof QuizAnswers,
-  { burn: number; precision: number; label: string }
+  { burn: number; precision: number; hype: string }
 > = {
-  goal: { burn: 12, precision: 6, label: "Metabolism Drive" },
-  focusZones: { burn: 10, precision: 6, label: "Target Lock" },
-  painTrigger: { burn: 6, precision: 10, label: "Adherence Engine" },
-  vision: { burn: 6, precision: 8, label: "Motivation Index" },
-  level: { burn: 8, precision: 8, label: "Baseline Calibration" },
-  joints: { burn: 4, precision: 8, label: "Safety Protocol" },
-  sessionLength: { burn: 10, precision: 6, label: "Burn Efficiency" },
-  daysPerWeek: { burn: 10, precision: 8, label: "Volume Capacity" },
-  sex: { burn: 4, precision: 8, label: "Metabolic Formula" },
-  age: { burn: 4, precision: 8, label: "Recovery Curve" },
-  heightCm: { burn: 4, precision: 8, label: "Body Composition" },
-  weightKg: { burn: 8, precision: 8, label: "Baseline Locked" },
-  targetWeightKg: { burn: 8, precision: 8, label: "Target Mapped" },
-  commitment: { burn: 12, precision: 8, label: "Plan Precision" },
+  goal: { burn: 12, precision: 6, hype: "TARGET LOCKED 🔥" },
+  focusZones: { burn: 10, precision: 6, hype: "ZONES MAPPED 🎯" },
+  painTrigger: { burn: 6, precision: 10, hype: "WEAKNESS FOUND ⚡" },
+  vision: { burn: 6, precision: 8, hype: "VISION SET 👁️" },
+  level: { burn: 8, precision: 8, hype: "BASELINE SET 📊" },
+  joints: { burn: 4, precision: 8, hype: "SAFETY LOCKED 🛡️" },
+  sessionLength: { burn: 10, precision: 6, hype: "TEMPO SET ⏱️" },
+  daysPerWeek: { burn: 10, precision: 8, hype: "VOLUME LOCKED 💪" },
+  sex: { burn: 4, precision: 8, hype: "FORMULA SET 🧬" },
+  age: { burn: 4, precision: 8, hype: "CURVE MAPPED 📈" },
+  heightCm: { burn: 4, precision: 8, hype: "BODY SCANNED 📡" },
+  weightKg: { burn: 8, precision: 8, hype: "BASELINE LOCKED ⚙️" },
+  targetWeightKg: { burn: 8, precision: 8, hype: "TARGET MAPPED 🎯" },
+  commitment: { burn: 12, precision: 8, hype: "COMMITMENT LOCKED 🔥" },
 };
 
-/** Persistent 2K/FIFA-style stat HUD — ticks up on every answer. */
+/** Persistent HUD readout — ticks up on every answer, hype badge on top. */
 export function BioStatHud({
   burn,
   precision,
@@ -38,11 +38,11 @@ export function BioStatHud({
   toast: string | null;
 }) {
   return (
-    <div className="gf-card relative mt-4 overflow-hidden rounded-2xl p-4">
+    <div className="gf-cyber-border relative mt-4 overflow-hidden rounded-2xl bg-black/25 p-4">
       {toast && (
         <span
           key={toast}
-          className="gf-anim-hud-toast pointer-events-none absolute top-1.5 right-4 z-20 rounded-full bg-electric px-2.5 py-1 text-[10px] font-black text-white uppercase shadow-md"
+          className="gf-cyber-hype-badge pointer-events-none absolute top-1.5 right-4 z-20 rounded-full bg-gradient-to-r from-electric to-[#00a8cc] px-3 py-1 text-[10px] font-black tracking-[0.04em] text-[#02131a] uppercase shadow-[0_0_16px_-2px_rgba(0,229,255,0.85)]"
         >
           {toast}
         </span>
@@ -50,17 +50,17 @@ export function BioStatHud({
 
       <HudBar
         icon={Zap}
-        label="Burn Potential"
+        label="Adrenaline"
         value={burn}
-        from="#0052ff"
-        to="#4d85ff"
+        from="#00e5ff"
+        to="#7df9ff"
       />
       <HudBar
         icon={Gauge}
-        label="Plan Precision"
+        label="Metabolism Score"
         value={precision}
-        from="#1faa06"
-        to="#39ff14"
+        from="#e0a300"
+        to="#ffcc33"
         className="mt-3"
       />
     </div>

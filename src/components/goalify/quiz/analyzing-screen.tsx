@@ -96,7 +96,7 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
   const noise = () => String(Math.floor(Math.abs(Math.sin(scramble) * 9000)) + 500);
 
   return (
-    <main className="relative mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center px-5 py-10 text-center">
+    <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center px-5 py-10 text-center">
       <ParticleField />
 
       <div className="relative flex items-center gap-2.5">

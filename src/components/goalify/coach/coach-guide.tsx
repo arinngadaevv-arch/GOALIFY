@@ -134,7 +134,7 @@ export function CoachGuide({
         <CoachBadge size="lg" />
         {/* Unread nudge when the coach has spoken but the bubble is closed. */}
         {!open && (
-          <span className="absolute -top-1 -left-1 grid size-5 place-items-center rounded-full bg-lime-neon shadow-[0_0_10px_#39FF14]">
+          <span className="absolute -top-1 -left-1 grid size-5 place-items-center rounded-full bg-lime-neon shadow-[0_0_10px_#39FF14] [.gf-cyber-scope_&]:shadow-[0_0_10px_#ffcc33]">
             <MessageSquare className="size-2.5 text-ink" strokeWidth={3} />
           </span>
         )}
