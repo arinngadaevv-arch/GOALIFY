@@ -150,7 +150,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     options: [
       {
         value: "time",
-        image: "/quiz/painTrigger-time.png",
+        image: "/quiz/no-time.jpg",
         label: "No time",
         description: "Schedule fills up and training gets cut first",
         icon: "hourglass",
@@ -158,7 +158,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "motivation",
-        image: "/quiz/painTrigger-motivation.png",
+        image: "/quiz/motivation.jpg",
         label: "Fading motivation",
         description: "Strong start, then momentum drops by week three",
         icon: "batteryLow",
@@ -166,7 +166,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "confusion",
-        image: "/quiz/painTrigger-confusion.png",
+        image: "/quiz/no-plan.jpg",
         label: "No clear plan",
         description: "Too many conflicting plans and opinions",
         icon: "helpCircle",
@@ -174,7 +174,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "injury",
-        image: "/quiz/painTrigger-injury.png",
+        image: "/quiz/injury.jpg",
         label: "Pain or injury",
         description: "Flare-ups cause repeated setbacks",
         icon: "heartPulse",
@@ -182,7 +182,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "restart",
-        image: "/quiz/painTrigger-restart.png",
+        image: "/quiz/false-starts.jpg",
         label: "Repeated false starts",
         description: "Started many times, never followed through",
         icon: "rotateCcw",

@@ -8,9 +8,9 @@ photos one at a time.
 
 ## Naming
 
-Most cards are named `<stepId>-<optionValue>.png`. The `goal` step is a
-named exception (`lean.jpg` / `muscle.jpg` / `toned.jpg` / `athletic.jpg`).
-The exact list the quiz looks for:
+Most cards are named `<stepId>-<optionValue>.png`. The `goal` and
+`painTrigger` steps are named exceptions. The exact list the quiz looks
+for:
 
 | File | Card |
 | --- | --- |
@@ -20,11 +20,11 @@ The exact list the quiz looks for:
 | `athletic.jpg` | Athletic & unstoppable |
 | `sex-female.png` | Female |
 | `sex-male.png` | Male |
-| `painTrigger-time.png` | I never have the time |
-| `painTrigger-motivation.png` | My motivation dies |
-| `painTrigger-confusion.png` | I never know what to do |
-| `painTrigger-injury.png` | Pain keeps stopping me |
-| `painTrigger-restart.png` | I keep starting over |
+| `no-time.jpg` | No time |
+| `motivation.jpg` | Fading motivation |
+| `no-plan.jpg` | No clear plan |
+| `injury.jpg` | Pain or injury |
+| `false-starts.jpg` | Repeated false starts |
 | `vision-confident.png` | Completely confident |
 | `vision-strong.png` | Genuinely strong |
 | `vision-energised.png` | Full of energy |
