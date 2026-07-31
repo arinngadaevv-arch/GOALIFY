@@ -462,7 +462,7 @@ function PhotoOptionCard({
             alt={option.label}
             label={option.label}
             icon={option.icon}
-            className="h-40 w-44 shrink-0 self-end"
+            className="h-full min-h-44 w-40 shrink-0"
           />
         ) : (
           <span className="mr-6 flex shrink-0 items-center">
@@ -506,7 +506,7 @@ function PhotoOptionCard({
           alt={option.label}
           label={option.label}
           icon={option.icon}
-          className="-mt-14 h-56 w-full"
+          className="-mt-14 h-64 w-full"
         />
         <span className="gf-display mt-2 text-xl font-extrabold text-ink">
           {option.label}
@@ -553,7 +553,7 @@ function PhotoOptionCard({
         alt={option.label}
         label={option.label}
         icon={option.icon}
-        className="h-36 w-full"
+        className="h-44 w-full"
       />
       <span className="gf-display mt-2 px-3 text-center text-base leading-tight font-extrabold text-ink">
         {option.label}
