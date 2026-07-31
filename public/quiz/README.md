@@ -15,7 +15,7 @@ for:
 | File | Card |
 | --- | --- |
 | `lean.jpg` | Lean & shredded |
-| `muscle.jpg` | Bigger & stronger |
+| `goal-build.png` | Bigger & stronger |
 | `toned.jpg` | Toned & defined |
 | `athletic.jpg` | Athletic & unstoppable |
 | `sex-female.png` | Female |
@@ -39,16 +39,17 @@ for:
 
 ## Art direction
 
-- **Transparent PNG cut-outs**, no background. The card supplies its own soft
-  blue tint behind the subject.
-- **Subject anchored to the bottom** of the frame — images are rendered with
-  `object-position: bottom`, so a figure standing on the bottom edge sits
-  correctly whichever layout it lands in.
+- **Full photos are fine** — no transparent cut-out required. Cards render
+  images with `object-fit: cover`, so the photo fills the slot edge to edge
+  and gets cropped to fit rather than letterboxed.
+- **Keep the subject centred** — `object-position: center` is the default, so
+  don't rely on anything important sitting right at an edge.
 - **Roughly 2:3 portrait** for `sex-*` (these break above the card top and are
-  the largest on screen), and roughly square for everything else.
+  the largest on screen), and roughly square-to-landscape for everything else.
 - Export at **2× the display size** for retina: ~600×900 for `sex-*`, ~480×480
   for the rest.
-- Keep the lighting bright and even to match the light UI.
+- The quiz itself is a dark neon/HUD theme now — photos with even, fairly
+  bright lighting read best against the dark cards.
 
 ## Changing which cards use photos
 

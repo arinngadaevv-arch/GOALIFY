@@ -100,7 +100,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "build",
-        image: "/quiz/muscle.jpg",
+        image: "/quiz/goal-build.png",
         label: "Bigger & stronger",
         description: "Pack on visible size and raw strength, week over week",
         icon: "dumbbell",
