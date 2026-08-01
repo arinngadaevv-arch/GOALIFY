@@ -412,7 +412,7 @@ export function PoseIcon({
     >
       <g
         fill="none"
-        stroke="#0052FF"
+        stroke="var(--color-electric)"
         strokeWidth="6"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -432,7 +432,7 @@ export function PoseIcon({
         cy={spec.head[1]}
         r={7.5}
         fill="rgba(255,255,255,0.9)"
-        stroke="#0052FF"
+        stroke="var(--color-electric)"
         strokeWidth="6"
       />
       {Array.from(joints.values()).map(([x, y], index) => (
@@ -441,8 +441,8 @@ export function PoseIcon({
           cx={x}
           cy={y}
           r={3.5}
-          fill="#39FF14"
-          style={{ filter: "drop-shadow(0 0 3px #39FF14)" }}
+          fill="var(--color-lime-neon)"
+          style={{ filter: "drop-shadow(0 0 3px var(--color-lime-neon))" }}
         />
       ))}
     </svg>

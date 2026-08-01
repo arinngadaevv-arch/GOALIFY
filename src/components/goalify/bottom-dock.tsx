@@ -58,7 +58,7 @@ export function BottomDock() {
                 {label}
               </span>
               {active && (
-                <span className="absolute -bottom-0 size-1 rounded-full bg-lime-neon shadow-[0_0_8px_#39FF14]" />
+                <span className="absolute -bottom-0 size-1 rounded-full bg-lime-neon shadow-[0_0_8px_var(--color-lime-neon)]" />
               )}
             </Link>
           );

@@ -53,7 +53,7 @@ export function Launchpad() {
     );
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pt-6 pb-10">
+    <main className="gf-cyber-scope mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pt-6 pb-10">
       <header className="flex items-center justify-between">
         <Pill tone="electric">
           {isLibraryPick ? (
@@ -182,7 +182,7 @@ export function Launchpad() {
 
       {/* ----------------------------------------------------------------- CTA */}
       <div className="gf-anim-rise gf-delay-4 mt-8">
-        <GlowLink href={liveHref} size="xl" fullWidth pulse>
+        <GlowLink href={liveHref} size="xl" fullWidth pulse variant="cyber">
           I&apos;M READY — LET&apos;S CRUSH IT!
           <ArrowRight className="size-5" />
         </GlowLink>

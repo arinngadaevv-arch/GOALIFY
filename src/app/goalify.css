@@ -1045,6 +1045,22 @@ html.goalify ::-webkit-scrollbar-thumb {
   border-color: rgba(255, 59, 59, 0.32);
 }
 
+/* Solid glow-shadow accents (.gf-glow-electric/.gf-glow-lime) are hardcoded
+   blue/green rgba for the light default theme — CSS custom properties don't
+   reach into a raw box-shadow value, so they need an explicit re-tint here
+   to keep them from leaking the old brand colors onto obsidian CTAs. */
+.gf-cyber-scope .gf-glow-electric {
+  box-shadow:
+    0 12px 34px -10px rgba(232, 179, 44, 0.6),
+    0 0 0 1px rgba(232, 179, 44, 0.18);
+}
+
+.gf-cyber-scope .gf-glow-lime {
+  box-shadow:
+    0 12px 34px -10px rgba(255, 59, 59, 0.65),
+    0 0 0 1px rgba(255, 59, 59, 0.24);
+}
+
 .gf-cyber-scope .gf-photo-bed {
   background: radial-gradient(
     ellipse at 50% 82%,
@@ -1304,6 +1320,72 @@ html.goalify ::-webkit-scrollbar-thumb {
   }
   50% {
     box-shadow: 0 0 16px 3px rgba(232, 179, 44, 0.95);
+  }
+}
+
+/* Recolor the shared CTA pulse ring (.gf-anim-pulse, tuned blue for the
+   light default theme) to the scope's gold/crimson accents instead. */
+.gf-cyber-scope .gf-anim-pulse {
+  animation-name: gf-cyber-pulse-ring;
+}
+
+@keyframes gf-cyber-pulse-ring {
+  0% {
+    box-shadow:
+      0 12px 34px -10px rgba(232, 179, 44, 0.6),
+      0 0 0 0 rgba(232, 179, 44, 0.5);
+  }
+  70% {
+    box-shadow:
+      0 12px 34px -10px rgba(232, 179, 44, 0.6),
+      0 0 0 22px rgba(232, 179, 44, 0);
+  }
+  100% {
+    box-shadow:
+      0 12px 34px -10px rgba(232, 179, 44, 0.6),
+      0 0 0 0 rgba(232, 179, 44, 0);
+  }
+}
+
+/* --- Streak badge: pulsing flame glow ------------------------------------- */
+
+.gf-streak-badge {
+  animation: gf-flame-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes gf-flame-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(255, 59, 59, 0.35),
+      0 8px 24px -8px rgba(255, 59, 59, 0.5),
+      0 0 18px -2px rgba(232, 179, 44, 0.35);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(255, 59, 59, 0.6),
+      0 10px 32px -8px rgba(255, 59, 59, 0.85),
+      0 0 30px 2px rgba(232, 179, 44, 0.6);
+  }
+}
+
+.gf-anim-flicker-flame {
+  animation: gf-flame-flicker 1.6s ease-in-out infinite;
+}
+
+@keyframes gf-flame-flicker {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.08) rotate(-4deg);
+  }
+  50% {
+    transform: scale(0.96) rotate(3deg);
+  }
+  75% {
+    transform: scale(1.05) rotate(-2deg);
   }
 }
 

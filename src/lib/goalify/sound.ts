@@ -211,6 +211,32 @@ export function playSliderTick() {
   ]);
 }
 
+/**
+ * Explosive "GO!" hit for the watch-then-do transition — a single sharp
+ * low-end punch under a rising bright stab, tuned to land like a starting
+ * gun rather than a countdown blip.
+ */
+export function playGoCue() {
+  playTones([
+    { frequency: 110, startOffset: 0, duration: 0.14, gain: 0.22, type: "sine" },
+    ...wide({
+      frequency: 660,
+      glideTo: 1320,
+      startOffset: 0,
+      duration: 0.16,
+      gain: 0.18,
+      type: "sawtooth",
+    }),
+    ...wide({
+      frequency: 1760,
+      startOffset: 0.02,
+      duration: 0.12,
+      gain: 0.1,
+      type: "triangle",
+    }),
+  ]);
+}
+
 /** Big triumphant flourish for the plan-unlock moment. */
 export function playUnlockFanfare() {
   playTones([

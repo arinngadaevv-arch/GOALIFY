@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { Play } from "lucide-react";
 import { PoseIcon, type PoseKey } from "@/components/goalify/ui/pose-icon";
 
 /**
@@ -27,9 +28,21 @@ export function AIFormGuide({
         className,
       )}
     >
+      {/* Cinematic vignette — reads as a video-player bezel around the demo. */}
+      <div
+        className="pointer-events-none absolute inset-0 [.gf-cyber-scope_&]:bg-[radial-gradient(ellipse_at_center,transparent_45%,rgba(0,0,0,0.55)_100%)]"
+        aria-hidden
+      />
+
       {/* Tracking scan sweep — reinforces "AI analysis in progress". */}
       <div
         className="gf-anim-scan pointer-events-none absolute inset-x-0 top-0 h-1/3 bg-linear-to-b from-transparent via-electric/12 to-transparent"
+        aria-hidden
+      />
+
+      {/* Muted play-button watermark — video-player framing, not a real control. */}
+      <Play
+        className="pointer-events-none absolute right-4 bottom-4 z-10 size-6 fill-current text-ink/10 [.gf-cyber-scope_&]:text-electric/20"
         aria-hidden
       />
 
@@ -49,7 +62,7 @@ export function AIFormGuide({
 
       <PoseIcon
         pose={pose}
-        className="gf-anim-float relative z-10 h-28 w-28 drop-shadow-[0_6px_10px_rgba(0,82,255,0.28)] sm:h-32 sm:w-32"
+        className="gf-anim-float relative z-10 h-28 w-28 drop-shadow-[0_6px_10px_rgba(0,82,255,0.28)] sm:h-32 sm:w-32 [.gf-cyber-scope_&]:drop-shadow-[0_6px_14px_rgba(232,179,44,0.32)]"
       />
 
       <div className="relative z-10 text-center">

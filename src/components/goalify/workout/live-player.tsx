@@ -25,14 +25,18 @@ import { VisualSlot } from "@/components/goalify/ui/visual-slot";
 import { poseForExercise } from "@/components/goalify/ui/pose-icon";
 import { AIFormGuide } from "@/components/goalify/workout/ai-form-guide";
 import { useWorkoutSounds } from "@/components/goalify/workout/use-workout-sounds";
-import {
-  ProgressRing,
-  RING_ELECTRIC,
-  RING_LIME,
-} from "@/components/goalify/ui/progress-ring";
+import { ProgressRing } from "@/components/goalify/ui/progress-ring";
 import { Pill, Stat } from "@/components/goalify/ui/stat";
 
-type Phase = "work" | "rest" | "done";
+type Phase = "watch" | "work" | "rest" | "done";
+
+/** How long the "watch the trainer" preview holds before each set. */
+const WATCH_SECONDS = 5;
+
+/** Obsidian-scope ring colors — literal hex since RING_ELECTRIC/RING_LIME
+ * are shared constants tuned for the light theme elsewhere in the app. */
+const RING_GOLD = "#e8b32c";
+const RING_CRIMSON = "#ff3b3b";
 
 export function LivePlayer() {
   const { state, todaysWorkout, completeWorkout, updateSettings } = useGoalify();
@@ -48,12 +52,12 @@ export function LivePlayer() {
   );
 
   const [index, setIndex] = useState(0);
-  const [phase, setPhase] = useState<Phase>("work");
+  const [phase, setPhase] = useState<Phase>("watch");
   const [paused, setPaused] = useState(false);
-  const [secondsLeft, setSecondsLeft] = useState(() =>
-    workout.exercises[0].kind === "time" ? workout.exercises[0].amount : 0,
-  );
+  const [secondsLeft, setSecondsLeft] = useState(WATCH_SECONDS);
   const [reps, setReps] = useState(0);
+  /** Briefly true right as "watch" flips to "work" — drives the flash cue. */
+  const [flash, setFlash] = useState(false);
 
   // Mirrors `secondsLeft` so the interval callback can read the live value
   // without re-subscribing every tick. Only ever written outside render.
@@ -67,7 +71,7 @@ export function LivePlayer() {
   const nextExercise = workout.exercises[index + 1];
   const isTimed = exercise.kind === "time";
   const voiceOn = state.settings.voiceCues;
-  const { countdownBeep, exerciseChime, completionCelebration } =
+  const { countdownBeep, exerciseChime, completionCelebration, goCue } =
     useWorkoutSounds();
 
   /* ------------------------------------------------------------- narration */
@@ -87,6 +91,8 @@ export function LivePlayer() {
   );
 
   /* ----------------------------------------------------------- transitions */
+  // Every set opens on a WATCH_SECONDS preview of the trainer demonstration
+  // before work starts — see the tick effect below for the watch -> work flip.
   const goToExercise = useCallback(
     (nextIndex: number) => {
       const target = workout.exercises[nextIndex];
@@ -95,9 +101,9 @@ export function LivePlayer() {
         return;
       }
       setIndex(nextIndex);
-      setPhase("work");
+      setPhase("watch");
       setReps(0);
-      setSeconds(target.kind === "time" ? target.amount : 0);
+      setSeconds(WATCH_SECONDS);
       speak(`${target.name}. ${target.cue}`);
       exerciseChime();
     },
@@ -131,7 +137,14 @@ export function LivePlayer() {
     const timer = setInterval(() => {
       if (secondsRef.current <= 1) {
         clearInterval(timer);
-        if (phase === "work" && isTimed) {
+        if (phase === "watch") {
+          // The explosive hand-off — flash + "GO!" cue, then the real set begins.
+          setPhase("work");
+          setSeconds(isTimed ? exercise.amount : 0);
+          goCue();
+          setFlash(true);
+          window.setTimeout(() => setFlash(false), 700);
+        } else if (phase === "work" && isTimed) {
           finishCurrent();
         } else if (phase === "rest") {
           goToExercise(index + 1);
@@ -148,11 +161,23 @@ export function LivePlayer() {
     paused,
     isTimed,
     index,
+    exercise,
     finishCurrent,
     goToExercise,
     setSeconds,
     countdownBeep,
+    goCue,
   ]);
+
+  /* Announce the very first exercise's watch phase on mount (every later
+   * one is already announced inside goToExercise). */
+  const announcedFirstRef = useRef(false);
+  useEffect(() => {
+    if (announcedFirstRef.current) return;
+    announcedFirstRef.current = true;
+    speak(`${exercise.name}. ${exercise.cue}`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* ------------------------------------------------------------ completion */
   const savedRef = useRef(false);
@@ -172,12 +197,14 @@ export function LivePlayer() {
   const totalProgress = ((index + (phase === "rest" ? 1 : 0)) / workout.exercises.length) * 100;
   const ringValue = phase === "rest"
     ? (secondsLeft / Math.max(1, exercise.restSeconds)) * 100
-    : isTimed
-      ? (secondsLeft / Math.max(1, exercise.amount)) * 100
-      : (reps / Math.max(1, exercise.amount)) * 100;
+    : phase === "watch"
+      ? (secondsLeft / WATCH_SECONDS) * 100
+      : isTimed
+        ? (secondsLeft / Math.max(1, exercise.amount)) * 100
+        : (reps / Math.max(1, exercise.amount)) * 100;
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pt-5 pb-32">
+    <main className="gf-cyber-scope mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pt-5 pb-32">
       {/* ------------------------------------------------------------ Top bar */}
       <header className="flex items-center gap-3">
         <Link
@@ -239,24 +266,32 @@ export function LivePlayer() {
                 ? "mobility"
                 : poseForExercise(exercise.name, exercise.focus)
             }
-            label={phase === "rest" ? "Recovery" : "3D Coach Demonstration"}
+            label={
+              phase === "rest"
+                ? "Recovery"
+                : phase === "watch"
+                  ? "Watch & Prepare"
+                  : "3D Coach Demonstration"
+            }
             hint={
               phase === "rest"
                 ? "Coach idle / breathing loop"
-                : `Looping ${exercise.name.toLowerCase()} demonstration renders here`
+                : phase === "watch"
+                  ? "Study the form — you're up in a few seconds"
+                  : `Looping ${exercise.name.toLowerCase()} demonstration renders here`
             }
             className="h-64 w-full rounded-none sm:h-72"
           />
 
           <div className="absolute top-3 left-3">
             <span className="gf-glass flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-black tracking-[0.12em] text-electric uppercase">
-              <span className="size-1.5 animate-pulse rounded-full bg-lime-neon shadow-[0_0_8px_#39FF14]" />
+              <span className="size-1.5 animate-pulse rounded-full bg-lime-neon shadow-[0_0_8px_var(--color-lime-neon)]" />
               AI Form Guide Active
             </span>
           </div>
 
           {paused && (
-            <div className="absolute inset-0 grid place-items-center bg-white/55 backdrop-blur-sm">
+            <div className="absolute inset-0 grid place-items-center bg-black/70 backdrop-blur-sm">
               <div className="text-center">
                 <Pause className="mx-auto size-10 text-electric" />
                 <p className="gf-display mt-2 text-xl font-black text-ink">
@@ -266,13 +301,27 @@ export function LivePlayer() {
             </div>
           )}
 
+          {/* Explosive watch -> work hand-off. */}
+          {flash && (
+            <div
+              className="gf-anim-rise absolute inset-0 z-20 grid place-items-center bg-electric/90 backdrop-blur-sm"
+              aria-hidden
+            >
+              <p className="gf-anim-pop gf-display text-4xl font-black text-white italic sm:text-5xl [.gf-cyber-scope_&]:text-[#1a1100]">
+                YOUR TURN — GO!
+              </p>
+            </div>
+          )}
+
           {/* Subtitle cue strip */}
           <div className="absolute inset-x-3 bottom-3">
             <div className="gf-glass rounded-2xl px-4 py-2.5">
               <p className="text-center text-sm leading-snug font-semibold text-ink">
                 {phase === "rest"
                   ? "Breathe. Shake it out. Stay standing."
-                  : exercise.cue}
+                  : phase === "watch"
+                    ? "Watch the form, then it's your turn."
+                    : exercise.cue}
               </p>
             </div>
           </div>
@@ -282,7 +331,7 @@ export function LivePlayer() {
       {/* ------------------------------------------------------ Timer / counter */}
       <section className="mt-6 flex flex-col items-center">
         <Pill tone={phase === "rest" ? "lime" : "electric"}>
-          {phase === "rest" ? "Rest" : exercise.focus}
+          {phase === "rest" ? "Rest" : phase === "watch" ? "Watch & Prepare" : exercise.focus}
         </Pill>
 
         <h1 className="gf-display mt-3 text-center text-3xl font-black text-ink">
@@ -296,18 +345,18 @@ export function LivePlayer() {
           rings={[
             {
               value: ringValue,
-              color: phase === "rest" ? RING_LIME : RING_ELECTRIC,
+              color: phase === "rest" ? RING_CRIMSON : RING_GOLD,
               label: "Current",
             },
           ]}
         >
-          {phase === "rest" || isTimed ? (
+          {phase === "rest" || phase === "watch" || isTimed ? (
             <div>
               <p className="gf-numeric text-6xl font-black text-ink">
                 {secondsLeft}
               </p>
               <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-mist">
-                seconds
+                {phase === "watch" ? "get ready" : "seconds"}
               </p>
             </div>
           ) : (
@@ -323,12 +372,28 @@ export function LivePlayer() {
           )}
         </ProgressRing>
 
+        {/* Live calorie / exercise tracking — ticks up as the session runs. */}
+        <div className="mt-6 grid w-full grid-cols-2 gap-3">
+          <Stat
+            value={Math.round((workout.calories * totalProgress) / 100)}
+            suffix="kcal"
+            label="Burned so far"
+            tone="electric"
+          />
+          <Stat
+            value={index + (phase === "rest" ? 1 : 0)}
+            suffix={`/${workout.exercises.length}`}
+            label="Exercises done"
+            tone="lime"
+          />
+        </div>
+
         {phase === "work" && !isTimed && (
           <div className="mt-6 flex w-full flex-col items-center gap-3">
             <button
               type="button"
               onClick={() => setReps((r) => Math.min(exercise.amount, r + 1))}
-              className="gf-glass gf-press gf-glow-electric w-full rounded-full bg-electric py-4 text-base font-black tracking-tight text-white"
+              className="gf-glass gf-press gf-glow-electric w-full rounded-full bg-electric py-4 text-base font-black tracking-tight text-white [.gf-cyber-scope_&]:text-[#1a1100]"
             >
               COUNT A REP
             </button>
@@ -381,7 +446,7 @@ export function LivePlayer() {
             type="button"
             onClick={() => setPaused((p) => !p)}
             aria-label={paused ? "Resume workout" : "Pause workout"}
-            className="gf-press gf-glow-electric grid size-16 place-items-center rounded-full bg-electric text-white"
+            className="gf-press gf-glow-electric grid size-16 place-items-center rounded-full bg-electric text-white [.gf-cyber-scope_&]:text-[#1a1100]"
           >
             {paused ? (
               <Play className="size-7 fill-current" />
@@ -444,7 +509,7 @@ function CompletionScreen({
   const { streak, state } = useGoalify();
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center px-5 py-14 text-center">
+    <main className="gf-cyber-scope mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center px-5 py-14 text-center">
       <div className="relative grid size-40 place-items-center">
         <span
           className="gf-anim-burst absolute size-28 rounded-full border-2 border-lime-neon/60"

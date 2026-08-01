@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -8,7 +9,6 @@ import {
   Check,
   Dumbbell,
   Droplets,
-  Flame,
   Library,
   Play,
   ShieldCheck,
@@ -21,12 +21,21 @@ import { AppShell } from "./app-shell";
 import { GlassCard } from "./ui/glass-card";
 import { GlowLink } from "./ui/glow-button";
 import { VisualSlot } from "./ui/visual-slot";
-import {
-  ProgressRing,
-  RING_ELECTRIC,
-  RING_LIME,
-} from "./ui/progress-ring";
+import { ProgressRing } from "./ui/progress-ring";
 import { Pill, SectionHeading, Stat } from "./ui/stat";
+
+/** Obsidian-scope ring colors — literal hex since RING_ELECTRIC/RING_LIME
+ * are shared constants tuned for the light theme elsewhere in the app. */
+const RING_GOLD = "#e8b32c";
+const RING_CRIMSON = "#ff3b3b";
+
+const MOTIVATION_QUOTES = [
+  "NO ZERO DAYS",
+  "BUILD THE ALPHA WITHIN",
+  "DISCIPLINE OVER EXCUSES",
+  "EARN IT TODAY",
+  "OUTWORK YESTERDAY",
+];
 
 export function Dashboard() {
   const {
@@ -48,16 +57,22 @@ export function Dashboard() {
   );
 
   return (
-    <AppShell>
+    <AppShell dark>
+      {/* ------------------------------------------------------- Streak badge */}
+      <StreakBadge day={state.programDay} streak={streak} />
+
+      {/* --------------------------------------------------- Motivation ticker */}
+      <MotivationTicker />
+
       {/* ------------------------------------------------ Dual progress rings */}
-      <GlassCard deep className="gf-anim-rise flex items-center gap-6 p-6">
+      <GlassCard deep className="gf-anim-rise gf-delay-1 flex items-center gap-6 p-6">
         <ProgressRing
           size={148}
           thickness={13}
           gap={7}
           rings={[
-            { value: workoutPercent, color: RING_ELECTRIC, label: "Workout" },
-            { value: nutritionPercent, color: RING_LIME, label: "Nutrition" },
+            { value: workoutPercent, color: RING_GOLD, label: "Workout" },
+            { value: nutritionPercent, color: RING_CRIMSON, label: "Nutrition" },
           ]}
         >
           <div>
@@ -72,23 +87,17 @@ export function Dashboard() {
 
         <div className="min-w-0 flex-1 space-y-4">
           <RingLegend
-            color={RING_ELECTRIC}
+            color={RING_GOLD}
             label="Workout"
             value={`${workoutPercent}%`}
             detail={workoutDoneToday ? "Session complete" : "Not started yet"}
           />
           <RingLegend
-            color={RING_LIME}
+            color={RING_CRIMSON}
             label="Nutrition"
             value={`${nutritionPercent}%`}
             detail={`${waterGlasses}/${targets.waterGlasses} glasses`}
           />
-          <div className="flex items-center gap-1.5 border-t border-ink/8 pt-3">
-            <Flame className="size-4 text-lime-deep" strokeWidth={2.6} />
-            <span className="text-xs font-bold text-ink">
-              {streak} day streak
-            </span>
-          </div>
         </div>
       </GlassCard>
 
@@ -152,11 +161,19 @@ export function Dashboard() {
               size="lg"
               fullWidth
               pulse={!workoutDoneToday}
-              variant={workoutDoneToday ? "glass" : "electric"}
-              className="mt-5"
+              variant={workoutDoneToday ? "glass" : "cyber"}
+              className="mt-5 gap-2 tracking-tight"
             >
-              <Play className="size-5 fill-current" />
-              {workoutDoneToday ? "TRAIN AGAIN" : "START WORKOUT"}
+              {workoutDoneToday ? (
+                <>
+                  <Play className="size-5 fill-current" />
+                  TRAIN AGAIN
+                </>
+              ) : (
+                <>
+                  ⚡ START {workout.durationMinutes}-MIN WORKOUT NOW ➔ ➔
+                </>
+              )}
             </GlowLink>
           </div>
         </GlassCard>
@@ -279,6 +296,48 @@ export function Dashboard() {
         week
       </p>
     </AppShell>
+  );
+}
+
+/** Prominent top-of-dashboard streak callout — pulsing flame glow. */
+function StreakBadge({ day, streak }: { day: number; streak: number }) {
+  return (
+    <div className="gf-anim-rise gf-streak-badge mb-5 flex items-center justify-center gap-3 rounded-full border border-lime-deep/30 bg-linear-to-r from-lime-neon/10 via-electric/8 to-lime-neon/10 px-5 py-3">
+      <span className="gf-anim-flicker-flame text-2xl" aria-hidden>
+        🔥🔥
+      </span>
+      <div className="text-center leading-tight">
+        <p className="gf-display text-sm font-black tracking-tight text-ink">
+          DAY {day}
+        </p>
+        <p className="text-[10px] font-black tracking-[0.16em] text-lime-deep uppercase">
+          Streak: {streak} day{streak === 1 ? "" : "s"}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/** Cycling high-octane motivation quote banner. */
+function MotivationTicker() {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setIndex((i) => (i + 1) % MOTIVATION_QUOTES.length);
+    }, 3200);
+    return () => window.clearInterval(id);
+  }, []);
+
+  return (
+    <div className="gf-glass gf-anim-rise gf-delay-1 mb-6 overflow-hidden rounded-full px-5 py-2.5 text-center">
+      <p
+        key={index}
+        className="gf-anim-materialize gf-display text-xs font-black tracking-[0.14em] text-electric uppercase"
+      >
+        ⚡ {MOTIVATION_QUOTES[index]} ⚡
+      </p>
+    </div>
   );
 }
 

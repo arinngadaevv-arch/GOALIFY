@@ -6,6 +6,7 @@ import {
   playCompletionCelebration,
   playCountdownBeep,
   playExerciseChime,
+  playGoCue,
 } from "@/lib/goalify/sound";
 
 /**
@@ -31,5 +32,9 @@ export function useWorkoutSounds() {
     if (enabled) playCompletionCelebration();
   }, [enabled]);
 
-  return { countdownBeep, exerciseChime, completionCelebration };
+  const goCue = useCallback(() => {
+    if (enabled) playGoCue();
+  }, [enabled]);
+
+  return { countdownBeep, exerciseChime, completionCelebration, goCue };
 }
