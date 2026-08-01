@@ -27,11 +27,19 @@ The exact list the quiz looks for, by step:
 | `level-returning.png` | Returning |
 | `level-consistent.png` | Consistent |
 | `level-advanced.png` | Advanced |
+| `bodyfat-daniel.png` | 25%+ |
+| `bodyfat-ethan.png` | 20–24% |
+| `bodyfat-liam.png` | 15–18% |
+| `bodyfat-noah.png` | 10–12% |
+| `bodyfat-mason.png` | 8–10% |
+| `bodyfat-jayden.png` | 5–7% |
+| `commit-workout-complete.png` | Both yes-set commitment screens' full-bleed background |
 
 Every one of the above already exists and is wired in. `joints`,
 `focusZones`, `weightKg` (vitals) and `commitment` are not photo-driven —
-they're a commitment card, an interactive body map and a slider screen,
-not option cards.
+they're a commitment card (with its own full-bleed background, separate
+from this per-option system), an interactive body map and a slider
+screen, not option cards.
 
 ## Art direction
 
@@ -46,8 +54,9 @@ not option cards.
 - Roughly **4:5 portrait to landscape** works for every current slot.
 - Export at **2× the display size** for retina — these render at up to
   ~340×280 in a card, so ~700×600 or larger source images hold up fine.
-- The quiz itself is a bright, light theme with cyan/gold accents — even,
-  naturally lit photography reads best; avoid heavy color casts.
+- The quiz itself is a dark obsidian theme with gold/crimson accents —
+  photography with real contrast (not flat, evenly-lit product shots)
+  reads best against it.
 
 ## Changing which cards use photos
 
@@ -57,7 +66,7 @@ Layout is per question, set by the `layout` field in
 - `wide` — full-width rows; full-bleed photo background when the step's
   photos are complete (`goal`, `painTrigger`)
 - `tile` — two-column grid; full-bleed photo background when complete
-  (`level`)
+  (`level`, `bodyFatPercent`)
 - `portrait` — two columns, cut-out breaks above the card top (defined,
   not currently used by any step)
 - `list` — compact two-column icon tiles, no photo (used as the fallback

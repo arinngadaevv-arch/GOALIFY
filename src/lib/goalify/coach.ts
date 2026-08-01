@@ -59,10 +59,12 @@ const REACTIONS: Record<string, Record<string, string>> = {
     ready: "That's the energy I needed. Let's keep this momentum going.",
   },
   bodyFatPercent: {
-    shredded: "Already shredded? Then we're not cutting — we're sharpening. Every rep from here is about definition.",
-    athletic: "Athletic base, visible potential. I'm calibrating your deficit to reveal what's already under there.",
-    average: "Got it — that's exactly where most transformations start. Your calories just got precision-tuned for it.",
-    soft: "Thank you for being honest — that's the hardest part. Your plan is about to become very deliberate.",
+    daniel: "Thank you for being honest — that's the hardest part. Your plan is about to become very deliberate.",
+    ethan: "Got it — that's exactly where most transformations start. Your calories just got precision-tuned for it.",
+    liam: "Athletic base, visible potential. I'm calibrating your deficit to reveal what's already under there.",
+    noah: "Already shredded? Then we're not cutting — we're sharpening. Every rep from here is about definition.",
+    mason: "Very lean already. We're locking in every gram of muscle while we finish the job.",
+    jayden: "Competition lean. Respect. This plan is about peaking, not starting.",
   },
   commitment: {
     allin: "THAT'S what I wanted to hear. You just made this a partnership. I'm holding you to it.",

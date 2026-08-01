@@ -54,10 +54,9 @@ export type QuizStep = {
        * - `portrait` — two columns, photo bleeding above the card top
        * - `wide` — full-width rows, label left and photo bleeding right
        * - `tile` — two columns, photo inside the card above the label
-       * - `bodyfat` — two columns, illustrated body-composition silhouette
        * - `list` (default) — compact two-column icon tiles
        */
-      layout?: "portrait" | "wide" | "tile" | "bodyfat" | "list";
+      layout?: "portrait" | "wide" | "tile" | "list";
       options: ChoiceOption[];
       /** Renders as a 5-second "instinct round" with a burning countdown. */
       speedRound?: boolean;
@@ -149,7 +148,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       "Total pride. Real energy. No more talking yourself out of it. Say it with me.",
     hudPhrase: "COMMITMENT VERIFICATION",
     buttonLabel: "YES! I'M READY 🔥",
-    bgPhoto: "/quiz/goal-athletic.png",
+    bgPhoto: "/quiz/commit-workout-complete.png",
   },
   {
     id: "painTrigger",
@@ -265,7 +264,7 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "bodyFatPercent",
     kind: "choice",
-    layout: "bodyfat",
+    layout: "tile",
     chapter: "The starting point",
     title: "Estimate your current body fat %",
     subtitle:
@@ -273,28 +272,46 @@ export const QUIZ_STEPS: QuizStep[] = [
     hudPhrase: "BODY COMPOSITION ESTIMATE",
     options: [
       {
-        value: "shredded",
-        label: "10–12%",
-        description: "Shredded — six-pack visible",
-        icon: "flame",
+        value: "daniel",
+        image: "/quiz/bodyfat-daniel.png",
+        label: "25%+",
+        description: "Carrying extra weight, especially the midsection",
+        icon: "shield",
       },
       {
-        value: "athletic",
+        value: "ethan",
+        image: "/quiz/bodyfat-ethan.png",
+        label: "20–24%",
+        description: "Average — soft midsection with some love handles",
+        icon: "gauge",
+      },
+      {
+        value: "liam",
+        image: "/quiz/bodyfat-liam.png",
         label: "15–18%",
         description: "Athletic — some visible definition",
         icon: "biceps",
       },
       {
-        value: "average",
-        label: "20–24%",
-        description: "Average — abs hidden under a layer",
-        icon: "gauge",
+        value: "noah",
+        image: "/quiz/bodyfat-noah.png",
+        label: "10–12%",
+        description: "Shredded — abs peek visible",
+        icon: "flame",
       },
       {
-        value: "soft",
-        label: "25%+",
-        description: "Carrying extra weight, especially the midsection",
-        icon: "shield",
+        value: "mason",
+        image: "/quiz/bodyfat-mason.png",
+        label: "8–10%",
+        description: "Very lean — clear muscle separation",
+        icon: "trophy",
+      },
+      {
+        value: "jayden",
+        image: "/quiz/bodyfat-jayden.png",
+        label: "5–7%",
+        description: "Competition lean — extreme definition",
+        icon: "crown",
       },
     ],
   },
@@ -316,7 +333,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     subtitle: "Say yes, and I'll build it right now — no more thinking about it.",
     hudPhrase: "PROGRAM AUTHORIZATION",
     buttonLabel: "ABSOLUTELY, LET'S DO THIS ⚡",
-    bgPhoto: "/quiz/goal-athletic.png",
+    bgPhoto: "/quiz/commit-workout-complete.png",
   },
 ];
 

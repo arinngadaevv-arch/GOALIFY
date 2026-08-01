@@ -18,8 +18,18 @@ export type Vision = "confident" | "strong" | "energised" | "proud";
 /** How hard they committed — sets the accountability tone. */
 export type Commitment = "allin" | "most" | "unsure";
 
-/** Self-estimated starting body composition, picked from an illustrated silhouette grid. */
-export type BodyFatBand = "shredded" | "athletic" | "average" | "soft";
+/**
+ * Self-estimated starting body composition, picked from a 6-card real-photo
+ * grid — each value keyed to the reference photo's name, not the % band
+ * itself, since the band text is editable copy but the photo identity isn't.
+ */
+export type BodyFatBand =
+  | "daniel" // 25%+
+  | "ethan" // 20-24%
+  | "liam" // 15-18%
+  | "noah" // 10-12%
+  | "mason" // 8-10%
+  | "jayden"; // 5-7%
 
 export type QuizAnswers = {
   goal: Goal;
