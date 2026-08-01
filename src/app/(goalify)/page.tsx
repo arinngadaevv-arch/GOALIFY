@@ -1,3 +1,4 @@
+import type { Viewport } from "next";
 import {
   Activity,
   Apple,
@@ -93,9 +94,14 @@ const TESTIMONIALS = [
   },
 ];
 
+export const viewport: Viewport = {
+  themeColor: "#0b0e14",
+  colorScheme: "dark",
+};
+
 export default function LandingPage() {
   return (
-    <main className="relative mx-auto w-full max-w-6xl px-5 pb-24">
+    <main className="gf-cyber-scope relative mx-auto w-full max-w-6xl px-5 pb-24">
       <ParticleField />
 
       <nav className="relative flex items-center justify-between py-6">
@@ -118,15 +124,15 @@ export default function LandingPage() {
           </Pill>
 
           <h1 className="gf-display mt-5 text-5xl font-black text-ink sm:text-6xl lg:text-7xl">
-            TRANSFORM YOUR BODY.
+            NO GYM. NO EXCUSES.
             <br />
-            <span className="gf-text-hype">RECLAIM YOUR CONFIDENCE.</span>
+            <span className="gf-text-hype">BUILD YOUR ULTIMATE PHYSIQUE AT HOME.</span>
           </h1>
 
           <p className="mt-6 max-w-lg text-lg leading-relaxed text-ink-soft">
-            Stop struggling alone. Get a precision 30-day physique plan
-            tailored to your target body, your metabolism, and your
-            schedule.
+            Transform your body using pure bodyweight mastery. Get a
+            high-octane 30-day home blueprint engineered for fast muscle
+            growth and maximum fat loss.
           </p>
 
           {/* The coach speaks before the user has done anything. */}
@@ -137,8 +143,8 @@ export default function LandingPage() {
           />
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <GlowLink href="/quiz" size="xl" className="gf-anim-hype">
-              BUILD MY CUSTOM PLAN ⚡
+            <GlowLink href="/quiz" size="xl" pulse className="gf-anim-hype">
+              START MY HOME TRANSFORMATION ⚡
               <ArrowRight className="size-5" />
             </GlowLink>
             <span className="text-sm font-semibold text-mist">
@@ -155,7 +161,7 @@ export default function LandingPage() {
                   icon={MemberIcon}
                   rounded="rounded-full"
                   showChrome={false}
-                  className="size-11 ring-2 ring-white"
+                  className="size-11 ring-2 ring-[#0b0e14]"
                 />
               ))}
             </div>
@@ -240,7 +246,7 @@ export default function LandingPage() {
                     rounded="rounded-none"
                     className="aspect-3/4 w-full"
                   />
-                  <span className="absolute bottom-2 left-2 rounded-full bg-white/85 px-2 py-0.5 text-[10px] font-black tracking-[0.1em] text-ink-soft uppercase">
+                  <span className="absolute bottom-2 left-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-black tracking-[0.1em] text-black/75 uppercase">
                     Before
                   </span>
                 </div>
@@ -415,7 +421,7 @@ export default function LandingPage() {
           who won&apos;t let you disappear in week three.
         </p>
         <GlowLink href="/quiz" size="xl" pulse className="mt-8">
-          BUILD MY CUSTOM PLAN ⚡
+          START MY HOME TRANSFORMATION ⚡
           <ArrowRight className="size-5" />
         </GlowLink>
       </GlassCard>

@@ -306,8 +306,8 @@ export const QUIZ_STEPS: QuizStep[] = [
     kind: "choice",
     layout: "tile",
     chapter: "The rhythm",
-    title: "How much time can you give me?",
-    subtitle: "Pick the pace you'll actually keep. I'll make every minute count.",
+    title: "How many days a week can you train in your living room?",
+    subtitle: "No commute, no gym line. Pick the pace you'll actually keep — I'll make every minute count.",
     hudPhrase: "SCHEDULE CAPACITY ANALYSIS",
     options: [
       {
@@ -348,7 +348,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     chapter: "The science",
     title: "Lock in your numbers",
     subtitle: "This is what turns a generic plan into your exact calories and macros.",
-    hudPhrase: "METABOLIC BASELINE ASSESSMENT",
+    hudPhrase: "CALIBRATING METABOLIC POTENTIAL",
   },
   {
     id: "commitment",
@@ -358,7 +358,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     subtitle: "Say yes, and I'll build it right now — no more thinking about it.",
     hudPhrase: "PROGRAM AUTHORIZATION",
     buttonLabel: "ABSOLUTELY, LET'S DO THIS ⚡",
-    bgPhoto: "/quiz/goal-build.png",
+    bgPhoto: "/quiz/goal-athletic.png",
   },
 ];
 

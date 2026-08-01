@@ -94,7 +94,7 @@ export function Paywall() {
   };
 
   return (
-    <main className="relative mx-auto w-full max-w-2xl px-5 pb-40">
+    <main className="gf-cyber-scope relative mx-auto w-full max-w-2xl px-5 pb-40">
       <ParticleField />
 
       <header className="relative flex items-center justify-between py-6">
@@ -124,15 +124,16 @@ export function Paywall() {
         </div>
 
         <p className="mt-5 text-[11px] font-black tracking-[0.2em] text-lime-deep uppercase">
-          Your plan is ready
+          Zero equipment. Zero excuses.
         </p>
-        <h1 className="gf-display mt-3 text-4xl font-black text-ink sm:text-5xl">
-          The <span className="gf-text-hype">{planName(answers)}</span> plan
+        <h1 className="gf-display mt-3 text-3xl font-black text-ink sm:text-4xl">
+          YOUR 30-DAY <span className="gf-text-hype">NO-EQUIPMENT ALPHA BLUEPRINT</span> IS READY
         </h1>
         <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-ink-soft">
-          Built for a {levelLabel(answers.level).toLowerCase()}-stage athlete
-          chasing {goalLabel(answers.goal).toLowerCase()} — designed around{" "}
-          {painLabel(answers.painTrigger)}, so this time it sticks.
+          The <span className="font-bold text-ink">{planName(answers)}</span>{" "}
+          plan — built for a {levelLabel(answers.level).toLowerCase()}-stage
+          athlete chasing {goalLabel(answers.goal).toLowerCase()}, entirely
+          with bodyweight, designed around {painLabel(answers.painTrigger)}.
         </p>
       </section>
 
@@ -179,10 +180,11 @@ export function Paywall() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="gf-display text-lg font-extrabold text-ink">
-              Your projected curve
+              Your 30-day transformation curve
             </h2>
             <p className="mt-1 text-xs text-mist">
-              Capped at a safe 0.75% of bodyweight per week.
+              Bodyweight training only — capped at a safe 0.75% of bodyweight
+              per week.
             </p>
           </div>
           <Pill tone={losing ? "lime" : "electric"}>
@@ -369,6 +371,7 @@ export function Paywall() {
         </div>
 
         <GlowButton
+          variant="cyber"
           size="xl"
           fullWidth
           className="gf-anim-hype mt-6"
@@ -376,8 +379,11 @@ export function Paywall() {
           onClick={checkout}
         >
           <Lock className="size-5" />
-          UNLOCK MY PLAN — ${selected.price.toFixed(2)}
+          UNLOCK MY HOME PLAN NOW ⚡
         </GlowButton>
+        <p className="mt-2 text-center text-xs font-semibold text-mist">
+          ${selected.price.toFixed(2)} total · ${selected.perWeek.toFixed(2)}/week
+        </p>
         <p className="mt-2.5 text-center text-xs font-bold text-lime-deep">
           Day 1 starts the second you tap that button.
         </p>
@@ -451,15 +457,15 @@ function ProjectionChart({
     >
       <defs>
         <linearGradient id="gf-projection" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#0052FF" stopOpacity="0.28" />
-          <stop offset="100%" stopColor="#0052FF" stopOpacity="0" />
+          <stop offset="0%" stopColor="#e8b32c" stopOpacity="0.32" />
+          <stop offset="100%" stopColor="#e8b32c" stopOpacity="0" />
         </linearGradient>
       </defs>
       <path d={area} fill="url(#gf-projection)" />
       <path
         d={line}
         fill="none"
-        stroke="#0052FF"
+        stroke="#e8b32c"
         strokeWidth="3"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -468,8 +474,8 @@ function ProjectionChart({
         cx={coords[coords.length - 1].x}
         cy={coords[coords.length - 1].y}
         r="6"
-        fill="#39FF14"
-        stroke="#fff"
+        fill="#ff3b3b"
+        stroke="#0b0e14"
         strokeWidth="3"
       />
     </svg>

@@ -45,7 +45,7 @@ export function TrainerSlideshow({ className }: { className?: string }) {
             className={clsx(
               "h-1.5 rounded-full transition-all duration-300",
               dot === index
-                ? "w-7 bg-electric shadow-[0_0_10px_rgba(0,82,255,0.7)]"
+                ? "w-7 bg-electric shadow-[0_0_10px_rgba(232,179,44,0.7)]"
                 : "w-1.5 bg-ink/15 hover:bg-ink/30",
             )}
           />

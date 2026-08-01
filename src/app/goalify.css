@@ -54,6 +54,19 @@ body.goalify-body {
   overflow-x: hidden;
 }
 
+/* A .gf-cyber-scope page (quiz, paywall, home hero) is often narrower than
+   the viewport (max-w-* + mx-auto), which would otherwise leave this
+   body's light background showing as gutters on either side on wide
+   screens. Match the body to the scope's obsidian canvas whenever one is
+   present anywhere on the page. */
+body.goalify-body:has(.gf-cyber-scope) {
+  background: #0b0e14;
+}
+
+body.goalify-body:has(.gf-cyber-scope) .gf-ambience {
+  display: none;
+}
+
 /* Ambient light bloom — gives the frosted panels something to refract.
    Fixed so it never scrolls out from under the glass. */
 .gf-ambience {
@@ -380,9 +393,9 @@ body.goalify-body {
 .gf-gradient-pulse {
   background: linear-gradient(
     115deg,
-    rgba(0, 82, 255, 0.16),
-    rgba(57, 255, 20, 0.18),
-    rgba(0, 82, 255, 0.16)
+    rgba(232, 179, 44, 0.2),
+    rgba(255, 59, 59, 0.16),
+    rgba(232, 179, 44, 0.2)
   );
   background-size: 220% 220%;
   animation: gf-gradient-breathe 6s ease-in-out infinite;
@@ -934,9 +947,13 @@ html.goalify ::-webkit-scrollbar-thumb {
   color: var(--color-ink);
 }
 
+/* `absolute` (not `fixed`) so this stays confined to the scoped element's
+   own box — lets .gf-cyber-scope be applied to a single full-page <main>
+   (quiz, paywall) just as safely as the whole homepage, without its ambient
+   glow bleeding across content outside the scope. */
 .gf-cyber-scope::before {
   content: "";
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: -2;
   pointer-events: none;
@@ -949,7 +966,7 @@ html.goalify ::-webkit-scrollbar-thumb {
 
 .gf-cyber-scope::after {
   content: "";
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: -1;
   pointer-events: none;
@@ -1027,6 +1044,26 @@ html.goalify ::-webkit-scrollbar-thumb {
     inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
+/* Unproduced-artwork placeholder (VisualSlot) — the base version is a pale
+   white/blue wash tuned for a light canvas, which paints as a jarring
+   bright hole on this dark scope, so re-tint it to match the obsidian
+   card system instead. */
+.gf-cyber-scope .gf-slot {
+  background:
+    radial-gradient(circle at 30% 22%, rgba(232, 179, 44, 0.14) 0%, rgba(232, 179, 44, 0) 55%),
+    linear-gradient(150deg, rgba(232, 179, 44, 0.1), rgba(17, 20, 29, 0.9));
+  border: 1px dashed rgba(232, 179, 44, 0.3);
+}
+
+.gf-cyber-scope .gf-slot::after {
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(232, 179, 44, 0.18) 50%,
+    transparent 80%
+  );
+}
+
 /* --- Animated sweeping-gradient border, HUD-panel style ------------------- */
 /* Same content-box/xor mask trick as .gf-glow-border above — a
    background-position sweep instead of a rotation, which is what keeps the
@@ -1073,6 +1110,16 @@ html.goalify ::-webkit-scrollbar-thumb {
 
 .gf-cyber-scope .gf-text-electric {
   background: linear-gradient(120deg, #e8b32c 0%, #f5cb5c 55%, #e8b32c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Override the base blue->green hype gradient (tuned for the light brand
+   theme) so headline/CTA "hype" text matches this scope's gold/crimson
+   palette instead of clashing with it. */
+.gf-cyber-scope .gf-text-hype {
+  background: linear-gradient(115deg, #e8b32c 0%, #ff8a3d 50%, #ff3b3b 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

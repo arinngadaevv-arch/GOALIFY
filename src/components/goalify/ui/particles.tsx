@@ -31,8 +31,8 @@ export function ParticleField({ className }: { className?: string }) {
             top: particle.top,
             width: particle.size,
             height: particle.size,
-            background: particle.lime ? "#39FF14" : "#0052FF",
-            boxShadow: `0 0 ${particle.size * 2}px ${particle.lime ? "#39FF14" : "#0052FF"}`,
+            background: particle.lime ? "#ff3b3b" : "#e8b32c",
+            boxShadow: `0 0 ${particle.size * 2}px ${particle.lime ? "#ff3b3b" : "#e8b32c"}`,
             animationDelay: particle.delay,
             animationDuration: particle.duration,
           }}

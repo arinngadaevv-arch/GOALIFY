@@ -240,8 +240,8 @@ export function QuizFlow() {
 
       <CoachGuide
         autoOpen={false}
-        photoSrc="/quiz/goal-build.png"
-        idleMessage="I'm not here to give you excuses. I'm here to build your dream physique in 30 days."
+        photoSrc="/quiz/goal-athletic.png"
+        idleMessage="You don't need a gym to build a legendary body. Just 20 minutes and zero excuses."
       />
     </main>
   );

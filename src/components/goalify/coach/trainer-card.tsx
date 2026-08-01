@@ -37,7 +37,6 @@ export const TRAINERS: Trainer[] = [
     quote: "Add one rep. Then do it again tomorrow. That's the whole secret.",
     pose: "pushup",
     accent: "lime",
-    photoSrc: "/quiz/goal-build.png",
   },
   {
     id: "vera",
@@ -46,7 +45,6 @@ export const TRAINERS: Trainer[] = [
     quote: "Pain is information, not a stop sign. We train around it.",
     pose: "bridge",
     accent: "electric",
-    photoSrc: "/quiz/goal-tone.png",
   },
   {
     id: "kai",
@@ -55,7 +53,6 @@ export const TRAINERS: Trainer[] = [
     quote: "Definition is built in the last three reps nobody wants to do.",
     pose: "core",
     accent: "lime",
-    photoSrc: "/quiz/goal-burn.png",
   },
 ];
 
@@ -99,7 +96,7 @@ export function TrainerCard({
           <PoseIcon
             pose={trainer.pose}
             className={clsx(
-              "gf-anim-float drop-shadow-[0_8px_14px_rgba(0,82,255,0.3)]",
+              "gf-anim-float drop-shadow-[0_8px_14px_rgba(232,179,44,0.35)]",
               compact ? "h-20 w-20" : "h-28 w-28",
             )}
           />
