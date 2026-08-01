@@ -117,26 +117,28 @@ export default function LandingPage() {
             <Sparkles className="size-3" /> No equipment required
           </Pill>
 
-          <h1 className="gf-display mt-5 text-6xl font-black text-ink sm:text-7xl lg:text-8xl">
-            STOP
+          <h1 className="gf-display mt-5 text-5xl font-black text-ink sm:text-6xl lg:text-7xl">
+            TRANSFORM YOUR BODY.
             <br />
-            STARTING
-            <br />
-            <span className="gf-text-hype">OVER.</span>
+            <span className="gf-text-hype">RECLAIM YOUR CONFIDENCE.</span>
           </h1>
 
           <p className="mt-6 max-w-lg text-lg leading-relaxed text-ink-soft">
-            One coach. One plan. Built around your goal, your starting point,
-            and the exact thing that stopped you last time — then drilled
-            into you rep by rep until results are inevitable.
+            Stop struggling alone. Get a precision 30-day physique plan
+            tailored to your target body, your metabolism, and your
+            schedule.
           </p>
 
           {/* The coach speaks before the user has done anything. */}
-          <CoachBubble message={COACH_GREETINGS[0]} className="mt-7 max-w-lg" />
+          <CoachBubble
+            message={COACH_GREETINGS[0]}
+            avatarPhotoSrc="/quiz/goal-athletic.png"
+            className="mt-7 max-w-lg"
+          />
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <GlowLink href="/quiz" size="xl" className="gf-anim-hype">
-              START YOUR TRANSFORMATION
+              BUILD MY CUSTOM PLAN ⚡
               <ArrowRight className="size-5" />
             </GlowLink>
             <span className="text-sm font-semibold text-mist">
@@ -413,7 +415,7 @@ export default function LandingPage() {
           who won&apos;t let you disappear in week three.
         </p>
         <GlowLink href="/quiz" size="xl" pulse className="mt-8">
-          START YOUR TRANSFORMATION
+          BUILD MY CUSTOM PLAN ⚡
           <ArrowRight className="size-5" />
         </GlowLink>
       </GlassCard>

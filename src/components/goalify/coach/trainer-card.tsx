@@ -9,14 +9,16 @@ export type Trainer = {
   quote: string;
   pose: PoseKey;
   accent: "electric" | "lime";
+  /** Real photo, served from /public. Falls back to the illustrated pose. */
+  photoSrc?: string;
 };
 
 /**
  * The coaching roster shown across the landing page and workout headers.
  *
- * Each trainer renders as a stylised mocap figure on an energy gradient.
- * Drop a real photograph in by passing `photoSrc` (anything under /public)
- * and the illustrated treatment steps aside automatically.
+ * Each trainer renders a real photo when `photoSrc` is set (either here or
+ * passed as a prop to `TrainerCard`); otherwise it falls back to a
+ * stylised mocap figure on an energy gradient.
  */
 export const TRAINERS: Trainer[] = [
   {
@@ -26,6 +28,7 @@ export const TRAINERS: Trainer[] = [
     quote: "You don't need more time. You need a plan that fits the time you have.",
     pose: "jack",
     accent: "electric",
+    photoSrc: "/quiz/goal-athletic.png",
   },
   {
     id: "atlas",
@@ -34,6 +37,7 @@ export const TRAINERS: Trainer[] = [
     quote: "Add one rep. Then do it again tomorrow. That's the whole secret.",
     pose: "pushup",
     accent: "lime",
+    photoSrc: "/quiz/goal-build.png",
   },
   {
     id: "vera",
@@ -42,6 +46,7 @@ export const TRAINERS: Trainer[] = [
     quote: "Pain is information, not a stop sign. We train around it.",
     pose: "bridge",
     accent: "electric",
+    photoSrc: "/quiz/goal-tone.png",
   },
   {
     id: "kai",
@@ -50,6 +55,7 @@ export const TRAINERS: Trainer[] = [
     quote: "Definition is built in the last three reps nobody wants to do.",
     pose: "core",
     accent: "lime",
+    photoSrc: "/quiz/goal-burn.png",
   },
 ];
 
@@ -66,6 +72,7 @@ export function TrainerCard({
 }) {
   const accentText =
     trainer.accent === "lime" ? "text-lime-deep" : "text-electric";
+  const resolvedPhotoSrc = photoSrc ?? trainer.photoSrc;
 
   return (
     <div
@@ -81,9 +88,9 @@ export function TrainerCard({
           compact ? "h-28" : "h-44",
         )}
       >
-        {photoSrc ? (
+        {resolvedPhotoSrc ? (
           <Image
-            src={photoSrc}
+            src={resolvedPhotoSrc}
             alt={trainer.name}
             fill
             className="object-cover"

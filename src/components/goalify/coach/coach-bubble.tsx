@@ -1,15 +1,19 @@
 "use client";
 
 import clsx from "clsx";
+import Image from "next/image";
 import { COACH } from "@/lib/goalify/coach";
 import { CoachAvatarIcon } from "./coach-avatar-icon";
 
 /** The coach's face — a glowing avatar badge with a live activity dot. */
 export function CoachBadge({
   size = "md",
+  photoSrc,
   className,
 }: {
   size?: "sm" | "md" | "lg";
+  /** Real photo (from /public) for marketing contexts — falls back to the icon. */
+  photoSrc?: string;
   className?: string;
 }) {
   const dimensions = {
@@ -22,11 +26,22 @@ export function CoachBadge({
     <span className={clsx("relative shrink-0", className)}>
       <span
         className={clsx(
-          "gf-glow-electric grid place-items-center rounded-2xl bg-linear-to-br from-electric to-[#0038b0] [.gf-cyber-scope_&]:from-[#00c2e0] [.gf-cyber-scope_&]:to-[#0a1440]",
+          "relative grid place-items-center overflow-hidden rounded-2xl",
+          !photoSrc &&
+            "gf-glow-electric bg-linear-to-br from-electric to-[#0038b0] [.gf-cyber-scope_&]:from-[#00c2e0] [.gf-cyber-scope_&]:to-[#0a1440]",
           dimensions,
         )}
       >
-        <CoachAvatarIcon className="size-1/2 text-lime-neon" />
+        {photoSrc ? (
+          <Image
+            src={photoSrc}
+            alt={COACH.name}
+            fill
+            className="object-cover"
+          />
+        ) : (
+          <CoachAvatarIcon className="size-1/2 text-lime-neon" />
+        )}
       </span>
       {/* Live dot — signals the coach is "active", not a static illustration. */}
       <span className="absolute -right-0.5 -bottom-0.5 grid size-4 place-items-center rounded-full bg-white [.gf-cyber-scope_&]:bg-[#0a0d1c]">
@@ -44,11 +59,14 @@ export function CoachBubble({
   message,
   tone = "plain",
   compact = false,
+  avatarPhotoSrc,
   className,
 }: {
   message: string;
   tone?: "plain" | "electric" | "lime";
   compact?: boolean;
+  /** Real photo for the avatar badge — see `CoachBadge`. */
+  avatarPhotoSrc?: string;
   className?: string;
 }) {
   return (
@@ -59,7 +77,7 @@ export function CoachBubble({
         className,
       )}
     >
-      <CoachBadge size={compact ? "sm" : "md"} />
+      <CoachBadge size={compact ? "sm" : "md"} photoSrc={avatarPhotoSrc} />
       <div
         className={clsx(
           "gf-glass relative rounded-2xl rounded-tl-sm px-4 py-3",

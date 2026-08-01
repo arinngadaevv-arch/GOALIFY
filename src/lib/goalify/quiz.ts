@@ -94,7 +94,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     kind: "choice",
     layout: "wide",
     chapter: "The target",
-    title: "Select your 30-day target physique",
+    title: "Select the exact physique you want in 30 days",
     subtitle:
       "Every rep, every calorie in your program is engineered around this one choice. Pick the outcome you actually want.",
     hudPhrase: "PHYSICAL TARGET DIAGNOSIS",
@@ -153,7 +153,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     layout: "wide",
     speedRound: true,
     chapter: "The obstacle",
-    title: "What's your biggest obstacle to total confidence?",
+    title: "What's holding you back from feeling 100% confident at the beach?",
     subtitle: "Name it. This is exactly what your plan is engineered to destroy.",
     hudPhrase: "PERFORMANCE BARRIER ASSESSMENT",
     options: [
@@ -203,7 +203,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     id: "focusZones",
     kind: "bodyMap",
     chapter: "The blueprint",
-    title: "Where do you want results first?",
+    title: "Where do you hold the most unwanted body fat?",
     subtitle:
       "Tap every zone you want transformed. Your program locks in and prioritizes these areas from day one.",
     hudPhrase: "PRIORITY ZONE MAPPING",
