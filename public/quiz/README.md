@@ -29,9 +29,9 @@ The exact list the quiz looks for, by step:
 | `level-advanced.png` | Advanced |
 
 Every one of the above already exists and is wired in. `joints`,
-`focusZones`, `sessionLength`, `weightKg` (vitals) and `commitment` are
-not photo-driven — they're a commitment card, an interactive body map,
-a "power choice" grid and a slider screen, not option cards.
+`focusZones`, `weightKg` (vitals) and `commitment` are not photo-driven —
+they're a commitment card, an interactive body map and a slider screen,
+not option cards.
 
 ## Art direction
 

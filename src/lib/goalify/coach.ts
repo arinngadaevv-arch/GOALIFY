@@ -64,12 +64,6 @@ const REACTIONS: Record<string, Record<string, string>> = {
     average: "Got it — that's exactly where most transformations start. Your calories just got precision-tuned for it.",
     soft: "Thank you for being honest — that's the hardest part. Your plan is about to become very deliberate.",
   },
-  sessionLength: {
-    "3-15": "Three short, brutal sessions a week. No filler, no wasted minutes.",
-    "4-25": "Four days, 25 minutes — the sweet spot between results and real life.",
-    "5-25": "Five days. That's a fast-track pace — I'll manage your recovery carefully.",
-    "6-40": "Six days, full sessions. All in. I'll make sure you recover hard enough to keep up.",
-  },
   commitment: {
     allin: "THAT'S what I wanted to hear. You just made this a partnership. I'm holding you to it.",
   },

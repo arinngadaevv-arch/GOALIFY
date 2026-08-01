@@ -299,48 +299,6 @@ export const QUIZ_STEPS: QuizStep[] = [
     ],
   },
   {
-    // Anchors the merged days/session-length "power choice" — one 2x2 grid
-    // instead of two separate screens, each option writing both fields at
-    // once (see quiz-flow.tsx's TIME_COMBOS handling).
-    id: "sessionLength",
-    kind: "choice",
-    layout: "tile",
-    chapter: "The rhythm",
-    title: "How many days a week can you train in your living room?",
-    subtitle: "No commute, no gym line. Pick the pace you'll actually keep — I'll make every minute count.",
-    hudPhrase: "SCHEDULE CAPACITY ANALYSIS",
-    options: [
-      {
-        value: "3-15",
-        label: "3 days · 15 min",
-        description: "Short, brutally efficient",
-        icon: "hourglass",
-        socialProof: "92% completion rate",
-      },
-      {
-        value: "4-25",
-        label: "4 days · 25 min",
-        description: "The results-to-effort sweet spot",
-        icon: "calendarCheck",
-        socialProof: "Most popular pick",
-      },
-      {
-        value: "5-25",
-        label: "5 days · 25 min",
-        description: "Faster progress, recovery managed",
-        icon: "calendarClock",
-        socialProof: "Fastest transformations",
-      },
-      {
-        value: "6-40",
-        label: "6 days · 40 min",
-        description: "Maximum training volume",
-        icon: "calendarDays",
-        socialProof: "For the all-in athlete",
-      },
-    ],
-  },
-  {
     // Anchors the merged vitals screen (sex + age + height + weight +
     // target weight) — one dense, slider-driven step instead of five.
     id: "weightKg",

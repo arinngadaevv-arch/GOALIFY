@@ -11,7 +11,7 @@ import {
 } from "@/lib/goalify/quiz";
 import { DEFAULT_ANSWERS } from "@/lib/goalify/plan";
 import { coachReaction } from "@/lib/goalify/coach";
-import type { QuizAnswers, SessionLength } from "@/lib/goalify/types";
+import type { QuizAnswers } from "@/lib/goalify/types";
 import { useGoalify } from "@/lib/goalify/store";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
 import { CoachGuide, sayCoach } from "@/components/goalify/coach/coach-guide";
@@ -43,16 +43,6 @@ function withBurst(handler: () => void, gold = false) {
     fireBurst(event.clientX, event.clientY, gold);
     handler();
   };
-}
-
-/**
- * The merged "time commitment" step packs two fields into one option
- * value ("4-25" -> 4 days a week, 25-minute sessions). Every other choice
- * step still writes its single `id` field directly.
- */
-function parseTimeCombo(raw: string): { daysPerWeek: number; sessionLength: SessionLength } {
-  const [days, minutes] = raw.split("-");
-  return { daysPerWeek: Number(days), sessionLength: minutes as SessionLength };
 }
 
 /** Fixed patches for the two rhetorical "yes-set" commitment cards. */
@@ -340,13 +330,6 @@ function ChoiceStep({
   const stepHasPhotos = main.every((o) => hasRealPhoto(o.image));
 
   const choose = (option: (typeof step.options)[number]) => {
-    // The merged time-commitment step packs two fields into one value
-    // ("4-25" -> 4 days a week, 25-minute sessions).
-    if (step.id === "sessionLength" && option.value.includes("-")) {
-      const combo = parseTimeCombo(option.value);
-      onPick(combo, option.value);
-      return;
-    }
     onPick({ [step.id]: option.value } as Partial<QuizAnswers>, option.value);
   };
 
