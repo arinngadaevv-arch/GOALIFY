@@ -97,7 +97,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     title: "Select your 30-day target physique",
     subtitle:
       "Every rep, every calorie in your program is engineered around this one choice. Pick the outcome you actually want.",
-    hudPhrase: "CALIBRATING PHYSIQUE MATCH...",
+    hudPhrase: "PHYSICAL TARGET DIAGNOSIS",
     options: [
       {
         value: "burn",
@@ -144,7 +144,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     title: "Do you want to wake up 30 days from now and actually love the mirror?",
     subtitle:
       "Total pride. Real energy. No more talking yourself out of it. Say it with me.",
-    hudPhrase: "LOCKING MENTAL COMMITMENT...",
+    hudPhrase: "COMMITMENT VERIFICATION",
     buttonLabel: "YES! I'M READY 🔥",
   },
   {
@@ -155,7 +155,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     chapter: "The obstacle",
     title: "What's your biggest obstacle to total confidence?",
     subtitle: "Name it. This is exactly what your plan is engineered to destroy.",
-    hudPhrase: "SCANNING FOR WEAK POINTS...",
+    hudPhrase: "PERFORMANCE BARRIER ASSESSMENT",
     options: [
       {
         value: "time",
@@ -206,7 +206,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     title: "Where do you want results first?",
     subtitle:
       "Tap every zone you want transformed. Your program locks in and prioritizes these areas from day one.",
-    hudPhrase: "MAPPING TARGET ZONES...",
+    hudPhrase: "PRIORITY ZONE MAPPING",
     zones: [
       { value: "chest", label: "Chest" },
       { value: "arms", label: "Arms" },
@@ -222,7 +222,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     chapter: "The benchmark",
     title: "Where are you starting from?",
     subtitle: "Be honest — I'll calibrate your first week to guarantee early wins.",
-    hudPhrase: "BENCHMARKING TRAINING LEVEL...",
+    hudPhrase: "TRAINING BASELINE ASSESSMENT",
     options: [
       {
         value: "beginner",
@@ -268,7 +268,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     chapter: "The rhythm",
     title: "How much time can you give me?",
     subtitle: "Pick the pace you'll actually keep. I'll make every minute count.",
-    hudPhrase: "SYNCING TRAINING FREQUENCY...",
+    hudPhrase: "SCHEDULE CAPACITY ANALYSIS",
     options: [
       {
         value: "3-15",
@@ -308,7 +308,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     chapter: "The science",
     title: "Lock in your numbers",
     subtitle: "This is what turns a generic plan into your exact calories and macros.",
-    hudPhrase: "CALCULATING METABOLIC BASELINE...",
+    hudPhrase: "METABOLIC BASELINE ASSESSMENT",
   },
   {
     id: "commitment",
@@ -316,7 +316,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     chapter: "The pact",
     title: "Are you ready to stop making excuses and follow a plan built just for you?",
     subtitle: "Say yes, and I'll build it right now — no more thinking about it.",
-    hudPhrase: "UNLOCKING CUSTOM ROADMAP...",
+    hudPhrase: "PROGRAM AUTHORIZATION",
     buttonLabel: "ABSOLUTELY, LET'S DO THIS ⚡",
   },
 ];

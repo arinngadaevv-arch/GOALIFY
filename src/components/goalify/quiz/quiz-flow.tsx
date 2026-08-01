@@ -10,11 +10,10 @@ import {
   type QuizStep,
 } from "@/lib/goalify/quiz";
 import { DEFAULT_ANSWERS } from "@/lib/goalify/plan";
-import { coachProgressNudge, coachReaction } from "@/lib/goalify/coach";
+import { coachReaction } from "@/lib/goalify/coach";
 import type { QuizAnswers, SessionLength } from "@/lib/goalify/types";
 import { useGoalify } from "@/lib/goalify/store";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
-import { CoachBadge } from "@/components/goalify/coach/coach-bubble";
 import { CoachGuide, sayCoach } from "@/components/goalify/coach/coach-guide";
 import { useUiSounds } from "@/components/goalify/use-ui-sounds";
 import { hasRealPhoto, OptionPhoto } from "./option-photo";
@@ -64,7 +63,6 @@ export function QuizFlow() {
   const { state, setDraft, completeQuiz } = useGoalify();
   const [index, setIndex] = useState(0);
   const [analyzing, setAnalyzing] = useState(false);
-  const [reaction, setReaction] = useState<string | null>(null);
   const [pending, setPending] = useState<Partial<QuizAnswers> | null>(null);
   /** The celebration pill that pops the instant an answer lands. */
   const [hudToast, setHudToast] = useState<string | null>(null);
@@ -93,12 +91,11 @@ export function QuizFlow() {
   const pick = useCallback(
     (patch: Partial<QuizAnswers>, value: unknown) => {
       setDraft(patch);
-      const line = coachReaction(String(step.id), value);
-      setReaction(line);
       setPending(patch);
       hypeSelect();
-      // Mirror the reaction into the floating coach so it stays in the corner
-      // even once the question has scrolled away.
+      // The reaction only ever surfaces in the floating coach widget now —
+      // there's no more inline panel to hold it on-screen.
+      const line = coachReaction(String(step.id), value);
       if (line) sayCoach(line);
 
       const meta = HUD_STEP_META[step.id];
@@ -116,7 +113,6 @@ export function QuizFlow() {
         finish(pending);
       } else {
         setIndex((i) => i + 1);
-        setReaction(null);
         setHudToast(null);
       }
       setPending(null);
@@ -127,8 +123,6 @@ export function QuizFlow() {
   if (analyzing) {
     return <AnalyzingScreen onDone={() => router.push("/plan")} />;
   }
-
-  const coachMessage = reaction ?? coachProgressNudge(progress);
 
   return (
     <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-28">
@@ -143,9 +137,9 @@ export function QuizFlow() {
           <ChevronLeft className="size-6" strokeWidth={2.5} />
         </button>
 
-        {/* Sleek single-line progress bar — no more per-step segments. */}
+        {/* Thin, minimalist single-line progress bar — native-app style. */}
         <div
-          className="h-1.5 flex-1 overflow-hidden rounded-full bg-ink/10"
+          className="h-1 flex-1 overflow-hidden rounded-full bg-ink/10"
           role="progressbar"
           aria-valuenow={Math.round(progress)}
           aria-valuemin={0}
@@ -153,7 +147,7 @@ export function QuizFlow() {
           aria-label="Quiz progress"
         >
           <div
-            className="gf-charge h-full rounded-full bg-electric transition-[width] duration-500 ease-out"
+            className="h-full rounded-full bg-electric transition-[width] duration-500 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -165,37 +159,23 @@ export function QuizFlow() {
 
       {/* --------------------------------------------- Live diagnostic readout */}
       <div className="relative flex items-center justify-between">
-        <p className="gf-anim-flicker gf-cyber-gold-text text-[10px] font-black tracking-[0.14em] uppercase">
-          {step.hudPhrase} {Math.round(((index + 1) / QUIZ_STEPS.length) * 100)}% MATCH
+        <p className="gf-cyber-glow-text text-[10px] font-black tracking-[0.16em] uppercase">
+          {step.hudPhrase} · {Math.round(((index + 1) / QUIZ_STEPS.length) * 100)}%
         </p>
         {hudToast && <HypeToast text={hudToast} />}
       </div>
 
       {/* ------------------------------------------------------- Big headline */}
-      <div key={step.id} className="gf-anim-swoop relative pt-2">
-        <div className="flex items-center gap-2">
-          <span className="gf-accent-line" aria-hidden />
-          <p className="gf-cyber-glow-text text-[11px] font-black tracking-[0.16em] uppercase">
-            {step.chapter}
-          </p>
-        </div>
-        <h1 className="gf-slash gf-display relative mt-2 text-4xl leading-[1.05] font-black text-ink sm:text-5xl">
+      <div key={step.id} className="gf-anim-swoop relative pt-3">
+        <p className="text-[11px] font-black tracking-[0.16em] text-electric uppercase">
+          {step.chapter}
+        </p>
+        <h1 className="gf-display relative mt-2 text-4xl leading-[1.05] font-black text-ink sm:text-5xl">
           {step.title}
         </h1>
       </div>
 
-      {/* The coach speaks on every single step. */}
-      <div
-        key={coachMessage}
-        className="gf-tip gf-anim-rise relative mt-6 flex items-center gap-4 px-5 py-4"
-      >
-        <CoachBadge size="lg" />
-        <p className="relative z-10 text-sm leading-snug font-semibold text-ink-soft">
-          {coachMessage}
-        </p>
-      </div>
-
-      <div className="relative flex-1 pt-7">
+      <div className="relative flex-1 pt-8">
         <p className="mb-6 text-sm leading-relaxed text-mist">
           {step.subtitle}
         </p>
@@ -329,6 +309,11 @@ function ChoiceStep({
   const layout = step.layout ?? "list";
   const main = step.options.filter((o) => !o.aside);
   const asides = step.options.filter((o) => o.aside);
+  // A photo only ever renders if EVERY option in the step has one — one
+  // real photo next to three icon placeholders reads as broken, not
+  // premium, so an incomplete set falls back to a clean icon treatment
+  // across the whole step instead.
+  const stepHasPhotos = main.every((o) => hasRealPhoto(o.image));
 
   const choose = (option: (typeof step.options)[number]) => {
     // The merged time-commitment step packs two fields into one value
@@ -356,6 +341,7 @@ function ChoiceStep({
             key={option.value}
             option={option}
             layout={layout}
+            hasPhoto={stepHasPhotos}
             selected={String(value) === option.value}
             disabled={locked}
             onClick={() => choose(option)}
@@ -397,19 +383,23 @@ function ChoiceStep({
 function PhotoOptionCard({
   option,
   layout,
+  hasPhoto,
   selected,
   disabled,
   onClick,
 }: {
   option: ChoiceOption;
   layout: "portrait" | "wide" | "tile" | "list";
+  /** Precomputed by the caller — true only when every option in the step
+   * has a real photo, so a card never shows a photo in isolation. */
+  hasPhoto: boolean;
   selected: boolean;
   disabled: boolean;
   onClick: () => void;
 }) {
   const checkBadge = selected && (
-    <span className="absolute top-3 right-3 z-20 grid size-6 place-items-center rounded-full bg-electric text-white shadow-md">
-      <Check className="size-3.5" strokeWidth={3.5} />
+    <span className="absolute top-3 right-3 z-20 grid size-7 place-items-center rounded-full bg-electric text-white shadow-lg ring-2 ring-white/80">
+      <Check className="size-4" strokeWidth={3.5} />
     </span>
   );
 
@@ -432,52 +422,64 @@ function PhotoOptionCard({
     selected && "gf-card-active scale-[1.015]",
     disabled && !selected && "opacity-50",
   );
-  const hasPhoto = hasRealPhoto(option.image);
 
   if (layout === "wide") {
+    if (hasPhoto) {
+      return (
+        <button
+          type="button"
+          onClick={withBurst(onClick)}
+          disabled={disabled}
+          aria-pressed={selected}
+          className={clsx(base, "flex min-h-52 flex-col justify-end overflow-hidden p-5")}
+        >
+          <div className="absolute inset-0">
+            <OptionPhoto
+              src={option.image}
+              alt={option.label}
+              label={option.label}
+              icon={option.icon}
+              className="h-full w-full"
+            />
+          </div>
+          <div
+            className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent"
+            aria-hidden
+          />
+          {checkBadge}
+          <span className="gf-display relative text-2xl leading-tight font-extrabold text-white">
+            {option.label}
+          </span>
+          {option.description && (
+            <span className="relative mt-1 text-xs leading-snug text-white/85">
+              {option.description}
+            </span>
+          )}
+          {option.socialProof && <SocialProofLine text={option.socialProof} light />}
+        </button>
+      );
+    }
     return (
       <button
         type="button"
         onClick={withBurst(onClick)}
         disabled={disabled}
         aria-pressed={selected}
-        className={clsx(base, "flex items-stretch overflow-hidden")}
+        className={clsx(base, "flex items-center gap-4 p-5")}
       >
         {checkBadge}
-        <span
-          className={clsx(
-            "flex min-w-0 flex-1 flex-col justify-center py-7 pl-6",
-            !hasPhoto && "pr-6",
-          )}
-        >
-          <span className="gf-display text-2xl leading-tight font-extrabold text-ink">
+        <QuizIconBadge icon={option.icon} size="lg" active={selected} />
+        <span className="min-w-0 flex-1">
+          <span className="gf-display block text-xl font-extrabold text-ink">
             {option.label}
           </span>
           {option.description && (
-            <span className="mt-1 text-xs leading-snug text-mist">
+            <span className="mt-0.5 block text-xs leading-snug text-mist">
               {option.description}
             </span>
           )}
-          {option.socialProof && (
-            <span className="mt-2 inline-flex w-fit items-center gap-1 rounded-full bg-lime-neon/14 px-2 py-1 text-[10px] leading-none font-bold text-lime-deep">
-              <TrendingUp className="size-3 shrink-0" strokeWidth={3} />
-              {option.socialProof}
-            </span>
-          )}
+          {option.socialProof && <SocialProofLine text={option.socialProof} />}
         </span>
-        {hasPhoto ? (
-          <OptionPhoto
-            src={option.image}
-            alt={option.label}
-            label={option.label}
-            icon={option.icon}
-            className="h-full min-h-44 w-40 shrink-0"
-          />
-        ) : (
-          <span className="mr-6 flex shrink-0 items-center">
-            <QuizIconBadge icon={option.icon} size="md" active={selected} />
-          </span>
-        )}
       </button>
     );
   }
@@ -525,26 +527,33 @@ function PhotoOptionCard({
   }
 
   // tile
-  if (!hasPhoto) {
+  if (hasPhoto) {
     return (
       <button
         type="button"
         onClick={withBurst(onClick)}
         disabled={disabled}
         aria-pressed={selected}
-        className={clsx(base, "flex flex-col items-center gap-2 p-5 text-center")}
+        className={clsx(base, "relative flex aspect-4/5 flex-col justify-end overflow-hidden p-4")}
       >
+        <div className="absolute inset-0">
+          <OptionPhoto
+            src={option.image}
+            alt={option.label}
+            label={option.label}
+            icon={option.icon}
+            className="h-full w-full"
+          />
+        </div>
+        <div
+          className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/15 to-transparent"
+          aria-hidden
+        />
         {checkBadge}
-        <QuizIconBadge icon={option.icon} size="md" active={selected} />
-        <span className="gf-display text-base leading-tight font-extrabold text-ink">
+        <span className="gf-display relative text-lg leading-tight font-extrabold text-white">
           {option.label}
         </span>
-        {option.socialProof && (
-          <span className="mx-auto mt-0.5 inline-flex w-fit items-center gap-1 rounded-full bg-lime-neon/14 px-2 py-1 text-[10px] leading-none font-bold text-lime-deep">
-            <TrendingUp className="size-3 shrink-0" strokeWidth={3} />
-            {option.socialProof}
-          </span>
-        )}
+        {option.socialProof && <SocialProofLine text={option.socialProof} light />}
       </button>
     );
   }
@@ -554,26 +563,33 @@ function PhotoOptionCard({
       onClick={withBurst(onClick)}
       disabled={disabled}
       aria-pressed={selected}
-      className={clsx(base, "flex flex-col overflow-hidden pb-4")}
+      className={clsx(base, "flex flex-col items-center gap-2 p-5 text-center")}
     >
       {checkBadge}
-      <OptionPhoto
-        src={option.image}
-        alt={option.label}
-        label={option.label}
-        icon={option.icon}
-        className="h-44 w-full"
-      />
-      <span className="gf-display mt-2 px-3 text-center text-base leading-tight font-extrabold text-ink">
+      <QuizIconBadge icon={option.icon} size="lg" active={selected} />
+      <span className="gf-display text-base leading-tight font-extrabold text-ink">
         {option.label}
       </span>
-      {option.socialProof && (
-        <span className="mx-auto mt-1.5 inline-flex w-fit items-center gap-1 rounded-full bg-lime-neon/14 px-2 py-1 text-[10px] leading-none font-bold text-lime-deep">
-          <TrendingUp className="size-3 shrink-0" strokeWidth={3} />
-          {option.socialProof}
-        </span>
+      {option.description && (
+        <span className="text-xs leading-snug text-mist">{option.description}</span>
       )}
+      {option.socialProof && <SocialProofLine text={option.socialProof} />}
     </button>
+  );
+}
+
+/** A quiet, native-app-style stat caption — no pill, no badge background. */
+function SocialProofLine({ text, light = false }: { text: string; light?: boolean }) {
+  return (
+    <span
+      className={clsx(
+        "relative mt-1.5 flex items-center gap-1 text-[11px] font-bold",
+        light ? "text-white/85" : "text-electric",
+      )}
+    >
+      <TrendingUp className="size-3 shrink-0" strokeWidth={3} />
+      {text}
+    </span>
   );
 }
 
@@ -619,12 +635,7 @@ function OptionCard({
           {description}
         </span>
       )}
-      {socialProof && (
-        <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-lime-neon/14 px-2 py-1 text-[10px] leading-none font-bold text-lime-deep">
-          <TrendingUp className="size-3 shrink-0" strokeWidth={3} />
-          {socialProof}
-        </span>
-      )}
+      {socialProof && <SocialProofLine text={socialProof} />}
     </button>
   );
 }
