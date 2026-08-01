@@ -23,10 +23,6 @@ The exact list the quiz looks for, by step:
 | `no-plan.png` | No clear plan |
 | `injury.png` | Pain or injury |
 | `false-starts.png` | Repeated false starts |
-| `level-beginner.png` | Beginner |
-| `level-returning.png` | Returning |
-| `level-consistent.png` | Consistent |
-| `level-advanced.png` | Advanced |
 | `bodyfat-daniel.png` | 25%+ |
 | `bodyfat-ethan.png` | 20–24% |
 | `bodyfat-liam.png` | 15–18% |
@@ -34,7 +30,19 @@ The exact list the quiz looks for, by step:
 | `bodyfat-mason.png` | 8–10% |
 | `bodyfat-jayden.png` | 5–7% |
 | `commit-workout-complete.png` | Both yes-set commitment screens' full-bleed background |
-| `bodymap-torso-base.png` | `focusZones` body-map backdrop (head-to-hip real photo, fades into the illustrated leg shapes in body-map.tsx — there's no real photography for legs/feet, so that portion stays illustrated) |
+
+`bodymap-torso-base.png` is no longer wired in — the `focusZones` body-map
+now renders a single unified illustrated mannequin (body-map.tsx) instead of
+fading a head-to-hip photo into illustrated legs, since mixing the two read
+as a mismatched seam rather than one coherent body.
+
+The `level` step's photo slot (`level-beginner.png` etc.) was removed too —
+it had been wired to a generic stock speedometer-gauge graphic with no
+connection to the option it labeled. The step now deliberately has no
+`image` field on any option, so it always renders the icon-badge glass-card
+treatment (crisp vector icon, glow border, hover/active state). Don't add
+`level-*.png` files back without real, on-brand photography — a stock gauge
+image is worse than no photo at all.
 
 Every one of the above already exists and is wired in. `joints` and
 `commitment` are not photo-driven — they're commitment cards with their
@@ -66,7 +74,7 @@ Layout is per question, set by the `layout` field in
 - `wide` — full-width rows; full-bleed photo background when the step's
   photos are complete (`goal`, `painTrigger`)
 - `tile` — two-column grid; full-bleed photo background when complete
-  (`level`, `bodyFatPercent`)
+  (`bodyFatPercent`), icon-badge glass cards otherwise (`level`)
 - `portrait` — two columns, cut-out breaks above the card top (defined,
   not currently used by any step)
 - `list` — compact two-column icon tiles, no photo (used as the fallback

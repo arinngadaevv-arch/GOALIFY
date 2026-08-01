@@ -177,6 +177,12 @@ body.goalify-body:has(.gf-cyber-scope) .gf-ambience {
   transform: scale(0.97);
 }
 
+/* Slim glowing progress-bar fill — same electric/lime tokens as everything
+   else, so it re-tints automatically inside a dark cyber scope. */
+.gf-progress-fill {
+  box-shadow: 0 0 8px 0 var(--color-electric);
+}
+
 /* --- Glow accents -------------------------------------------------------- */
 
 .gf-glow-electric {
@@ -1234,13 +1240,6 @@ html.goalify ::-webkit-scrollbar-thumb {
   box-shadow: 0 0 8px 1px var(--gf-p-color, #e8b32c);
   pointer-events: none;
   animation: gf-cyber-particle 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-/* --- Body-map: real torso photo fading into the illustrated leg base ----- */
-
-.gf-bodymap-photo-fade {
-  mask-image: linear-gradient(to bottom, black 0%, black 68%, transparent 96%);
-  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 68%, transparent 96%);
 }
 
 /* --- Body-map: neon target panels ----------------------------------------- */

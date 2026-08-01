@@ -24,6 +24,7 @@ import { GlassCard } from "@/components/goalify/ui/glass-card";
 import { GlowLink } from "@/components/goalify/ui/glow-button";
 import { CoachAvatar } from "@/components/goalify/ui/visual-slot";
 import { Pill, Stat } from "@/components/goalify/ui/stat";
+import { fireBurst, ParticleBurstLayer } from "@/components/goalify/quiz/particle-burst";
 
 const CHECKLIST: { id: string; label: string; icon: LucideIcon }[] = [
   { id: "space", label: "2×2 metres of clear floor", icon: Ruler },
@@ -54,6 +55,8 @@ export function Launchpad() {
 
   return (
     <main className="gf-cyber-scope mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pt-6 pb-10">
+      <ParticleBurstLayer />
+
       <header className="flex items-center justify-between">
         <Pill tone="electric">
           {isLibraryPick ? (
@@ -144,7 +147,10 @@ export function Launchpad() {
               <button
                 key={item.id}
                 type="button"
-                onClick={() => toggle(item.id)}
+                onClick={(event) => {
+                  if (!active) fireBurst(event.clientX, event.clientY);
+                  toggle(item.id);
+                }}
                 aria-pressed={active}
                 className={clsx(
                   "gf-glass gf-press flex items-center gap-3 rounded-2xl px-4 py-3 text-left transition-all",

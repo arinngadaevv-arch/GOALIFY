@@ -4,9 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import {
+  Bolt,
+  Calculator,
   Check,
   Flame,
   Lock,
+  ScanFace,
   ShieldCheck,
   Sparkles,
   Star,
@@ -73,6 +76,25 @@ const TIERS = [
     perWeek: 2.3,
     was: 239.99,
     badge: "Best value",
+  },
+];
+
+const VALUE_PROPS = [
+  {
+    icon: Calculator,
+    label: "Personalized Daily Calorie & Macro Target",
+  },
+  {
+    icon: Bolt,
+    label: "15-Min No-Equipment Burn Routines",
+  },
+  {
+    icon: ScanFace,
+    label: "AI Form Correction",
+  },
+  {
+    icon: ShieldCheck,
+    label: "Guaranteed Visible Results — or your money back",
   },
 ];
 
@@ -171,6 +193,23 @@ export function Paywall() {
           </p>
         </div>
 
+        {/* ------------------------------------------------- What you unlock */}
+        <div className="gf-anim-rise mt-7 grid grid-cols-2 gap-2.5 text-left">
+          {VALUE_PROPS.map(({ icon: Icon, label }) => (
+            <div
+              key={label}
+              className="gf-glass flex items-start gap-2.5 rounded-2xl p-3.5"
+            >
+              <span className="gf-glow-electric grid size-8 shrink-0 place-items-center rounded-xl bg-electric">
+                <Icon className="size-4 text-white" strokeWidth={2.4} />
+              </span>
+              <span className="mt-0.5 text-xs leading-snug font-bold text-ink">
+                {label}
+              </span>
+            </div>
+          ))}
+        </div>
+
         <div className="mt-5 grid gap-3 text-left">
           {TIERS.map((option) => {
             const active = option.id === tier;
@@ -260,7 +299,7 @@ export function Paywall() {
         </p>
 
         <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-          <span className="gf-glass inline-flex items-center gap-1.5 rounded-full border border-electric/30 px-3 py-1.5 text-[11px] font-bold text-ink">
+          <span className="gf-glass gf-glow-electric inline-flex items-center gap-1.5 rounded-full border border-electric/40 px-3 py-1.5 text-[11px] font-bold text-ink">
             <ShieldCheck className="size-3.5 text-electric" />
             30-Day Money-Back Guarantee — Zero Risk
           </span>
@@ -323,27 +362,50 @@ export function Paywall() {
       </div>
 
       {/* ------------------------------------------------------- Projection */}
-      <GlassCard deep className="gf-anim-rise gf-delay-2 mt-5 overflow-hidden p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h2 className="gf-display text-lg font-extrabold text-ink">
-              Your 30-day transformation curve
-            </h2>
-            <p className="mt-1 text-xs text-mist">
-              Bodyweight training only — capped at a safe 0.75% of bodyweight
-              per week.
-            </p>
-          </div>
-          <Pill tone={losing ? "lime" : "electric"}>
-            <TrendingDown
-              className={clsx("size-3", !losing && "rotate-180")}
-              strokeWidth={3}
-            />
-            {answers.weightKg} → {answers.targetWeightKg} kg
-          </Pill>
+      <section className="gf-anim-rise gf-delay-2 mt-8">
+        <div className="text-center">
+          <Pill tone="lime">30-day transformation</Pill>
+          <h2 className="gf-display mt-3 text-2xl font-black text-ink">
+            YOUR 30-DAY TRANSFORMATION
+          </h2>
         </div>
-        <ProjectionChart points={projection} />
-      </GlassCard>
+
+        <GlassCard deep className="mt-5 overflow-hidden p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h3 className="gf-display text-lg font-extrabold text-ink">
+                Projected weight curve
+              </h3>
+              <p className="mt-1 text-xs text-mist">
+                Bodyweight training only — capped at a safe 0.75% of
+                bodyweight per week.
+              </p>
+            </div>
+            <Pill tone={losing ? "lime" : "electric"}>
+              <TrendingDown
+                className={clsx("size-3", !losing && "rotate-180")}
+                strokeWidth={3}
+              />
+              {answers.weightKg} → {answers.targetWeightKg} kg
+            </Pill>
+          </div>
+          <ProjectionChart points={projection} />
+
+          <div className="mt-6 grid grid-cols-2 gap-4 border-t border-ink/8 pt-6">
+            <SculptIndicator label="Day 1" sublabel="Today" intensity={0.16} />
+            <SculptIndicator
+              label={`Day ${weeks > 0 ? weeks * 7 : 30}`}
+              sublabel={goalLabel(answers.goal)}
+              intensity={0.42}
+              lit
+            />
+          </div>
+          <p className="mt-3 text-center text-[11px] text-haze">
+            Illustrated projection, not a photo — your real results depend on
+            consistency.
+          </p>
+        </GlassCard>
+      </section>
 
       {/* ---------------------------------------------------------- Includes */}
       <GlassCard deep className="gf-anim-rise gf-delay-3 mt-5 p-6">
@@ -448,6 +510,65 @@ export function Paywall() {
         </p>
       </div>
     </main>
+  );
+}
+
+/**
+ * An honest, clearly-illustrated "before/after" pair — never a real photo
+ * (there's no such data), just a stylized silhouette with more definition
+ * lines and a tighter waist at higher `intensity`, explicitly captioned as
+ * a projection so it can't be mistaken for a genuine transformation photo.
+ */
+function SculptIndicator({
+  label,
+  sublabel,
+  intensity,
+  lit = false,
+}: {
+  label: string;
+  sublabel: string;
+  intensity: number;
+  lit?: boolean;
+}) {
+  // Interpolates the waist inset and definition-line opacity between the
+  // "day 1" and "goal" states so the two cards read as one progression.
+  const waistInset = 6 * intensity;
+  return (
+    <div className="text-center">
+      <div
+        className={clsx(
+          "gf-photo-bed relative mx-auto grid h-28 place-items-center overflow-hidden rounded-2xl",
+          lit && "gf-glow-electric",
+        )}
+      >
+        <svg viewBox="0 0 60 90" className="h-24 w-16 text-electric" aria-hidden>
+          <path
+            d={`M14,10 L46,10 Q49,10 47,14 L${42 + waistInset},32 Q${40 + waistInset},40 ${34 - waistInset},44 L${26 + waistInset},44 Q${20 - waistInset},40 ${18 - waistInset},32 L13,14 Q11,10 14,10 Z`}
+            fill="currentColor"
+            fillOpacity={0.14 + intensity * 0.3}
+            stroke="currentColor"
+            strokeOpacity={0.4 + intensity * 0.4}
+            strokeWidth={0.8}
+          />
+          <path
+            d="M16,46 L44,46 L41,86 Q41,88 38,88 L33,88 Q31,88 31,86 L30,58 L29,86 Q29,88 27,88 L22,88 Q19,88 19,86 Z"
+            fill="currentColor"
+            fillOpacity={0.14 + intensity * 0.3}
+            stroke="currentColor"
+            strokeOpacity={0.4 + intensity * 0.4}
+            strokeWidth={0.8}
+          />
+          {intensity > 0.3 && (
+            <g stroke="currentColor" strokeOpacity={0.5} strokeWidth={0.5} strokeLinecap="round">
+              <path d="M30,16 L30,32" />
+              <path d="M20,20 Q30,23 40,20" />
+            </g>
+          )}
+        </svg>
+      </div>
+      <p className="gf-display mt-2 text-sm font-extrabold text-ink">{label}</p>
+      <p className="text-[11px] font-semibold text-mist">{sublabel}</p>
+    </div>
   );
 }
 

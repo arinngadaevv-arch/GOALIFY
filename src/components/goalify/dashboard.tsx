@@ -23,6 +23,7 @@ import { GlowLink } from "./ui/glow-button";
 import { VisualSlot } from "./ui/visual-slot";
 import { ProgressRing } from "./ui/progress-ring";
 import { Pill, SectionHeading, Stat } from "./ui/stat";
+import { fireBurst, ParticleBurstLayer } from "./quiz/particle-burst";
 
 /** Obsidian-scope ring colors — literal hex since RING_ELECTRIC/RING_LIME
  * are shared constants tuned for the light theme elsewhere in the app. */
@@ -58,6 +59,8 @@ export function Dashboard() {
 
   return (
     <AppShell dark>
+      <ParticleBurstLayer />
+
       {/* ------------------------------------------------------- Streak badge */}
       <StreakBadge day={state.programDay} streak={streak} />
 
@@ -253,13 +256,16 @@ export function Dashboard() {
           <div className="mt-4 flex items-center gap-3">
             <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-ink/6">
               <div
-                className="h-full rounded-full bg-linear-to-r from-electric to-lime-neon transition-[width] duration-500"
+                className="gf-progress-fill h-full rounded-full bg-linear-to-r from-electric to-lime-neon transition-[width] duration-500"
                 style={{ width: `${nutritionPercent}%` }}
               />
             </div>
             <button
               type="button"
-              onClick={() => setWater(waterGlasses + 1)}
+              onClick={(event) => {
+                fireBurst(event.clientX, event.clientY);
+                setWater(waterGlasses + 1);
+              }}
               className="gf-glass gf-press flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold text-electric"
             >
               <Droplets className="size-4" />+ Glass

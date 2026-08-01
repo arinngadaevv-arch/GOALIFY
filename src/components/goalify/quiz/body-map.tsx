@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import Image from "next/image";
 import clsx from "clsx";
 import { ArrowRight } from "lucide-react";
 import type { QuizStep } from "@/lib/goalify/quiz";
@@ -93,8 +92,10 @@ export function BodyMapStep({
         />
 
         <div className="relative" style={{ aspectRatio: "240 / 430" }}>
-          {/* Athletic silhouette backdrop — gives the zone panels a real
-              physique to sit on instead of floating on bare skeleton lines. */}
+          {/* Unified illustrated mannequin, neck to feet — one coherent body
+              graphic (not a real photo faded into illustrated legs) so the
+              zone selectors sit on a single consistent art style instead of
+              a photo/illustration seam. */}
           <svg
             viewBox="0 0 100 100"
             preserveAspectRatio="none"
@@ -103,10 +104,18 @@ export function BodyMapStep({
           >
             <defs>
               <linearGradient id="gf-physique-fill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="currentColor" stopOpacity="0.16" />
-                <stop offset="100%" stopColor="currentColor" stopOpacity="0.05" />
+                <stop offset="0%" stopColor="currentColor" stopOpacity="0.32" />
+                <stop offset="100%" stopColor="currentColor" stopOpacity="0.1" />
               </linearGradient>
             </defs>
+            {/* Neck */}
+            <path
+              d="M43,10 L57,10 L56,16 L44,16 Z"
+              fill="url(#gf-physique-fill)"
+              stroke="currentColor"
+              strokeOpacity={0.55}
+              strokeWidth={0.6}
+            />
             {/* Torso: broad shoulders tapering to an athletic waist, hip flare */}
             <path
               d="M16,15
@@ -122,57 +131,53 @@ export function BodyMapStep({
                  Q12,15 16,15 Z"
               fill="url(#gf-physique-fill)"
               stroke="currentColor"
-              strokeOpacity={0.3}
-              strokeWidth={0.6}
+              strokeOpacity={0.6}
+              strokeWidth={0.7}
             />
+            {/* Chest / ab / oblique definition */}
+            <g fill="none" stroke="currentColor" strokeOpacity={0.32} strokeWidth={0.45} strokeLinecap="round">
+              <path d="M50,19 L50,42" />
+              <path d="M31,23 Q50,26 69,23" />
+              <path d="M35,31 L35,44" />
+              <path d="M65,31 L65,44" />
+              <path d="M30,35 Q50,38 70,35" />
+            </g>
             {/* Arms */}
             <path
               d="M14,19 Q6,24 5,40 Q4,48 8,55 Q12,56 13,50 Q11,38 17,26 Z"
               fill="url(#gf-physique-fill)"
               stroke="currentColor"
-              strokeOpacity={0.3}
-              strokeWidth={0.6}
+              strokeOpacity={0.6}
+              strokeWidth={0.7}
             />
             <path
               d="M86,19 Q94,24 95,40 Q96,48 92,55 Q88,56 87,50 Q89,38 83,26 Z"
               fill="url(#gf-physique-fill)"
               stroke="currentColor"
-              strokeOpacity={0.3}
-              strokeWidth={0.6}
+              strokeOpacity={0.6}
+              strokeWidth={0.7}
             />
             {/* Legs */}
             <path
               d="M22,55 L46,55 L44,95 Q44,98 40,98 L34,98 Q31,98 31,95 Z"
               fill="url(#gf-physique-fill)"
               stroke="currentColor"
-              strokeOpacity={0.3}
-              strokeWidth={0.6}
+              strokeOpacity={0.6}
+              strokeWidth={0.7}
             />
             <path
               d="M78,55 L54,55 L56,95 Q56,98 60,98 L66,98 Q69,98 69,95 Z"
               fill="url(#gf-physique-fill)"
               stroke="currentColor"
-              strokeOpacity={0.3}
-              strokeWidth={0.6}
+              strokeOpacity={0.6}
+              strokeWidth={0.7}
             />
+            {/* Quad / calf definition */}
+            <g fill="none" stroke="currentColor" strokeOpacity={0.3} strokeWidth={0.45} strokeLinecap="round">
+              <path d="M34,58 L32,92" />
+              <path d="M66,58 L68,92" />
+            </g>
           </svg>
-
-          {/* Real athletic torso photo — head through upper hip — fading
-              into the illustrated legs above so the figure reads as one
-              continuous body instead of a hard photo/illustration seam. */}
-          <div
-            className="gf-bodymap-photo-fade absolute inset-x-0 top-0 overflow-hidden"
-            style={{ height: "52%" }}
-            aria-hidden
-          >
-            <Image
-              src="/quiz/bodymap-torso-base.png"
-              alt=""
-              fill
-              unoptimized
-              className="object-cover object-top"
-            />
-          </div>
 
           {SKELETON_LINES.map((line, i) => (
             <span

@@ -27,6 +27,7 @@ import { AIFormGuide } from "@/components/goalify/workout/ai-form-guide";
 import { useWorkoutSounds } from "@/components/goalify/workout/use-workout-sounds";
 import { ProgressRing } from "@/components/goalify/ui/progress-ring";
 import { Pill, Stat } from "@/components/goalify/ui/stat";
+import { fireBurst, ParticleBurstLayer } from "@/components/goalify/quiz/particle-burst";
 
 type Phase = "watch" | "work" | "rest" | "done";
 
@@ -205,6 +206,8 @@ export function LivePlayer() {
 
   return (
     <main className="gf-cyber-scope mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pt-5 pb-32">
+      <ParticleBurstLayer />
+
       {/* ------------------------------------------------------------ Top bar */}
       <header className="flex items-center gap-3">
         <Link
@@ -224,7 +227,7 @@ export function LivePlayer() {
           </div>
           <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-ink/6">
             <div
-              className="h-full rounded-full bg-linear-to-r from-electric to-lime-neon transition-[width] duration-500"
+              className="gf-progress-fill h-full rounded-full bg-linear-to-r from-electric to-lime-neon transition-[width] duration-500"
               style={{ width: `${Math.max(4, totalProgress)}%` }}
             />
           </div>
@@ -392,7 +395,10 @@ export function LivePlayer() {
           <div className="mt-6 flex w-full flex-col items-center gap-3">
             <button
               type="button"
-              onClick={() => setReps((r) => Math.min(exercise.amount, r + 1))}
+              onClick={(event) => {
+                fireBurst(event.clientX, event.clientY);
+                setReps((r) => Math.min(exercise.amount, r + 1));
+              }}
               className="gf-glass gf-press gf-glow-electric w-full rounded-full bg-electric py-4 text-base font-black tracking-tight text-white [.gf-cyber-scope_&]:text-[#1a1100]"
             >
               COUNT A REP

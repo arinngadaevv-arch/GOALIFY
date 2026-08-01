@@ -147,7 +147,7 @@ export function QuizFlow() {
           aria-label="Quiz progress"
         >
           <div
-            className="h-full rounded-full bg-electric transition-[width] duration-500 ease-out"
+            className="gf-progress-fill h-full rounded-full bg-electric transition-[width] duration-500 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
