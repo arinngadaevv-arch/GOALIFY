@@ -34,12 +34,12 @@ The exact list the quiz looks for, by step:
 | `bodyfat-mason.png` | 8–10% |
 | `bodyfat-jayden.png` | 5–7% |
 | `commit-workout-complete.png` | Both yes-set commitment screens' full-bleed background |
+| `bodymap-torso-base.png` | `focusZones` body-map backdrop (head-to-hip real photo, fades into the illustrated leg shapes in body-map.tsx — there's no real photography for legs/feet, so that portion stays illustrated) |
 
-Every one of the above already exists and is wired in. `joints`,
-`focusZones`, `weightKg` (vitals) and `commitment` are not photo-driven —
-they're a commitment card (with its own full-bleed background, separate
-from this per-option system), an interactive body map and a slider
-screen, not option cards.
+Every one of the above already exists and is wired in. `joints` and
+`commitment` are not photo-driven — they're commitment cards with their
+own full-bleed background, separate from this per-option system.
+`weightKg` (vitals) is a slider screen, not an option card.
 
 ## Art direction
 

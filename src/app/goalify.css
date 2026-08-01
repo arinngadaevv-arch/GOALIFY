@@ -1220,6 +1220,13 @@ html.goalify ::-webkit-scrollbar-thumb {
   animation: gf-cyber-particle 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* --- Body-map: real torso photo fading into the illustrated leg base ----- */
+
+.gf-bodymap-photo-fade {
+  mask-image: linear-gradient(to bottom, black 0%, black 68%, transparent 96%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 68%, transparent 96%);
+}
+
 /* --- Body-map: neon target panels ----------------------------------------- */
 
 .gf-cyber-scope .gf-zone {

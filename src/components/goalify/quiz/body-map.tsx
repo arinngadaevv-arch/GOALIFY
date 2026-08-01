@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Image from "next/image";
 import clsx from "clsx";
 import { ArrowRight } from "lucide-react";
 import type { QuizStep } from "@/lib/goalify/quiz";
@@ -156,12 +157,22 @@ export function BodyMapStep({
             />
           </svg>
 
-          {/* Head — decorative, not a target zone. */}
+          {/* Real athletic torso photo — head through upper hip — fading
+              into the illustrated legs above so the figure reads as one
+              continuous body instead of a hard photo/illustration seam. */}
           <div
-            className="absolute rounded-full border border-electric/40 bg-electric/10 shadow-[0_0_18px_-2px_rgba(232,179,44,0.6)]"
-            style={{ left: "39.17%", top: "1.86%", width: "21.67%", height: "12.09%" }}
+            className="gf-bodymap-photo-fade absolute inset-x-0 top-0 overflow-hidden"
+            style={{ height: "52%" }}
             aria-hidden
-          />
+          >
+            <Image
+              src="/quiz/bodymap-torso-base.png"
+              alt=""
+              fill
+              unoptimized
+              className="object-cover object-top"
+            />
+          </div>
 
           {SKELETON_LINES.map((line, i) => (
             <span
