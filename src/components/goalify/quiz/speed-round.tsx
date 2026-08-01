@@ -54,7 +54,7 @@ export function SpeedRound({ locked }: { locked: boolean }) {
             cy="20"
             r={RING_R}
             fill="none"
-            stroke={urgent ? "#ffcc33" : "var(--color-electric)"}
+            stroke={urgent ? "#ff3b3b" : "var(--color-electric)"}
             strokeWidth={4}
             strokeLinecap="round"
             strokeDasharray={RING_CIRC}

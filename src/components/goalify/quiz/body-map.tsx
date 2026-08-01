@@ -92,9 +92,73 @@ export function BodyMapStep({
         />
 
         <div className="relative" style={{ aspectRatio: "240 / 430" }}>
+          {/* Athletic silhouette backdrop — gives the zone panels a real
+              physique to sit on instead of floating on bare skeleton lines. */}
+          <svg
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            className="absolute inset-0 h-full w-full text-electric"
+            aria-hidden
+          >
+            <defs>
+              <linearGradient id="gf-physique-fill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="currentColor" stopOpacity="0.16" />
+                <stop offset="100%" stopColor="currentColor" stopOpacity="0.05" />
+              </linearGradient>
+            </defs>
+            {/* Torso: broad shoulders tapering to an athletic waist, hip flare */}
+            <path
+              d="M16,15
+                 L84,15
+                 Q88,15 86,19
+                 L79,33
+                 Q77,40 72,44
+                 Q80,48 79,54
+                 L21,54
+                 Q20,48 28,44
+                 Q23,40 21,33
+                 L14,19
+                 Q12,15 16,15 Z"
+              fill="url(#gf-physique-fill)"
+              stroke="currentColor"
+              strokeOpacity={0.3}
+              strokeWidth={0.6}
+            />
+            {/* Arms */}
+            <path
+              d="M14,19 Q6,24 5,40 Q4,48 8,55 Q12,56 13,50 Q11,38 17,26 Z"
+              fill="url(#gf-physique-fill)"
+              stroke="currentColor"
+              strokeOpacity={0.3}
+              strokeWidth={0.6}
+            />
+            <path
+              d="M86,19 Q94,24 95,40 Q96,48 92,55 Q88,56 87,50 Q89,38 83,26 Z"
+              fill="url(#gf-physique-fill)"
+              stroke="currentColor"
+              strokeOpacity={0.3}
+              strokeWidth={0.6}
+            />
+            {/* Legs */}
+            <path
+              d="M22,55 L46,55 L44,95 Q44,98 40,98 L34,98 Q31,98 31,95 Z"
+              fill="url(#gf-physique-fill)"
+              stroke="currentColor"
+              strokeOpacity={0.3}
+              strokeWidth={0.6}
+            />
+            <path
+              d="M78,55 L54,55 L56,95 Q56,98 60,98 L66,98 Q69,98 69,95 Z"
+              fill="url(#gf-physique-fill)"
+              stroke="currentColor"
+              strokeOpacity={0.3}
+              strokeWidth={0.6}
+            />
+          </svg>
+
           {/* Head — decorative, not a target zone. */}
           <div
-            className="absolute rounded-full border border-electric/40 bg-electric/10 shadow-[0_0_18px_-2px_rgba(0,229,255,0.6)]"
+            className="absolute rounded-full border border-electric/40 bg-electric/10 shadow-[0_0_18px_-2px_rgba(232,179,44,0.6)]"
             style={{ left: "39.17%", top: "1.86%", width: "21.67%", height: "12.09%" }}
             aria-hidden
           />

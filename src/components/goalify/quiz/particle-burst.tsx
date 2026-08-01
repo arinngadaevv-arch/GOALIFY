@@ -59,7 +59,7 @@ export function ParticleBurstLayer() {
               "--gf-p-y": `${burst.y}px`,
               "--gf-p-angle": `${p.angle}deg`,
               "--gf-p-dist": `${p.dist}px`,
-              "--gf-p-color": burst.gold ? "#ffcc33" : "#00e5ff",
+              "--gf-p-color": burst.gold ? "#e8b32c" : "#ff3b3b",
             } as React.CSSProperties
           }
         />

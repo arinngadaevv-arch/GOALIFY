@@ -54,9 +54,10 @@ export type QuizStep = {
        * - `portrait` — two columns, photo bleeding above the card top
        * - `wide` — full-width rows, label left and photo bleeding right
        * - `tile` — two columns, photo inside the card above the label
+       * - `bodyfat` — two columns, illustrated body-composition silhouette
        * - `list` (default) — compact two-column icon tiles
        */
-      layout?: "portrait" | "wide" | "tile" | "list";
+      layout?: "portrait" | "wide" | "tile" | "bodyfat" | "list";
       options: ChoiceOption[];
       /** Renders as a 5-second "instinct round" with a burning countdown. */
       speedRound?: boolean;
@@ -76,6 +77,8 @@ export type QuizStep = {
        */
       kind: "commit";
       buttonLabel: string;
+      /** Full-bleed athletic photo behind the commitment moment. */
+      bgPhoto: string;
     }
 );
 
@@ -146,6 +149,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       "Total pride. Real energy. No more talking yourself out of it. Say it with me.",
     hudPhrase: "COMMITMENT VERIFICATION",
     buttonLabel: "YES! I'M READY 🔥",
+    bgPhoto: "/quiz/goal-athletic.png",
   },
   {
     id: "painTrigger",
@@ -259,6 +263,42 @@ export const QUIZ_STEPS: QuizStep[] = [
     ],
   },
   {
+    id: "bodyFatPercent",
+    kind: "choice",
+    layout: "bodyfat",
+    chapter: "The starting point",
+    title: "Estimate your current body fat %",
+    subtitle:
+      "Pick the closest match. This precision-tunes your calorie and macro targets from day one — no guessing.",
+    hudPhrase: "BODY COMPOSITION ESTIMATE",
+    options: [
+      {
+        value: "shredded",
+        label: "10–12%",
+        description: "Shredded — six-pack visible",
+        icon: "flame",
+      },
+      {
+        value: "athletic",
+        label: "15–18%",
+        description: "Athletic — some visible definition",
+        icon: "biceps",
+      },
+      {
+        value: "average",
+        label: "20–24%",
+        description: "Average — abs hidden under a layer",
+        icon: "gauge",
+      },
+      {
+        value: "soft",
+        label: "25%+",
+        description: "Carrying extra weight, especially the midsection",
+        icon: "shield",
+      },
+    ],
+  },
+  {
     // Anchors the merged days/session-length "power choice" — one 2x2 grid
     // instead of two separate screens, each option writing both fields at
     // once (see quiz-flow.tsx's TIME_COMBOS handling).
@@ -318,6 +358,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     subtitle: "Say yes, and I'll build it right now — no more thinking about it.",
     hudPhrase: "PROGRAM AUTHORIZATION",
     buttonLabel: "ABSOLUTELY, LET'S DO THIS ⚡",
+    bgPhoto: "/quiz/goal-build.png",
   },
 ];
 

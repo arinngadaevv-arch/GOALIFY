@@ -28,7 +28,7 @@ export function CoachBadge({
         className={clsx(
           "relative grid place-items-center overflow-hidden rounded-2xl",
           !photoSrc &&
-            "gf-glow-electric bg-linear-to-br from-electric to-[#0038b0] [.gf-cyber-scope_&]:from-[#00c2e0] [.gf-cyber-scope_&]:to-[#0a1440]",
+            "gf-glow-electric bg-linear-to-br from-electric to-[#0038b0] [.gf-cyber-scope_&]:from-[#f0c14b] [.gf-cyber-scope_&]:to-[#1a1100]",
           dimensions,
         )}
       >
@@ -44,8 +44,8 @@ export function CoachBadge({
         )}
       </span>
       {/* Live dot — signals the coach is "active", not a static illustration. */}
-      <span className="absolute -right-0.5 -bottom-0.5 grid size-4 place-items-center rounded-full bg-white [.gf-cyber-scope_&]:bg-[#0a0d1c]">
-        <span className="size-2.5 animate-pulse rounded-full bg-lime-neon shadow-[0_0_8px_#39FF14] [.gf-cyber-scope_&]:shadow-[0_0_8px_#ffcc33]" />
+      <span className="absolute -right-0.5 -bottom-0.5 grid size-4 place-items-center rounded-full bg-white [.gf-cyber-scope_&]:bg-[#0b0e14]">
+        <span className="size-2.5 animate-pulse rounded-full bg-lime-neon shadow-[0_0_8px_#39FF14] [.gf-cyber-scope_&]:shadow-[0_0_8px_#ff3b3b]" />
       </span>
     </span>
   );

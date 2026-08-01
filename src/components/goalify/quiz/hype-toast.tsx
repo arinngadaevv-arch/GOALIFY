@@ -8,6 +8,7 @@ export const HUD_STEP_META: Record<keyof QuizAnswers, { hype: string }> = {
   vision: { hype: "VISION SET 👁️" },
   level: { hype: "BASELINE SET 📊" },
   joints: { hype: "COMMITMENT LOCKED 🔥" },
+  bodyFatPercent: { hype: "PRECISION CALIBRATED 🎯" },
   sessionLength: { hype: "SCHEDULE SET ⏱️" },
   daysPerWeek: { hype: "VOLUME LOCKED 💪" },
   sex: { hype: "FORMULA SET 🧬" },
@@ -23,7 +24,7 @@ export function HypeToast({ text }: { text: string }) {
   return (
     <span
       key={text}
-      className="gf-cyber-hype-badge pointer-events-none absolute top-1 right-0 z-20 rounded-full bg-gradient-to-r from-[#00c2e0] to-[#00e5ff] px-3 py-1 text-[10px] font-black tracking-[0.04em] text-[#02131a] uppercase shadow-[0_0_16px_-2px_rgba(0,229,255,0.6)]"
+      className="gf-cyber-hype-badge pointer-events-none absolute top-1 right-0 z-20 rounded-full bg-gradient-to-r from-[#e8b32c] to-[#ffd666] px-3 py-1 text-[10px] font-black tracking-[0.04em] text-[#1a1100] uppercase shadow-[0_0_16px_-2px_rgba(232,179,44,0.65)]"
     >
       {text}
     </span>

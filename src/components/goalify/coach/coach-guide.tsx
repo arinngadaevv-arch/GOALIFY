@@ -47,6 +47,7 @@ const SPEAK_MS = 4200;
 export function CoachGuide({
   idleMessage = COACH.tagline,
   autoOpen = true,
+  photoSrc,
   className,
 }: {
   idleMessage?: string;
@@ -56,6 +57,8 @@ export function CoachGuide({
    * inline and a floating bubble would cover the answer options.
    */
   autoOpen?: boolean;
+  /** Real photo for the badge — see `CoachBadge`. */
+  photoSrc?: string;
   className?: string;
 }) {
   const said = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
@@ -131,10 +134,10 @@ export function CoachGuide({
         aria-expanded={open}
         className="gf-press relative"
       >
-        <CoachBadge size="lg" />
+        <CoachBadge size="lg" photoSrc={photoSrc} />
         {/* Unread nudge when the coach has spoken but the bubble is closed. */}
         {!open && (
-          <span className="absolute -top-1 -left-1 grid size-5 place-items-center rounded-full bg-lime-neon shadow-[0_0_10px_#39FF14] [.gf-cyber-scope_&]:shadow-[0_0_10px_#ffcc33]">
+          <span className="absolute -top-1 -left-1 grid size-5 place-items-center rounded-full bg-lime-neon shadow-[0_0_10px_#39FF14] [.gf-cyber-scope_&]:shadow-[0_0_10px_#ff3b3b]">
             <MessageSquare className="size-2.5 text-ink" strokeWidth={3} />
           </span>
         )}

@@ -192,7 +192,7 @@ export function TactileSlider({
               transformOrigin: `${handlePos.x}px ${handlePos.y}px`,
             }}
           >
-            <circle cx={handlePos.x} cy={handlePos.y} r={17} fill="#0d1224" />
+            <circle cx={handlePos.x} cy={handlePos.y} r={17} fill="var(--color-canvas)" />
             <circle
               cx={handlePos.x}
               cy={handlePos.y}

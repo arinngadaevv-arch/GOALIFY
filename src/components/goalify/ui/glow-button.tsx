@@ -13,7 +13,7 @@ const VARIANTS: Record<Variant, string> = {
   ghost:
     "text-ink-soft hover:text-electric hover:bg-electric/6 focus-visible:outline-electric",
   cyber:
-    "bg-gradient-to-r from-[#00e5ff] to-[#00a8cc] text-[#02131a] shadow-[0_0_0_1px_rgba(0,229,255,0.55),0_18px_40px_-10px_rgba(0,229,255,0.7)] hover:shadow-[0_0_0_1px_rgba(0,229,255,0.8),0_22px_50px_-8px_rgba(0,229,255,0.9)] focus-visible:outline-[#00e5ff]",
+    "bg-gradient-to-r from-[#f0c14b] to-[#c8890f] text-[#1a1100] shadow-[0_0_0_1px_rgba(232,179,44,0.6),0_18px_44px_-10px_rgba(232,179,44,0.8)] hover:shadow-[0_0_0_1px_rgba(232,179,44,0.85),0_24px_54px_-8px_rgba(232,179,44,1)] focus-visible:outline-[#e8b32c]",
 };
 
 const SIZES: Record<Size, string> = {

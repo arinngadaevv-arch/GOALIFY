@@ -58,6 +58,12 @@ const REACTIONS: Record<string, Record<string, string>> = {
   joints: {
     ready: "That's the energy I needed. Let's keep this momentum going.",
   },
+  bodyFatPercent: {
+    shredded: "Already shredded? Then we're not cutting — we're sharpening. Every rep from here is about definition.",
+    athletic: "Athletic base, visible potential. I'm calibrating your deficit to reveal what's already under there.",
+    average: "Got it — that's exactly where most transformations start. Your calories just got precision-tuned for it.",
+    soft: "Thank you for being honest — that's the hardest part. Your plan is about to become very deliberate.",
+  },
   sessionLength: {
     "3-15": "Three short, brutal sessions a week. No filler, no wasted minutes.",
     "4-25": "Four days, 25 minutes — the sweet spot between results and real life.",

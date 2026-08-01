@@ -25,6 +25,15 @@ import { HUD_STEP_META, HypeToast } from "./hype-toast";
 import { CommitStep } from "./commit-step";
 import { VitalsStep } from "./vitals-step";
 import { fireBurst, ParticleBurstLayer } from "./particle-burst";
+import { BodyFatSilhouette } from "./body-fat-silhouette";
+
+/** Maps each body-fat band to the silhouette's definition level (1 = leanest). */
+const BODY_FAT_LEVEL: Record<string, 1 | 2 | 3 | 4> = {
+  shredded: 1,
+  athletic: 2,
+  average: 3,
+  soft: 4,
+};
 
 /** Wraps a click handler so every tap also fires a micro-particle burst
  * from the exact point of contact. */
@@ -215,6 +224,7 @@ export function QuizFlow() {
             <CommitStep
               key={step.id}
               buttonLabel={step.buttonLabel}
+              bgPhoto={step.bgPhoto}
               patch={COMMIT_PATCHES[step.id] ?? {}}
               value={COMMIT_VALUES[step.id]}
               locked={pending !== null}
@@ -228,7 +238,11 @@ export function QuizFlow() {
         <p className="text-xs text-haze">Your answers stay on this device</p>
       </footer>
 
-      <CoachGuide autoOpen={false} />
+      <CoachGuide
+        autoOpen={false}
+        photoSrc="/quiz/goal-build.png"
+        idleMessage="I'm not here to give you excuses. I'm here to build your dream physique in 30 days."
+      />
     </main>
   );
 }
@@ -332,7 +346,7 @@ function ChoiceStep({
         className={clsx(
           "grid gap-3",
           layout !== "wide" && "grid-cols-2",
-          (layout === "portrait" || layout === "tile") && "gap-4",
+          (layout === "portrait" || layout === "tile" || layout === "bodyfat") && "gap-4",
           layout === "portrait" && "mt-14",
         )}
       >
@@ -389,7 +403,7 @@ function PhotoOptionCard({
   onClick,
 }: {
   option: ChoiceOption;
-  layout: "portrait" | "wide" | "tile" | "list";
+  layout: "portrait" | "wide" | "tile" | "bodyfat" | "list";
   /** Precomputed by the caller — true only when every option in the step
    * has a real photo, so a card never shows a photo in isolation. */
   hasPhoto: boolean;
@@ -522,6 +536,44 @@ function PhotoOptionCard({
         <span className="gf-display mt-2 text-xl font-extrabold text-ink">
           {option.label}
         </span>
+      </button>
+    );
+  }
+
+  if (layout === "bodyfat") {
+    const level = BODY_FAT_LEVEL[option.value] ?? 3;
+    return (
+      <button
+        type="button"
+        onClick={withBurst(onClick)}
+        disabled={disabled}
+        aria-pressed={selected}
+        className={clsx(
+          base,
+          "flex flex-col items-center gap-2 overflow-hidden rounded-2xl p-4 text-center",
+        )}
+      >
+        {checkBadge}
+        <span
+          className={clsx(
+            "grid aspect-3/4 w-full place-items-center rounded-xl transition-colors",
+            selected ? "bg-electric/12" : "bg-ink/5",
+          )}
+        >
+          <BodyFatSilhouette
+            level={level}
+            className={clsx(
+              "h-4/5 w-auto transition-colors",
+              selected ? "text-electric" : "text-ink-soft",
+            )}
+          />
+        </span>
+        <span className="gf-display gf-numeric text-xl font-black text-ink">
+          {option.label}
+        </span>
+        {option.description && (
+          <span className="text-xs leading-snug text-mist">{option.description}</span>
+        )}
       </button>
     );
   }

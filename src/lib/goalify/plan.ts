@@ -217,6 +217,7 @@ export const DEFAULT_ANSWERS: QuizAnswers = {
   focusZones: [],
   level: "returning",
   joints: ["none"],
+  bodyFatPercent: "athletic",
   daysPerWeek: 4,
   sessionLength: "25",
   sex: "unspecified",

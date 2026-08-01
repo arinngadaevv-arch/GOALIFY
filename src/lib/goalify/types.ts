@@ -18,12 +18,16 @@ export type Vision = "confident" | "strong" | "energised" | "proud";
 /** How hard they committed — sets the accountability tone. */
 export type Commitment = "allin" | "most" | "unsure";
 
+/** Self-estimated starting body composition, picked from an illustrated silhouette grid. */
+export type BodyFatBand = "shredded" | "athletic" | "average" | "soft";
+
 export type QuizAnswers = {
   goal: Goal;
   /** Body zones tapped on the interactive target map — drives programming emphasis. */
   focusZones: string[];
   level: Level;
   joints: JointStatus[];
+  bodyFatPercent: BodyFatBand;
   daysPerWeek: number;
   sessionLength: SessionLength;
   sex: Sex;
