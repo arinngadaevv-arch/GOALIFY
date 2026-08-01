@@ -808,48 +808,6 @@ html.goalify ::-webkit-scrollbar-thumb {
   box-shadow: 0 0 10px rgba(0, 82, 255, 0.75);
 }
 
-/* --- Interactive body map ---------------------------------------------------- */
-
-.gf-zone {
-  position: absolute;
-  border: 1px solid rgba(15, 23, 42, 0.1);
-  background: rgba(15, 23, 42, 0.05);
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.gf-zone:hover {
-  background: rgba(0, 82, 255, 0.08);
-  border-color: rgba(0, 82, 255, 0.28);
-}
-
-.gf-zone-active {
-  background: rgba(0, 82, 255, 0.12);
-  border-color: var(--color-electric);
-  box-shadow: 0 0 0 2px rgba(0, 82, 255, 0.18);
-  transform: scale(1.03);
-}
-
-.gf-zone-active::after {
-  content: "";
-  position: absolute;
-  inset: -6px;
-  border-radius: inherit;
-  border: 2px solid rgba(0, 82, 255, 0.4);
-  animation: gf-zone-pulse 1.8s ease-out infinite;
-  pointer-events: none;
-}
-
-@keyframes gf-zone-pulse {
-  0% {
-    opacity: 0.8;
-    transform: scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.28);
-  }
-}
-
 /* --- Speed round countdown --------------------------------------------------- */
 
 @keyframes gf-urgent-flash {
@@ -943,7 +901,6 @@ html.goalify ::-webkit-scrollbar-thumb {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .gf-zone-active::after,
   .gf-anim-urgent,
   .gf-anim-hud-toast,
   .gf-charge {
@@ -1243,50 +1200,6 @@ html.goalify ::-webkit-scrollbar-thumb {
 }
 
 /* --- Body-map: neon target panels ----------------------------------------- */
-
-.gf-cyber-scope .gf-zone {
-  border: 1px solid rgba(232, 179, 44, 0.3);
-  background: rgba(232, 179, 44, 0.05);
-  box-shadow: 0 0 0 1px rgba(232, 179, 44, 0.05) inset;
-}
-
-.gf-cyber-scope .gf-zone:hover {
-  background: rgba(232, 179, 44, 0.14);
-  border-color: rgba(232, 179, 44, 0.6);
-}
-
-.gf-cyber-scope .gf-zone-active {
-  /* Solid-ish fill (not just a pale tint) so the white zone label painted
-     by body-map.tsx for the active state stays legible against it. */
-  background: rgba(232, 179, 44, 0.85);
-  border-color: #f5cb5c;
-  box-shadow:
-    0 0 0 1px rgba(232, 179, 44, 0.6),
-    0 0 28px -2px rgba(232, 179, 44, 0.9),
-    inset 0 0 20px -4px rgba(255, 255, 255, 0.4);
-}
-
-.gf-cyber-scope .gf-zone-active::after {
-  border-color: rgba(232, 179, 44, 0.65);
-}
-
-.gf-cyber-skeleton-line {
-  position: absolute;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(232, 179, 44, 0.65),
-    transparent
-  );
-  box-shadow: 0 0 6px rgba(232, 179, 44, 0.5);
-}
-
-.gf-cyber-skeleton-node {
-  position: absolute;
-  border-radius: 999px;
-  background: #e8b32c;
-  box-shadow: 0 0 10px 2px rgba(232, 179, 44, 0.7);
-}
 
 /* --- Tactile arc gauge ------------------------------------------------------ */
 

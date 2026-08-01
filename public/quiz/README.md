@@ -31,10 +31,17 @@ The exact list the quiz looks for, by step:
 | `bodyfat-jayden.png` | 5–7% |
 | `commit-workout-complete.png` | Both yes-set commitment screens' full-bleed background |
 
-`bodymap-torso-base.png` is no longer wired in — the `focusZones` body-map
-now renders a single unified illustrated mannequin (body-map.tsx) instead of
-fading a head-to-hip photo into illustrated legs, since mixing the two read
-as a mismatched seam rather than one coherent body.
+`bodymap-torso-base.png` is no longer wired in. The `focusZones` body-map
+(body-map.tsx) went through two redesigns: first an illustrated-mannequin
+backdrop (to fix a photo/illustration seam), then — because the SVG
+mannequin itself read as a hollow, robotic outline — a real full-body
+athletic photo, `bodymap-full-body.png`. That file is a crop of a
+user-provided reference image with the gold zone panels/labels already
+baked into the pixels; body-map.tsx lays fully transparent click targets
+on top (percentage rects in `ZONE_SHAPES`) rather than redrawing its own
+panel/label UI, so nothing is duplicated. If you need to re-crop or replace
+this asset, keep the zone panels roughly in the same relative positions or
+update `ZONE_SHAPES` to match.
 
 The `level` step's photo slot (`level-beginner.png` etc.) was removed too —
 it had been wired to a generic stock speedometer-gauge graphic with no

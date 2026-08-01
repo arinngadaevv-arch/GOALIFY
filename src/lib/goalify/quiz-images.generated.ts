@@ -2,12 +2,14 @@
 // Rerun with `npm run gen:quiz-images` (also runs before dev and build).
 
 export const AVAILABLE_QUIZ_IMAGES: ReadonlySet<string> = new Set([
+  "/quiz/3beb9b27-29ce-40ee-9331-66f0f79f216b.png",
   "/quiz/bodyfat-daniel.png",
   "/quiz/bodyfat-ethan.png",
   "/quiz/bodyfat-jayden.png",
   "/quiz/bodyfat-liam.png",
   "/quiz/bodyfat-mason.png",
   "/quiz/bodyfat-noah.png",
+  "/quiz/bodymap-full-body.png",
   "/quiz/bodymap-torso-base.png",
   "/quiz/commit-workout-complete.png",
   "/quiz/false-starts.png",
