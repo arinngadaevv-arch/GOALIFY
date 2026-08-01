@@ -419,7 +419,7 @@ function PhotoOptionCard({
 
   const base = clsx(
     "gf-card gf-card-hover gf-press relative text-left transition-all duration-300",
-    selected && "gf-card-active scale-[1.015]",
+    selected && "gf-card-active scale-[1.02]",
     disabled && !selected && "opacity-50",
   );
 
@@ -618,7 +618,7 @@ function OptionCard({
       aria-pressed={selected}
       className={clsx(
         "gf-glass gf-card-hover gf-press relative flex flex-col items-center rounded-3xl p-4 text-center transition-all duration-300",
-        selected ? "gf-card-active scale-[1.015]" : "disabled:opacity-45",
+        selected ? "gf-card-active scale-[1.02]" : "disabled:opacity-45",
       )}
     >
       {selected && (

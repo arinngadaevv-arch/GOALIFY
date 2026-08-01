@@ -3,7 +3,10 @@
 
 export const AVAILABLE_QUIZ_IMAGES: ReadonlySet<string> = new Set([
   "/quiz/false-starts.png",
+  "/quiz/goal-athletic.png",
   "/quiz/goal-build.png",
+  "/quiz/goal-burn.png",
+  "/quiz/goal-tone.png",
   "/quiz/injury.png",
   "/quiz/level-advanced.png",
   "/quiz/level-beginner.png",
@@ -12,7 +15,4 @@ export const AVAILABLE_QUIZ_IMAGES: ReadonlySet<string> = new Set([
   "/quiz/motivation.jpg",
   "/quiz/no-plan.png",
   "/quiz/no-time.png",
-  "/quiz/vision-confident.png",
-  "/quiz/vision-energised.png",
-  "/quiz/vision-proud.png",
 ]);

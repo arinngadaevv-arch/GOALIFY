@@ -101,7 +101,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     options: [
       {
         value: "burn",
-        image: "/quiz/lean.jpg",
+        image: "/quiz/goal-burn.png",
         label: "Lean & shredded",
         description: "Strip fat fast while locking in every ounce of muscle",
         icon: "flame",
@@ -117,7 +117,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "tone",
-        image: "/quiz/toned.jpg",
+        image: "/quiz/goal-tone.png",
         label: "Toned & defined",
         description: "Sculpted, visible definition — zero bulk",
         icon: "sparkles",
@@ -125,7 +125,7 @@ export const QUIZ_STEPS: QuizStep[] = [
       },
       {
         value: "athletic",
-        image: "/quiz/athletic.jpg",
+        image: "/quiz/goal-athletic.png",
         label: "Athletic & unstoppable",
         description: "Move faster, last longer, hit harder than ever",
         icon: "zap",
