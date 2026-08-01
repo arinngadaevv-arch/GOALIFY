@@ -11,21 +11,20 @@ import {
 } from "@/lib/goalify/quiz";
 import { DEFAULT_ANSWERS } from "@/lib/goalify/plan";
 import { coachProgressNudge, coachReaction } from "@/lib/goalify/coach";
-import type { JointStatus, QuizAnswers } from "@/lib/goalify/types";
+import type { QuizAnswers, SessionLength } from "@/lib/goalify/types";
 import { useGoalify } from "@/lib/goalify/store";
-import { GlassCard } from "@/components/goalify/ui/glass-card";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
 import { CoachBadge } from "@/components/goalify/coach/coach-bubble";
 import { CoachGuide, sayCoach } from "@/components/goalify/coach/coach-guide";
 import { useUiSounds } from "@/components/goalify/use-ui-sounds";
 import { hasRealPhoto, OptionPhoto } from "./option-photo";
 import { QuizIconBadge, type QuizIconKey } from "./quiz-icons";
-import { JointGlyph } from "./joint-glyph";
 import { AnalyzingScreen } from "./analyzing-screen";
 import { BodyMapStep } from "./body-map";
 import { SpeedRound } from "./speed-round";
-import { BioStatHud, HUD_STEP_META } from "./bio-stat-hud";
-import { TactileSlider } from "./tactile-slider";
+import { HUD_STEP_META, HypeToast } from "./hype-toast";
+import { CommitStep } from "./commit-step";
+import { VitalsStep } from "./vitals-step";
 import { fireBurst, ParticleBurstLayer } from "./particle-burst";
 
 /** Wraps a click handler so every tap also fires a micro-particle burst
@@ -37,8 +36,25 @@ function withBurst(handler: () => void, gold = false) {
   };
 }
 
-/** Steps whose stored value is a number even though it's picked as a choice. */
-const NUMERIC_CHOICE_IDS = new Set<keyof QuizAnswers>(["daysPerWeek"]);
+/**
+ * The merged "time commitment" step packs two fields into one option
+ * value ("4-25" -> 4 days a week, 25-minute sessions). Every other choice
+ * step still writes its single `id` field directly.
+ */
+function parseTimeCombo(raw: string): { daysPerWeek: number; sessionLength: SessionLength } {
+  const [days, minutes] = raw.split("-");
+  return { daysPerWeek: Number(days), sessionLength: minutes as SessionLength };
+}
+
+/** Fixed patches for the two rhetorical "yes-set" commitment cards. */
+const COMMIT_PATCHES: Partial<Record<keyof QuizAnswers, Partial<QuizAnswers>>> = {
+  joints: { joints: ["none"] },
+  commitment: { commitment: "allin" },
+};
+const COMMIT_VALUES: Partial<Record<keyof QuizAnswers, unknown>> = {
+  joints: "ready",
+  commitment: "allin",
+};
 
 /** How long the coach's reaction stays on screen before the next question. */
 const REACTION_MS = 1050;
@@ -50,10 +66,9 @@ export function QuizFlow() {
   const [analyzing, setAnalyzing] = useState(false);
   const [reaction, setReaction] = useState<string | null>(null);
   const [pending, setPending] = useState<Partial<QuizAnswers> | null>(null);
-  /** The persistent gamification HUD — ticks up as questions land. */
-  const [hud, setHud] = useState({ burn: 0, precision: 0 });
+  /** The celebration pill that pops the instant an answer lands. */
   const [hudToast, setHudToast] = useState<string | null>(null);
-  const { clickPop, hypeSelect, sliderTick, progressPowerUp } = useUiSounds();
+  const { clickPop, hypeSelect, sliderTick } = useUiSounds();
 
   const step = QUIZ_STEPS[index];
   const isLast = index === QUIZ_STEPS.length - 1;
@@ -87,21 +102,9 @@ export function QuizFlow() {
       if (line) sayCoach(line);
 
       const meta = HUD_STEP_META[step.id];
-      if (meta) {
-        const peaked = hud.burn < 100 && hud.burn + meta.burn >= 100;
-        setHud((prev) => ({
-          burn: Math.min(100, prev.burn + meta.burn),
-          precision: Math.min(100, prev.precision + meta.precision),
-        }));
-        if (peaked) {
-          setHudToast("METABOLISM PEAK ⚡");
-          progressPowerUp();
-        } else {
-          setHudToast(meta.hype);
-        }
-      }
+      if (meta) setHudToast(meta.hype);
     },
-    [setDraft, step.id, hud.burn, hypeSelect, progressPowerUp],
+    [setDraft, step.id, hypeSelect],
   );
 
   // The advance itself happens in a timer callback, never synchronously in the
@@ -140,30 +143,19 @@ export function QuizFlow() {
           <ChevronLeft className="size-6" strokeWidth={2.5} />
         </button>
 
-        {/* Ultra-thin per-question hairline — one segment per step. */}
+        {/* Sleek single-line progress bar — no more per-step segments. */}
         <div
-          className="flex flex-1 items-center gap-1"
+          className="h-1.5 flex-1 overflow-hidden rounded-full bg-ink/10"
           role="progressbar"
           aria-valuenow={Math.round(progress)}
           aria-valuemin={0}
           aria-valuemax={100}
           aria-label="Quiz progress"
         >
-          {QUIZ_STEPS.map((quizStep, i) => {
-            const done = i < index;
-            const current = i === index;
-            return (
-              <span
-                key={quizStep.id}
-                className={clsx(
-                  "h-1 flex-1 rounded-full transition-colors duration-300",
-                  done && "bg-electric",
-                  current && "gf-charge bg-electric",
-                  !done && !current && "bg-ink/10",
-                )}
-              />
-            );
-          })}
+          <div
+            className="gf-charge h-full rounded-full bg-electric transition-[width] duration-500 ease-out"
+            style={{ width: `${progress}%` }}
+          />
         </div>
 
         <span className="gf-numeric shrink-0 text-xs font-bold text-haze">
@@ -171,11 +163,16 @@ export function QuizFlow() {
         </span>
       </header>
 
-      {/* ------------------------------------------------- Persistent stat HUD */}
-      <BioStatHud burn={hud.burn} precision={hud.precision} toast={hudToast} />
+      {/* --------------------------------------------- Live diagnostic readout */}
+      <div className="relative flex items-center justify-between">
+        <p className="gf-anim-flicker gf-cyber-gold-text text-[10px] font-black tracking-[0.14em] uppercase">
+          {step.hudPhrase} {Math.round(((index + 1) / QUIZ_STEPS.length) * 100)}% MATCH
+        </p>
+        {hudToast && <HypeToast text={hudToast} />}
+      </div>
 
       {/* ------------------------------------------------------- Big headline */}
-      <div key={step.id} className="gf-anim-swoop relative pt-4">
+      <div key={step.id} className="gf-anim-swoop relative pt-2">
         <div className="flex items-center gap-2">
           <span className="gf-accent-line" aria-hidden />
           <p className="gf-cyber-glow-text text-[11px] font-black tracking-[0.16em] uppercase">
@@ -226,14 +223,22 @@ export function QuizFlow() {
               locked={pending !== null}
               onTap={clickPop}
             />
-          ) : (
-            <NumberStep
+          ) : step.kind === "vitals" ? (
+            <VitalsStep
               key={step.id}
-              step={step}
-              value={typeof currentValue === "number" ? currentValue : undefined}
-              onSubmit={pick}
+              draft={draft}
               locked={pending !== null}
+              onSubmit={pick}
               onTick={sliderTick}
+            />
+          ) : (
+            <CommitStep
+              key={step.id}
+              buttonLabel={step.buttonLabel}
+              patch={COMMIT_PATCHES[step.id] ?? {}}
+              value={COMMIT_VALUES[step.id]}
+              locked={pending !== null}
+              onPick={pick}
             />
           )}
         </div>
@@ -288,36 +293,21 @@ function ChoiceStep({
     return (
       <>
         <div className="grid grid-cols-2 gap-3">
-          {step.options.map((option) => {
-            const isJointPart =
-              step.id === "joints" &&
-              (option.value === "knees" ||
-                option.value === "back" ||
-                option.value === "shoulders");
-            return (
-              <OptionCard
-                key={option.value}
-                icon={option.icon}
-                glyph={
-                  isJointPart ? (
-                    <JointGlyph
-                      part={option.value as "knees" | "back" | "shoulders"}
-                      active={selected.includes(option.value)}
-                    />
-                  ) : undefined
-                }
-                label={option.label}
-                description={option.description}
-                socialProof={option.socialProof}
-                selected={selected.includes(option.value)}
-                disabled={locked}
-                onClick={() => {
-                  onTap();
-                  toggle(option.value);
-                }}
-              />
-            );
-          })}
+          {step.options.map((option) => (
+            <OptionCard
+              key={option.value}
+              icon={option.icon}
+              label={option.label}
+              description={option.description}
+              socialProof={option.socialProof}
+              selected={selected.includes(option.value)}
+              disabled={locked}
+              onClick={() => {
+                onTap();
+                toggle(option.value);
+              }}
+            />
+          ))}
         </div>
         <GlowButton
           variant="cyber"
@@ -326,10 +316,7 @@ function ChoiceStep({
           className="mt-6"
           disabled={selected.length === 0 || locked}
           onClick={withBurst(() => {
-            onPick(
-              { [step.id]: selected as JointStatus[] } as Partial<QuizAnswers>,
-              selected,
-            );
+            onPick({ [step.id]: selected } as Partial<QuizAnswers>, selected);
           }, true)}
         >
           Continue
@@ -344,10 +331,14 @@ function ChoiceStep({
   const asides = step.options.filter((o) => o.aside);
 
   const choose = (option: (typeof step.options)[number]) => {
-    const stored = NUMERIC_CHOICE_IDS.has(step.id)
-      ? Number(option.value)
-      : option.value;
-    onPick({ [step.id]: stored } as Partial<QuizAnswers>, option.value);
+    // The merged time-commitment step packs two fields into one value
+    // ("4-25" -> 4 days a week, 25-minute sessions).
+    if (step.id === "sessionLength" && option.value.includes("-")) {
+      const combo = parseTimeCombo(option.value);
+      onPick(combo, option.value);
+      return;
+    }
+    onPick({ [step.id]: option.value } as Partial<QuizAnswers>, option.value);
   };
 
   return (
@@ -588,7 +579,6 @@ function PhotoOptionCard({
 
 function OptionCard({
   icon,
-  glyph,
   label,
   description,
   socialProof,
@@ -597,7 +587,6 @@ function OptionCard({
   onClick,
 }: {
   icon: QuizIconKey;
-  glyph?: React.ReactNode;
   label: string;
   description?: string;
   socialProof?: string;
@@ -621,7 +610,7 @@ function OptionCard({
           <Check className="size-3.5" strokeWidth={3.5} />
         </span>
       )}
-      {glyph ?? <QuizIconBadge icon={icon} size="md" active={selected} />}
+      <QuizIconBadge icon={icon} size="md" active={selected} />
       <span className="mt-3 block text-sm leading-tight font-extrabold tracking-tight text-ink">
         {label}
       </span>
@@ -640,52 +629,3 @@ function OptionCard({
   );
 }
 
-/* ------------------------------------------------------------------ number */
-
-function NumberStep({
-  step,
-  value,
-  onSubmit,
-  locked,
-  onTick,
-}: {
-  step: Extract<QuizStep, { kind: "number" }>;
-  value?: number;
-  onSubmit: (patch: Partial<QuizAnswers>, value: unknown) => void;
-  locked: boolean;
-  onTick: () => void;
-}) {
-  const [local, setLocal] = useState(value ?? step.defaultValue);
-
-  return (
-    <>
-      <GlassCard deep className="gf-cyber-border p-8">
-        <TactileSlider
-          value={local}
-          min={step.min}
-          max={step.max}
-          step={step.step}
-          unit={step.unit}
-          onChange={setLocal}
-          onTick={onTick}
-          disabled={locked}
-        />
-      </GlassCard>
-
-      <GlowButton
-        variant="cyber"
-        size="lg"
-        fullWidth
-        className="mt-6"
-        disabled={locked}
-        onClick={withBurst(
-          () => onSubmit({ [step.id]: local } as Partial<QuizAnswers>, local),
-          true,
-        )}
-      >
-        Continue
-        <ArrowRight className="size-5" />
-      </GlowButton>
-    </>
-  );
-}

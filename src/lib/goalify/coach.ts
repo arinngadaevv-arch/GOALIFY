@@ -53,36 +53,25 @@ const REACTIONS: Record<string, Record<string, string>> = {
     consistent: "Already showing up? Then we stop maintaining and start progressing.",
     advanced: "Elite input, elite output. I'm turning the intensity up for you.",
   },
+  // "joints" now anchors the first yes-set commitment card, not the old
+  // injury-shielding question — the fixed value it writes is "ready".
   joints: {
-    none: "Full range unlocked. We'll use all of it.",
-    knees: "Knees noted. Every jump and deep bend just got rebuilt — same results, zero flare-ups.",
-    back: "Spine-neutral from here on out. Nothing that puts your back at risk.",
-    shoulders: "No reckless overhead loading. Your shoulders will thank me later.",
+    ready: "That's the energy I needed. Let's keep this momentum going.",
   },
   sessionLength: {
-    "15": "15 focused minutes beats 60 distracted ones. No filler in your plan.",
-    "25": "25 minutes — the sweet spot. Enough to work, short enough to keep.",
-    "40": "Full sessions with finishers. You came to work.",
-  },
-  daysPerWeek: {
-    "3": "Three days, done properly, changes bodies. Sustainable wins.",
-    "4": "Four days is the sweet spot between results and real life. Great call.",
-    "5": "Five days. That's a fast-track pace — I'll manage your recovery carefully.",
-    "6": "Six days. All in. I'll make sure you recover hard enough to keep up.",
+    "3-15": "Three short, brutal sessions a week. No filler, no wasted minutes.",
+    "4-25": "Four days, 25 minutes — the sweet spot between results and real life.",
+    "5-25": "Five days. That's a fast-track pace — I'll manage your recovery carefully.",
+    "6-40": "Six days, full sessions. All in. I'll make sure you recover hard enough to keep up.",
   },
   commitment: {
     allin: "THAT'S what I wanted to hear. You just made this a partnership. I'm holding you to it.",
-    most: "Honest answer — and honest beats perfect. I'll build in the flexibility to keep your streak alive.",
-    unsure: "Fair enough. Let me prove it's worth it in week one, and we'll talk again.",
   },
 };
 
-/** Fallbacks for the numeric steps, where there's no discrete value to key on. */
+/** Fallbacks for the numeric/vitals steps, where there's no discrete value to key on. */
 const NUMERIC_REACTIONS: Record<string, string> = {
-  age: "Locked in. I'm scaling your intensity ramp and recovery windows to match.",
-  heightCm: "Got it. That feeds straight into your calorie and protein maths.",
-  weightKg: "This is your starting line. In four weeks you'll be glad we wrote it down.",
-  targetWeightKg: "Target set. I'm mapping a safe, realistic route there — no crash nonsense.",
+  weightKg: "Numbers locked in. That's what turns this from a generic plan into your exact calories and macros.",
 };
 
 /** The coach's live response to a just-submitted answer, if there is one. */

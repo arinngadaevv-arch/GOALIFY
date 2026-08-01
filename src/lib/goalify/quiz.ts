@@ -30,9 +30,22 @@ export type BodyZone = {
   label: string;
 };
 
-export type QuizStep =
+export type QuizStep = {
+  /**
+   * Always a real QuizAnswers key, even for "commit" steps (which just
+   * write a fixed value) and "vitals" (which writes several fields at
+   * once but anchors HUD/meta lookups on one of them) — nothing here is
+   * a synthetic id, so every step stays indexable the same way.
+   */
+  id: keyof QuizAnswers;
+  /** Short label shown in the coach's eyebrow above the question. */
+  chapter: string;
+  title: string;
+  subtitle: string;
+  /** The rotating "diagnostic" line rendered above the headline. */
+  hudPhrase: string;
+} & (
   | {
-      id: keyof QuizAnswers;
       kind: "choice";
       /** `multi` collects an array of values instead of a single one. */
       multi?: boolean;
@@ -44,41 +57,36 @@ export type QuizStep =
        * - `list` (default) — compact two-column icon tiles
        */
       layout?: "portrait" | "wide" | "tile" | "list";
-      /** Short label shown in the coach's eyebrow above the question. */
-      chapter: string;
-      title: string;
-      subtitle: string;
       options: ChoiceOption[];
       /** Renders as a 5-second "instinct round" with a burning countdown. */
       speedRound?: boolean;
     }
   | {
-      id: keyof QuizAnswers;
-      kind: "number";
-      chapter: string;
-      title: string;
-      subtitle: string;
-      unit: string;
-      min: number;
-      max: number;
-      step: number;
-      defaultValue: number;
+      kind: "bodyMap";
+      zones: BodyZone[];
     }
   | {
-      id: keyof QuizAnswers;
-      kind: "bodyMap";
-      chapter: string;
-      title: string;
-      subtitle: string;
-      zones: BodyZone[];
-    };
+      kind: "vitals";
+    }
+  | {
+      /**
+       * A single-button "yes-set" commitment card — pure rhetorical
+       * agreement, no real choice. Answering always writes the same
+       * value; the point is the felt "yes", not the data.
+       */
+      kind: "commit";
+      buttonLabel: string;
+    }
+);
 
 /**
- * Ordered as a conversion funnel: the target outcome first, then the
- * obstacle that's blocked it, then the payoff that matters most — and only
- * once that's captured do we ask for the numbers. The final step is an
- * explicit commitment check, so the last thing they do before the plan
- * unlocks is say yes.
+ * A short, high-energy "yes-ladder": the target outcome first, an
+ * immediate emotional commitment, the obstacle that's blocked them, the
+ * interactive blueprint, a fast benchmark, then only the numbers that are
+ * actually load-bearing for the plan — closing on a second, bigger yes
+ * right before the plan unlocks. Every question either sells the outcome
+ * or captures something the calorie/macro engine truly needs; nothing
+ * "dry" survives just to feel thorough.
  */
 export const QUIZ_STEPS: QuizStep[] = [
   {
@@ -89,6 +97,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     title: "Select your 30-day target physique",
     subtitle:
       "Every rep, every calorie in your program is engineered around this one choice. Pick the outcome you actually want.",
+    hudPhrase: "CALIBRATING PHYSIQUE MATCH...",
     options: [
       {
         value: "burn",
@@ -125,19 +134,18 @@ export const QUIZ_STEPS: QuizStep[] = [
     ],
   },
   {
-    id: "focusZones",
-    kind: "bodyMap",
-    chapter: "The blueprint",
-    title: "Where do you want results first?",
+    // Reuses the "joints" slot — full injury customization got cut from the
+    // funnel (it defaults to "no restrictions"), but the field still exists
+    // on QuizAnswers, so this yes-set card anchors here instead of needing
+    // a synthetic id.
+    id: "joints",
+    kind: "commit",
+    chapter: "The commitment",
+    title: "Do you want to wake up 30 days from now and actually love the mirror?",
     subtitle:
-      "Tap every zone you want transformed. Your program locks in and prioritizes these areas from day one.",
-    zones: [
-      { value: "chest", label: "Chest" },
-      { value: "arms", label: "Arms" },
-      { value: "abs", label: "Abs" },
-      { value: "glutes", label: "Glutes" },
-      { value: "legs", label: "Legs" },
-    ],
+      "Total pride. Real energy. No more talking yourself out of it. Say it with me.",
+    hudPhrase: "LOCKING MENTAL COMMITMENT...",
+    buttonLabel: "YES! I'M READY 🔥",
   },
   {
     id: "painTrigger",
@@ -147,6 +155,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     chapter: "The obstacle",
     title: "What's your biggest obstacle to total confidence?",
     subtitle: "Name it. This is exactly what your plan is engineered to destroy.",
+    hudPhrase: "SCANNING FOR WEAK POINTS...",
     options: [
       {
         value: "time",
@@ -191,56 +200,29 @@ export const QUIZ_STEPS: QuizStep[] = [
     ],
   },
   {
-    id: "vision",
-    kind: "choice",
-    layout: "wide",
-    speedRound: true,
-    chapter: "The payoff",
-    title: "What will finally make you feel unstoppable?",
+    id: "focusZones",
+    kind: "bodyMap",
+    chapter: "The blueprint",
+    title: "Where do you want results first?",
     subtitle:
-      "Picture it 30 days from now. This is what we're building toward — together.",
-    options: [
-      {
-        value: "confident",
-        image: "/quiz/vision-confident.png",
-        label: "Total confidence",
-        description: "Clothes fit better, posture improves",
-        icon: "crown",
-        socialProof: "#1 reported change at day 30",
-      },
-      {
-        value: "strong",
-        image: "/quiz/vision-strong.png",
-        label: "Real strength",
-        description: "Noticeably stronger and more capable",
-        icon: "biceps",
-        socialProof: "Strength gains show up before the mirror does",
-      },
-      {
-        value: "energised",
-        image: "/quiz/vision-energised.png",
-        label: "Nonstop energy",
-        description: "No 3pm crash, no dragging yourself around",
-        icon: "zap",
-        socialProof: "Most members notice this within week 1",
-      },
-      {
-        value: "proud",
-        image: "/quiz/vision-proud.png",
-        label: "Proof you followed through",
-        description: "You said you would — and this time you did",
-        icon: "trophy",
-        socialProof: "The #1 reason members stay consistent",
-      },
+      "Tap every zone you want transformed. Your program locks in and prioritizes these areas from day one.",
+    hudPhrase: "MAPPING TARGET ZONES...",
+    zones: [
+      { value: "chest", label: "Chest" },
+      { value: "arms", label: "Arms" },
+      { value: "abs", label: "Abs" },
+      { value: "glutes", label: "Glutes" },
+      { value: "legs", label: "Legs" },
     ],
   },
   {
     id: "level",
     kind: "choice",
-    layout: "wide",
-    chapter: "Your starting line",
+    layout: "tile",
+    chapter: "The benchmark",
     title: "Where are you starting from?",
     subtitle: "Be honest — I'll calibrate your first week to guarantee early wins.",
+    hudPhrase: "BENCHMARKING TRAINING LEVEL...",
     options: [
       {
         value: "beginner",
@@ -248,7 +230,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Beginner",
         description: "New to structured training",
         icon: "sprout",
-        socialProof: "Beginners see the fastest visible change",
+        socialProof: "Fastest visible change",
       },
       {
         value: "returning",
@@ -256,7 +238,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Returning",
         description: "Trained before, took time off",
         icon: "refresh",
-        socialProof: "Muscle memory kicks back in within 2 weeks",
+        socialProof: "Back in 2 weeks",
       },
       {
         value: "consistent",
@@ -264,7 +246,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Consistent",
         description: "Training most weeks already",
         icon: "award",
-        socialProof: "Ready to move from maintaining to progressing",
+        socialProof: "Ready to progress",
       },
       {
         value: "advanced",
@@ -272,221 +254,70 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Advanced",
         description: "Years of consistent training",
         icon: "trophy",
-        socialProof: "Highest-intensity programming unlocked",
+        socialProof: "Elite programming",
       },
     ],
   },
   {
-    id: "joints",
-    kind: "choice",
-    layout: "list",
-    multi: true,
-    chapter: "Injury shielding",
-    title: "Anything we need to protect?",
-    subtitle:
-      "Flag it and I'll auto-engineer every movement around it. Zero flare-ups, zero excuses.",
-    options: [
-      {
-        value: "none",
-        label: "Nothing hurts",
-        description: "Full range of movement available",
-        icon: "checkCircle",
-        socialProof: "Full-intensity programming unlocked",
-      },
-      {
-        value: "knees",
-        label: "Knees",
-        description: "Jumps and deep bends auto-substituted",
-        icon: "shieldCheck",
-        socialProof: "Reported to cut knee discomfort fast",
-      },
-      {
-        value: "back",
-        label: "Lower back",
-        description: "Spine-neutral variations only",
-        icon: "shield",
-        socialProof: "Zero-risk movement patterns, guaranteed",
-      },
-      {
-        value: "shoulders",
-        label: "Shoulders",
-        description: "Overhead loading limited automatically",
-        icon: "shieldAlert",
-        socialProof: "Built-in protection, every session",
-      },
-    ],
-  },
-  {
+    // Anchors the merged days/session-length "power choice" — one 2x2 grid
+    // instead of two separate screens, each option writing both fields at
+    // once (see quiz-flow.tsx's TIME_COMBOS handling).
     id: "sessionLength",
     kind: "choice",
-    layout: "list",
-    chapter: "Your window",
+    layout: "tile",
+    chapter: "The rhythm",
     title: "How much time can you give me?",
-    subtitle:
-      "Even 15 minutes, done right, changes everything. I'll make every second count.",
+    subtitle: "Pick the pace you'll actually keep. I'll make every minute count.",
+    hudPhrase: "SYNCING TRAINING FREQUENCY...",
     options: [
       {
-        value: "15",
-        label: "15 minutes",
-        description: "Short, equipment-free, brutally efficient",
-        icon: "zap",
-        socialProof: "92% completion rate — our highest",
+        value: "3-15",
+        label: "3 days · 15 min",
+        description: "Short, brutally efficient",
+        icon: "hourglass",
+        socialProof: "92% completion rate",
       },
       {
-        value: "25",
-        label: "25 minutes",
-        description: "Balanced and complete",
-        icon: "timer",
-        socialProof: "The most common choice among members",
-      },
-      {
-        value: "40",
-        label: "40 minutes",
-        description: "Full sessions with extra finishing work",
-        icon: "dumbbell",
-        socialProof: "Fastest route to visible definition",
-      },
-    ],
-  },
-  {
-    id: "daysPerWeek",
-    kind: "choice",
-    layout: "list",
-    chapter: "Your rhythm",
-    title: "How many days a week?",
-    subtitle: "Pick the pace you'll actually keep — consistency beats intensity every time.",
-    options: [
-      {
-        value: "3",
-        label: "3 days",
-        description: "Steady, sustainable pace",
-        icon: "calendar",
-        socialProof: "Enough to change your body",
-      },
-      {
-        value: "4",
-        label: "4 days",
+        value: "4-25",
+        label: "4 days · 25 min",
         description: "The results-to-effort sweet spot",
         icon: "calendarCheck",
-        socialProof: "Best results-to-effort ratio",
+        socialProof: "Most popular pick",
       },
       {
-        value: "5",
-        label: "5 days",
-        description: "Faster progress, recovery managed carefully",
+        value: "5-25",
+        label: "5 days · 25 min",
+        description: "Faster progress, recovery managed",
         icon: "calendarClock",
-        socialProof: "Fastest 30-day transformations",
+        socialProof: "Fastest transformations",
       },
       {
-        value: "6",
-        label: "6 days",
+        value: "6-40",
+        label: "6 days · 40 min",
         description: "Maximum training volume",
         icon: "calendarDays",
-        socialProof: "Recovery managed automatically",
+        socialProof: "For the all-in athlete",
       },
     ],
   },
   {
-    id: "sex",
-    kind: "choice",
-    layout: "portrait",
-    chapter: "The science",
-    title: "What's your biological sex?",
-    subtitle: "This locks in your exact metabolic rate — no generic guesswork.",
-    options: [
-      { value: "female", label: "Female", icon: "venus" },
-      { value: "male", label: "Male", icon: "mars" },
-      {
-        value: "unspecified",
-        label: "Other / I'd rather not say",
-        aside: true,
-        description: "We'll use an average baseline",
-        icon: "helpCircle",
-      },
-    ],
-  },
-  {
-    id: "age",
-    kind: "number",
-    chapter: "The science",
-    title: "How old are you?",
-    subtitle: "Age tunes your recovery windows and how fast I ramp your intensity.",
-    unit: "years",
-    min: 16,
-    max: 80,
-    step: 1,
-    defaultValue: 30,
-  },
-  {
-    id: "heightCm",
-    kind: "number",
-    chapter: "The science",
-    title: "How tall are you?",
-    subtitle: "Feeds straight into the exact calories and protein that build you.",
-    unit: "cm",
-    min: 140,
-    max: 215,
-    step: 1,
-    defaultValue: 175,
-  },
-  {
+    // Anchors the merged vitals screen (sex + age + height + weight +
+    // target weight) — one dense, slider-driven step instead of five.
     id: "weightKg",
-    kind: "number",
-    chapter: "The before",
-    title: "Your weight today",
-    subtitle: "Remember this number. In 4 weeks you'll love how far it's moved.",
-    unit: "kg",
-    min: 40,
-    max: 180,
-    step: 1,
-    defaultValue: 78,
-  },
-  {
-    id: "targetWeightKg",
-    kind: "number",
-    chapter: "The after",
-    title: "Your target weight",
-    subtitle: "I'll map the exact, safe route there — and show you the curve.",
-    unit: "kg",
-    min: 40,
-    max: 180,
-    step: 1,
-    defaultValue: 70,
+    kind: "vitals",
+    chapter: "The science",
+    title: "Lock in your numbers",
+    subtitle: "This is what turns a generic plan into your exact calories and macros.",
+    hudPhrase: "CALCULATING METABOLIC BASELINE...",
   },
   {
     id: "commitment",
-    kind: "choice",
-    layout: "wide",
-    speedRound: true,
+    kind: "commit",
     chapter: "The pact",
-    title: "Are you ready to commit?",
-    subtitle: "If I hold you accountable every single day, will you show up?",
-    options: [
-      {
-        value: "allin",
-        image: "/quiz/commitment-allin.png",
-        label: "All in, every day",
-        description: "Maximum accountability and structure",
-        icon: "flame",
-        socialProof: "All-in members are most likely to finish week 8",
-      },
-      {
-        value: "most",
-        image: "/quiz/commitment-most.png",
-        label: "Most days, honestly",
-        description: "Consistent, with room to breathe",
-        icon: "thumbsUp",
-        socialProof: "Flexible streaks keep this realistic",
-      },
-      {
-        value: "unsure",
-        image: "/quiz/commitment-unsure.png",
-        label: "Show me it works first",
-        description: "Wants proof before committing further",
-        icon: "helpCircle",
-        socialProof: "Most sceptics convert by session 3",
-      },
-    ],
+    title: "Are you ready to stop making excuses and follow a plan built just for you?",
+    subtitle: "Say yes, and I'll build it right now — no more thinking about it.",
+    hudPhrase: "UNLOCKING CUSTOM ROADMAP...",
+    buttonLabel: "ABSOLUTELY, LET'S DO THIS ⚡",
   },
 ];
 

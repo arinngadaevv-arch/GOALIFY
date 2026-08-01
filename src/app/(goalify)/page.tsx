@@ -57,8 +57,8 @@ const FEATURES = [
 const STEPS = [
   {
     number: "01",
-    title: "Answer 14 questions",
-    body: "Goals, training history, joints, and the time you actually have.",
+    title: "Answer 8 fast questions",
+    body: "Goals, obstacles, training level, and the time you actually have.",
   },
   {
     number: "02",

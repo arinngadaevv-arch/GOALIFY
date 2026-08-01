@@ -1,0 +1,31 @@
+import type { QuizAnswers } from "@/lib/goalify/types";
+
+/** The hype badge that pops the instant each answer lands. */
+export const HUD_STEP_META: Record<keyof QuizAnswers, { hype: string }> = {
+  goal: { hype: "TARGET LOCKED 🔥" },
+  focusZones: { hype: "ZONES MAPPED 🎯" },
+  painTrigger: { hype: "WEAKNESS FOUND ⚡" },
+  vision: { hype: "VISION SET 👁️" },
+  level: { hype: "BASELINE SET 📊" },
+  joints: { hype: "COMMITMENT LOCKED 🔥" },
+  sessionLength: { hype: "SCHEDULE SET ⏱️" },
+  daysPerWeek: { hype: "VOLUME LOCKED 💪" },
+  sex: { hype: "FORMULA SET 🧬" },
+  age: { hype: "CURVE MAPPED 📈" },
+  heightCm: { hype: "BODY SCANNED 📡" },
+  weightKg: { hype: "NUMBERS LOCKED ⚙️" },
+  targetWeightKg: { hype: "TARGET MAPPED 🎯" },
+  commitment: { hype: "PLAN UNLOCKED ⚡" },
+};
+
+/** A floating, self-dismissing celebration pill — no persistent panel. */
+export function HypeToast({ text }: { text: string }) {
+  return (
+    <span
+      key={text}
+      className="gf-cyber-hype-badge pointer-events-none absolute top-1 right-0 z-20 rounded-full bg-gradient-to-r from-[#00c2e0] to-[#00e5ff] px-3 py-1 text-[10px] font-black tracking-[0.04em] text-[#02131a] uppercase shadow-[0_0_16px_-2px_rgba(0,229,255,0.6)]"
+    >
+      {text}
+    </span>
+  );
+}

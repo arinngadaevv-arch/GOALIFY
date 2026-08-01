@@ -4,7 +4,7 @@ import { QuizFlow } from "@/components/goalify/quiz/quiz-flow";
 export const metadata: Metadata = {
   title: "Build your plan",
   description:
-    "Answer 11 questions about your goals, training history and joints to get a personalised training and nutrition plan.",
+    "Answer 8 fast questions about your goals, obstacles and training level to get a personalised training and nutrition plan.",
 };
 
 export const viewport: Viewport = {
