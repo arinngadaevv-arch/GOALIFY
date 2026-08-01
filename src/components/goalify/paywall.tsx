@@ -36,9 +36,18 @@ import { CoachBubble } from "@/components/goalify/coach/coach-bubble";
 import { ParticleField } from "@/components/goalify/ui/particles";
 import { CountUp } from "@/components/goalify/ui/count-up";
 import { BuyerTicker } from "@/components/goalify/buyer-ticker";
+import { LiveUrgencyBadge } from "@/components/goalify/live-urgency-badge";
 import { Pill, Stat } from "@/components/goalify/ui/stat";
+import { fireBurst, ParticleBurstLayer } from "@/components/goalify/quiz/particle-burst";
 
-const OFFER_SECONDS = 15 * 60;
+const OFFER_SECONDS = 10 * 60;
+
+/**
+ * The full undiscounted weekly rate every tier's crossed-out price is
+ * measured against — a longer commitment just buys a deeper cut off the
+ * same sticker price, the standard subscription-tier pattern.
+ */
+const FULL_PRICE_PER_WEEK = 19.99;
 
 const TIERS = [
   {
@@ -54,7 +63,7 @@ const TIERS = [
     price: 49.99,
     perWeek: 3.84,
     was: 89.99,
-    badge: "Most popular",
+    badge: "MOST POPULAR AMONG ALPHA MEMBERS",
     popular: true,
   },
   {
@@ -88,7 +97,10 @@ export function Paywall() {
   const selected = TIERS.find((t) => t.id === tier) ?? TIERS[1];
   const losing = answers.targetWeightKg < answers.weightKg;
 
-  const checkout = () => {
+  const checkout = (event: React.MouseEvent) => {
+    fireBurst(event.clientX, event.clientY, true);
+    window.setTimeout(() => fireBurst(event.clientX, event.clientY, false), 90);
+    navigator.vibrate?.([30, 40, 60]);
     purchase();
     router.push("/success");
   };
@@ -96,6 +108,8 @@ export function Paywall() {
   return (
     <main className="gf-cyber-scope relative mx-auto w-full max-w-2xl px-5 pb-40">
       <ParticleField />
+      <ParticleBurstLayer />
+      <LiveUrgencyBadge />
 
       <header className="relative flex items-center justify-between py-6">
         <Brand />
@@ -104,43 +118,176 @@ export function Paywall() {
         </Pill>
       </header>
 
-      {/* ------------------------------------------- Victory / unlock moment */}
+      {/* --------------------------------------- Compact victory / unlock beat */}
       <section className="gf-anim-materialize relative text-center">
-        <div className="relative mx-auto grid size-24 place-items-center">
+        <div className="relative mx-auto grid size-16 place-items-center">
           <span
-            className="gf-anim-burst absolute size-20 rounded-full border-2 border-lime-neon/50"
-            aria-hidden
-          />
-          <span
-            className="gf-anim-burst absolute size-20 rounded-full border-2 border-electric/40"
-            style={{ animationDelay: "0.6s" }}
+            className="gf-anim-burst absolute size-14 rounded-full border-2 border-lime-neon/50"
             aria-hidden
           />
           <IconBadge
             icon={Trophy}
-            size="lg"
+            size="md"
             className="gf-glow-lime relative rounded-full"
           />
         </div>
+        <p className="mt-3 text-[11px] font-black tracking-[0.2em] text-lime-deep uppercase">
+          {planName(answers)} plan — ready
+        </p>
+      </section>
 
-        <p className="mt-5 text-[11px] font-black tracking-[0.2em] text-lime-deep uppercase">
-          Zero equipment. Zero excuses.
-        </p>
-        <h1 className="gf-display mt-3 text-3xl font-black text-ink sm:text-4xl">
-          YOUR 30-DAY <span className="gf-text-hype">NO-EQUIPMENT ALPHA BLUEPRINT</span> IS READY
+      {/* --------------------------------------------------- The offer, up top */}
+      <section className="relative mt-4 text-center">
+        <h1 className="gf-display text-4xl leading-[1.05] font-black text-ink sm:text-5xl">
+          CLAIM YOUR <span className="gf-text-hype">TRANSFORMATION</span> NOW 🔥
         </h1>
-        <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-ink-soft">
-          The <span className="font-bold text-ink">{planName(answers)}</span>{" "}
-          plan — built for a {levelLabel(answers.level).toLowerCase()}-stage
-          athlete chasing {goalLabel(answers.goal).toLowerCase()}, entirely
-          with bodyweight, designed around {painLabel(answers.painTrigger)}.
+        <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink-soft">
+          Your bodyweight blueprint — built for a{" "}
+          {levelLabel(answers.level).toLowerCase()}-stage athlete chasing{" "}
+          {goalLabel(answers.goal).toLowerCase()}, designed around{" "}
+          {painLabel(answers.painTrigger)} — is locked in and waiting. Zero
+          equipment. Zero excuses.
         </p>
+
+        <div className="gf-anim-urgent-glow mt-6 rounded-3xl border border-lime-neon/50 bg-lime-neon/8 p-5">
+          <div className="flex items-center justify-center gap-2">
+            <Flame className="size-4 text-lime-neon" strokeWidth={2.8} />
+            <p className="text-[11px] font-black tracking-[0.16em] text-lime-neon uppercase">
+              Special 80% discount expires when timer hits 00:00
+            </p>
+          </div>
+          <p
+            className={clsx(
+              "gf-numeric mt-2 text-5xl font-black text-ink",
+              remaining > 0 && remaining < 120 && "gf-anim-flicker text-lime-neon",
+            )}
+          >
+            {formatCountdown(remaining)}
+          </p>
+          <p className="mt-1 text-xs font-semibold text-ink-soft">
+            {remaining > 0
+              ? "Your 80% discount is held while this timer runs"
+              : "Offer expired — refresh to check availability"}
+          </p>
+        </div>
+
+        <div className="mt-5 grid gap-3 text-left">
+          {TIERS.map((option) => {
+            const active = option.id === tier;
+            return (
+              <button
+                key={option.id}
+                type="button"
+                onClick={() => setTier(option.id)}
+                aria-pressed={active}
+                className={clsx(
+                  "gf-glass gf-press relative flex items-center gap-4 rounded-3xl p-5 text-left transition-all duration-300",
+                  option.popular && "mt-3 border-electric",
+                  active
+                    ? option.popular
+                      ? "shadow-[0_0_0_3px_var(--color-electric),0_0_30px_-6px_rgba(232,179,44,0.85)]"
+                      : "border-electric/50 gf-glow-electric"
+                    : "hover:border-electric/25",
+                )}
+              >
+                {option.badge && (
+                  <span
+                    className={clsx(
+                      "absolute rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.1em]",
+                      option.popular
+                        ? "gf-glow-electric -top-4 left-1/2 -translate-x-1/2 bg-electric whitespace-nowrap text-white"
+                        : "-top-2.5 right-5 bg-lime-neon text-ink",
+                    )}
+                  >
+                    {option.badge}
+                  </span>
+                )}
+                <span
+                  className={clsx(
+                    "grid size-6 shrink-0 place-items-center rounded-full transition-all",
+                    active
+                      ? "bg-lime-neon text-ink"
+                      : "border-2 border-ink/12",
+                  )}
+                  aria-hidden
+                >
+                  {active && <Check className="size-4" strokeWidth={3.5} />}
+                </span>
+                <span className="flex-1">
+                  <span className="block text-base font-extrabold text-ink">
+                    {option.label}
+                  </span>
+                  <span className="mt-0.5 block text-xs font-semibold text-mist">
+                    <s className="text-haze">${option.was.toFixed(2)}</s>{" "}
+                    <span className="text-lime-deep">
+                      ${option.price.toFixed(2)} total
+                    </span>
+                  </span>
+                </span>
+                <span className="text-right">
+                  <span className="block text-[11px] font-semibold text-haze line-through">
+                    ${FULL_PRICE_PER_WEEK.toFixed(2)}/wk
+                  </span>
+                  <span className="gf-numeric block text-2xl font-black text-electric">
+                    ${option.perWeek.toFixed(2)}
+                  </span>
+                  <span className="block text-[11px] font-semibold text-mist">
+                    per week
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        <GlowButton
+          variant="cyber"
+          size="xl"
+          fullWidth
+          pulse
+          className="mt-7 text-lg tracking-tight shadow-[0_0_44px_-8px_rgba(232,179,44,0.8)]"
+          disabled={!hydrated}
+          onClick={checkout}
+        >
+          <Lock className="size-5" />
+          CLAIM MY DISCOUNT &amp; START PLAN ⚡
+        </GlowButton>
+        <p className="mt-2 text-center text-xs font-semibold text-mist">
+          ${selected.price.toFixed(2)} total · ${selected.perWeek.toFixed(2)}/week
+        </p>
+        <p className="mt-2.5 text-center text-xs font-bold text-lime-deep">
+          Day 1 starts the second you tap that button.
+        </p>
+
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+          <span className="gf-glass inline-flex items-center gap-1.5 rounded-full border border-electric/30 px-3 py-1.5 text-[11px] font-bold text-ink">
+            <ShieldCheck className="size-3.5 text-electric" />
+            30-Day Money-Back Guarantee — Zero Risk
+          </span>
+          <span className="gf-glass inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold text-ink-soft">
+            <Timer className="size-3.5 text-electric" />
+            Cancel anytime
+          </span>
+          <span className="gf-glass inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold text-ink-soft">
+            <Sparkles className="size-3.5 text-electric" />
+            Instant access
+          </span>
+        </div>
+
+        <div className="mt-6 flex items-center justify-center gap-1 text-lime-deep">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <Star key={index} className="size-4 fill-current" />
+          ))}
+          <span className="ml-2 text-sm font-semibold text-ink-soft">
+            4.9 from 21,480 members
+          </span>
+        </div>
       </section>
 
       <CoachBubble
         message={`I've got everything I need. This plan is built to make you feel ${visionLabel(answers.vision)} in 30 days — but it only works if you start today.`}
         tone="electric"
-        className="relative mt-7"
+        className="relative mt-10"
       />
 
       <GlassCard
@@ -283,135 +430,23 @@ export function Paywall() {
         </div>
       </GlassCard>
 
-      {/* ------------------------------------------------------------- Offer */}
-      <section className="relative mt-10">
-        <GlassCard tone="lime" deep className="p-5 text-center">
-          <div className="flex items-center justify-center gap-2">
-            <Flame className="size-4 text-lime-deep" strokeWidth={2.8} />
-            <p className="text-[11px] font-black tracking-[0.16em] text-lime-deep uppercase">
-              Launch offer — 50% off
-            </p>
-          </div>
-          <p
-            className={clsx(
-              "gf-numeric mt-2 text-5xl font-black text-ink",
-              remaining > 0 && remaining < 120 && "gf-anim-flicker text-electric",
-            )}
-          >
-            {formatCountdown(remaining)}
-          </p>
-          <p className="mt-1 text-xs font-semibold text-ink-soft">
-            {remaining > 0
-              ? "Your discount is held while this timer runs"
-              : "Offer expired — refresh to check availability"}
-          </p>
-        </GlassCard>
-
-        <div className="mt-5 grid gap-3">
-          {TIERS.map((option) => {
-            const active = option.id === tier;
-            return (
-              <button
-                key={option.id}
-                type="button"
-                onClick={() => setTier(option.id)}
-                aria-pressed={active}
-                className={clsx(
-                  "gf-glass gf-press relative flex items-center gap-4 rounded-3xl p-5 text-left transition-all duration-300",
-                  active
-                    ? "border-electric/50 gf-glow-electric"
-                    : "hover:border-electric/25",
-                )}
-              >
-                {option.badge && (
-                  <span
-                    className={clsx(
-                      "absolute -top-2.5 right-5 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em]",
-                      option.popular
-                        ? "bg-electric text-white"
-                        : "bg-lime-neon text-ink",
-                    )}
-                  >
-                    {option.badge}
-                  </span>
-                )}
-                <span
-                  className={clsx(
-                    "grid size-6 shrink-0 place-items-center rounded-full transition-all",
-                    active
-                      ? "bg-lime-neon text-ink"
-                      : "border-2 border-ink/12",
-                  )}
-                  aria-hidden
-                >
-                  {active && <Check className="size-4" strokeWidth={3.5} />}
-                </span>
-                <span className="flex-1">
-                  <span className="block text-base font-extrabold text-ink">
-                    {option.label}
-                  </span>
-                  <span className="mt-0.5 block text-xs font-semibold text-mist">
-                    <s className="text-haze">${option.was.toFixed(2)}</s>{" "}
-                    <span className="text-lime-deep">
-                      ${option.price.toFixed(2)} total
-                    </span>
-                  </span>
-                </span>
-                <span className="text-right">
-                  <span className="gf-numeric block text-2xl font-black text-ink">
-                    ${option.perWeek.toFixed(2)}
-                  </span>
-                  <span className="block text-[11px] font-semibold text-mist">
-                    per week
-                  </span>
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
+      {/* --------------------------------------------------- Final reminder CTA */}
+      <div className="relative mt-8 text-center">
         <GlowButton
           variant="cyber"
           size="xl"
           fullWidth
-          className="gf-anim-hype mt-6"
+          className="text-lg tracking-tight"
           disabled={!hydrated}
           onClick={checkout}
         >
           <Lock className="size-5" />
-          UNLOCK MY HOME PLAN NOW ⚡
+          CLAIM MY DISCOUNT &amp; START PLAN ⚡
         </GlowButton>
-        <p className="mt-2 text-center text-xs font-semibold text-mist">
-          ${selected.price.toFixed(2)} total · ${selected.perWeek.toFixed(2)}/week
+        <p className="mt-2.5 text-xs font-bold text-lime-deep">
+          {formatCountdown(remaining)} left on your 80% discount.
         </p>
-        <p className="mt-2.5 text-center text-xs font-bold text-lime-deep">
-          Day 1 starts the second you tap that button.
-        </p>
-
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-semibold text-mist">
-          <span className="flex items-center gap-1.5">
-            <ShieldCheck className="size-4 text-electric" />
-            30-day money-back guarantee
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Timer className="size-4 text-electric" />
-            Cancel anytime
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Sparkles className="size-4 text-electric" />
-            Instant access
-          </span>
-        </div>
-
-        <div className="mt-8 flex items-center justify-center gap-1 text-lime-deep">
-          {Array.from({ length: 5 }).map((_, index) => (
-            <Star key={index} className="size-4 fill-current" />
-          ))}
-          <span className="ml-2 text-sm font-semibold text-ink-soft">
-            4.9 from 21,480 members
-          </span>
-        </div>
-      </section>
+      </div>
     </main>
   );
 }

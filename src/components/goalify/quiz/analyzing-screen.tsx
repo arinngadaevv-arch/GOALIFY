@@ -4,14 +4,10 @@ import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { Check, Cpu, Loader } from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
-import { COACH } from "@/lib/goalify/coach";
-import {
-  ProgressRing,
-  RING_ELECTRIC,
-  RING_LIME,
-} from "@/components/goalify/ui/progress-ring";
+import { ProgressRing } from "@/components/goalify/ui/progress-ring";
 import { ParticleField } from "@/components/goalify/ui/particles";
 import { CoachBadge } from "@/components/goalify/coach/coach-bubble";
+import { useUiSounds } from "@/components/goalify/use-ui-sounds";
 
 const STAGES = [
   {
@@ -41,7 +37,11 @@ const STAGES = [
   },
 ] as const;
 
-const STAGE_MS = 900;
+/** Tuned so the full run — including the final hold below — lands at
+ * exactly 5000ms, the "5-second calculating screen" the funnel promises
+ * before it auto-transitions into the paywall. */
+const STAGE_MS = 880;
+const FINAL_HOLD_MS = 600;
 
 /** Live-looking metrics that spin while the "analysis" runs. */
 function SpinningMetric({
@@ -76,15 +76,28 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
   const [stage, setStage] = useState(0);
   // Scrambled digits until each metric "resolves".
   const [scramble, setScramble] = useState(0);
+  const { clickPop, unlockFanfare, progressPowerUp } = useUiSounds();
+
+  // The audio "baseline" for the calculating screen — one power-up hit as
+  // the ring starts sweeping.
+  useEffect(() => {
+    progressPowerUp();
+    // Only ever meant to fire once, on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (stage >= STAGES.length) {
-      const timer = setTimeout(onDone, 620);
+      unlockFanfare();
+      const timer = setTimeout(onDone, FINAL_HOLD_MS);
       return () => clearTimeout(timer);
     }
-    const timer = setTimeout(() => setStage((s) => s + 1), STAGE_MS);
+    const timer = setTimeout(() => {
+      clickPop();
+      setStage((s) => s + 1);
+    }, STAGE_MS);
     return () => clearTimeout(timer);
-  }, [stage, onDone]);
+  }, [stage, onDone, clickPop, unlockFanfare]);
 
   // Drives the flicker on unresolved metrics.
   useEffect(() => {
@@ -102,7 +115,7 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
       <div className="relative flex items-center gap-2.5">
         <CoachBadge size="sm" />
         <p className="text-[11px] font-black tracking-[0.16em] text-electric uppercase">
-          {COACH.name} is running your diagnostic
+          Calculating your alpha blueprint…
         </p>
       </div>
 
@@ -119,11 +132,17 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
         />
         <ProgressRing
           rings={[
-            { value: percent, color: RING_ELECTRIC, label: "Analysis" },
+            {
+              value: percent,
+              color: "#e8b32c",
+              label: "Analysis",
+              trackColor: "rgba(255,255,255,0.08)",
+            },
             {
               value: Math.min(100, percent + 12),
-              color: RING_LIME,
+              color: "#ff3b3b",
               label: "Plan",
+              trackColor: "rgba(255,255,255,0.08)",
             },
           ]}
           size={190}
