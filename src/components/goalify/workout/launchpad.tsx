@@ -24,6 +24,7 @@ import { GlassCard } from "@/components/goalify/ui/glass-card";
 import { GlowLink } from "@/components/goalify/ui/glow-button";
 import { CoachAvatar } from "@/components/goalify/ui/visual-slot";
 import { Pill, Stat } from "@/components/goalify/ui/stat";
+import { FloatingStreakBadge } from "@/components/goalify/ui/floating-streak-badge";
 import { fireBurst, ParticleBurstLayer } from "@/components/goalify/quiz/particle-burst";
 
 const CHECKLIST: { id: string; label: string; icon: LucideIcon }[] = [
@@ -56,6 +57,7 @@ export function Launchpad() {
   return (
     <main className="gf-cyber-scope mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pt-6 pb-10">
       <ParticleBurstLayer />
+      <FloatingStreakBadge />
 
       <header className="flex items-center justify-between">
         <Pill tone="electric">

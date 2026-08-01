@@ -130,6 +130,18 @@ body.goalify-body:has(.gf-cyber-scope) .gf-ambience {
     0 2px 8px -4px rgba(18, 24, 60, 0.06);
 }
 
+/* .gf-glass's own `position: relative` and Tailwind's `.absolute`/`.fixed`
+   utilities share specificity, and this stylesheet loads after Tailwind's
+   utility layer — so without this, .gf-glass silently wins the cascade tie
+   and any element combining `gf-glass` with `absolute`/`fixed` quietly
+   loses its positioning. */
+.gf-glass.absolute {
+  position: absolute;
+}
+.gf-glass.fixed {
+  position: fixed;
+}
+
 /* Explicitly-positioned children keep their own positioning; everything else
    is nudged into a stacking context so overlays behave predictably. */
 .gf-glass > *:not(.absolute):not(.fixed) {
@@ -1308,7 +1320,8 @@ html.goalify ::-webkit-scrollbar-thumb {
   appearance: none;
   height: 6px;
   border-radius: 999px;
-  background: var(--color-ink);
+  /* Flaming energy track — gold at the low end, crimson at the high end. */
+  background: linear-gradient(90deg, #ffc700, #ff3b30);
   opacity: 1;
   cursor: pointer;
 }
@@ -1316,27 +1329,28 @@ html.goalify ::-webkit-scrollbar-thumb {
 .gf-slider-neon::-webkit-slider-runnable-track {
   height: 6px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--color-ink) 10%, transparent);
+  background: linear-gradient(90deg, #ffc700, #ff3b30);
 }
 
 .gf-slider-neon::-moz-range-track {
   height: 6px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--color-ink) 10%, transparent);
+  background: linear-gradient(90deg, #ffc700, #ff3b30);
 }
 
+/* Metallic weight-plate thumb — bright rim light over a dark core. */
 .gf-slider-neon::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   margin-top: -8px;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 999px;
-  background: var(--color-electric);
-  border: 3px solid var(--color-canvas);
+  background: radial-gradient(circle at 35% 30%, #fff3c9 0%, #e8b32c 45%, #7a4d0f 100%);
+  border: 2.5px solid #ff3b30;
   box-shadow:
-    0 0 0 1.5px var(--color-electric),
-    0 0 12px -2px rgba(232, 179, 44, 0.75);
+    0 0 0 1.5px rgba(232, 179, 44, 0.6),
+    0 0 14px -2px rgba(255, 59, 48, 0.85);
   transition: transform 0.15s ease;
 }
 
@@ -1345,14 +1359,14 @@ html.goalify ::-webkit-scrollbar-thumb {
 }
 
 .gf-slider-neon::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 999px;
-  background: var(--color-electric);
-  border: 3px solid var(--color-canvas);
+  background: radial-gradient(circle at 35% 30%, #fff3c9 0%, #e8b32c 45%, #7a4d0f 100%);
+  border: 2.5px solid #ff3b30;
   box-shadow:
-    0 0 0 1.5px var(--color-electric),
-    0 0 12px -2px rgba(232, 179, 44, 0.75);
+    0 0 0 1.5px rgba(232, 179, 44, 0.6),
+    0 0 14px -2px rgba(255, 59, 48, 0.85);
 }
 
 .gf-slider-neon:disabled {

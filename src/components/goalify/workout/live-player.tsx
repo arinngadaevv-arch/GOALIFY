@@ -28,6 +28,7 @@ import { useWorkoutSounds } from "@/components/goalify/workout/use-workout-sound
 import { ProgressRing } from "@/components/goalify/ui/progress-ring";
 import { Pill, Stat } from "@/components/goalify/ui/stat";
 import { fireBurst, ParticleBurstLayer } from "@/components/goalify/quiz/particle-burst";
+import { FloatingStreakBadge } from "@/components/goalify/ui/floating-streak-badge";
 
 type Phase = "watch" | "work" | "rest" | "done";
 
@@ -207,6 +208,7 @@ export function LivePlayer() {
   return (
     <main className="gf-cyber-scope mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pt-5 pb-32">
       <ParticleBurstLayer />
+      <FloatingStreakBadge />
 
       {/* ------------------------------------------------------------ Top bar */}
       <header className="flex items-center gap-3">

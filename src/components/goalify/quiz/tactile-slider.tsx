@@ -165,6 +165,30 @@ export function TactileSlider({
             );
           })}
 
+          <defs>
+            {/* Flaming energy track — gold at the low end, crimson at the
+                high end, so the fill itself reads as "heat" rising with
+                the value rather than a flat brand-color bar. */}
+            <linearGradient
+              id="gf-flame-track"
+              gradientUnits="userSpaceOnUse"
+              x1={pointAt(MIN_ANGLE, R).x}
+              y1={pointAt(MIN_ANGLE, R).y}
+              x2={pointAt(MAX_ANGLE, R).x}
+              y2={pointAt(MAX_ANGLE, R).y}
+            >
+              <stop offset="0%" stopColor="#ffc700" />
+              <stop offset="100%" stopColor="#ff3b30" />
+            </linearGradient>
+            {/* Metallic kettlebell body — bright rim light fading to a
+                dark core, like brushed cast iron. */}
+            <radialGradient id="gf-kettlebell-body" cx="35%" cy="30%" r="75%">
+              <stop offset="0%" stopColor="#fff3c9" />
+              <stop offset="45%" stopColor="#e8b32c" />
+              <stop offset="100%" stopColor="#7a4d0f" />
+            </radialGradient>
+          </defs>
+
           {/* Background track. */}
           <path
             d={trackPath}
@@ -178,13 +202,14 @@ export function TactileSlider({
           <path
             d={fillPath}
             fill="none"
-            stroke="var(--color-electric)"
+            stroke="url(#gf-flame-track)"
             strokeWidth={STROKE}
             strokeLinecap="round"
             className="gf-cyber-gauge-fill"
           />
 
-          {/* The drag handle. */}
+          {/* The drag handle — a small kettlebell silhouette (handle loop
+              + bell body) in place of a plain dot, metallic-shaded. */}
           <g
             className="gf-cyber-gauge-handle transition-transform duration-150 ease-out"
             style={{
@@ -192,16 +217,25 @@ export function TactileSlider({
               transformOrigin: `${handlePos.x}px ${handlePos.y}px`,
             }}
           >
+            <ellipse
+              cx={handlePos.x}
+              cy={handlePos.y - 15}
+              rx={7}
+              ry={9}
+              fill="none"
+              stroke="#d8d8de"
+              strokeWidth={3.5}
+            />
             <circle cx={handlePos.x} cy={handlePos.y} r={17} fill="var(--color-canvas)" />
+            <circle cx={handlePos.x} cy={handlePos.y} r={17} fill="url(#gf-kettlebell-body)" />
             <circle
               cx={handlePos.x}
               cy={handlePos.y}
               r={17}
               fill="none"
-              stroke="var(--color-electric)"
-              strokeWidth={3}
+              stroke="#ff3b30"
+              strokeWidth={2}
             />
-            <circle cx={handlePos.x} cy={handlePos.y} r={7} fill="var(--color-electric)" />
           </g>
         </svg>
 

@@ -58,7 +58,7 @@ export function QuizFlow() {
   const [pending, setPending] = useState<Partial<QuizAnswers> | null>(null);
   /** The celebration pill that pops the instant an answer lands. */
   const [hudToast, setHudToast] = useState<string | null>(null);
-  const { clickPop, hypeSelect, sliderTick } = useUiSounds();
+  const { victoryTick, hypeSelect, sliderTick } = useUiSounds();
 
   const step = QUIZ_STEPS[index];
   const isLast = index === QUIZ_STEPS.length - 1;
@@ -192,7 +192,7 @@ export function QuizFlow() {
               onPick={pick}
               onSetDraft={setDraft}
               locked={pending !== null}
-              onTap={clickPop}
+              onTap={victoryTick}
             />
           ) : step.kind === "bodyMap" ? (
             <BodyMapStep
@@ -201,7 +201,7 @@ export function QuizFlow() {
               onSetDraft={setDraft}
               onPick={pick}
               locked={pending !== null}
-              onTap={clickPop}
+              onTap={victoryTick}
             />
           ) : step.kind === "vitals" ? (
             <VitalsStep

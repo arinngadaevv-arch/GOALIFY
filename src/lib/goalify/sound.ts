@@ -132,17 +132,24 @@ export function playCompletionCelebration() {
   );
 }
 
-/** Short, satisfying pop for taps and selections. */
-export function playClickPop() {
+/**
+ * A compact "small win" chime for per-tap selection feedback (toggling a
+ * body-map zone, picking a multi-select option) — a bright rising two-note
+ * hit, tuned to feel like a mini achievement rather than a flat UI click.
+ * Scaled down from playHypeSelect/playUnlockFanfare, which are reserved for
+ * bigger commit/unlock moments.
+ */
+export function playVictoryTick() {
   playTones([
-    {
-      frequency: 420,
-      glideTo: 720,
+    { frequency: 320, startOffset: 0, duration: 0.05, gain: 0.12, type: "sine" },
+    ...wide({
+      frequency: 880,
+      glideTo: 1180,
       startOffset: 0,
-      duration: 0.075,
-      gain: 0.1,
+      duration: 0.09,
+      gain: 0.13,
       type: "triangle",
-    },
+    }),
   ]);
 }
 

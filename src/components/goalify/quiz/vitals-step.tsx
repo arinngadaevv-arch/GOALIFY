@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import clsx from "clsx";
 import { ArrowRight, HelpCircle, Mars, Venus } from "lucide-react";
 import { GlassCard } from "@/components/goalify/ui/glass-card";
@@ -14,6 +15,14 @@ const SEX_OPTIONS: { value: Sex; label: string; icon: typeof Venus }[] = [
   { value: "female", label: "Female", icon: Venus },
   { value: "male", label: "Male", icon: Mars },
   { value: "unspecified", label: "Rather not say", icon: HelpCircle },
+];
+
+/** Bold callouts scattered across the hero strip — reinforcement, not copy
+ * the user has to read closely. */
+const CALLOUTS = [
+  { text: "DISCIPLINE OVER MOTIVATION", className: "top-4 left-4 -rotate-3" },
+  { text: "EARNED, NOT GIVEN", className: "top-4 right-4 rotate-2" },
+  { text: "ONE REP AT A TIME", className: "bottom-4 left-1/2 -translate-x-1/2 rotate-1" },
 ];
 
 /**
@@ -56,6 +65,33 @@ export function VitalsStep({
 
   return (
     <div>
+      {/* Athletic hero strip — real gym photography, heavily gradient-dark
+          so it reads as backdrop, not the point of focus, with a few bold
+          callouts scattered on top. */}
+      <div className="gf-anim-materialize relative -mx-5 mb-6 h-40 overflow-hidden">
+        <Image
+          src="/quiz/goal-burn.png"
+          alt=""
+          fill
+          className="object-cover object-[center_20%]"
+        />
+        <div
+          className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/70 to-black"
+          aria-hidden
+        />
+        {CALLOUTS.map((callout) => (
+          <span
+            key={callout.text}
+            className={clsx(
+              "gf-glass absolute rounded-full px-3 py-1.5 text-[10px] font-black tracking-[0.08em] text-white uppercase",
+              callout.className,
+            )}
+          >
+            {callout.text}
+          </span>
+        ))}
+      </div>
+
       <div
         className="grid grid-cols-3 gap-2"
         role="radiogroup"
@@ -71,7 +107,10 @@ export function VitalsStep({
               role="radio"
               aria-checked={active}
               disabled={locked}
-              onClick={() => setSex(option.value)}
+              onClick={(event) => {
+                fireBurst(event.clientX, event.clientY);
+                setSex(option.value);
+              }}
               className={clsx(
                 "gf-card gf-press flex flex-col items-center gap-1.5 rounded-2xl px-2 py-3 text-center transition-all duration-200",
                 active ? "gf-card-active text-electric" : "text-ink-soft",
