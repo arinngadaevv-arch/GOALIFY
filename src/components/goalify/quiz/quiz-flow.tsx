@@ -24,6 +24,7 @@ import { SpeedRound } from "./speed-round";
 import { HUD_STEP_META, HypeToast } from "./hype-toast";
 import { CommitStep } from "./commit-step";
 import { VitalsStep } from "./vitals-step";
+import { WelcomeStep } from "./welcome-step";
 import { fireBurst, ParticleBurstLayer } from "./particle-burst";
 import { BodyFatSilhouette } from "./body-fat-silhouette";
 
@@ -70,6 +71,7 @@ const REACTION_MS = 1050;
 export function QuizFlow() {
   const router = useRouter();
   const { state, setDraft, completeQuiz } = useGoalify();
+  const [started, setStarted] = useState(false);
   const [index, setIndex] = useState(0);
   const [analyzing, setAnalyzing] = useState(false);
   const [pending, setPending] = useState<Partial<QuizAnswers> | null>(null);
@@ -131,6 +133,14 @@ export function QuizFlow() {
 
   if (analyzing) {
     return <AnalyzingScreen onDone={() => router.push("/plan")} />;
+  }
+
+  if (!started) {
+    return (
+      <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5">
+        <WelcomeStep onStart={() => setStarted(true)} />
+      </main>
+    );
   }
 
   return (

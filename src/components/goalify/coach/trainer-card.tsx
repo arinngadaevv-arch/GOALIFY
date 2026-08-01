@@ -90,7 +90,7 @@ export function TrainerCard({
             src={resolvedPhotoSrc}
             alt={trainer.name}
             fill
-            className="object-cover"
+            className="object-cover object-top"
           />
         ) : (
           <PoseIcon

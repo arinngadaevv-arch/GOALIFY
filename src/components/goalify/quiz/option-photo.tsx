@@ -64,7 +64,7 @@ export function OptionPhoto({
           unoptimized
           sizes="(max-width: 640px) 50vw, 240px"
           onError={() => setFailed(true)}
-          className={clsx("object-cover object-center", imageClassName)}
+          className={clsx("object-cover object-top", imageClassName)}
         />
       ) : (
         <QuizIconBadge icon={icon} size="md" />

@@ -37,7 +37,7 @@ export function CoachBadge({
             src={photoSrc}
             alt={COACH.name}
             fill
-            className="object-cover"
+            className="object-cover object-top"
           />
         ) : (
           <CoachAvatarIcon className="size-1/2 text-lime-neon" />

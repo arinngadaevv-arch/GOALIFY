@@ -46,7 +46,7 @@ export function CommitStep({
   return (
     <div className="relative -mx-5 min-h-[62vh] overflow-hidden">
       <div className="absolute inset-0">
-        <Image src={bgPhoto} alt="" fill priority className="object-cover" />
+        <Image src={bgPhoto} alt="" fill priority className="object-cover object-top" />
       </div>
       <div
         className="absolute inset-0 bg-gradient-to-b from-black/15 via-black/55 to-black"

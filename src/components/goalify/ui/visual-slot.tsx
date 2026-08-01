@@ -34,7 +34,7 @@ export function VisualSlot({
   if (src) {
     return (
       <div className={clsx("relative overflow-hidden", rounded, className)}>
-        <Image src={src} alt={alt ?? label} fill className="object-cover" />
+        <Image src={src} alt={alt ?? label} fill className="object-cover object-top" />
       </div>
     );
   }
