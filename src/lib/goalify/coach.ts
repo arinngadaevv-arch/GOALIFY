@@ -1,11 +1,11 @@
 /**
- * The AI coach persona. Every line the coach says lives here so the voice
+ * The coach persona. Every line the coach says lives here so the voice
  * stays consistent across the landing page, the quiz and the app itself.
  */
 
 export const COACH = {
   name: "NOVA",
-  role: "Your AI Performance Coach",
+  role: "Your Performance Coach",
   tagline: "I don't do generic. I build one plan — yours.",
 } as const;
 
