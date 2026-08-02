@@ -18,11 +18,12 @@ const SEX_OPTIONS: { value: Sex; label: string; icon: typeof Venus }[] = [
 ];
 
 /**
- * Every field the calorie/macro engine actually needs, on one dense
- * screen instead of five separate ones. Weight gets the hero arc-gauge
- * treatment (it's the number the user cares most about); age, height and
- * target weight are compact sliders stacked below so the whole "science"
- * chapter of the funnel is a single tap-through instead of a slog.
+ * Every field the calorie/macro engine actually needs, on one roomy screen
+ * instead of five separate ones. Weight gets the hero horizontal-ruler
+ * treatment (it's the number the user cares most about, and the biggest
+ * touch target); age, height and target weight are sliders stacked below
+ * so the whole "science" chapter of the funnel is a single tap-through
+ * instead of a slog.
  */
 export function VitalsStep({
   draft,
@@ -72,7 +73,7 @@ export function VitalsStep({
 
       <div className="relative px-5 pb-1">
         <div
-          className="grid grid-cols-3 gap-2"
+          className="grid grid-cols-3 gap-3"
           role="radiogroup"
           aria-label="Biological sex"
         >
@@ -91,12 +92,12 @@ export function VitalsStep({
                   setSex(option.value);
                 }}
                 className={clsx(
-                  "gf-card gf-press flex flex-col items-center gap-1.5 rounded-2xl px-2 py-3 text-center transition-all duration-200",
+                  "gf-card gf-press flex min-h-24 flex-col items-center justify-center gap-2 rounded-2xl px-2 py-4 text-center transition-all duration-200",
                   active ? "gf-card-active text-electric" : "text-ink-soft",
                 )}
               >
-                <Icon className="size-4" strokeWidth={2.4} />
-                <span className="text-[10px] leading-tight font-bold">
+                <Icon className="size-6" strokeWidth={2.4} />
+                <span className="text-xs leading-tight font-bold">
                   {option.label}
                 </span>
               </button>
@@ -106,7 +107,7 @@ export function VitalsStep({
 
         <GlassCard
           deep
-          className="relative mt-8 rounded-3xl border border-electric/35 p-6 shadow-[0_0_0_1px_rgba(255,199,0,0.08),0_0_40px_-16px_rgba(255,199,0,0.55)]"
+          className="relative mt-10 rounded-3xl border border-electric/35 p-7 shadow-[0_0_0_1px_rgba(255,199,0,0.08),0_0_40px_-16px_rgba(255,199,0,0.55)]"
         >
           <TactileSlider
             value={weightKg}
@@ -120,7 +121,7 @@ export function VitalsStep({
           />
         </GlassCard>
 
-        <div className="gf-card mt-8 space-y-6 rounded-2xl p-5">
+        <GlassCard deep className="mt-10 space-y-8 rounded-3xl p-6">
           <CompactSlider
             label="Age"
             value={age}
@@ -154,13 +155,13 @@ export function VitalsStep({
             onCommit={onTick}
             disabled={locked}
           />
-        </div>
+        </GlassCard>
 
         <GlowButton
           variant="cyber"
           size="lg"
           fullWidth
-          className="mt-8"
+          className="mt-10"
           disabled={locked}
           onClick={submit}
         >

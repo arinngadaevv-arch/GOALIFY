@@ -30,12 +30,12 @@ export function CompactSlider({
   return (
     <div>
       <div className="flex items-baseline justify-between">
-        <span className="text-[11px] font-black tracking-[0.1em] text-mist uppercase">
+        <span className="text-xs font-black tracking-[0.1em] text-mist uppercase">
           {label}
         </span>
-        <span className="gf-numeric gf-cyber-glow-text text-lg font-black">
+        <span className="gf-numeric gf-cyber-glow-text text-2xl font-black">
           {value}
-          <span className="ml-0.5 text-xs font-bold text-mist">{unit}</span>
+          <span className="ml-1 text-sm font-bold text-mist">{unit}</span>
         </span>
       </div>
       <input
@@ -50,7 +50,7 @@ export function CompactSlider({
           onCommit();
         }}
         aria-label={label}
-        className="gf-slider-neon mt-2 w-full"
+        className="gf-slider-neon mt-1 w-full"
       />
     </div>
   );

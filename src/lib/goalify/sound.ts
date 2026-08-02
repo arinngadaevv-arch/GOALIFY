@@ -199,15 +199,27 @@ export function playHypeSelect() {
   ]);
 }
 
+/** Minimum time between slider ticks — a fast drag can fire dozens of
+ * value-change events per second, and without this a "click-clack" per
+ * pixel stacks into a stuttering wall of noise instead of a tick. */
+const SLIDER_TICK_MIN_INTERVAL_MS = 45;
+let lastSliderTickAt = 0;
+
 /**
- * Mechanical "click-clack" for the tactile weight slider — a short high
- * transient followed by a lower knock, tuned to feel like a gym plate
- * notching into place rather than a UI beep.
+ * A soft, low-frequency "luxury" tick for slider drags — a single warm sine
+ * knock with a barely-there shimmer overtone, quiet and short enough to
+ * disappear under a fast drag rather than a mechanical click-clack. Calls
+ * faster than SLIDER_TICK_MIN_INTERVAL_MS apart are silently dropped so
+ * rapid dragging never overlaps or stutters.
  */
 export function playSliderTick() {
+  const now = typeof performance !== "undefined" ? performance.now() : Date.now();
+  if (now - lastSliderTickAt < SLIDER_TICK_MIN_INTERVAL_MS) return;
+  lastSliderTickAt = now;
+
   playTones([
-    { frequency: 2100, startOffset: 0, duration: 0.018, gain: 0.09, type: "square" },
-    { frequency: 260, startOffset: 0.01, duration: 0.035, gain: 0.11, type: "square" },
+    { frequency: 340, startOffset: 0, duration: 0.05, gain: 0.055, type: "sine" },
+    { frequency: 680, startOffset: 0.006, duration: 0.03, gain: 0.018, type: "sine" },
   ]);
 }
 
