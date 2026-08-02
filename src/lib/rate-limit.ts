@@ -41,7 +41,7 @@ function getUpstashLimiter(name: RateLimitName): Ratelimit {
     limiter = new Ratelimit({
       redis: Redis.fromEnv(),
       limiter: Ratelimit.slidingWindow(rule.limit, `${rule.windowMs} ms`),
-      prefix: `trendspark:rl:${name}`,
+      prefix: `goalify:rl:${name}`,
       analytics: false,
     });
     upstashLimiters.set(name, limiter);

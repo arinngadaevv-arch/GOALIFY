@@ -2,16 +2,16 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "TrendSpark AI",
-    short_name: "TrendSpark",
+    name: "GOALIFY — Your body, engineered",
+    short_name: "GOALIFY",
     description:
-      "מערכת קבלת החלטות לעסקים קטנים - מהלך אחד ברור בכל שבוע, עם ביטחון כנה",
-    start_url: "/dashboard",
+      "A personalised training and nutrition system built around your goals, your fitness level and your joints. 3D AI form coaching on every rep.",
+    start_url: "/",
     display: "standalone",
-    background_color: "#0a0a12",
-    theme_color: "#0a0a12",
-    lang: "he",
-    dir: "rtl",
+    background_color: "#0b0e14",
+    theme_color: "#0b0e14",
+    lang: "en",
+    dir: "ltr",
     icons: [
       {
         src: "/favicon.ico",

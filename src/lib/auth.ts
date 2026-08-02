@@ -67,18 +67,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   // but set explicitly so login also works on any other host (Docker, other clouds).
   trustHost: true,
   session: { strategy: "jwt" },
-  // Deliberately NOT setting `pages.signIn` here. This single NextAuth
-  // instance is shared by two differently-branded apps (GOALIFY at `/`,
-  // `/quiz`, ...; TrendSpark at `/sign-in`, `/dashboard`, ...), and on any
-  // sign-in error (OAuth callback failure, misconfigured provider, an
-  // account already linked a different way) Auth.js hard-redirects to
-  // `pages.signIn` with no way to make that destination request-aware —
-  // it's a single static path for both apps. Pointing it at TrendSpark's
-  // `/sign-in` meant a GOALIFY user hitting a Google OAuth error landed on
-  // TrendSpark's branded page. Leaving it unset falls back to Auth.js's
-  // own neutral built-in error page instead, which is brand-agnostic for
-  // both apps — each app's own UI already calls `signIn()` directly and
-  // doesn't depend on this for the happy path.
+  // No `pages.signIn` override — GOALIFY's own UI (the quiz's AuthModal)
+  // calls signIn() directly and renders its own sign-up/sign-in form, so
+  // it never needs Auth.js's built-in page. On a genuine sign-in error
+  // (OAuth callback failure, misconfigured provider) this falls back to
+  // Auth.js's own neutral built-in error page.
   providers,
   callbacks: {
     async jwt({ token, user }) {

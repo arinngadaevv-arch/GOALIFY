@@ -3,7 +3,7 @@ import postgres from "postgres";
 import * as schema from "./schema";
 
 declare global {
-  var __trendsparkSql: ReturnType<typeof postgres> | undefined;
+  var __goalifySql: ReturnType<typeof postgres> | undefined;
 }
 
 function createClient() {
@@ -16,9 +16,9 @@ function createClient() {
   return postgres(url, { max: 10 });
 }
 
-const sql = global.__trendsparkSql ?? createClient();
+const sql = global.__goalifySql ?? createClient();
 if (process.env.NODE_ENV !== "production") {
-  global.__trendsparkSql = sql;
+  global.__goalifySql = sql;
 }
 
 export const db = drizzle(sql, { schema });
