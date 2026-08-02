@@ -1313,79 +1313,20 @@ html.goalify ::-webkit-scrollbar-thumb {
   }
 }
 
-/* --- Compact native-range slider (vitals screen) -------------------------- */
+/* --- Plain numeric input (vitals screen) ----------------------------------- */
 
-/* Age / Height / Target weight share this one class, so all three are
-   guaranteed pixel-identical — a single gold-glow track (#FFC700) with a
-   metallic kettlebell-toned knob, echoing the hero weight gauge's palette
-   without literally reproducing its loop-handle silhouette (native range
-   thumbs can't host extra child shapes cross-browser).
-
-   The input's own box is taller (44px) than the visible pill (10px) — that
-   slack is a real, invisible touch target rather than relying on the thin
-   painted track alone, so the slider is easy to grab on mobile. */
-.gf-slider-neon {
+/* Vitals cards use a bare `<input type="number">` for direct-typing entry —
+   this just strips the browser's default up/down spinner arrows so the
+   digits sit clean against the card, with nothing else about the native
+   input's behavior (keyboard, caret, selection) touched. */
+.gf-number-plain::-webkit-outer-spin-button,
+.gf-number-plain::-webkit-inner-spin-button {
   -webkit-appearance: none;
-  appearance: none;
-  height: 44px;
-  background: transparent;
-  opacity: 1;
-  cursor: pointer;
+  margin: 0;
 }
 
-.gf-slider-neon::-webkit-slider-runnable-track {
-  height: 10px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #ffc700, #ffe27a);
-}
-
-.gf-slider-neon::-moz-range-track {
-  height: 10px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #ffc700, #ffe27a);
-}
-
-.gf-slider-neon::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  margin-top: -11px;
-  width: 32px;
-  height: 32px;
-  border-radius: 999px;
-  background: radial-gradient(circle at 35% 30%, #fff3c9 0%, #ffc700 45%, #7a4d0f 100%);
-  border: 3px solid #ffc700;
-  box-shadow:
-    0 0 0 1.5px rgba(255, 199, 0, 0.5),
-    0 0 18px -1px rgba(255, 199, 0, 0.9);
-  transition: transform 0.15s ease;
-}
-
-.gf-slider-neon::-webkit-slider-thumb:active {
-  transform: scale(1.15);
-}
-
-.gf-slider-neon::-moz-range-thumb {
-  width: 32px;
-  height: 32px;
-  border-radius: 999px;
-  background: radial-gradient(circle at 35% 30%, #fff3c9 0%, #ffc700 45%, #7a4d0f 100%);
-  border: 3px solid #ffc700;
-  box-shadow:
-    0 0 0 1.5px rgba(255, 199, 0, 0.5),
-    0 0 18px -1px rgba(255, 199, 0, 0.9);
-}
-
-/* Browsers draw their own default focus ring (often a stark white/blue
-   halo) on a focused range input — replace it with the same gold glow
-   instead of suppressing focus styling outright. */
-.gf-slider-neon:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(255, 199, 0, 0.4);
-}
-
-.gf-slider-neon:disabled {
-  opacity: 0.5;
-  cursor: default;
+.gf-number-plain {
+  -moz-appearance: textfield;
 }
 
 @media (prefers-reduced-motion: reduce) {
