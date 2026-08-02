@@ -25,6 +25,7 @@ import { BodyMapStep } from "./body-map";
 import { SpeedRound } from "./speed-round";
 import { HUD_STEP_META, HypeToast } from "./hype-toast";
 import { CommitStep } from "./commit-step";
+import { SocialProofScreen } from "./social-proof-screen";
 import { VitalsStep } from "./vitals-step";
 import { WelcomeStep } from "./welcome-step";
 import { fireBurst, ParticleBurstLayer } from "./particle-burst";
@@ -57,6 +58,7 @@ export function QuizFlow() {
   const [started, setStarted] = useState(false);
   const [index, setIndex] = useState(0);
   const [analyzing, setAnalyzing] = useState(false);
+  const [showSocialProof, setShowSocialProof] = useState(false);
   const [pending, setPending] = useState<Partial<QuizAnswers> | null>(null);
   /** The celebration pill that pops the instant an answer lands. */
   const [hudToast, setHudToast] = useState<string | null>(null);
@@ -115,7 +117,23 @@ export function QuizFlow() {
   }, [pending, isLast, finish]);
 
   if (analyzing) {
-    return <AnalyzingScreen onDone={() => router.push("/plan")} />;
+    return (
+      <AnalyzingScreen
+        onDone={() => {
+          // `analyzing` has to drop too — otherwise this branch keeps
+          // winning over the `showSocialProof` check below, so the mounted
+          // AnalyzingScreen never unmounts and its "done" effect (still
+          // seeing a fresh `onDone` closure on every parent re-render)
+          // keeps re-firing forever instead of handing off once.
+          setAnalyzing(false);
+          setShowSocialProof(true);
+        }}
+      />
+    );
+  }
+
+  if (showSocialProof) {
+    return <SocialProofScreen onContinue={() => router.push("/plan")} />;
   }
 
   if (!started) {
