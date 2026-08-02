@@ -28,8 +28,7 @@ import { HUD_STEP_META, HypeToast } from "./hype-toast";
 import { CommitStep } from "./commit-step";
 import { SocialProofScreen } from "./social-proof-screen";
 import { VitalsStep } from "./vitals-step";
-import { WelcomeStep } from "./welcome-step";
-import { AuthGate } from "./auth-gate";
+import { EntryAuthStep } from "./entry-auth-step";
 import { fireBurst, ParticleBurstLayer } from "./particle-burst";
 
 /** Wraps a click handler so every tap also fires a micro-particle burst
@@ -67,7 +66,6 @@ export function QuizFlow() {
   const router = useRouter();
   const { status: authStatus } = useSession();
   const { state, setDraft, completeQuiz } = useGoalify();
-  const [started, setStarted] = useState(false);
   const [[index, direction], setIndexState] = useState<[number, number]>([0, 0]);
   const [analyzing, setAnalyzing] = useState(false);
   const [showSocialProof, setShowSocialProof] = useState(false);
@@ -159,18 +157,11 @@ export function QuizFlow() {
     return <SocialProofScreen onContinue={() => router.push("/plan")} />;
   }
 
-  if (!started) {
-    return (
-      <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5">
-        <WelcomeStep onStart={() => setStarted(true)} />
-      </main>
-    );
-  }
-
-  // Mandatory account gate — nothing past the welcome beat renders until
+  // Mandatory account gate — this is the true front door of the app.
+  // Nothing past it (not question one, not the dashboard) renders until
   // NextAuth reports an authenticated session. `loading` covers the brief
   // initial session fetch too, so a signed-in returning user never sees a
-  // flash of the sign-up form before sliding straight into question one.
+  // flash of the sign-up screen before sliding straight into question one.
   if (authStatus !== "authenticated") {
     return (
       <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5">
@@ -179,7 +170,7 @@ export function QuizFlow() {
             <div className="size-8 animate-spin rounded-full border-2 border-electric/30 border-t-electric" />
           </div>
         ) : (
-          <AuthGate onBack={() => setStarted(false)} />
+          <EntryAuthStep />
         )}
       </main>
     );
