@@ -127,7 +127,10 @@ export function TactileSlider({
         <svg
           ref={svgRef}
           viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-          className="w-full touch-none"
+          // The browser's default focus outline is a stark rectangle
+          // hugging the SVG's full bounding box — jarring against the round
+          // gauge. Swap it for the same gold glow the linear sliders use.
+          className="w-full touch-none rounded-2xl outline-none focus-visible:shadow-[0_0_0_3px_rgba(255,199,0,0.4)]"
           role="slider"
           tabIndex={disabled ? -1 : 0}
           aria-valuemin={min}

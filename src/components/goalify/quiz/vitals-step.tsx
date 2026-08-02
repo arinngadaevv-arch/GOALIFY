@@ -17,14 +17,6 @@ const SEX_OPTIONS: { value: Sex; label: string; icon: typeof Venus }[] = [
   { value: "unspecified", label: "Rather not say", icon: HelpCircle },
 ];
 
-/** Bold callouts scattered across the hero strip — reinforcement, not copy
- * the user has to read closely. */
-const CALLOUTS = [
-  { text: "DISCIPLINE OVER MOTIVATION", className: "top-4 left-4 -rotate-3" },
-  { text: "EARNED, NOT GIVEN", className: "top-4 right-4 rotate-2" },
-  { text: "ONE REP AT A TIME", className: "bottom-4 left-1/2 -translate-x-1/2 rotate-1" },
-];
-
 /**
  * Every field the calorie/macro engine actually needs, on one dense
  * screen instead of five separate ones. Weight gets the hero arc-gauge
@@ -64,127 +56,118 @@ export function VitalsStep({
   };
 
   return (
-    <div>
-      {/* Athletic hero strip — real gym photography, heavily gradient-dark
-          so it reads as backdrop, not the point of focus, with a few bold
-          callouts scattered on top. */}
-      <div className="gf-anim-materialize relative -mx-5 mb-6 h-40 overflow-hidden">
+    <div className="relative -mx-5 overflow-hidden">
+      {/* Ambient backdrop — the same athletic photo that used to sit in an
+          awkward inline banner, now a full-bleed atmospheric wash behind
+          every element on the step instead of competing with them. */}
+      <div className="absolute inset-0 -z-10" aria-hidden>
         <Image
           src="/quiz/goal-burn.png"
           alt=""
           fill
-          className="object-cover object-[center_20%]"
+          className="object-cover object-[center_18%] opacity-[0.16]"
         />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0b0e14]/40 via-[#0b0e14]/92 to-[#0b0e14]" />
+      </div>
+
+      <div className="relative px-5 pb-1">
         <div
-          className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/70 to-black"
-          aria-hidden
-        />
-        {CALLOUTS.map((callout) => (
-          <span
-            key={callout.text}
-            className={clsx(
-              "gf-glass absolute rounded-full px-3 py-1.5 text-[10px] font-black tracking-[0.08em] text-white uppercase",
-              callout.className,
-            )}
-          >
-            {callout.text}
-          </span>
-        ))}
+          className="grid grid-cols-3 gap-2"
+          role="radiogroup"
+          aria-label="Biological sex"
+        >
+          {SEX_OPTIONS.map((option) => {
+            const Icon = option.icon;
+            const active = sex === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                disabled={locked}
+                onClick={(event) => {
+                  fireBurst(event.clientX, event.clientY);
+                  setSex(option.value);
+                }}
+                className={clsx(
+                  "gf-card gf-press flex flex-col items-center gap-1.5 rounded-2xl px-2 py-3 text-center transition-all duration-200",
+                  active ? "gf-card-active text-electric" : "text-ink-soft",
+                )}
+              >
+                <Icon className="size-4" strokeWidth={2.4} />
+                <span className="text-[10px] leading-tight font-bold">
+                  {option.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        <GlassCard
+          deep
+          className="relative mt-8 rounded-3xl border border-electric/35 p-6 shadow-[0_0_0_1px_rgba(255,199,0,0.08),0_0_40px_-16px_rgba(255,199,0,0.55)]"
+        >
+          <TactileSlider
+            value={weightKg}
+            min={40}
+            max={180}
+            step={1}
+            unit="kg"
+            onChange={setWeightKg}
+            onTick={onTick}
+            disabled={locked}
+          />
+        </GlassCard>
+
+        <div className="gf-card mt-8 space-y-6 rounded-2xl p-5">
+          <CompactSlider
+            label="Age"
+            value={age}
+            min={16}
+            max={80}
+            step={1}
+            unit="yrs"
+            onChange={setAge}
+            onCommit={onTick}
+            disabled={locked}
+          />
+          <CompactSlider
+            label="Height"
+            value={heightCm}
+            min={140}
+            max={215}
+            step={1}
+            unit="cm"
+            onChange={setHeightCm}
+            onCommit={onTick}
+            disabled={locked}
+          />
+          <CompactSlider
+            label="Target weight"
+            value={targetWeightKg}
+            min={40}
+            max={180}
+            step={1}
+            unit="kg"
+            onChange={setTargetWeightKg}
+            onCommit={onTick}
+            disabled={locked}
+          />
+        </div>
+
+        <GlowButton
+          variant="cyber"
+          size="lg"
+          fullWidth
+          className="mt-8"
+          disabled={locked}
+          onClick={submit}
+        >
+          Continue
+          <ArrowRight className="size-5" />
+        </GlowButton>
       </div>
-
-      <div
-        className="grid grid-cols-3 gap-2"
-        role="radiogroup"
-        aria-label="Biological sex"
-      >
-        {SEX_OPTIONS.map((option) => {
-          const Icon = option.icon;
-          const active = sex === option.value;
-          return (
-            <button
-              key={option.value}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              disabled={locked}
-              onClick={(event) => {
-                fireBurst(event.clientX, event.clientY);
-                setSex(option.value);
-              }}
-              className={clsx(
-                "gf-card gf-press flex flex-col items-center gap-1.5 rounded-2xl px-2 py-3 text-center transition-all duration-200",
-                active ? "gf-card-active text-electric" : "text-ink-soft",
-              )}
-            >
-              <Icon className="size-4" strokeWidth={2.4} />
-              <span className="text-[10px] leading-tight font-bold">
-                {option.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      <GlassCard deep className="gf-cyber-border mt-4 p-6">
-        <TactileSlider
-          value={weightKg}
-          min={40}
-          max={180}
-          step={1}
-          unit="kg"
-          onChange={setWeightKg}
-          onTick={onTick}
-          disabled={locked}
-        />
-      </GlassCard>
-
-      <div className="gf-card mt-4 space-y-5 rounded-2xl p-5">
-        <CompactSlider
-          label="Age"
-          value={age}
-          min={16}
-          max={80}
-          step={1}
-          unit="yrs"
-          onChange={setAge}
-          onCommit={onTick}
-          disabled={locked}
-        />
-        <CompactSlider
-          label="Height"
-          value={heightCm}
-          min={140}
-          max={215}
-          step={1}
-          unit="cm"
-          onChange={setHeightCm}
-          onCommit={onTick}
-          disabled={locked}
-        />
-        <CompactSlider
-          label="Target weight"
-          value={targetWeightKg}
-          min={40}
-          max={180}
-          step={1}
-          unit="kg"
-          onChange={setTargetWeightKg}
-          onCommit={onTick}
-          disabled={locked}
-        />
-      </div>
-
-      <GlowButton
-        variant="cyber"
-        size="lg"
-        fullWidth
-        className="mt-6"
-        disabled={locked}
-        onClick={submit}
-      >
-        Continue
-        <ArrowRight className="size-5" />
-      </GlowButton>
     </div>
   );
 }
