@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { Check, Lock, ShieldCheck } from "lucide-react";
@@ -228,10 +229,12 @@ export function Paywall() {
 }
 
 /**
- * The page's one big visual: an illustrated "today" vs. "goal" silhouette
- * pair with the actual target numbers, replacing the old wall of separate
- * stat cards, a line chart, and a milestone timeline. Deliberately labeled
- * as illustrated, never a photo — there's no real before/after data to show.
+ * The page's one big visual: an AI-generated before/after example paired
+ * with the user's own target numbers, replacing the old wall of separate
+ * stat cards, a line chart, and a milestone timeline. The photo is a
+ * stock illustrative example (not a specific member's result), so the
+ * caption underneath says so rather than letting it read as a verified
+ * case study.
  */
 function TransformationCard({
   weightKg,
@@ -247,11 +250,28 @@ function TransformationCard({
       <p className="text-center text-[11px] font-black tracking-[0.18em] text-[#FFC700] uppercase">
         Your 6-month trajectory
       </p>
-      <div className="mt-5 flex items-center justify-center gap-3 sm:gap-6">
-        <SilhouettePanel label="Today" sublabel={`${weightKg} kg`} intensity={0.16} />
+
+      <div className="relative mt-4 overflow-hidden rounded-2xl border border-[#FFC700]/30">
+        <Image
+          src="/quiz/f20b9caa-72ee-4cd9-aeed-8019d57ba841.png"
+          alt="Illustrative six-month before-and-after transformation example"
+          width={1448}
+          height={1086}
+          sizes="(min-width: 640px) 512px, 100vw"
+          className="h-auto w-full object-cover"
+          priority
+        />
+        <div
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0b0e14]/55 via-transparent to-transparent"
+          aria-hidden
+        />
+      </div>
+
+      <div className="mt-4 flex items-center justify-center gap-2 text-sm font-extrabold text-ink">
+        <span>{weightKg} kg</span>
         <svg
           viewBox="0 0 24 24"
-          className="size-7 shrink-0 text-[#FFC700]"
+          className="size-4 shrink-0 text-[#FFC700]"
           fill="none"
           stroke="currentColor"
           strokeWidth={3}
@@ -261,71 +281,15 @@ function TransformationCard({
         >
           <path d="M5 12h14M13 6l6 6-6 6" />
         </svg>
-        <SilhouettePanel
-          label="Month 6"
-          sublabel={`${targetWeightKg} kg`}
-          intensity={0.85}
-          lit
-        />
+        <span>{targetWeightKg} kg</span>
       </div>
-      <p className="mt-4 text-center text-xs font-bold text-ink-soft">
+      <p className="mt-1 text-center text-xs font-bold text-ink-soft">
         {goal} · 6-month transformation (24 weeks)
       </p>
       <p className="mt-1 text-center text-[10px] text-haze">
-        Illustrated projection, not a photo — real results depend on
-        consistency.
+        AI-generated illustrative example, not an actual member — real
+        results depend on consistency.
       </p>
-    </div>
-  );
-}
-
-function SilhouettePanel({
-  label,
-  sublabel,
-  intensity,
-  lit = false,
-}: {
-  label: string;
-  sublabel: string;
-  intensity: number;
-  lit?: boolean;
-}) {
-  const waistInset = 6 * intensity;
-  return (
-    <div className="text-center">
-      <div
-        className={clsx(
-          "gf-photo-bed relative mx-auto grid h-32 w-24 place-items-center overflow-hidden rounded-2xl sm:h-40 sm:w-28",
-          lit && "gf-glow-electric",
-        )}
-      >
-        <svg viewBox="0 0 60 90" className="h-4/5 w-3/5 text-[#FFC700]" aria-hidden>
-          <path
-            d={`M14,10 L46,10 Q49,10 47,14 L${42 + waistInset},32 Q${40 + waistInset},40 ${34 - waistInset},44 L${26 + waistInset},44 Q${20 - waistInset},40 ${18 - waistInset},32 L13,14 Q11,10 14,10 Z`}
-            fill="currentColor"
-            fillOpacity={0.16 + intensity * 0.3}
-            stroke="currentColor"
-            strokeOpacity={0.45 + intensity * 0.4}
-            strokeWidth={0.8}
-          />
-          <path
-            d="M16,46 L44,46 L41,86 Q41,88 38,88 L33,88 Q31,88 31,86 L30,58 L29,86 Q29,88 27,88 L22,88 Q19,88 19,86 Z"
-            fill="currentColor"
-            fillOpacity={0.16 + intensity * 0.3}
-            stroke="currentColor"
-            strokeOpacity={0.45 + intensity * 0.4}
-            strokeWidth={0.8}
-          />
-          {intensity > 0.3 && (
-            <g stroke="currentColor" strokeOpacity={0.5} strokeWidth={0.5} strokeLinecap="round">
-              <path d="M30,16 L30,32" />
-              <path d="M20,20 Q30,23 40,20" />
-            </g>
-          )}
-        </svg>
-      </div>
-      <p className="gf-display mt-2 text-sm font-extrabold text-ink">{label}</p>
-      <p className="gf-numeric text-[11px] font-bold text-mist">{sublabel}</p>
     </div>
   );
 }
