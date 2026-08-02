@@ -1,19 +1,27 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
+  ArrowRight,
+  Calendar,
   Check,
   ChevronRight,
+  Dumbbell,
+  Flame,
   Pause,
   Play,
   SkipBack,
   SkipForward,
   Sparkles,
+  Target,
+  Timer,
+  Trophy,
   X,
 } from "lucide-react";
-import { useGoalify } from "@/lib/goalify/store";
+import { useGoalify, todayKey } from "@/lib/goalify/store";
 import { findWorkout, resolveWorkout } from "@/lib/goalify/workouts";
 import type { Exercise } from "@/lib/goalify/types";
 import { GlassCard } from "@/components/goalify/ui/glass-card";
@@ -66,11 +74,38 @@ export function LivePlayer() {
     setSecondsLeft(value);
   }, []);
 
-  const exercise = workout.exercises[index];
+  // `workout` is re-derived from the live store, and completeWorkout()
+  // (fired from the completion effect below) advances programDay — which
+  // changes todaysWorkout, and therefore this workout's own exercise list,
+  // while this component is still mounted showing the "done" screen. The
+  // fallback keeps `index` (now possibly stale/out-of-range for the new
+  // list) from reading past the end of a shorter next-day workout.
+  const exercise = workout.exercises[index] ?? workout.exercises[0];
   const nextExercise = workout.exercises[index + 1];
   const isTimed = exercise.kind === "time";
   const { countdownBeep, exerciseChime, completionCelebration, goCue } =
     useWorkoutSounds();
+
+  // Real wall-clock session length — set once on mount (inside an effect,
+  // since Date.now() can't run during render), read once on completion, so
+  // the summary screen shows an actual elapsed time rather than the
+  // workout's static planned duration.
+  const sessionStartRef = useRef(0);
+  useEffect(() => {
+    sessionStartRef.current = Date.now();
+  }, []);
+  // Snapshot of the just-finished session, captured once when phase flips
+  // to "done" (see the completion effect below) — completeWorkout() there
+  // advances programDay, which flows back through todaysWorkout ->
+  // baseWorkout -> this component's `workout`, so reading `workout` live
+  // on the completion screen would silently show *tomorrow's* workout's
+  // numbers instead of the one the user actually just finished.
+  const [completion, setCompletion] = useState<{
+    title: string;
+    calories: number;
+    exerciseCount: number;
+    elapsedSeconds: number;
+  } | null>(null);
 
   /* ----------------------------------------------------------- transitions */
   // Every set opens on a WATCH_SECONDS preview of the trainer demonstration
@@ -154,13 +189,35 @@ export function LivePlayer() {
   useEffect(() => {
     if (phase === "done" && !savedRef.current) {
       savedRef.current = true;
+      setCompletion({
+        title: workout.title,
+        calories: workout.calories,
+        exerciseCount: workout.exercises.length,
+        elapsedSeconds: Math.round((Date.now() - sessionStartRef.current) / 1000),
+      });
       completeWorkout();
       completionCelebration();
     }
-  }, [phase, completeWorkout, completionCelebration]);
+  }, [phase, workout, completeWorkout, completionCelebration]);
 
   if (phase === "done") {
-    return <CompletionScreen workoutTitle={workout.title} calories={workout.calories} />;
+    // Falls back to the live `workout` only for the single render before
+    // the effect above has run — completion is always populated by the
+    // time the user can actually see this screen.
+    const snapshot = completion ?? {
+      title: workout.title,
+      calories: workout.calories,
+      exerciseCount: workout.exercises.length,
+      elapsedSeconds: 0,
+    };
+    return (
+      <CompletionScreen
+        workoutTitle={snapshot.title}
+        calories={snapshot.calories}
+        exercisesCompleted={snapshot.exerciseCount}
+        elapsedSeconds={snapshot.elapsedSeconds}
+      />
+    );
   }
 
   const totalProgress = ((index + (phase === "rest" ? 1 : 0)) / workout.exercises.length) * 100;
@@ -461,51 +518,242 @@ function describeAmount(exercise: Exercise): string {
     : `${exercise.amount} reps · ${exercise.focus}`;
 }
 
+/** Monday-first week strip so "3/7 done" reads left-to-right like a
+ * calendar, independent of the JS Date week (which starts on Sunday). */
+function currentWeekDays(): { key: string; label: string; isToday: boolean; isFuture: boolean }[] {
+  const now = new Date();
+  const jsDay = now.getDay(); // 0 = Sunday
+  const mondayOffset = jsDay === 0 ? -6 : 1 - jsDay;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + mondayOffset);
+  const labels = ["M", "T", "W", "T", "F", "S", "S"];
+  const todayStr = todayKey(now);
+
+  return labels.map((label, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const key = todayKey(d);
+    return { key, label, isToday: key === todayStr, isFuture: key > todayStr };
+  });
+}
+
+function formatElapsed(totalSeconds: number): string {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+}
+
+function SummaryCard({
+  icon: Icon,
+  value,
+  label,
+  tone,
+}: {
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  value: string | number;
+  label: string;
+  tone: "electric" | "lime";
+}) {
+  return (
+    <GlassCard deep className="flex flex-col items-start gap-2 p-4">
+      <span
+        className={
+          tone === "electric"
+            ? "gf-glow-electric grid size-9 place-items-center rounded-xl bg-electric/15 text-electric"
+            : "gf-glow-lime grid size-9 place-items-center rounded-xl bg-lime-neon/15 text-lime-deep"
+        }
+      >
+        <Icon className="size-4.5" strokeWidth={2.4} />
+      </span>
+      <p className="gf-numeric gf-display text-2xl font-black text-ink">{value}</p>
+      <p className="text-[11px] font-bold tracking-[0.08em] text-mist uppercase">
+        {label}
+      </p>
+    </GlassCard>
+  );
+}
+
 function CompletionScreen({
   workoutTitle,
   calories,
+  exercisesCompleted,
+  elapsedSeconds,
 }: {
   workoutTitle: string;
   calories: number;
+  exercisesCompleted: number;
+  elapsedSeconds: number;
 }) {
-  const { streak, state } = useGoalify();
+  const { streak, state, answers } = useGoalify();
+
+  const weekDays = useMemo(() => currentWeekDays(), []);
+  const weekCompletedCount = weekDays.filter((d) =>
+    state.completedDays.includes(d.key),
+  ).length;
+  const weeklyGoalPercent = Math.min(
+    100,
+    Math.round((weekCompletedCount / Math.max(1, answers.daysPerWeek)) * 100),
+  );
+  // Every exercise in today's plan was finished to reach this screen at
+  // all, so "goal completed" for the session itself is always full —
+  // still derived from the real count rather than a hardcoded 100.
+  const goalPercent = exercisesCompleted > 0 ? 100 : 0;
 
   return (
-    <main className="gf-cyber-scope mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center px-5 py-14 text-center">
-      <div className="relative grid size-40 place-items-center">
-        <span
-          className="gf-anim-burst absolute size-28 rounded-full border-2 border-lime-neon/60"
-          aria-hidden
-        />
-        <div className="gf-glow-lime grid size-24 place-items-center rounded-full bg-lime-neon">
-          <Check className="size-12 text-ink" strokeWidth={3} />
+    <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 pb-14 text-center">
+      <ParticleBurstLayer />
+
+      {/* --------------------------------------------------- Hero header */}
+      <div className="relative -mx-5 min-h-64 overflow-hidden px-5 pt-12 pb-8">
+        {/* `.gf-cyber-scope::before` paints the page's ambient glow at
+         * z-index: -2 in the isolated stacking context this `<main>`
+         * establishes — a negative z-index here (e.g. -z-10) would paint
+         * *behind* that layer and be fully hidden, so this stays at the
+         * implicit auto/0 stacking order instead and relies on DOM order
+         * (painted first, below the trophy/headline siblings after it). */}
+        <div className="absolute inset-0 bg-[#0b0e14]" aria-hidden>
+          <div className="absolute top-0 right-0 h-full w-[70%] opacity-100">
+            <Image
+              src="/quiz/goal-burn.png"
+              alt=""
+              fill
+              priority
+              className="[mask-image:linear-gradient(115deg,transparent_2%,black_28%,black_100%)] object-cover object-[62%_18%]"
+            />
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0b0e14] via-[#0b0e14]/10 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0b0e14] via-[#0b0e14]/25 via-40% to-transparent" />
         </div>
+
+        <div className="relative mx-auto grid size-20 place-items-center">
+          <span
+            className="gf-anim-burst absolute size-24 rounded-full border-2 border-electric/50"
+            aria-hidden
+          />
+          <div className="gf-glow-electric grid size-16 place-items-center rounded-full bg-electric">
+            <Trophy className="size-8 text-white" strokeWidth={2.3} />
+          </div>
+        </div>
+
+        <h1 className="gf-anim-rise gf-delay-2 gf-display relative mt-5 text-4xl font-black text-ink drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
+          Workout Complete!
+        </h1>
+        <p className="gf-anim-rise gf-delay-3 relative mt-2 text-sm font-bold text-electric drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+          You showed up. You pushed. You&apos;re stronger.
+        </p>
       </div>
 
-      <p className="gf-anim-rise mt-8 text-[11px] font-bold tracking-[0.2em] text-lime-deep uppercase">
-        <Sparkles className="mr-1 inline size-3.5" />
-        Session complete
-      </p>
-      <h1 className="gf-anim-rise gf-delay-2 gf-display mt-3 text-4xl font-black text-ink">
-        {workoutTitle} <span className="gf-text-hype">done.</span>
-      </h1>
-      <p className="gf-anim-rise gf-delay-3 mt-3 text-base text-ink-soft">
-        You showed up and finished. That&apos;s the whole game.
-      </p>
-
-      <GlassCard deep className="gf-anim-rise gf-delay-4 mt-8 w-full p-6">
-        <div className="grid grid-cols-3 gap-4">
-          <Stat value={calories} suffix="kcal" label="Burned" tone="electric" />
-          <Stat value={streak} label="Day streak" tone="lime" />
-          <Stat value={state.completedDays.length} label="Total sessions" />
-        </div>
+      {/* ----------------------------------------------------- Badge card */}
+      <GlassCard
+        deep
+        className="gf-anim-rise gf-delay-4 flex items-center gap-3 p-4 text-left"
+      >
+        <span className="gf-glow-electric grid size-11 shrink-0 place-items-center rounded-2xl bg-electric">
+          <Trophy className="size-5 text-white" strokeWidth={2.4} />
+        </span>
+        <p className="text-sm leading-snug font-bold text-ink">
+          <span className="text-electric">AWESOME WORK!</span> You completed{" "}
+          {workoutTitle} like a beast.
+        </p>
       </GlassCard>
 
-      <GlowLink href="/home" size="xl" fullWidth className="gf-anim-rise gf-delay-5 mt-8">
-        Back to my dashboard
+      {/* -------------------------------------------------- Summary cards */}
+      <section className="mt-7 text-left">
+        <p className="mb-3 text-[11px] font-black tracking-[0.16em] text-electric uppercase">
+          Today&apos;s summary
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          <SummaryCard icon={Flame} value={calories} label="Calories burned" tone="electric" />
+          <SummaryCard icon={Dumbbell} value={exercisesCompleted} label="Exercises" tone="lime" />
+          <SummaryCard icon={Timer} value={formatElapsed(elapsedSeconds)} label="Duration" tone="electric" />
+          <SummaryCard icon={Target} value={`${goalPercent}%`} label="Goal completed" tone="lime" />
+        </div>
+      </section>
+
+      {/* --------------------------------------------- Motivation banner */}
+      <div className="gf-anim-rise gf-delay-5 relative mt-7 overflow-hidden rounded-3xl p-6">
+        <div
+          className="absolute inset-0 -z-10 bg-gradient-to-t from-[#3a1a05] via-[#5c2a0a]/70 to-transparent"
+          aria-hidden
+        />
+        <div className="gf-glass absolute inset-0 -z-20" aria-hidden />
+        <Sparkles className="mx-auto size-5 text-electric" />
+        <p className="gf-display mt-3 text-base leading-relaxed font-bold text-ink">
+          &ldquo;Discipline today. Freedom tomorrow. The only bad workout is
+          the one you didn&apos;t do.&rdquo;
+        </p>
+      </div>
+
+      {/* ------------------------------------------------ Weekly progress */}
+      <section className="mt-7 text-left">
+        <p className="mb-3 text-[11px] font-black tracking-[0.16em] text-electric uppercase">
+          Your progress
+        </p>
+        <GlassCard deep className="flex items-center gap-5 p-5">
+          <ProgressRing
+            size={96}
+            thickness={9}
+            rings={[{ value: weeklyGoalPercent, color: "#e8b32c", label: "Week" }]}
+          >
+            <div>
+              <p className="gf-numeric text-xl font-black text-ink">
+                {weeklyGoalPercent}%
+              </p>
+              <p className="text-[8px] font-bold tracking-[0.06em] text-mist uppercase">
+                Weekly goal
+              </p>
+            </div>
+          </ProgressRing>
+
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold text-ink-soft">
+              {`${weekCompletedCount} of ${answers.daysPerWeek} sessions this week · ${streak} day streak`}
+            </p>
+            <div className="mt-3 flex justify-between gap-1">
+              {weekDays.map((day) => {
+                const done = state.completedDays.includes(day.key);
+                return (
+                  <div key={day.key} className="flex flex-col items-center gap-1">
+                    <span
+                      className={
+                        done
+                          ? "gf-glow-electric grid size-7 place-items-center rounded-full bg-electric text-white"
+                          : day.isToday
+                            ? "grid size-7 place-items-center rounded-full border-2 border-electric/60 text-electric"
+                            : "grid size-7 place-items-center rounded-full bg-ink/6 text-haze"
+                      }
+                    >
+                      {done ? (
+                        <Check className="size-3.5" strokeWidth={3.5} />
+                      ) : (
+                        <span className="text-[10px] font-bold">{day.label}</span>
+                      )}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </GlassCard>
+      </section>
+
+      {/* --------------------------------------------------------- CTAs */}
+      <GlowLink
+        href="/home"
+        variant="cyber"
+        size="xl"
+        fullWidth
+        pulse
+        className="gf-anim-rise gf-delay-6 mt-8 text-lg tracking-tight"
+        onClick={(event) => {
+          fireBurst(event.clientX, event.clientY, true);
+          window.setTimeout(() => fireBurst(event.clientX, event.clientY, false), 90);
+        }}
+      >
+        Keep going <ArrowRight className="size-5" />
       </GlowLink>
-      <GlowLink href="/progress" variant="ghost" size="sm" className="mt-3">
-        See my progress
+      <GlowLink href="/progress" variant="glass" size="md" fullWidth className="mt-3">
+        <Calendar className="size-4" /> View workout history <ArrowRight className="size-4" />
       </GlowLink>
     </main>
   );
