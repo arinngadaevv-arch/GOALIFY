@@ -58,7 +58,7 @@ export function Dashboard() {
   );
 
   return (
-    <AppShell dark hideStreakBadge>
+    <AppShell dark>
       <ParticleBurstLayer />
 
       {/* ------------------------------------------------------- Streak badge */}

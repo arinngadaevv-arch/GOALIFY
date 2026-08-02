@@ -3,11 +3,11 @@
 import { useCallback } from "react";
 import { useGoalify } from "@/lib/goalify/store";
 import {
+  playGlassChime,
   playHypeSelect,
   playProgressPowerUp,
   playSliderTick,
   playUnlockFanfare,
-  playVictoryTick,
 } from "@/lib/goalify/sound";
 
 /**
@@ -19,8 +19,8 @@ export function useUiSounds() {
   const { state } = useGoalify();
   const enabled = state.settings.soundEffects;
 
-  const victoryTick = useCallback(() => {
-    if (enabled) playVictoryTick();
+  const glassChime = useCallback(() => {
+    if (enabled) playGlassChime();
   }, [enabled]);
 
   const progressPowerUp = useCallback(() => {
@@ -39,5 +39,5 @@ export function useUiSounds() {
     if (enabled) playSliderTick();
   }, [enabled]);
 
-  return { victoryTick, progressPowerUp, hypeSelect, unlockFanfare, sliderTick };
+  return { glassChime, progressPowerUp, hypeSelect, unlockFanfare, sliderTick };
 }

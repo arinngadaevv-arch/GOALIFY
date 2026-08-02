@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import clsx from "clsx";
 import { ArrowRight, Check, ChevronLeft, TrendingUp } from "lucide-react";
 import {
@@ -16,6 +17,7 @@ import { useGoalify } from "@/lib/goalify/store";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
 import { CoachGuide, sayCoach } from "@/components/goalify/coach/coach-guide";
 import { useUiSounds } from "@/components/goalify/use-ui-sounds";
+import { FloatingStreakBadge } from "@/components/goalify/ui/floating-streak-badge";
 import { hasRealPhoto, OptionPhoto } from "./option-photo";
 import { QuizIconBadge, type QuizIconKey } from "./quiz-icons";
 import { AnalyzingScreen } from "./analyzing-screen";
@@ -58,7 +60,7 @@ export function QuizFlow() {
   const [pending, setPending] = useState<Partial<QuizAnswers> | null>(null);
   /** The celebration pill that pops the instant an answer lands. */
   const [hudToast, setHudToast] = useState<string | null>(null);
-  const { victoryTick, hypeSelect, sliderTick } = useUiSounds();
+  const { glassChime, hypeSelect, sliderTick } = useUiSounds();
 
   const step = QUIZ_STEPS[index];
   const isLast = index === QUIZ_STEPS.length - 1;
@@ -127,6 +129,7 @@ export function QuizFlow() {
   return (
     <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-28">
       <ParticleBurstLayer />
+      <FloatingStreakBadge />
       <header className="relative flex items-center gap-4 py-5">
         <button
           type="button"
@@ -166,16 +169,28 @@ export function QuizFlow() {
       </div>
 
       {/* ------------------------------------------------------- Big headline */}
-      <div key={step.id} className="gf-anim-swoop relative pt-3">
+      <motion.div
+        key={step.id}
+        initial={{ opacity: 0, y: 24, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        className="relative pt-3"
+      >
         <p className="text-[11px] font-black tracking-[0.16em] text-electric uppercase">
           {step.chapter}
         </p>
         <h1 className="gf-display relative mt-2 text-4xl leading-[1.05] font-black text-ink sm:text-5xl">
           {step.title}
         </h1>
-      </div>
+      </motion.div>
 
-      <div className="relative flex-1 pt-8">
+      <motion.div
+        key={`${step.id}-content`}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+        className="relative flex-1 pt-8"
+      >
         <p className="mb-6 text-sm leading-relaxed text-mist">
           {step.subtitle}
         </p>
@@ -192,7 +207,7 @@ export function QuizFlow() {
               onPick={pick}
               onSetDraft={setDraft}
               locked={pending !== null}
-              onTap={victoryTick}
+              onTap={glassChime}
             />
           ) : step.kind === "bodyMap" ? (
             <BodyMapStep
@@ -201,7 +216,7 @@ export function QuizFlow() {
               onSetDraft={setDraft}
               onPick={pick}
               locked={pending !== null}
-              onTap={victoryTick}
+              onTap={glassChime}
             />
           ) : step.kind === "vitals" ? (
             <VitalsStep
@@ -223,7 +238,7 @@ export function QuizFlow() {
             />
           )}
         </div>
-      </div>
+      </motion.div>
 
       <footer className="relative pt-8 text-center">
         <p className="text-xs text-haze">Your answers stay on this device</p>
@@ -340,6 +355,7 @@ function ChoiceStep({
             option={option}
             layout={layout}
             hasPhoto={stepHasPhotos}
+            stepId={step.id}
             selected={String(value) === option.value}
             disabled={locked}
             onClick={() => choose(option)}
@@ -378,10 +394,21 @@ function ChoiceStep({
  * with the photo bleeding off the right edge, and a plain image-above-label
  * tile. `list` keeps the compact icon row for the quick utility questions.
  */
+/** Rising-intensity gradient wash per level, gold at the low end to a
+ * hotter gold/crimson blaze at the top — the benchmark step's cards get
+ * their own energy without needing a mismatched stock photo per rank. */
+const LEVEL_CARD_BG: Record<string, string> = {
+  beginner: "bg-gradient-to-br from-electric/14 via-transparent to-transparent",
+  returning: "bg-gradient-to-br from-electric/24 via-electric/6 to-transparent",
+  consistent: "bg-gradient-to-br from-lime-neon/22 via-electric/12 to-transparent",
+  advanced: "bg-gradient-to-br from-lime-neon/38 via-electric/18 to-transparent",
+};
+
 function PhotoOptionCard({
   option,
   layout,
   hasPhoto,
+  stepId,
   selected,
   disabled,
   onClick,
@@ -391,6 +418,7 @@ function PhotoOptionCard({
   /** Precomputed by the caller — true only when every option in the step
    * has a real photo, so a card never shows a photo in isolation. */
   hasPhoto: boolean;
+  stepId: string;
   selected: boolean;
   disabled: boolean;
   onClick: () => void;
@@ -400,6 +428,42 @@ function PhotoOptionCard({
       <Check className="size-4" strokeWidth={3.5} />
     </span>
   );
+
+  // The benchmark ("level") step gets its own high-energy treatment —
+  // a rising-intensity gradient wash, animated sweep border, hover glow,
+  // and a badge-styled callout instead of the plain icon-card fallback.
+  if (stepId === "level" && !hasPhoto) {
+    return (
+      <button
+        type="button"
+        onClick={withBurst(onClick)}
+        disabled={disabled}
+        aria-pressed={selected}
+        className={clsx(
+          "gf-card gf-cyber-border gf-press relative flex flex-col items-center gap-2 rounded-3xl p-5 text-center transition-all duration-300",
+          "hover:scale-[1.04] hover:shadow-[0_0_28px_-6px_rgba(232,179,44,0.75)]",
+          LEVEL_CARD_BG[option.value],
+          selected ? "gf-card-active scale-[1.02]" : "",
+        )}
+      >
+        {checkBadge}
+        <QuizIconBadge icon={option.icon} size="lg" active={selected} />
+        <span className="gf-display relative text-base leading-tight font-extrabold text-ink">
+          {option.label}
+        </span>
+        {option.description && (
+          <span className="relative text-xs leading-snug text-mist">
+            {option.description}
+          </span>
+        )}
+        {option.socialProof && (
+          <span className="gf-glow-electric relative mt-1 rounded-full bg-electric/12 px-2.5 py-1 text-[10px] font-black tracking-[0.06em] text-electric uppercase">
+            {option.socialProof}
+          </span>
+        )}
+      </button>
+    );
+  }
 
   if (layout === "list") {
     return (

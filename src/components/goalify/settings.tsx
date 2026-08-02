@@ -15,7 +15,6 @@ import {
   ShieldCheck,
   Sparkles,
   UserRound,
-  Volume2,
   Zap,
 } from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
@@ -109,13 +108,6 @@ export function SettingsScreen() {
         </GlassCard>
 
         <GlassCard deep className="mt-3 divide-y divide-ink/6 px-5 py-1">
-          <Toggle
-            checked={settings.voiceCues}
-            onChange={(next) => updateSettings({ voiceCues: next })}
-            label="Voice cues"
-            description="Your coach calls out form corrections during the session."
-            icon={<Volume2 className="size-4" />}
-          />
           <Toggle
             checked={settings.soundEffects}
             onChange={(next) => updateSettings({ soundEffects: next })}

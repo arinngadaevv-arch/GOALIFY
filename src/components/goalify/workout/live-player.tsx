@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import clsx from "clsx";
 import {
   Check,
   ChevronRight,
@@ -12,8 +11,6 @@ import {
   SkipBack,
   SkipForward,
   Sparkles,
-  Volume2,
-  VolumeX,
   X,
 } from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
@@ -41,7 +38,7 @@ const RING_GOLD = "#e8b32c";
 const RING_CRIMSON = "#ff3b3b";
 
 export function LivePlayer() {
-  const { state, todaysWorkout, completeWorkout, updateSettings } = useGoalify();
+  const { state, todaysWorkout, completeWorkout } = useGoalify();
   const searchParams = useSearchParams();
   const selectedId = searchParams.get("workout");
   const baseWorkout = useMemo(
@@ -72,25 +69,8 @@ export function LivePlayer() {
   const exercise = workout.exercises[index];
   const nextExercise = workout.exercises[index + 1];
   const isTimed = exercise.kind === "time";
-  const voiceOn = state.settings.voiceCues;
   const { countdownBeep, exerciseChime, completionCelebration, goCue } =
     useWorkoutSounds();
-
-  /* ------------------------------------------------------------- narration */
-  const speak = useCallback(
-    (text: string) => {
-      if (!voiceOn || typeof window === "undefined") return;
-      try {
-        const synth = window.speechSynthesis;
-        if (!synth) return;
-        synth.cancel();
-        synth.speak(new SpeechSynthesisUtterance(text));
-      } catch {
-        // Speech synthesis is a bonus, never a requirement.
-      }
-    },
-    [voiceOn],
-  );
 
   /* ----------------------------------------------------------- transitions */
   // Every set opens on a WATCH_SECONDS preview of the trainer demonstration
@@ -106,10 +86,9 @@ export function LivePlayer() {
       setPhase("watch");
       setReps(0);
       setSeconds(WATCH_SECONDS);
-      speak(`${target.name}. ${target.cue}`);
       exerciseChime();
     },
-    [workout.exercises, speak, setSeconds, exerciseChime],
+    [workout.exercises, setSeconds, exerciseChime],
   );
 
   const finishCurrent = useCallback(() => {
@@ -121,11 +100,10 @@ export function LivePlayer() {
     if (exercise.restSeconds > 0) {
       setPhase("rest");
       setSeconds(exercise.restSeconds);
-      speak(`Rest. Next up, ${workout.exercises[index + 1].name}`);
       return;
     }
     goToExercise(index + 1);
-  }, [index, exercise, workout.exercises, goToExercise, speak, setSeconds]);
+  }, [index, exercise, workout.exercises, goToExercise, setSeconds]);
 
   /* ------------------------------------------------------------------ tick */
   // The countdown and the phase transition it triggers both live inside the
@@ -171,26 +149,15 @@ export function LivePlayer() {
     goCue,
   ]);
 
-  /* Announce the very first exercise's watch phase on mount (every later
-   * one is already announced inside goToExercise). */
-  const announcedFirstRef = useRef(false);
-  useEffect(() => {
-    if (announcedFirstRef.current) return;
-    announcedFirstRef.current = true;
-    speak(`${exercise.name}. ${exercise.cue}`);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   /* ------------------------------------------------------------ completion */
   const savedRef = useRef(false);
   useEffect(() => {
     if (phase === "done" && !savedRef.current) {
       savedRef.current = true;
       completeWorkout();
-      speak("Session complete. Outstanding work.");
       completionCelebration();
     }
-  }, [phase, completeWorkout, speak, completionCelebration]);
+  }, [phase, completeWorkout, completionCelebration]);
 
   if (phase === "done") {
     return <CompletionScreen workoutTitle={workout.title} calories={workout.calories} />;
@@ -234,19 +201,6 @@ export function LivePlayer() {
             />
           </div>
         </div>
-
-        <button
-          type="button"
-          onClick={() => updateSettings({ voiceCues: !voiceOn })}
-          aria-label={voiceOn ? "Mute voice cues" : "Unmute voice cues"}
-          aria-pressed={voiceOn}
-          className={clsx(
-            "gf-glass gf-press grid size-10 shrink-0 place-items-center rounded-full transition-colors",
-            voiceOn ? "text-electric" : "text-haze",
-          )}
-        >
-          {voiceOn ? <Volume2 className="size-5" /> : <VolumeX className="size-5" />}
-        </button>
 
         <button
           type="button"

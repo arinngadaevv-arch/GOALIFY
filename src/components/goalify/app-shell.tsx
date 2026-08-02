@@ -1,7 +1,6 @@
 import clsx from "clsx";
 import { BottomDock } from "./bottom-dock";
 import { TopBar } from "./top-bar";
-import { FloatingStreakBadge } from "./ui/floating-streak-badge";
 
 /**
  * Frame for the four core app screens: top bar, scrollable content that
@@ -13,9 +12,9 @@ import { FloatingStreakBadge } from "./ui/floating-streak-badge";
  * inherits the scope's CSS custom properties; `position: fixed` only
  * escapes the containing block for layout, not variable inheritance.
  *
- * `hideStreakBadge` opts a screen out of the permanent floating streak
- * counter — Dashboard already has its own prominent streak badge plus
- * TopBar's inline chip, so a third indicator there would be redundant.
+ * No FloatingStreakBadge here — every AppShell screen already renders
+ * TopBar, which has its own streak chip. The floating badge is reserved for
+ * screens with no TopBar at all (quiz, launchpad, live-player).
  */
 export function AppShell({
   children,
@@ -23,14 +22,12 @@ export function AppShell({
   subtitle,
   showTopBar = true,
   dark = false,
-  hideStreakBadge = false,
 }: {
   children: React.ReactNode;
   title?: string;
   subtitle?: string;
   showTopBar?: boolean;
   dark?: boolean;
-  hideStreakBadge?: boolean;
 }) {
   return (
     <div className={clsx(dark && "gf-cyber-scope")}>
@@ -38,7 +35,6 @@ export function AppShell({
         {showTopBar && <TopBar title={title} subtitle={subtitle} />}
         {children}
       </div>
-      {!hideStreakBadge && <FloatingStreakBadge />}
       <BottomDock />
     </div>
   );

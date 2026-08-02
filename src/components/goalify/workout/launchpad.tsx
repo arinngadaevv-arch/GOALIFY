@@ -202,7 +202,7 @@ export function Launchpad() {
           </span>
           <span className="flex items-center gap-1.5">
             <Volume2 className="size-3.5" />
-            {state.settings.voiceCues ? "Voice cues on" : "Voice cues off"}
+            {state.settings.soundEffects ? "Sound on" : "Sound off"}
           </span>
         </div>
       </div>

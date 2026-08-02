@@ -4,10 +4,11 @@ import { Flame } from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
 
 /**
- * A permanently-visible streak counter — unlike TopBar's inline chip (which
- * scrolls away with the header), this is `position: fixed` so it stays on
- * screen no matter how far the user scrolls. Sits at bottom-right, clear of
- * BottomDock's centered nav and TopBar's own top-right chip.
+ * A permanently-visible streak counter for the three screens with no
+ * TopBar of their own (quiz, launchpad, live-player) — AppShell screens
+ * already show a streak chip in TopBar, so this isn't mounted there.
+ * Sits bottom-right, above CoachGuide's floating avatar (also bottom-4
+ * right-4) and clear of live-player's centered floating control bar.
  */
 export function FloatingStreakBadge() {
   const { streak } = useGoalify();

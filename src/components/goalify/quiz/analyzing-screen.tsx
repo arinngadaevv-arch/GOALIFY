@@ -76,7 +76,7 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
   const [stage, setStage] = useState(0);
   // Scrambled digits until each metric "resolves".
   const [scramble, setScramble] = useState(0);
-  const { victoryTick, unlockFanfare, progressPowerUp } = useUiSounds();
+  const { glassChime, unlockFanfare, progressPowerUp } = useUiSounds();
 
   // The audio "baseline" for the calculating screen — one power-up hit as
   // the ring starts sweeping.
@@ -93,11 +93,11 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
       return () => clearTimeout(timer);
     }
     const timer = setTimeout(() => {
-      victoryTick();
+      glassChime();
       setStage((s) => s + 1);
     }, STAGE_MS);
     return () => clearTimeout(timer);
-  }, [stage, onDone, victoryTick, unlockFanfare]);
+  }, [stage, onDone, glassChime, unlockFanfare]);
 
   // Drives the flicker on unresolved metrics.
   useEffect(() => {

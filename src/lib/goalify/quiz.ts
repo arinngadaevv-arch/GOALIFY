@@ -239,14 +239,14 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Returning",
         description: "Trained before, took time off",
         icon: "refresh",
-        socialProof: "Back in stride in 2 weeks",
+        socialProof: "Rebuild the monster",
       },
       {
         value: "consistent",
         label: "Consistent",
         description: "Training most weeks already",
         icon: "award",
-        socialProof: "Ready to level up",
+        socialProof: "Unlock the next level",
       },
       {
         value: "advanced",

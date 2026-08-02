@@ -26,10 +26,6 @@ const INITIAL_STATE: GoalifyState = {
   waterUpdatedOn: todayKey(),
   settings: {
     kneeSafe: false,
-    // Off by default — the workout flow leans on chime cues and visual
-    // countdown flashes instead; users who want spoken narration can still
-    // switch this on in Settings.
-    voiceCues: false,
     soundEffects: true,
     pushMotivation: true,
     pushWater: true,

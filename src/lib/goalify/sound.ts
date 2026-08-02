@@ -133,23 +133,16 @@ export function playCompletionCelebration() {
 }
 
 /**
- * A compact "small win" chime for per-tap selection feedback (toggling a
- * body-map zone, picking a multi-select option) — a bright rising two-note
- * hit, tuned to feel like a mini achievement rather than a flat UI click.
- * Scaled down from playHypeSelect/playUnlockFanfare, which are reserved for
- * bigger commit/unlock moments.
+ * A soft, luxury "glass chime" for per-tap selection feedback (toggling a
+ * body-map zone, picking a multi-select option) — pure sine fundamental with
+ * a faint octave-up shimmer, slow enough attack/decay to read as premium
+ * rather than a UI click. Deliberately calmer than playHypeSelect /
+ * playUnlockFanfare, which stay reserved for bigger commit/unlock moments.
  */
-export function playVictoryTick() {
+export function playGlassChime() {
   playTones([
-    { frequency: 320, startOffset: 0, duration: 0.05, gain: 0.12, type: "sine" },
-    ...wide({
-      frequency: 880,
-      glideTo: 1180,
-      startOffset: 0,
-      duration: 0.09,
-      gain: 0.13,
-      type: "triangle",
-    }),
+    { frequency: 1046.5, startOffset: 0, duration: 0.22, gain: 0.09, type: "sine" },
+    { frequency: 2093, startOffset: 0.015, duration: 0.16, gain: 0.03, type: "sine" },
   ]);
 }
 
