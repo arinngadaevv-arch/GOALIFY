@@ -41,6 +41,8 @@ export function TactileSlider({
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
   const lastValue = useRef(value);
 
   const ratio = Math.min(1, Math.max(0, (value - min) / (max - min)));
@@ -92,13 +94,62 @@ export function TactileSlider({
     }
   };
 
+  const startEditing = () => {
+    if (disabled) return;
+    setDraft(String(value));
+    setEditing(true);
+  };
+
+  const commitEdit = () => {
+    const trimmed = draft.trim();
+    if (trimmed !== "") {
+      const parsed = Number(trimmed);
+      if (!Number.isNaN(parsed)) {
+        const stepped = Math.round(parsed / step) * step;
+        const clamped = Math.min(max, Math.max(min, stepped));
+        if (clamped !== value) {
+          lastValue.current = clamped;
+          onChange(clamped);
+          onTick();
+        }
+      }
+    }
+    setEditing(false);
+  };
+
   return (
     <div className="select-none">
-      <div className="pointer-events-none text-center">
-        <p className="gf-numeric gf-cyber-glow-text text-7xl leading-none font-black tracking-tight">
-          {value}
-          <span className="ml-2 text-2xl font-bold text-mist">{unit}</span>
-        </p>
+      <div className="text-center">
+        {editing ? (
+          <input
+            type="number"
+            inputMode="numeric"
+            autoFocus
+            value={draft}
+            min={min}
+            max={max}
+            step={step}
+            onChange={(event) => setDraft(event.target.value)}
+            onBlur={commitEdit}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") event.currentTarget.blur();
+              if (event.key === "Escape") setEditing(false);
+            }}
+            aria-label={`${unit} value (exact)`}
+            className="gf-numeric mx-auto block w-56 rounded-2xl border border-electric/50 bg-black/30 px-4 py-1 text-center text-7xl leading-none font-black text-electric outline-none"
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={startEditing}
+            disabled={disabled}
+            aria-label={`Edit ${unit} value directly`}
+            className="gf-numeric gf-cyber-glow-text gf-press text-7xl leading-none font-black tracking-tight underline decoration-electric/40 decoration-dotted underline-offset-8 disabled:pointer-events-none"
+          >
+            {value}
+            <span className="ml-2 text-2xl font-bold text-mist">{unit}</span>
+          </button>
+        )}
       </div>
 
       <div

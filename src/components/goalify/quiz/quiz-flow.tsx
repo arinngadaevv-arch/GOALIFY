@@ -633,6 +633,11 @@ function PhotoOptionCard({
         <span className="gf-display relative text-lg leading-tight font-extrabold text-white">
           {option.label}
         </span>
+        {option.description && (
+          <span className="relative mt-0.5 text-[11px] leading-snug font-bold text-white/80">
+            {option.description}
+          </span>
+        )}
         {option.socialProof && <SocialProofLine text={option.socialProof} light />}
       </button>
     );
