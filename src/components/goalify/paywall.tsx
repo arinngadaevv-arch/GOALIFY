@@ -7,15 +7,14 @@ import {
   Bolt,
   Calculator,
   Check,
-  Flame,
+  CreditCard,
   Lock,
   ScanFace,
   ShieldCheck,
-  Sparkles,
   Star,
-  Timer,
   TrendingDown,
   Trophy,
+  Zap,
 } from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
 import {
@@ -39,18 +38,10 @@ import { CoachBubble } from "@/components/goalify/coach/coach-bubble";
 import { ParticleField } from "@/components/goalify/ui/particles";
 import { CountUp } from "@/components/goalify/ui/count-up";
 import { BuyerTicker } from "@/components/goalify/buyer-ticker";
-import { LiveUrgencyBadge } from "@/components/goalify/live-urgency-badge";
 import { Pill, Stat } from "@/components/goalify/ui/stat";
 import { fireBurst, ParticleBurstLayer } from "@/components/goalify/quiz/particle-burst";
 
 const OFFER_SECONDS = 10 * 60;
-
-/**
- * The full undiscounted weekly rate every tier's crossed-out price is
- * measured against — a longer commitment just buys a deeper cut off the
- * same sticker price, the standard subscription-tier pattern.
- */
-const FULL_PRICE_PER_WEEK = 19.99;
 
 const TIERS = [
   {
@@ -59,6 +50,7 @@ const TIERS = [
     price: 29.99,
     perWeek: 6.92,
     was: 39.99,
+    billedLabel: "billed monthly",
   },
   {
     id: "quarterly",
@@ -66,7 +58,8 @@ const TIERS = [
     price: 49.99,
     perWeek: 3.84,
     was: 89.99,
-    badge: "MOST POPULAR AMONG ALPHA MEMBERS",
+    billedLabel: "billed every 3 months",
+    badge: "MOST POPULAR",
     popular: true,
   },
   {
@@ -75,7 +68,8 @@ const TIERS = [
     price: 119.99,
     perWeek: 2.3,
     was: 239.99,
-    badge: "Best value",
+    billedLabel: "billed annually",
+    badge: "BEST VALUE",
   },
 ];
 
@@ -116,7 +110,6 @@ export function Paywall() {
   const projection = useMemo(() => projectWeight(answers), [answers]);
   const highlights = useMemo(() => planHighlights(answers), [answers]);
   const weeks = weeksToTarget(answers);
-  const selected = TIERS.find((t) => t.id === tier) ?? TIERS[1];
   const losing = answers.targetWeightKg < answers.weightKg;
 
   const checkout = (event: React.MouseEvent) => {
@@ -129,9 +122,27 @@ export function Paywall() {
 
   return (
     <main className="gf-cyber-scope relative mx-auto w-full max-w-2xl px-5 pb-40">
+      {/* Sleek sticky countdown — replaces the old boxed-in alarm timer.
+          Sticks to the top of the viewport the instant it's scrolled to,
+          so the urgency never disappears without shouting for attention. */}
+      <div className="sticky top-0 z-50 -mx-5 flex items-center justify-center gap-2 border-b border-electric/25 bg-[#0b0e14]/95 px-4 py-2.5 backdrop-blur-md">
+        <Zap className="size-3.5 shrink-0 text-electric" strokeWidth={2.6} />
+        <p className="gf-numeric text-[11px] font-bold text-ink-soft sm:text-xs">
+          <span className="font-black text-electric">SPECIAL 80% DISCOUNT</span>{" "}
+          reserved for{" "}
+          <span
+            className={clsx(
+              "font-black text-electric",
+              remaining > 0 && remaining < 120 && "gf-anim-flicker text-lime-neon",
+            )}
+          >
+            {formatCountdown(remaining)}
+          </span>
+        </p>
+      </div>
+
       <ParticleField />
       <ParticleBurstLayer />
-      <LiveUrgencyBadge />
 
       <header className="relative flex items-center justify-between py-6">
         <Brand />
@@ -161,7 +172,7 @@ export function Paywall() {
       {/* --------------------------------------------------- The offer, up top */}
       <section className="relative mt-4 text-center">
         <h1 className="gf-display text-4xl leading-[1.05] font-black text-ink sm:text-5xl">
-          CLAIM YOUR <span className="gf-text-hype">TRANSFORMATION</span> NOW 🔥
+          YOUR <span className="gf-text-hype">TRANSFORMATION</span> IS READY 🔥
         </h1>
         <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink-soft">
           Your bodyweight blueprint — built for a{" "}
@@ -171,37 +182,15 @@ export function Paywall() {
           equipment. Zero excuses.
         </p>
 
-        <div className="gf-anim-urgent-glow mt-6 rounded-3xl border border-lime-neon/50 bg-lime-neon/8 p-5">
-          <div className="flex items-center justify-center gap-2">
-            <Flame className="size-4 text-lime-neon" strokeWidth={2.8} />
-            <p className="text-[11px] font-black tracking-[0.16em] text-lime-neon uppercase">
-              Special 80% discount expires when timer hits 00:00
-            </p>
-          </div>
-          <p
-            className={clsx(
-              "gf-numeric mt-2 text-5xl font-black text-ink",
-              remaining > 0 && remaining < 120 && "gf-anim-flicker text-lime-neon",
-            )}
-          >
-            {formatCountdown(remaining)}
-          </p>
-          <p className="mt-1 text-xs font-semibold text-ink-soft">
-            {remaining > 0
-              ? "Your 80% discount is held while this timer runs"
-              : "Offer expired — refresh to check availability"}
-          </p>
-        </div>
-
         {/* ------------------------------------------------- What you unlock */}
-        <div className="gf-anim-rise mt-7 grid grid-cols-2 gap-2.5 text-left">
+        <div className="gf-anim-rise mt-6 grid grid-cols-2 gap-3 text-left">
           {VALUE_PROPS.map(({ icon: Icon, label }) => (
             <div
               key={label}
-              className="gf-glass flex items-start gap-2.5 rounded-2xl p-3.5"
+              className="gf-glass flex items-start gap-3 rounded-2xl p-4"
             >
-              <span className="gf-glow-electric grid size-8 shrink-0 place-items-center rounded-xl bg-electric">
-                <Icon className="size-4 text-white" strokeWidth={2.4} />
+              <span className="gf-glow-electric grid size-9 shrink-0 place-items-center rounded-xl bg-electric/15 text-electric">
+                <Icon className="size-4.5" strokeWidth={2.4} />
               </span>
               <span className="mt-0.5 text-xs leading-snug font-bold text-ink">
                 {label}
@@ -210,9 +199,10 @@ export function Paywall() {
           ))}
         </div>
 
-        <div className="mt-5 grid gap-3 text-left">
+        <div className="mt-5 grid gap-4 text-left">
           {TIERS.map((option) => {
             const active = option.id === tier;
+            const saved = Math.round((1 - option.price / option.was) * 100);
             return (
               <button
                 key={option.id}
@@ -220,21 +210,27 @@ export function Paywall() {
                 onClick={() => setTier(option.id)}
                 aria-pressed={active}
                 className={clsx(
-                  "gf-glass gf-press relative flex items-center gap-4 rounded-3xl p-5 text-left transition-all duration-300",
-                  option.popular && "mt-3 border-electric",
-                  active
-                    ? option.popular
-                      ? "shadow-[0_0_0_3px_var(--color-electric),0_0_30px_-6px_rgba(232,179,44,0.85)]"
-                      : "border-electric/50 gf-glow-electric"
-                    : "hover:border-electric/25",
+                  "gf-glass gf-press relative flex items-center gap-4 rounded-3xl text-left transition-all duration-300",
+                  option.popular
+                    ? clsx(
+                        "mt-4 border-2 border-[#FFC700]/70 bg-gradient-to-br from-[#FFC700]/16 via-[#FFC700]/6 to-transparent p-6 shadow-[0_0_0_1px_rgba(255,199,0,0.15),0_0_44px_-14px_rgba(255,199,0,0.65)]",
+                        active &&
+                          "shadow-[0_0_0_3px_#FFC700,0_0_44px_-10px_rgba(255,199,0,0.85)]",
+                      )
+                    : clsx(
+                        "p-5",
+                        active
+                          ? "border-electric/50 gf-glow-electric"
+                          : "hover:border-electric/25",
+                      ),
                 )}
               >
                 {option.badge && (
                   <span
                     className={clsx(
-                      "absolute rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.1em]",
+                      "absolute rounded-full px-3 py-1 text-[10px] font-black whitespace-nowrap uppercase tracking-[0.08em]",
                       option.popular
-                        ? "gf-glow-electric -top-4 left-1/2 -translate-x-1/2 bg-electric whitespace-nowrap text-white"
+                        ? "gf-glow-electric -top-3.5 right-5 bg-[#FFC700] text-[#1a1100]"
                         : "-top-2.5 right-5 bg-lime-neon text-ink",
                     )}
                   >
@@ -243,35 +239,46 @@ export function Paywall() {
                 )}
                 <span
                   className={clsx(
-                    "grid size-6 shrink-0 place-items-center rounded-full transition-all",
-                    active
-                      ? "bg-lime-neon text-ink"
-                      : "border-2 border-ink/12",
+                    "grid shrink-0 place-items-center rounded-full transition-all",
+                    option.popular ? "size-7" : "size-6",
+                    active ? "bg-lime-neon text-ink" : "border-2 border-ink/12",
                   )}
                   aria-hidden
                 >
-                  {active && <Check className="size-4" strokeWidth={3.5} />}
+                  {active && (
+                    <Check
+                      className={option.popular ? "size-4.5" : "size-4"}
+                      strokeWidth={3.5}
+                    />
+                  )}
                 </span>
-                <span className="flex-1">
-                  <span className="block text-base font-extrabold text-ink">
+                <span className="min-w-0 flex-1">
+                  <span
+                    className={clsx(
+                      "block font-extrabold text-ink",
+                      option.popular ? "text-lg" : "text-base",
+                    )}
+                  >
                     {option.label}
                   </span>
-                  <span className="mt-0.5 block text-xs font-semibold text-mist">
-                    <s className="text-haze">${option.was.toFixed(2)}</s>{" "}
-                    <span className="text-lime-deep">
-                      ${option.price.toFixed(2)} total
-                    </span>
+                  <span className="mt-1 block text-[11px] font-bold text-lime-deep">
+                    Save {saved}%
                   </span>
                 </span>
-                <span className="text-right">
-                  <span className="block text-[11px] font-semibold text-haze line-through">
-                    ${FULL_PRICE_PER_WEEK.toFixed(2)}/wk
-                  </span>
-                  <span className="gf-numeric block text-2xl font-black text-electric">
+                <span className="shrink-0 text-right">
+                  <span
+                    className={clsx(
+                      "gf-numeric block font-black text-electric",
+                      option.popular ? "text-3xl" : "text-2xl",
+                    )}
+                  >
                     ${option.perWeek.toFixed(2)}
+                    <span className="ml-0.5 text-xs font-bold text-electric/70">
+                      /wk
+                    </span>
                   </span>
-                  <span className="block text-[11px] font-semibold text-mist">
-                    per week
+                  <span className="mt-1 block text-[11px] font-semibold text-ink-soft">
+                    ${option.price.toFixed(2)} {option.billedLabel}
                   </span>
                 </span>
               </button>
@@ -279,38 +286,44 @@ export function Paywall() {
           })}
         </div>
 
-        <GlowButton
-          variant="cyber"
-          size="xl"
-          fullWidth
-          pulse
-          className="mt-7 text-lg tracking-tight shadow-[0_0_44px_-8px_rgba(232,179,44,0.8)]"
-          disabled={!hydrated}
-          onClick={checkout}
-        >
-          <Lock className="size-5" />
-          CLAIM MY DISCOUNT &amp; START PLAN ⚡
-        </GlowButton>
-        <p className="mt-2 text-center text-xs font-semibold text-mist">
-          ${selected.price.toFixed(2)} total · ${selected.perWeek.toFixed(2)}/week
-        </p>
-        <p className="mt-2.5 text-center text-xs font-bold text-lime-deep">
-          Day 1 starts the second you tap that button.
-        </p>
+        {/* Fixed CTA bar — pinned to the bottom of the viewport at every
+            scroll position on the page (not just within this section), so
+            the primary action is never more than a thumb's reach away no
+            matter how far the user scrolls. Deliberately slim (no repeated
+            price line — that's already on the card above) so it doesn't
+            eat so much of a normal phone's viewport that it covers the
+            tier cards themselves before the user has scrolled at all. */}
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-electric/20 bg-[#0b0e14]/95 backdrop-blur-md">
+          <div className="mx-auto w-full max-w-2xl px-5 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.65rem)]">
+            <GlowButton
+              variant="cyber"
+              size="lg"
+              fullWidth
+              pulse
+              className="text-base tracking-tight shadow-[0_0_44px_-8px_rgba(255,199,0,0.8)]"
+              disabled={!hydrated}
+              onClick={checkout}
+            >
+              <Lock className="size-4.5" />
+              CLAIM MY DISCOUNT &amp; START PLAN ⚡
+            </GlowButton>
 
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-          <span className="gf-glass gf-glow-electric inline-flex items-center gap-1.5 rounded-full border border-electric/40 px-3 py-1.5 text-[11px] font-bold text-ink">
-            <ShieldCheck className="size-3.5 text-electric" />
-            30-Day Money-Back Guarantee — Zero Risk
-          </span>
-          <span className="gf-glass inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold text-ink-soft">
-            <Timer className="size-3.5 text-electric" />
-            Cancel anytime
-          </span>
-          <span className="gf-glass inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold text-ink-soft">
-            <Sparkles className="size-3.5 text-electric" />
-            Instant access
-          </span>
+            {/* ----------------------------------- Trust badges & risk reversal */}
+            <div className="mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+              <span className="flex items-center gap-1 text-[10px] font-semibold text-ink-soft">
+                <ShieldCheck className="size-3 text-electric" />
+                Money-back guarantee
+              </span>
+              <span className="flex items-center gap-1 text-[10px] font-semibold text-ink-soft">
+                <Lock className="size-3 text-electric" />
+                256-bit encrypted
+              </span>
+              <span className="flex items-center gap-1 text-[10px] font-semibold text-ink-soft">
+                <CreditCard className="size-3 text-electric" />
+                Visa · Mastercard · Apple Pay
+              </span>
+            </div>
+          </div>
         </div>
 
         <div className="mt-6 flex items-center justify-center gap-1 text-lime-deep">
@@ -491,24 +504,6 @@ export function Paywall() {
           </p>
         </div>
       </GlassCard>
-
-      {/* --------------------------------------------------- Final reminder CTA */}
-      <div className="relative mt-8 text-center">
-        <GlowButton
-          variant="cyber"
-          size="xl"
-          fullWidth
-          className="text-lg tracking-tight"
-          disabled={!hydrated}
-          onClick={checkout}
-        >
-          <Lock className="size-5" />
-          CLAIM MY DISCOUNT &amp; START PLAN ⚡
-        </GlowButton>
-        <p className="mt-2.5 text-xs font-bold text-lime-deep">
-          {formatCountdown(remaining)} left on your 80% discount.
-        </p>
-      </div>
     </main>
   );
 }
