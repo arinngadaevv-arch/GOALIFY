@@ -168,27 +168,38 @@ export function QuizFlow() {
     <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-28">
       <ParticleBurstLayer />
       <FloatingStreakBadge />
-      <header className="relative flex items-center gap-4 py-5">
+      <header className="relative flex items-center gap-4 py-5 pl-14">
+        {/* Inline styles carry every property that makes this visible at
+            all (position, size, colors, border, z-index) — deliberately
+            not left to Tailwind utility classes alone, so no build-time
+            purge/JIT gap or CSS specificity fight can ever cause this to
+            silently fail to render. Absolutely positioned at the header's
+            fixed top-left corner, independent of the flex layout beside
+            it (which gets pl-14 above to reserve its footprint). */}
         <button
           type="button"
           aria-label="Back"
           onClick={goBack}
           disabled={index === 0}
           tabIndex={index === 0 ? -1 : 0}
-          className={clsx(
-            "gf-press grid size-11 shrink-0 place-items-center rounded-full border border-[#FFC700]/45 bg-[#161B26] text-white backdrop-blur-md transition-all duration-200",
-            // A permanent, low-key glow (not just on hover/active) so the
-            // button reads as a distinct, tappable object at a glance
-            // instead of blending into the equally-dark page background.
-            "shadow-[0_0_0_1px_rgba(255,199,0,0.15),0_4px_14px_-4px_rgba(0,0,0,0.7)]",
-            "hover:border-[#FFC700]/80 hover:shadow-[0_0_20px_-4px_rgba(255,199,0,0.7)]",
-            "active:border-[#FFC700]/90 active:shadow-[0_0_20px_-4px_rgba(255,199,0,0.85)]",
-            // Step 1 has nowhere to go back to — hidden rather than removed,
-            // so the header's layout never jumps when it (dis)appears.
-            index === 0 && "invisible",
-          )}
+          style={{
+            position: "absolute",
+            left: 16,
+            top: 16,
+            zIndex: 50,
+            display: index === 0 ? "none" : "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 44,
+            height: 44,
+            borderRadius: 9999,
+            background: "#161B26",
+            color: "#FFC700",
+            border: "2px solid #FFC700",
+          }}
+          className="gf-press"
         >
-          <ChevronLeft className="size-5.5" strokeWidth={2.75} />
+          <ChevronLeft size={22} strokeWidth={2.75} />
         </button>
 
         {/* Thin, minimalist single-line progress bar — native-app style. */}
