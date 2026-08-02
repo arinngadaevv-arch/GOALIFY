@@ -176,15 +176,19 @@ export function QuizFlow() {
           disabled={index === 0}
           tabIndex={index === 0 ? -1 : 0}
           className={clsx(
-            "gf-press grid size-11 shrink-0 place-items-center rounded-full border border-electric/20 bg-[#161B26]/90 text-ink backdrop-blur-md transition-all duration-200",
-            "hover:border-[#FFC700]/60 hover:shadow-[0_0_18px_-4px_rgba(255,199,0,0.6)]",
-            "active:border-[#FFC700]/70 active:shadow-[0_0_18px_-4px_rgba(255,199,0,0.75)]",
+            "gf-press grid size-11 shrink-0 place-items-center rounded-full border border-[#FFC700]/45 bg-[#161B26] text-white backdrop-blur-md transition-all duration-200",
+            // A permanent, low-key glow (not just on hover/active) so the
+            // button reads as a distinct, tappable object at a glance
+            // instead of blending into the equally-dark page background.
+            "shadow-[0_0_0_1px_rgba(255,199,0,0.15),0_4px_14px_-4px_rgba(0,0,0,0.7)]",
+            "hover:border-[#FFC700]/80 hover:shadow-[0_0_20px_-4px_rgba(255,199,0,0.7)]",
+            "active:border-[#FFC700]/90 active:shadow-[0_0_20px_-4px_rgba(255,199,0,0.85)]",
             // Step 1 has nowhere to go back to — hidden rather than removed,
             // so the header's layout never jumps when it (dis)appears.
             index === 0 && "invisible",
           )}
         >
-          <ChevronLeft className="size-5" strokeWidth={2.5} />
+          <ChevronLeft className="size-5.5" strokeWidth={2.75} />
         </button>
 
         {/* Thin, minimalist single-line progress bar — native-app style. */}
