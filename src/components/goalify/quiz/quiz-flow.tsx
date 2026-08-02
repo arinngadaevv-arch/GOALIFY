@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import clsx from "clsx";
 import { ArrowRight, Check, ChevronLeft, TrendingUp } from "lucide-react";
 import {
@@ -52,17 +52,37 @@ const COMMIT_VALUES: Partial<Record<keyof QuizAnswers, unknown>> = {
 /** How long the coach's reaction stays on screen before the next question. */
 const REACTION_MS = 1050;
 
+/** Slide direction for the step transition — positive for advancing,
+ * negative for stepping back, so Back genuinely reverses the motion
+ * instead of replaying the same forward animation. */
+const stepVariants = {
+  enter: (direction: number) => ({ opacity: 0, x: direction >= 0 ? 32 : -32 }),
+  center: { opacity: 1, x: 0 },
+  exit: (direction: number) => ({ opacity: 0, x: direction >= 0 ? -32 : 32 }),
+};
+
 export function QuizFlow() {
   const router = useRouter();
   const { state, setDraft, completeQuiz } = useGoalify();
   const [started, setStarted] = useState(false);
-  const [index, setIndex] = useState(0);
+  const [[index, direction], setIndexState] = useState<[number, number]>([0, 0]);
   const [analyzing, setAnalyzing] = useState(false);
   const [showSocialProof, setShowSocialProof] = useState(false);
   const [pending, setPending] = useState<Partial<QuizAnswers> | null>(null);
   /** The celebration pill that pops the instant an answer lands. */
   const [hudToast, setHudToast] = useState<string | null>(null);
   const { glassChime, hypeSelect, sliderTick } = useUiSounds();
+
+  const goBack = useCallback(() => {
+    if (index === 0) return;
+    glassChime();
+    // Cancel any in-flight forward auto-advance — otherwise it fires
+    // ~1s later on its own stale timer and yanks the user right back
+    // forward the instant they'd just stepped back.
+    setPending(null);
+    setHudToast(null);
+    setIndexState(([i]) => [i - 1, -1]);
+  }, [index, glassChime]);
 
   const step = QUIZ_STEPS[index];
   const isLast = index === QUIZ_STEPS.length - 1;
@@ -108,7 +128,7 @@ export function QuizFlow() {
       if (isLast) {
         finish(pending);
       } else {
-        setIndex((i) => i + 1);
+        setIndexState(([i]) => [i + 1, 1]);
         setHudToast(null);
       }
       setPending(null);
@@ -152,10 +172,19 @@ export function QuizFlow() {
         <button
           type="button"
           aria-label="Back"
-          onClick={() => (index === 0 ? router.push("/") : setIndex((i) => i - 1))}
-          className="gf-press -ml-1 grid size-9 shrink-0 place-items-center rounded-full text-ink"
+          onClick={goBack}
+          disabled={index === 0}
+          tabIndex={index === 0 ? -1 : 0}
+          className={clsx(
+            "gf-press grid size-11 shrink-0 place-items-center rounded-full border border-electric/20 bg-[#161B26]/90 text-ink backdrop-blur-md transition-all duration-200",
+            "hover:border-[#FFC700]/60 hover:shadow-[0_0_18px_-4px_rgba(255,199,0,0.6)]",
+            "active:border-[#FFC700]/70 active:shadow-[0_0_18px_-4px_rgba(255,199,0,0.75)]",
+            // Step 1 has nowhere to go back to — hidden rather than removed,
+            // so the header's layout never jumps when it (dis)appears.
+            index === 0 && "invisible",
+          )}
         >
-          <ChevronLeft className="size-6" strokeWidth={2.5} />
+          <ChevronLeft className="size-5" strokeWidth={2.5} />
         </button>
 
         {/* Thin, minimalist single-line progress bar — native-app style. */}
@@ -186,77 +215,81 @@ export function QuizFlow() {
         {hudToast && <HypeToast text={hudToast} />}
       </div>
 
-      {/* ------------------------------------------------------- Big headline */}
-      <motion.div
-        key={step.id}
-        initial={{ opacity: 0, y: 24, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className="relative pt-3"
-      >
-        <p className="text-[11px] font-black tracking-[0.16em] text-electric uppercase">
-          {step.chapter}
-        </p>
-        <h1 className="gf-display relative mt-2 text-4xl leading-[1.05] font-black text-ink sm:text-5xl">
-          {step.title}
-        </h1>
-      </motion.div>
+      {/* Headline + content animate together as one unit, sliding in from
+          the right when advancing and from the left when stepping back —
+          `custom={direction}` is how the variants below know which. */}
+      <AnimatePresence custom={direction} initial={false}>
+        <motion.div
+          key={step.id}
+          custom={direction}
+          variants={stepVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+          className="relative flex flex-1 flex-col"
+        >
+          {/* --------------------------------------------------- Big headline */}
+          <div className="relative pt-3">
+            <p className="text-[11px] font-black tracking-[0.16em] text-electric uppercase">
+              {step.chapter}
+            </p>
+            <h1 className="gf-display relative mt-2 text-4xl leading-[1.05] font-black text-ink sm:text-5xl">
+              {step.title}
+            </h1>
+          </div>
 
-      <motion.div
-        key={`${step.id}-content`}
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
-        className="relative flex-1 pt-8"
-      >
-        <p className="mb-6 text-sm leading-relaxed text-mist">
-          {step.subtitle}
-        </p>
+          <div className="relative flex-1 pt-8">
+            <p className="mb-6 text-sm leading-relaxed text-mist">
+              {step.subtitle}
+            </p>
 
-        {step.kind === "choice" && step.speedRound && (
-          <SpeedRound key={step.id} locked={pending !== null} />
-        )}
+            {step.kind === "choice" && step.speedRound && (
+              <SpeedRound key={step.id} locked={pending !== null} />
+            )}
 
-        <div>
-          {step.kind === "choice" ? (
-            <ChoiceStep
-              step={step}
-              value={currentValue}
-              onPick={pick}
-              onSetDraft={setDraft}
-              locked={pending !== null}
-              onTap={glassChime}
-            />
-          ) : step.kind === "bodyMap" ? (
-            <BodyMapStep
-              step={step}
-              value={currentValue}
-              onSetDraft={setDraft}
-              onPick={pick}
-              locked={pending !== null}
-              onTap={glassChime}
-            />
-          ) : step.kind === "vitals" ? (
-            <VitalsStep
-              key={step.id}
-              draft={draft}
-              locked={pending !== null}
-              onSubmit={pick}
-              onTick={sliderTick}
-            />
-          ) : (
-            <CommitStep
-              key={step.id}
-              buttonLabel={step.buttonLabel}
-              bgPhoto={step.bgPhoto}
-              patch={COMMIT_PATCHES[step.id] ?? {}}
-              value={COMMIT_VALUES[step.id]}
-              locked={pending !== null}
-              onPick={pick}
-            />
-          )}
-        </div>
-      </motion.div>
+            <div>
+              {step.kind === "choice" ? (
+                <ChoiceStep
+                  step={step}
+                  value={currentValue}
+                  onPick={pick}
+                  onSetDraft={setDraft}
+                  locked={pending !== null}
+                  onTap={glassChime}
+                />
+              ) : step.kind === "bodyMap" ? (
+                <BodyMapStep
+                  step={step}
+                  value={currentValue}
+                  onSetDraft={setDraft}
+                  onPick={pick}
+                  locked={pending !== null}
+                  onTap={glassChime}
+                />
+              ) : step.kind === "vitals" ? (
+                <VitalsStep
+                  key={step.id}
+                  draft={draft}
+                  locked={pending !== null}
+                  onSubmit={pick}
+                  onTick={sliderTick}
+                />
+              ) : (
+                <CommitStep
+                  key={step.id}
+                  buttonLabel={step.buttonLabel}
+                  bgPhoto={step.bgPhoto}
+                  patch={COMMIT_PATCHES[step.id] ?? {}}
+                  value={COMMIT_VALUES[step.id]}
+                  locked={pending !== null}
+                  onPick={pick}
+                />
+              )}
+            </div>
+          </div>
+        </motion.div>
+      </AnimatePresence>
 
       <footer className="relative pt-8 text-center">
         <p className="text-xs text-haze">Your answers stay on this device</p>
