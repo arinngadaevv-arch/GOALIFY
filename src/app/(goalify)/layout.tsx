@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "../goalify.css";
 import { GoalifyProvider } from "@/lib/goalify/store";
+import { SessionProvider } from "@/components/session-provider";
 
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 const title = "GOALIFY — Your body, engineered";
@@ -52,7 +53,9 @@ export default function GoalifyLayout({
       <body className="goalify-body min-h-full">
         <div className="gf-ambience" aria-hidden />
         <div className="gf-content min-h-dvh">
-          <GoalifyProvider>{children}</GoalifyProvider>
+          <SessionProvider>
+            <GoalifyProvider>{children}</GoalifyProvider>
+          </SessionProvider>
         </div>
       </body>
     </html>
