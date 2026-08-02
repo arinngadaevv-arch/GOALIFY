@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { Check, Lock, ShieldCheck } from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
-import { goalLabel, weeksToTarget } from "@/lib/goalify/plan";
+import { goalLabel } from "@/lib/goalify/plan";
 import { Brand } from "@/components/goalify/brand";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
 import { fireBurst, ParticleBurstLayer } from "@/components/goalify/quiz/particle-burst";
@@ -52,8 +52,6 @@ export function Paywall() {
   const { answers, purchase, hydrated } = useGoalify();
   const [tier, setTier] = useState("quarterly");
 
-  const weeks = weeksToTarget(answers);
-
   const checkout = (event: React.MouseEvent) => {
     fireBurst(event.clientX, event.clientY, true);
     window.setTimeout(() => fireBurst(event.clientX, event.clientY, false), 90);
@@ -88,7 +86,6 @@ export function Paywall() {
       <TransformationCard
         weightKg={answers.weightKg}
         targetWeightKg={answers.targetWeightKg}
-        weeks={weeks > 0 ? weeks : 4}
         goal={goalLabel(answers.goal)}
       />
 
@@ -239,18 +236,16 @@ export function Paywall() {
 function TransformationCard({
   weightKg,
   targetWeightKg,
-  weeks,
   goal,
 }: {
   weightKg: number;
   targetWeightKg: number;
-  weeks: number;
   goal: string;
 }) {
   return (
     <div className="gf-anim-rise relative mt-6 overflow-hidden rounded-3xl border-2 border-[#FFC700]/45 bg-gradient-to-b from-[#FFC700]/12 via-[#161B26] to-[#0b0e14] p-6 shadow-[0_0_0_1px_rgba(255,199,0,0.12),0_0_54px_-16px_rgba(255,199,0,0.55)]">
       <p className="text-center text-[11px] font-black tracking-[0.18em] text-[#FFC700] uppercase">
-        Your 30-day trajectory
+        Your 6-month trajectory
       </p>
       <div className="mt-5 flex items-center justify-center gap-3 sm:gap-6">
         <SilhouettePanel label="Today" sublabel={`${weightKg} kg`} intensity={0.16} />
@@ -267,14 +262,14 @@ function TransformationCard({
           <path d="M5 12h14M13 6l6 6-6 6" />
         </svg>
         <SilhouettePanel
-          label={`Week ${weeks}`}
+          label="Month 6"
           sublabel={`${targetWeightKg} kg`}
           intensity={0.85}
           lit
         />
       </div>
       <p className="mt-4 text-center text-xs font-bold text-ink-soft">
-        {goal} · {weeks} weeks to target
+        {goal} · 6-month transformation (24 weeks)
       </p>
       <p className="mt-1 text-center text-[10px] text-haze">
         Illustrated projection, not a photo — real results depend on
