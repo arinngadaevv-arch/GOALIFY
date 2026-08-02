@@ -68,7 +68,6 @@ export function QuizFlow() {
   const { status: authStatus } = useSession();
   const { state, setDraft, completeQuiz } = useGoalify();
   const [quizStarted, setQuizStarted] = useState(false);
-  const [entryView, setEntryView] = useState<"welcome" | "login">("welcome");
   const [showResultsGate, setShowResultsGate] = useState(false);
   const [[index, direction], setIndexState] = useState<[number, number]>([0, 0]);
   const [analyzing, setAnalyzing] = useState(false);
@@ -196,19 +195,10 @@ export function QuizFlow() {
   if (!quizStarted) {
     return (
       <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5">
-        {entryView === "login" ? (
-          <AuthPanel
-            initialMode="signin"
-            heading="Welcome back"
-            onAuthenticated={() => router.push("/home")}
-            onBack={() => setEntryView("welcome")}
-          />
-        ) : (
-          <WelcomeCtaStep
-            onStart={() => setQuizStarted(true)}
-            onLogin={() => setEntryView("login")}
-          />
-        )}
+        <WelcomeCtaStep
+          onStart={() => setQuizStarted(true)}
+          onLogin={() => router.push("/home")}
+        />
       </main>
     );
   }
