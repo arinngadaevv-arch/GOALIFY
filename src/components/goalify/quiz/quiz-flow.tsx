@@ -28,7 +28,8 @@ import { HUD_STEP_META, HypeToast } from "./hype-toast";
 import { CommitStep } from "./commit-step";
 import { SocialProofScreen } from "./social-proof-screen";
 import { VitalsStep } from "./vitals-step";
-import { EntryAuthStep } from "./entry-auth-step";
+import { WelcomeCtaStep } from "./welcome-cta-step";
+import { AuthPanel } from "./auth-panel";
 import { fireBurst, ParticleBurstLayer } from "./particle-burst";
 
 /** Wraps a click handler so every tap also fires a micro-particle burst
@@ -66,6 +67,9 @@ export function QuizFlow() {
   const router = useRouter();
   const { status: authStatus } = useSession();
   const { state, setDraft, completeQuiz } = useGoalify();
+  const [quizStarted, setQuizStarted] = useState(false);
+  const [entryView, setEntryView] = useState<"welcome" | "login">("welcome");
+  const [showResultsGate, setShowResultsGate] = useState(false);
   const [[index, direction], setIndexState] = useState<[number, number]>([0, 0]);
   const [analyzing, setAnalyzing] = useState(false);
   const [showSocialProof, setShowSocialProof] = useState(false);
@@ -154,23 +158,56 @@ export function QuizFlow() {
   }
 
   if (showSocialProof) {
-    return <SocialProofScreen onContinue={() => router.push("/plan")} />;
+    return (
+      <SocialProofScreen
+        onContinue={() => {
+          // The quiz itself never required an account — this is the one
+          // mandatory gate in the whole funnel, and it only shows up once
+          // there's an actual plan worth saving. A signed-in returning
+          // member (retaking the quiz) skips straight through.
+          if (authStatus === "authenticated") {
+            router.push("/plan");
+          } else {
+            setShowSocialProof(false);
+            setShowResultsGate(true);
+          }
+        }}
+      />
+    );
   }
 
-  // Mandatory account gate — this is the true front door of the app.
-  // Nothing past it (not question one, not the dashboard) renders until
-  // NextAuth reports an authenticated session. `loading` covers the brief
-  // initial session fetch too, so a signed-in returning user never sees a
-  // flash of the sign-up screen before sliding straight into question one.
-  if (authStatus !== "authenticated") {
+  if (showResultsGate) {
     return (
       <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5">
-        {authStatus === "loading" ? (
-          <div className="grid min-h-dvh place-items-center">
-            <div className="size-8 animate-spin rounded-full border-2 border-electric/30 border-t-electric" />
-          </div>
+        <AuthPanel
+          initialMode="signup"
+          heading="Save Your Plan"
+          subheading="Create a free account to unlock your personalised 6-month plan."
+          onAuthenticated={() => router.push("/plan")}
+          onBack={() => {
+            setShowResultsGate(false);
+            setShowSocialProof(true);
+          }}
+        />
+      </main>
+    );
+  }
+
+  if (!quizStarted) {
+    return (
+      <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5">
+        {entryView === "login" ? (
+          <AuthPanel
+            initialMode="signin"
+            heading="Welcome back"
+            onAuthenticated={() => router.push("/home")}
+            onBack={() => setEntryView("welcome")}
+          />
         ) : (
-          <EntryAuthStep />
+          <WelcomeCtaStep
+            onStart={() => setQuizStarted(true)}
+            onLogin={() => setEntryView("login")}
+          />
         )}
       </main>
     );
