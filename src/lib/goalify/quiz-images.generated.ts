@@ -25,8 +25,6 @@ export const AVAILABLE_QUIZ_IMAGES: ReadonlySet<string> = new Set([
   "/quiz/motivation.jpg",
   "/quiz/no-plan.png",
   "/quiz/no-time.png",
-  "/quiz/onboarding-hero-bottom.png",
-  "/quiz/onboarding-hero-top.png",
   "/quiz/social-proof-after-1.png",
   "/quiz/social-proof-before-1.png",
 ]);

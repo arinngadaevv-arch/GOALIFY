@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
-import { GlowButton } from "@/components/goalify/ui/glow-button";
 import { AuthModal } from "./auth-modal";
 import { fireBurst } from "./particle-burst";
 
@@ -38,61 +37,63 @@ export function WelcomeCtaStep({
   }, [initialError]);
 
   return (
-    <div className="relative -mx-5 flex flex-col overflow-hidden bg-[#0b0e14]">
-      {/* The uploaded design is a complete hero mockup with its own CTA
-          button baked into the pixels ("START YOUR FREE ASSESSMENT") right
-          after the feature-icon row. That flat button isn't clickable, so
-          the source image is sliced in two exactly at its boundary —
-          top.png ends right before it, bottom.png starts right after it —
-          and a real GlowButton + login link sit in the gap between them.
-          The result reads as one continuous design with a working CTA in
-          the same spot the mockup already put one, instead of a second,
-          duplicate button tacked on after the whole image. Both slices are
-          plain `w-full h-auto` blocks (no fill/cover-crop), so neither is
-          ever cropped or stretched. */}
+    <div className="relative -mx-5 overflow-hidden bg-[#0b0e14]">
+      {/* The uploaded design stays a single, uncut image — the whole hero
+          section, exactly as delivered. Its own flat "START YOUR FREE
+          ASSESSMENT" button isn't clickable, so instead of cutting the
+          image apart, a real button is absolutely-positioned directly on
+          top of it, sized and placed to the flat button's own pixel
+          bounding box (as a % of the 853x1844 source, so it tracks the
+          image at any viewport width). Same for the login link over the
+          "Takes 2 minutes" line just below it. Nothing about the image's
+          layout, spacing, or flow is touched. */}
       <Image
-        src="/quiz/onboarding-hero-top.png"
+        src="/quiz/69f89e00-e3b4-45e8-bc05-6d6e77897ca2.png"
         alt="Transform your body, transform your life. GOALIFY — trusted by 50,000+ users, 4.9/5 average rating. Personalized for you, gym & home workouts, nutrition plan, track your progress."
         width={853}
-        height={1358}
+        height={1844}
         priority
         sizes="100vw"
-        className="h-auto w-full"
+        className="block h-auto w-full"
       />
 
-      <div className="relative flex flex-col items-center gap-3 px-6 py-5 text-center">
-        <GlowButton
-          variant="cyber"
-          size="xl"
-          fullWidth
-          pulse
-          onClick={(event) => {
-            fireBurst(event.clientX, event.clientY, true);
-            setAuthIntent("signup");
-          }}
-          className="h-[4.25rem] max-w-sm text-lg tracking-tight shadow-[0_0_50px_-6px_rgba(255,199,0,0.85)]"
-        >
-          GET MY PERSONALISED PLAN
-          <ArrowRight className="size-5" />
-        </GlowButton>
+      <button
+        type="button"
+        onClick={(event) => {
+          fireBurst(event.clientX, event.clientY, true);
+          setAuthIntent("signup");
+        }}
+        className="gf-press gf-anim-pulse absolute inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-[#f0c14b] to-[#c8890f] font-bold tracking-tight text-[#1a1100] shadow-[0_0_0_1px_rgba(232,179,44,0.6),0_18px_44px_-10px_rgba(232,179,44,0.8)] transition-all duration-200 select-none hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_rgba(232,179,44,0.85),0_24px_54px_-8px_rgba(232,179,44,1)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#e8b32c]"
+        style={{
+          left: "2.8%",
+          width: "94.3%",
+          top: "75.5%",
+          height: "4.7%",
+          fontSize: "clamp(0.65rem, 3.1vw, 1.05rem)",
+        }}
+      >
+        GET MY PERSONALISED PLAN
+        <ArrowRight className="size-[1em]" />
+      </button>
 
-        <button
-          type="button"
-          onClick={() => setAuthIntent("signin")}
-          className="text-sm font-bold text-white/80 underline-offset-4 hover:text-white hover:underline"
-        >
-          Already have an account? Log in
-        </button>
-      </div>
-
-      <Image
-        src="/quiz/onboarding-hero-bottom.png"
-        alt=""
-        width={853}
-        height={349}
-        sizes="100vw"
-        className="h-auto w-full"
-      />
+      {/* Sits directly over the image's own "Takes 2 minutes" caption —
+          a solid backdrop (not just text) is required here, otherwise the
+          baked-in copy underneath shows through and garbles with this
+          link's own text. */}
+      <button
+        type="button"
+        onClick={() => setAuthIntent("signin")}
+        className="gf-press absolute flex items-center justify-center rounded-full bg-[#0b0e14] font-bold text-white/80 underline-offset-4 hover:text-white hover:underline"
+        style={{
+          left: "12%",
+          width: "76%",
+          top: "80.9%",
+          height: "2.3%",
+          fontSize: "clamp(0.6rem, 2.6vw, 0.875rem)",
+        }}
+      >
+        Already have an account? Log in
+      </button>
 
       {authIntent && (
         <AuthModal
