@@ -39,27 +39,28 @@ export function WelcomeCtaStep({
 
   return (
     <div className="relative -mx-5 flex flex-col overflow-hidden bg-[#0b0e14]">
-      {/* The uploaded design is a complete hero mockup — headline, brand
-          mark, rating, feature icons and its own CTA/footer copy are all
-          already drawn into the image. Showing it as a `w-full h-auto`
-          block (not an absolutely-positioned `fill` background) means it
-          renders at its own aspect ratio, uncropped and unstretched, and
-          the page simply scrolls if it's taller than the viewport — no
-          zooming, no cover-crop. Only a real, clickable CTA + login link
-          are still rendered by the app below it; everything else the old
-          version duplicated in React on top of the photo's own baked-in
-          copy has been removed. */}
+      {/* The uploaded design is a complete hero mockup with its own CTA
+          button baked into the pixels ("START YOUR FREE ASSESSMENT") right
+          after the feature-icon row. That flat button isn't clickable, so
+          the source image is sliced in two exactly at its boundary —
+          top.png ends right before it, bottom.png starts right after it —
+          and a real GlowButton + login link sit in the gap between them.
+          The result reads as one continuous design with a working CTA in
+          the same spot the mockup already put one, instead of a second,
+          duplicate button tacked on after the whole image. Both slices are
+          plain `w-full h-auto` blocks (no fill/cover-crop), so neither is
+          ever cropped or stretched. */}
       <Image
-        src="/quiz/69f89e00-e3b4-45e8-bc05-6d6e77897ca2.png"
+        src="/quiz/onboarding-hero-top.png"
         alt="Transform your body, transform your life. GOALIFY — trusted by 50,000+ users, 4.9/5 average rating. Personalized for you, gym & home workouts, nutrition plan, track your progress."
         width={853}
-        height={1844}
+        height={1358}
         priority
         sizes="100vw"
         className="h-auto w-full"
       />
 
-      <div className="relative flex flex-col items-center gap-3 px-6 pt-6 pb-10 text-center">
+      <div className="relative flex flex-col items-center gap-3 px-6 py-5 text-center">
         <GlowButton
           variant="cyber"
           size="xl"
@@ -83,6 +84,15 @@ export function WelcomeCtaStep({
           Already have an account? Log in
         </button>
       </div>
+
+      <Image
+        src="/quiz/onboarding-hero-bottom.png"
+        alt=""
+        width={853}
+        height={349}
+        sizes="100vw"
+        className="h-auto w-full"
+      />
 
       {authIntent && (
         <AuthModal
