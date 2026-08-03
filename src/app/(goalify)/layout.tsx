@@ -35,8 +35,21 @@ export const metadata: Metadata = {
     siteName: "GOALIFY",
     title,
     description,
+    images: [
+      {
+        url: "/quiz/workout-preview-pushup-closeup.png",
+        width: 1105,
+        height: 663,
+        alt: "Coach Atlas mid-rep — GOALIFY's home bodyweight coaching",
+      },
+    ],
   },
-  twitter: { card: "summary_large_image", title, description },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    images: ["/quiz/workout-preview-pushup-closeup.png"],
+  },
   robots: { index: true, follow: true },
 };
 
