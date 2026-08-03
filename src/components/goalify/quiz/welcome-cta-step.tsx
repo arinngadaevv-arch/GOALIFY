@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ArrowRight, Lock, Star, Timer } from "lucide-react";
 import { Brand } from "@/components/goalify/brand";
@@ -9,20 +9,34 @@ import { AuthModal } from "./auth-modal";
 import { fireBurst } from "./particle-burst";
 
 /**
- * The true front door of the funnel. Neither action here navigates away —
- * both the primary CTA and the quiet "Log in" link open the same
- * `AuthModal` in place (signup vs. signin), and only a successful
- * authentication actually advances: into question one for the CTA, or to
- * the dashboard for a returning member logging in.
+ * The true front door of the funnel. Neither action here navigates away
+ * for email/password — both the primary CTA and the quiet "Log in" link
+ * open the same `AuthModal` in place (signup vs. signin), and only a
+ * successful authentication actually advances: into question one for the
+ * CTA, or to the dashboard for a returning member logging in. Google is
+ * the exception (see AuthModal) — it's a real OAuth round trip, so success
+ * there arrives back as a fresh page load, and `initialError` is how a
+ * failed round trip reports itself back here.
  */
 export function WelcomeCtaStep({
   onStart,
   onLogin,
+  initialError,
 }: {
   onStart: () => void;
   onLogin: () => void;
+  /** Friendly message from a Google attempt that failed on a previous
+   * page load (see QuizFlow, which parses the `?error=` NextAuth lands
+   * on `/quiz` with). Reopens the modal immediately to surface it. */
+  initialError?: string | null;
 }) {
   const [authIntent, setAuthIntent] = useState<"signup" | "signin" | null>(null);
+
+  useEffect(() => {
+    if (!initialError) return;
+    const timer = setTimeout(() => setAuthIntent("signup"), 0);
+    return () => clearTimeout(timer);
+  }, [initialError]);
 
   return (
     <div className="relative -mx-5 flex min-h-dvh flex-col overflow-hidden">
@@ -108,6 +122,8 @@ export function WelcomeCtaStep({
       {authIntent && (
         <AuthModal
           initialMode={authIntent}
+          initialError={authIntent === "signup" ? initialError : null}
+          googleCallbackUrl={authIntent === "signin" ? "/home" : "/quiz?auth=start"}
           heading={authIntent === "signin" ? "Welcome back" : undefined}
           subheading={
             authIntent === "signin"

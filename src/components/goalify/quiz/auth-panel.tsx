@@ -40,12 +40,14 @@ export function AuthPanel({
   async function handleGoogleSignIn() {
     setError(null);
     setGoogleLoading(true);
-    // No callbackUrl — this app reads auth state from useSession() in
-    // place, so a full-page redirect round trip isn't needed here.
-    await signIn("google", { redirect: false });
-    await update();
-    setGoogleLoading(false);
-    onAuthenticated();
+    // Google is a real cross-site OAuth round trip, not something that can
+    // complete in place like the credentials form below — the browser
+    // leaves for accounts.google.com and NextAuth's own callback handler
+    // brings it back to `/quiz?auth=results` on success (QuizFlow reads
+    // that and forwards straight to /plan) or to pages.error on failure
+    // ("/quiz?error=...", see auth.ts). `onAuthenticated` below is only
+    // ever reached by the credentials path.
+    await signIn("google", { callbackUrl: "/quiz?auth=results" });
   }
 
   async function handleSubmit(event: FormEvent) {

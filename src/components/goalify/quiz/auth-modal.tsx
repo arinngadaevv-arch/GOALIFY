@@ -11,17 +11,29 @@ import { GlowButton } from "@/components/goalify/ui/glow-button";
  * only a successful `onAuthenticated()` actually advances into question
  * one. Closing (X, backdrop, Escape) just dismisses it; the welcome screen
  * underneath is untouched so the CTA can be tried again.
+ *
+ * Google is the odd one out here: it's a real cross-site OAuth round trip,
+ * not something that can complete in place like the email/password form
+ * below. `handleGoogleSignIn` navigates the browser away entirely — see
+ * its own comment for why `onAuthenticated` is never called from there.
  */
 export function AuthModal({
   onClose,
   onAuthenticated,
+  googleCallbackUrl,
   initialMode = "signup",
+  initialError = null,
   heading = "Create Your Account to Start",
   subheading = "Save your progress and access your tailored plan.",
 }: {
   onClose: () => void;
   onAuthenticated: () => void;
+  /** Where NextAuth lands the browser after a *successful* Google round trip. */
+  googleCallbackUrl: string;
   initialMode?: "signup" | "signin";
+  /** A friendly message to show immediately, e.g. after bouncing back from
+   * a failed Google attempt on a previous page load. */
+  initialError?: string | null;
   heading?: string;
   subheading?: string;
 }) {
@@ -33,7 +45,7 @@ export function AuthModal({
   const [password, setPassword] = useState("");
   const [googleLoading, setGoogleLoading] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initialError);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -52,10 +64,15 @@ export function AuthModal({
   async function handleGoogleSignIn() {
     setError(null);
     setGoogleLoading(true);
-    await signIn("google", { redirect: false });
-    await update();
-    setGoogleLoading(false);
-    onAuthenticated();
+    // Unlike the credentials form below, this can't complete in place —
+    // Google requires actually leaving this page for its consent screen.
+    // With `redirect` left at its default (true), next-auth/react sends
+    // the browser there itself and NextAuth's own /api/auth/callback/google
+    // handler brings it back to `googleCallbackUrl` on success, or to
+    // pages.error ("/quiz?error=...", see auth.ts) on failure. Nothing
+    // after this call ever runs — there is no in-page continuation for
+    // OAuth the way `onAuthenticated()` provides for email/password.
+    await signIn("google", { callbackUrl: googleCallbackUrl });
   }
 
   async function handleSubmit(event: FormEvent) {
@@ -158,6 +175,16 @@ export function AuthModal({
             : subheading}
         </p>
 
+        {/* Shown in both views — a failed Google attempt reports itself
+            back here (see quiz-flow.tsx) and needs to be visible on the
+            very first render of the modal, before anyone has touched
+            "Continue with Email". */}
+        {error && (
+          <p className="mt-3 rounded-xl bg-red-500/15 px-3.5 py-2.5 text-xs font-semibold text-red-300">
+            {error}
+          </p>
+        )}
+
         {emailMode ? (
           <>
             <form onSubmit={handleSubmit} className="mt-5 space-y-3.5">
@@ -190,12 +217,6 @@ export function AuthModal({
                 autoComplete={mode === "signup" ? "new-password" : "current-password"}
                 className="w-full rounded-2xl border border-white/12 bg-white/5 px-4 py-3.5 text-sm font-semibold text-white outline-none placeholder:text-white/40 focus:border-[#FFC700]"
               />
-
-              {error && (
-                <p className="rounded-xl bg-red-500/15 px-3.5 py-2.5 text-xs font-semibold text-red-300">
-                  {error}
-                </p>
-              )}
 
               <GlowButton
                 type="submit"

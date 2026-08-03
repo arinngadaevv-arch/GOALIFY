@@ -67,11 +67,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   // but set explicitly so login also works on any other host (Docker, other clouds).
   trustHost: true,
   session: { strategy: "jwt" },
-  // No `pages.signIn` override — GOALIFY's own UI (the quiz's AuthModal)
-  // calls signIn() directly and renders its own sign-up/sign-in form, so
-  // it never needs Auth.js's built-in page. On a genuine sign-in error
-  // (OAuth callback failure, misconfigured provider) this falls back to
-  // Auth.js's own neutral built-in error page.
+  // GOALIFY is the only app this instance serves now, so both pages point
+  // at its own front door. This matters specifically for Google: OAuth is
+  // a real cross-site round trip (the browser leaves for accounts.google.com
+  // and comes back), and on any failure there — denied consent, callback
+  // error, a misconfigured provider — Auth.js hard-redirects here with an
+  // `?error=` code and no memory of which screen started the attempt.
+  // Landing on `/quiz` means that's always a real, correctly-branded page,
+  // never a broken or generic one; QuizFlow reads the `error` param on
+  // mount and surfaces it inline in the auth modal.
+  pages: {
+    signIn: "/quiz",
+    error: "/quiz",
+  },
   providers,
   callbacks: {
     async jwt({ token, user }) {

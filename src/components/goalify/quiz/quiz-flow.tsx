@@ -54,6 +54,22 @@ const COMMIT_VALUES: Partial<Record<keyof QuizAnswers, unknown>> = {
 /** How long the coach's reaction stays on screen before the next question. */
 const REACTION_MS = 1050;
 
+/**
+ * NextAuth's own error codes for a failed Google round trip (see
+ * `pages.error` in auth.ts) — mapped to copy a user can actually act on.
+ * Anything unlisted falls back to a generic retry message.
+ */
+const GOOGLE_ERROR_MESSAGES: Record<string, string> = {
+  AccessDenied: "Google sign-in was cancelled.",
+  OAuthAccountNotLinked:
+    "That email is already registered a different way — sign in with email and password instead.",
+  Configuration: "Google sign-in isn't available right now — try email instead.",
+};
+
+function friendlyAuthError(code: string): string {
+  return GOOGLE_ERROR_MESSAGES[code] ?? "Google sign-in failed. Please try again.";
+}
+
 /** Slide direction for the step transition — positive for advancing,
  * negative for stepping back, so Back genuinely reverses the motion
  * instead of replaying the same forward animation. */
@@ -69,6 +85,15 @@ export function QuizFlow() {
   const { state, setDraft, completeQuiz } = useGoalify();
   const [quizStarted, setQuizStarted] = useState(false);
   const [showResultsGate, setShowResultsGate] = useState(false);
+  /** Set once, on mount, from the `?auth=`/`?error=` NextAuth lands Google
+   * round trips back on `/quiz` with (see pages.error in auth.ts). Reading
+   * `window.location.search` directly in an effect — rather than the
+   * `useSearchParams()` hook — avoids forcing this otherwise-static page
+   * into a Suspense boundary for what's only ever a one-time check. */
+  const [authReturn, setAuthReturn] = useState<{
+    auth: string | null;
+    error: string | null;
+  } | null>(null);
   const [[index, direction], setIndexState] = useState<[number, number]>([0, 0]);
   const [analyzing, setAnalyzing] = useState(false);
   const [showSocialProof, setShowSocialProof] = useState(false);
@@ -140,6 +165,37 @@ export function QuizFlow() {
     return () => clearTimeout(timer);
   }, [pending, isLast, finish]);
 
+  // Reads the return trip from a Google attempt exactly once, then scrubs
+  // the URL — nothing downstream should ever see `?auth=`/`?error=` again
+  // (a manual refresh, a shared link, back/forward navigation). The
+  // setState is deferred to a timer, never called synchronously in the
+  // effect body, for the same cascading-render reason as the timer effect
+  // above.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const auth = params.get("auth");
+    const error = params.get("error");
+    if (!auth && !error) return;
+    window.history.replaceState(null, "", "/quiz");
+    const timer = setTimeout(() => setAuthReturn({ auth, error }), 0);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Only fires once the session has actually settled to "authenticated" —
+  // `authReturn` can be set well before the post-redirect session fetch
+  // resolves, so this can't just run inline in the effect above.
+  useEffect(() => {
+    if (authStatus !== "authenticated" || !authReturn?.auth) return;
+    const timer = setTimeout(() => {
+      if (authReturn.auth === "results") {
+        router.push("/plan");
+      } else if (authReturn.auth === "start") {
+        setQuizStarted(true);
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [authStatus, authReturn, router]);
+
   if (analyzing) {
     return (
       <AnalyzingScreen
@@ -198,6 +254,9 @@ export function QuizFlow() {
         <WelcomeCtaStep
           onStart={() => setQuizStarted(true)}
           onLogin={() => router.push("/home")}
+          initialError={
+            authReturn?.error ? friendlyAuthError(authReturn.error) : null
+          }
         />
       </main>
     );
