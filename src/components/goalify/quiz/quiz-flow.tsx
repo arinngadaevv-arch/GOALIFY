@@ -81,7 +81,7 @@ const stepVariants = {
 
 export function QuizFlow() {
   const router = useRouter();
-  const { status: authStatus } = useSession();
+  const { data: session, status: authStatus } = useSession();
   const { state, setDraft, completeQuiz } = useGoalify();
   const [quizStarted, setQuizStarted] = useState(false);
   const [showResultsGate, setShowResultsGate] = useState(false);
@@ -184,17 +184,33 @@ export function QuizFlow() {
   // Only fires once the session has actually settled to "authenticated" —
   // `authReturn` can be set well before the post-redirect session fetch
   // resolves, so this can't just run inline in the effect above.
+  //
+  // Google's callback URL is the same ("start") whether the welcome screen's
+  // primary CTA or the quiet "Log in" link kicked things off — unlike the
+  // credentials form, there's no way to know in advance whether a given
+  // Google account is brand new or already a member (Google decides that
+  // invisibly, based on email match, during its own round trip). Deciding
+  // here instead, from the real session that comes back, means a returning
+  // member who instinctively taps the big CTA still lands on their
+  // dashboard rather than getting funneled back through onboarding:
+  // `hasAcceptedTerms` is only ever true for an account that has already
+  // cleared the mandatory terms gate at least once, which every existing
+  // member has and no brand-new signup can have yet.
   useEffect(() => {
     if (authStatus !== "authenticated" || !authReturn?.auth) return;
     const timer = setTimeout(() => {
       if (authReturn.auth === "results") {
         router.push("/plan");
       } else if (authReturn.auth === "start") {
-        setQuizStarted(true);
+        if (session?.user?.hasAcceptedTerms) {
+          router.push("/home");
+        } else {
+          setQuizStarted(true);
+        }
       }
     }, 0);
     return () => clearTimeout(timer);
-  }, [authStatus, authReturn, router]);
+  }, [authStatus, authReturn, session, router]);
 
   if (analyzing) {
     return (

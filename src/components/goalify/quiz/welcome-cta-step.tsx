@@ -9,12 +9,17 @@ import { fireBurst } from "./particle-burst";
 /**
  * The true front door of the funnel. Neither action here navigates away
  * for email/password — both the primary CTA and the quiet "Log in" link
- * open the same `AuthModal` in place (signup vs. signin), and only a
- * successful authentication actually advances: into question one for the
- * CTA, or to the dashboard for a returning member logging in. Google is
- * the exception (see AuthModal) — it's a real OAuth round trip, so success
- * there arrives back as a fresh page load, and `initialError` is how a
- * failed round trip reports itself back here.
+ * open the same `AuthModal` in place (signup vs. signin), and for that
+ * form the distinction is reliable: /api/auth/register only ever creates
+ * a brand-new row, so a successful signin there really is an existing
+ * account. Google is different — the same button click could complete a
+ * fresh signup or an existing account's login (Google decides that
+ * invisibly based on email match), so both intents send Google through
+ * the identical `/quiz?auth=start` round trip and let QuizFlow decide
+ * between starting the quiz and jumping straight to `/home`, based on
+ * the real session that comes back rather than which button was clicked.
+ * `initialError` is how a failed Google round trip reports itself back
+ * here on the next page load.
  */
 export function WelcomeCtaStep({
   onStart,
@@ -99,7 +104,7 @@ export function WelcomeCtaStep({
         <AuthModal
           initialMode={authIntent}
           initialError={authIntent === "signup" ? initialError : null}
-          googleCallbackUrl={authIntent === "signin" ? "/home" : "/quiz?auth=start"}
+          googleCallbackUrl="/quiz?auth=start"
           heading={authIntent === "signin" ? "Welcome back" : undefined}
           subheading={
             authIntent === "signin"
