@@ -140,6 +140,7 @@ export function UnlockCelebration() {
       <CoachBubble
         message="This is the part where most people close the app and 'start Monday'. Not you. Press it."
         tone="lime"
+        avatarPhotoSrc="/quiz/coach-portrait.png"
         className="gf-anim-rise gf-delay-4 mt-6 w-full text-left"
       />
 

@@ -14,6 +14,7 @@ export const AVAILABLE_QUIZ_IMAGES: ReadonlySet<string> = new Set([
   "/quiz/bodyfat-noah.png",
   "/quiz/bodymap-full-body.png",
   "/quiz/bodymap-torso-base.png",
+  "/quiz/coach-portrait.png",
   "/quiz/commit-workout-complete.png",
   "/quiz/f20b9caa-72ee-4cd9-aeed-8019d57ba841.png",
   "/quiz/false-starts.png",
@@ -27,4 +28,8 @@ export const AVAILABLE_QUIZ_IMAGES: ReadonlySet<string> = new Set([
   "/quiz/no-time.png",
   "/quiz/social-proof-after-1.png",
   "/quiz/social-proof-before-1.png",
+  "/quiz/workout-preview-plank.png",
+  "/quiz/workout-preview-pushup-closeup.png",
+  "/quiz/workout-preview-pushup.png",
+  "/quiz/workout-preview-squat.png",
 ]);

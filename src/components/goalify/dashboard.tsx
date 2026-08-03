@@ -8,7 +8,6 @@ import {
   Beef,
   Bell,
   Check,
-  Dumbbell,
   Droplets,
   Flame as FlameIcon,
   Footprints,
@@ -238,7 +237,7 @@ export function Dashboard() {
             <VisualSlot
               label="Workout Preview"
               hint="3D coach loop for this session"
-              icon={Dumbbell}
+              src="/quiz/workout-preview-plank.png"
               rounded="rounded-none"
               className="h-44 w-full"
             />

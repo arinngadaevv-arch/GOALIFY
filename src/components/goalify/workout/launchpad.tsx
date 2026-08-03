@@ -99,6 +99,7 @@ export function Launchpad() {
         <CoachAvatar
           label="Hype Coach"
           hint="Looping 3D hype animation"
+          src="/quiz/coach-portrait.png"
           className="mx-auto aspect-square w-full max-w-xs"
         />
         <GlassCard

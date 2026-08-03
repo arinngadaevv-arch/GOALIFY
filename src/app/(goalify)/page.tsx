@@ -434,7 +434,7 @@ export default function LandingPage() {
         </p>
       </footer>
 
-      <CoachGuide />
+      <CoachGuide photoSrc="/quiz/coach-portrait.png" />
     </main>
   );
 }

@@ -37,6 +37,7 @@ export const TRAINERS: Trainer[] = [
     quote: "Add one rep. Then do it again tomorrow. That's the whole secret.",
     pose: "pushup",
     accent: "lime",
+    photoSrc: "/quiz/workout-preview-pushup-closeup.png",
   },
   {
     id: "vera",
@@ -45,6 +46,7 @@ export const TRAINERS: Trainer[] = [
     quote: "Pain is information, not a stop sign. We train around it.",
     pose: "bridge",
     accent: "electric",
+    photoSrc: "/quiz/coach-portrait.png",
   },
   {
     id: "kai",
@@ -53,6 +55,7 @@ export const TRAINERS: Trainer[] = [
     quote: "Definition is built in the last three reps nobody wants to do.",
     pose: "core",
     accent: "lime",
+    photoSrc: "/quiz/workout-preview-squat.png",
   },
 ];
 
