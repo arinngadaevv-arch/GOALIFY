@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useMemo, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
+import { useSession } from "next-auth/react";
 import type {
   GoalifyState,
   ProgressPhoto,
@@ -10,7 +11,19 @@ import type {
 import { DEFAULT_ANSWERS, nutritionTargets, toProfile } from "./plan";
 import { workoutForDay } from "./workouts";
 
-const STORAGE_KEY = "goalify.state.v1";
+/**
+ * Storage is partitioned per signed-in account so one browser can never
+ * show one user's quiz answers, streak or photos on a different account —
+ * each gets its own key, not a shared one. `GUEST_STORAGE_KEY` (the old,
+ * unpartitioned key from before accounts existed) is only ever used for a
+ * signed-out visitor mid-quiz; see `setActiveUser` for how it hands off to
+ * a real account.
+ */
+const GUEST_STORAGE_KEY = "goalify.state.v1";
+
+function userStorageKey(userId: string): string {
+  return `goalify.state.v1.user.${userId}`;
+}
 
 /** Daily step target driving the Activity Rings' "Steps" ring. */
 export const STEP_GOAL = 8000;
@@ -53,31 +66,98 @@ const INITIAL_STATE: GoalifyState = {
    an effect. `useSyncExternalStore` renders the server snapshot during
    hydration and swaps to the real localStorage snapshot immediately after,
    which avoids both a hydration mismatch and a cascading render.
+
+   Unlike a typical single-key store, *which* key backs `currentState` isn't
+   fixed — it switches per signed-in account (see `setActiveUser`), and
+   nothing is ever eagerly loaded from any key before that's been resolved.
+   That's deliberate: `currentState` starts at the safe, empty `INITIAL_STATE`
+   and stays there until a component tells us (via `useSession()`, the only
+   thing that actually knows who's signed in) which account's data to load,
+   so there's never a window where one account's data is readable before
+   we've confirmed whose turn it actually is.
    ------------------------------------------------------------------------- */
 
 let currentState: GoalifyState = INITIAL_STATE;
+/** Which storage key `currentState` currently reflects — null until
+ * `setActiveUser` has resolved at least once. */
+let activeStorageKey: string | null = null;
+/** True once `currentState` reflects a real resolved account (or guest)
+ * rather than just the placeholder `INITIAL_STATE`. */
 let loaded = false;
 const listeners = new Set<() => void>();
 
-function loadOnce() {
-  if (loaded || typeof window === "undefined") return;
-  loaded = true;
+function readStorage(key: string): GoalifyState | null {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<GoalifyState>;
-    currentState = {
+    return {
       ...INITIAL_STATE,
       ...parsed,
       settings: { ...INITIAL_STATE.settings, ...parsed.settings },
     };
   } catch {
-    // A corrupt or unavailable store should never block the app.
+    return null;
   }
 }
 
+function writeStorage(key: string, state: GoalifyState) {
+  try {
+    window.localStorage.setItem(key, JSON.stringify(state));
+  } catch {
+    // Private browsing / quota — persistence is best effort.
+  }
+}
+
+function emit() {
+  for (const listener of listeners) listener();
+}
+
+/**
+ * Points the store at the right account's own data — called from
+ * `GoalifyProvider` once `useSession()` has actually resolved (not during
+ * its initial "loading" state, which is neither signed in nor signed out).
+ * `userId` is null for a signed-out visitor, who gets the shared guest key
+ * (there's no account yet to isolate them from).
+ *
+ * A brand-new account (no key of its own yet) claims whatever guest data
+ * this *same browser tab* was actively using right before signing in —
+ * e.g. a quiz just completed and then immediately signed up from — since
+ * that's provably this session's own data, not a stranger's leftovers.
+ * Anything sitting in the guest key from some earlier, unrelated tab is
+ * never touched: only `currentState` already live as guest data in this
+ * running session is eligible to carry over.
+ */
+export function setActiveUser(userId: string | null) {
+  if (typeof window === "undefined") return;
+  const nextKey = userId ? userStorageKey(userId) : GUEST_STORAGE_KEY;
+  if (loaded && nextKey === activeStorageKey) return;
+
+  let nextState: GoalifyState;
+  if (userId) {
+    const existing = readStorage(nextKey);
+    if (existing) {
+      nextState = existing;
+    } else if (loaded && activeStorageKey === GUEST_STORAGE_KEY) {
+      // This tab's own live guest session (e.g. a just-finished quiz)
+      // becomes this brand-new account's starting data.
+      nextState = currentState;
+      window.localStorage.removeItem(GUEST_STORAGE_KEY);
+    } else {
+      nextState = INITIAL_STATE;
+    }
+  } else {
+    nextState = readStorage(GUEST_STORAGE_KEY) ?? INITIAL_STATE;
+  }
+
+  writeStorage(nextKey, nextState);
+  activeStorageKey = nextKey;
+  loaded = true;
+  currentState = nextState;
+  emit();
+}
+
 function subscribe(listener: () => void): () => void {
-  loadOnce();
   listeners.add(listener);
   return () => {
     listeners.delete(listener);
@@ -85,7 +165,6 @@ function subscribe(listener: () => void): () => void {
 }
 
 function getSnapshot(): GoalifyState {
-  loadOnce();
   return currentState;
 }
 
@@ -97,27 +176,35 @@ function update(updater: (state: GoalifyState) => GoalifyState) {
   const next = updater(currentState);
   if (next === currentState) return;
   currentState = next;
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  } catch {
-    // Private browsing / quota — persistence is best effort.
-  }
-  for (const listener of listeners) listener();
+  if (activeStorageKey) writeStorage(activeStorageKey, next);
+  emit();
 }
 
 /**
- * Kept as a component so the tree has an obvious ownership boundary and so
- * server-provided initial state can be threaded through here later.
+ * Owns the boundary between "who's signed in" (`useSession`, real React
+ * state) and the plain external store above (which has no way to know that
+ * on its own) — every render where the session has actually resolved,
+ * this points the store at that account's own data.
  */
 export function GoalifyProvider({ children }: { children: React.ReactNode }) {
+  const { data: session, status } = useSession();
+  const userId = session?.user?.id ?? null;
+
+  useEffect(() => {
+    if (status === "loading") return;
+    setActiveUser(userId);
+  }, [status, userId]);
+
   return <>{children}</>;
 }
 
 export function useGoalify() {
   const state = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  // True once `setActiveUser` has resolved which account's data this is —
+  // not just "past SSR hydration," which used to be all this checked.
   const hydrated = useSyncExternalStore(
     subscribe,
-    () => true,
+    () => loaded,
     () => false,
   );
 
