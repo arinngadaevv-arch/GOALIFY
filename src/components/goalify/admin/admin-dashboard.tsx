@@ -24,7 +24,7 @@ export type AdminUserRow = {
   hasAcceptedTerms: boolean;
   createdAt: string;
   lastActiveAt: string | null;
-  latestPlanClaim: { tierLabel: string; priceCents: number; createdAt: string } | null;
+  latestOrder: { tierLabel: string; priceCents: number; createdAt: string } | null;
 };
 
 export type AdminStats = {
@@ -89,20 +89,20 @@ export function AdminDashboard({
           />
           <StatCard
             icon={CheckCircle2}
-            label="Plan claims"
+            label="Orders"
             value={stats.totalCheckouts.toLocaleString("en-US")}
           />
           <StatCard
             icon={CircleDollarSign}
-            label="Projected revenue"
+            label="Revenue"
             value={formatMoney(stats.projectedRevenueCents)}
           />
         </div>
         <p className="mt-3 text-[11px] leading-relaxed text-haze">
-          &ldquo;Plan claims&rdquo; and &ldquo;Projected revenue&rdquo; reflect
-          checkout selections at the price shown to the user — GOALIFY has no
-          live payment processor connected, so these are not confirmed
-          settled payments.
+          &ldquo;Orders&rdquo; and &ldquo;Revenue&rdquo; are written only by
+          Lemon Squeezy&apos;s <code>order_created</code> webhook once a payment
+          has actually settled — nothing here reflects a checkout that was
+          started but not completed.
         </p>
 
         {/* --------------------------------------------------------- Users */}
@@ -118,7 +118,7 @@ export function AdminDashboard({
                   <th className="px-4 py-3">Email</th>
                   <th className="px-4 py-3">Plan status</th>
                   <th className="px-4 py-3">Terms</th>
-                  <th className="px-4 py-3">Latest plan claim</th>
+                  <th className="px-4 py-3">Latest order</th>
                   <th className="px-4 py-3">Joined</th>
                 </tr>
               </thead>
@@ -230,8 +230,8 @@ function UserRow({ user }: { user: AdminUserRow }) {
         )}
       </td>
       <td className="px-4 py-3 text-xs text-mist">
-        {user.latestPlanClaim
-          ? `${user.latestPlanClaim.tierLabel} · ${formatMoney(user.latestPlanClaim.priceCents)} · ${formatDate(user.latestPlanClaim.createdAt)}`
+        {user.latestOrder
+          ? `${user.latestOrder.tierLabel} · ${formatMoney(user.latestOrder.priceCents)} · ${formatDate(user.latestOrder.createdAt)}`
           : "—"}
       </td>
       <td className="px-4 py-3 text-xs text-mist">{formatDate(user.createdAt)}</td>

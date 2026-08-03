@@ -38,13 +38,23 @@ const UNLOCKED = [
 ];
 
 export function UnlockCelebration() {
-  const { answers, targets } = useGoalify();
+  const { answers, targets, purchase } = useGoalify();
   const [opened, setOpened] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setOpened(true), 420);
     return () => clearTimeout(timer);
   }, []);
+
+  // This screen is only ever reached one way now: Lemon Squeezy's own
+  // redirect_url after a real checkout completes (see paywall.tsx) — there
+  // is no other link or navigation into /success. `purchase()` is
+  // idempotent (a no-op if already true), so this is safe to call on every
+  // mount, including a page refresh here.
+  useEffect(() => {
+    const timer = setTimeout(() => purchase(), 0);
+    return () => clearTimeout(timer);
+  }, [purchase]);
 
   return (
     <main className="relative mx-auto flex min-h-dvh w-full max-w-lg flex-col items-center justify-center px-5 py-14 text-center">

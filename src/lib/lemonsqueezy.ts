@@ -1,0 +1,30 @@
+import { lemonSqueezySetup } from "@lemonsqueezy/lemonsqueezy.js";
+
+export const CHECKOUT_TIERS = ["monthly", "quarterly", "annual"] as const;
+export type CheckoutTier = (typeof CHECKOUT_TIERS)[number];
+
+/** One real Lemon Squeezy variant per pricing tier — see paywall.tsx for
+ * the matching price copy shown to the user before checkout. */
+const VARIANT_ENV_KEYS: Record<CheckoutTier, string> = {
+  monthly: "LEMONSQUEEZY_VARIANT_ID_MONTHLY",
+  quarterly: "LEMONSQUEEZY_VARIANT_ID_QUARTERLY",
+  annual: "LEMONSQUEEZY_VARIANT_ID_ANNUAL",
+};
+
+export function getVariantId(tier: CheckoutTier): string | undefined {
+  return process.env[VARIANT_ENV_KEYS[tier]];
+}
+
+let configured = false;
+
+/** Idempotent — safe to call at the top of every request handler that
+ * needs the SDK. `lemonSqueezySetup` itself just stores the API key in a
+ * module-level singleton inside the SDK, so repeating the call is cheap. */
+export function configureLemonSqueezy() {
+  if (configured) return;
+  lemonSqueezySetup({
+    apiKey: process.env.LEMONSQUEEZY_API_KEY,
+    onError: (error) => console.error("[lemonsqueezy]", error.message),
+  });
+  configured = true;
+}

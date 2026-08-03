@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import clsx from "clsx";
-import { Check, Lock, ShieldCheck } from "lucide-react";
+import { Check, Loader2, Lock, ShieldCheck } from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
 import { goalLabel } from "@/lib/goalify/plan";
 import { Brand } from "@/components/goalify/brand";
@@ -49,32 +48,42 @@ const TIERS = [
  * the plan/CTA for attention instead of leading to it.
  */
 export function Paywall() {
-  const router = useRouter();
-  const { answers, purchase, hydrated } = useGoalify();
+  const { answers, hydrated } = useGoalify();
   const [tier, setTier] = useState("quarterly");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const checkout = (event: React.MouseEvent) => {
+  const checkout = async (event: React.MouseEvent) => {
+    if (loading) return;
     fireBurst(event.clientX, event.clientY, true);
     window.setTimeout(() => fireBurst(event.clientX, event.clientY, false), 90);
     navigator.vibrate?.([30, 40, 60]);
 
-    const selected = TIERS.find((option) => option.id === tier);
-    if (selected) {
-      // Fire-and-forget — a real (checkout claim) record for the admin
-      // dashboard, never something the user waits on.
-      fetch("/api/checkout", {
+    setError(null);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tier: selected.id,
-          tierLabel: selected.label,
-          priceCents: Math.round(selected.price * 100),
-        }),
-      }).catch(() => {});
+        body: JSON.stringify({ tier }),
+      });
+      const body = await res.json().catch(() => null);
+      if (!res.ok || !body?.url) {
+        setError(
+          body?.error ?? "Couldn't start checkout — please try again.",
+        );
+        setLoading(false);
+        return;
+      }
+      // A real, hosted Lemon Squeezy checkout — this leaves the app
+      // entirely. The plan only actually unlocks once Lemon Squeezy's
+      // order_created webhook confirms payment and Lemon Squeezy redirects
+      // back to /success; nothing here marks the purchase as complete.
+      window.location.href = body.url;
+    } catch {
+      setError("Couldn't start checkout — please try again.");
+      setLoading(false);
     }
-
-    purchase();
-    router.push("/success");
   };
 
   return (
@@ -215,16 +224,26 @@ export function Paywall() {
       {/* ----------------------------------------------------------- Sticky CTA */}
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-electric/20 bg-[#0b0e14]/95 backdrop-blur-md">
         <div className="mx-auto w-full max-w-2xl px-5 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.65rem)]">
+          {error && (
+            <p className="mb-2 rounded-xl bg-red-500/15 px-3.5 py-2.5 text-center text-xs font-semibold text-red-300">
+              {error}
+            </p>
+          )}
+
           <GlowButton
             variant="cyber"
             size="lg"
             fullWidth
             pulse
             className="text-base tracking-tight shadow-[0_0_44px_-8px_rgba(255,199,0,0.8)]"
-            disabled={!hydrated}
+            disabled={!hydrated || loading}
             onClick={checkout}
           >
-            <Lock className="size-4.5" />
+            {loading ? (
+              <Loader2 className="size-4.5 animate-spin" />
+            ) : (
+              <Lock className="size-4.5" />
+            )}
             CLAIM MY DISCOUNT &amp; START PLAN ⚡
           </GlowButton>
 

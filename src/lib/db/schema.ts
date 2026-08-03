@@ -218,11 +218,12 @@ export const planDays = pgTable("plan_day", {
 });
 
 /**
- * A real, append-only record of the moment a user clicks "claim my plan" on
- * the paywall - tier + the price listed to them at that moment. GOALIFY has
- * no live payment processor wired up, so this is honestly a checkout claim,
- * not a settled payment; the admin dashboard labels it that way rather than
- * implying collected revenue.
+ * A real, append-only record of a completed Lemon Squeezy order - written
+ * only by the `order_created` webhook once payment has actually settled,
+ * never by the paywall click itself. `lemonSqueezyOrderId` is the webhook's
+ * own idempotency key: Lemon Squeezy can and does redeliver the same event,
+ * and this unique constraint is what keeps a redelivery from double-crediting
+ * a purchase.
  */
 export const checkoutEvents = pgTable("checkout_event", {
   id: text("id")
@@ -234,6 +235,7 @@ export const checkoutEvents = pgTable("checkout_event", {
   tier: text("tier").notNull(),
   tierLabel: text("tier_label").notNull(),
   priceCents: integer("price_cents").notNull(),
+  lemonSqueezyOrderId: text("lemon_squeezy_order_id").unique(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

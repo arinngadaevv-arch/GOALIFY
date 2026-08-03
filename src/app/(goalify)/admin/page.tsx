@@ -94,7 +94,7 @@ export default async function AdminPage() {
       hasAcceptedTerms: user.hasAcceptedTerms,
       createdAt: user.createdAt.toISOString(),
       lastActiveAt: user.lastActiveAt ? user.lastActiveAt.toISOString() : null,
-      latestPlanClaim: latest
+      latestOrder: latest
         ? {
             tierLabel: latest.tierLabel,
             priceCents: latest.priceCents,
