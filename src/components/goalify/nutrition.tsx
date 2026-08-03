@@ -10,6 +10,7 @@ import {
   Salad,
   UtensilsCrossed,
   Wheat,
+  type LucideIcon,
 } from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
 import { goalLabel } from "@/lib/goalify/plan";
@@ -19,6 +20,7 @@ import { VisualSlot } from "./ui/visual-slot";
 import { IconBadge } from "./ui/icon-badge";
 import { WaterTracker } from "./water-tracker";
 import { Pill, SectionHeading } from "./ui/stat";
+import { ParticleBurstLayer } from "./quiz/particle-burst";
 
 const RULES = [
   {
@@ -51,7 +53,9 @@ export function Nutrition() {
   ];
 
   return (
-    <AppShell title="Nutrition & Daily Fuel" subtitle="Targets, not diaries">
+    <AppShell dark title="Nutrition & Daily Fuel" subtitle="Targets, not diaries">
+      <ParticleBurstLayer />
+
       {/* ------------------------------------------------------ Headline card */}
       <GlassCard tone="electric" deep className="gf-anim-rise p-6 text-center">
         <Pill tone="electric">{goalLabel(answers.goal)}</Pill>
@@ -117,7 +121,7 @@ export function Nutrition() {
         <SectionHeading eyebrow="Rough shape of the day" title="Your plate" />
         <div className="grid grid-cols-3 gap-3">
           {meals.map((meal) => (
-            <GlassCard key={meal.name} className="overflow-hidden p-0">
+            <GlassCard key={meal.name} deep className="gf-lift overflow-hidden p-0">
               <VisualSlot
                 label="Meal"
                 icon={meal.icon}
@@ -144,7 +148,12 @@ export function Nutrition() {
         <SectionHeading eyebrow="Timing rules" title="Around your session" />
         <div className="grid gap-3">
           {RULES.map((rule) => (
-            <GlassCard key={rule.title} tone={rule.tone} className="flex gap-4 p-5">
+            <GlassCard
+              key={rule.title}
+              tone={rule.tone}
+              deep
+              className="gf-lift flex gap-4 p-5"
+            >
               <IconBadge icon={rule.icon} size="md" />
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
@@ -203,7 +212,7 @@ function MacroCard({
   note,
   tone,
 }: {
-  Icon: React.ComponentType<{ className?: string }>;
+  Icon: LucideIcon;
   value: number;
   label: string;
   note: string;
@@ -212,9 +221,10 @@ function MacroCard({
   return (
     <GlassCard
       tone={tone === "neutral" ? "plain" : tone}
-      className="p-4 text-center"
+      deep
+      className="gf-lift p-4 text-center"
     >
-      <Icon className="mx-auto size-5 text-electric" />
+      <IconBadge icon={Icon} size="sm" className="mx-auto" />
       <p className="gf-numeric mt-2.5 text-2xl font-black text-ink">
         {value}
         <span className="text-sm font-bold text-mist">g</span>
@@ -235,7 +245,7 @@ function TipRow({
   body: string;
 }) {
   return (
-    <GlassCard className="flex items-center gap-4 p-4">
+    <GlassCard deep className="gf-lift flex items-center gap-4 p-4">
       <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-electric/8">
         <Icon className="size-4 text-electric" />
       </span>

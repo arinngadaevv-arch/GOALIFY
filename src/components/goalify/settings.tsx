@@ -31,6 +31,7 @@ import { GlowButton, GlowLink } from "./ui/glow-button";
 import { Toggle } from "./ui/toggle";
 import { VisualSlot } from "./ui/visual-slot";
 import { Pill, SectionHeading } from "./ui/stat";
+import { ParticleBurstLayer } from "./quiz/particle-burst";
 
 export function SettingsScreen() {
   const router = useRouter();
@@ -80,7 +81,9 @@ export function SettingsScreen() {
   };
 
   return (
-    <AppShell title="Settings" subtitle="Account & preferences">
+    <AppShell dark title="Settings" subtitle="Account & preferences">
+      <ParticleBurstLayer />
+
       {/* ------------------------------------------------------------ Profile */}
       <GlassCard deep className="gf-anim-rise flex items-center gap-4 p-6">
         <VisualSlot
@@ -324,7 +327,7 @@ export function SettingsScreen() {
 
 function DetailCell({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-white/70 p-4">
+    <div className="bg-ink/3 p-4">
       <p className="text-[10px] font-bold tracking-[0.12em] text-mist uppercase">
         {label}
       </p>

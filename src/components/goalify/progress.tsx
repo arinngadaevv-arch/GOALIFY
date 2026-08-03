@@ -24,6 +24,14 @@ import { GlassCard } from "./ui/glass-card";
 import { VisualSlot } from "./ui/visual-slot";
 import { IconBadge } from "./ui/icon-badge";
 import { Pill, SectionHeading, Stat } from "./ui/stat";
+import { ParticleBurstLayer } from "./quiz/particle-burst";
+
+/** Literal hex, not the shared electric/lime CSS tokens — this chart's SVG
+ * fill/stroke attributes can't read CSS custom properties, so they need
+ * their own re-tint for the obsidian/gold cyber scope this screen now
+ * always renders in (same reasoning as dashboard.tsx's RING_GOLD/RING_CRIMSON). */
+const CHART_GOLD = "#e8b32c";
+const CHART_CRIMSON = "#ff3b3b";
 
 const BADGES = [
   { id: "first", name: "First Rep", icon: Medal, requirement: 1 },
@@ -47,7 +55,9 @@ export function Progress() {
   const selectedDay = last30.find((day) => day.key === selectedDayKey) ?? null;
 
   return (
-    <AppShell title="Progress & Evolution" subtitle="The proof it's working">
+    <AppShell dark title="Progress & Evolution" subtitle="The proof it's working">
+      <ParticleBurstLayer />
+
       {/* ------------------------------------------------------ Headline stats */}
       <GlassCard deep className="gf-anim-rise grid grid-cols-3 gap-4 p-6">
         <Stat value={completed} label="Sessions" tone="electric" />
@@ -116,7 +126,7 @@ export function Progress() {
                 className={clsx(
                   "gf-anim-pop relative aspect-square rounded-md transition-all duration-300 hover:z-10 hover:scale-125",
                   day.done
-                    ? "bg-lime-neon shadow-[0_0_10px_rgba(57,255,20,0.55)]"
+                    ? "bg-lime-neon shadow-[0_0_10px_var(--color-lime-neon)]"
                     : day.isToday
                       ? "border-2 border-electric bg-electric/10"
                       : "bg-ink/6",
@@ -385,8 +395,8 @@ function TrendChart({ points }: { points: { week: number; weight: number }[] }) 
       >
         <defs>
           <linearGradient id="gf-trend" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#39FF14" stopOpacity="0.32" />
-            <stop offset="100%" stopColor="#39FF14" stopOpacity="0" />
+            <stop offset="0%" stopColor={CHART_CRIMSON} stopOpacity="0.32" />
+            <stop offset="100%" stopColor={CHART_CRIMSON} stopOpacity="0" />
           </linearGradient>
         </defs>
 
@@ -397,7 +407,7 @@ function TrendChart({ points }: { points: { week: number; weight: number }[] }) 
             x2={width - padding}
             y1={padding + fraction * (height - padding * 2)}
             y2={padding + fraction * (height - padding * 2)}
-            stroke="rgba(10,25,70,0.07)"
+            stroke="rgba(232,179,44,0.1)"
             strokeWidth="1"
           />
         ))}
@@ -406,7 +416,7 @@ function TrendChart({ points }: { points: { week: number; weight: number }[] }) 
         <path
           d={line}
           fill="none"
-          stroke="#0052FF"
+          stroke={CHART_GOLD}
           strokeWidth="3.5"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -415,16 +425,16 @@ function TrendChart({ points }: { points: { week: number; weight: number }[] }) 
           cx={coords[0].x}
           cy={coords[0].y}
           r="5"
-          fill="#0052FF"
-          stroke="#fff"
+          fill={CHART_GOLD}
+          stroke="#0b0e14"
           strokeWidth="3"
         />
         <circle
           cx={coords[coords.length - 1].x}
           cy={coords[coords.length - 1].y}
           r="6"
-          fill="#39FF14"
-          stroke="#fff"
+          fill={CHART_CRIMSON}
+          stroke="#0b0e14"
           strokeWidth="3"
         />
 
@@ -435,7 +445,7 @@ function TrendChart({ points }: { points: { week: number; weight: number }[] }) 
               x2={hoveredCoord.x}
               y1={padding}
               y2={height - padding}
-              stroke="rgba(10,25,70,0.22)"
+              stroke="rgba(232,179,44,0.3)"
               strokeWidth="1"
               strokeDasharray="3 3"
             />
@@ -443,8 +453,8 @@ function TrendChart({ points }: { points: { week: number; weight: number }[] }) 
               cx={hoveredCoord.x}
               cy={hoveredCoord.y}
               r="6.5"
-              fill="#0052FF"
-              stroke="#fff"
+              fill={CHART_GOLD}
+              stroke="#0b0e14"
               strokeWidth="2.5"
             />
           </g>
