@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { ArrowRight, Lock, Star, Timer } from "lucide-react";
-import { Brand } from "@/components/goalify/brand";
+import { ArrowRight } from "lucide-react";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
 import { AuthModal } from "./auth-modal";
 import { fireBurst } from "./particle-burst";
@@ -39,58 +38,28 @@ export function WelcomeCtaStep({
   }, [initialError]);
 
   return (
-    <div className="relative -mx-5 flex min-h-dvh flex-col overflow-hidden">
-      {/* `object-contain` (not `-cover`) deliberately leaves the source photo
-          uncropped — it's already a tight portrait crop with almost no
-          headroom, so covering a full-height mobile viewport with it would
-          blow past the subject's shoulders on both sides. The empty space
-          `contain` leaves below the photo falls through to the page's own
-          obsidian canvas (see gf-cyber-scope), so it reads as intentional
-          negative space, not letterboxing. */}
-      <div className="absolute inset-0 bg-[#0b0e14]">
-        <Image
-          src="/quiz/onboarding-hero.png"
-          alt=""
-          fill
-          priority
-          className="object-contain object-top"
-        />
-      </div>
-      {/* One smooth bottom-to-top wash — nearly clear at the very top so the
-          photo reads, solid Obsidian Dark by the lower third so the copy
-          and CTA never fight the image for contrast. */}
-      <div
-        className="absolute inset-0 bg-gradient-to-t from-[#0b0e14] via-[#0b0e14]/75 via-45% to-transparent"
-        aria-hidden
+    <div className="relative -mx-5 flex flex-col overflow-hidden bg-[#0b0e14]">
+      {/* The uploaded design is a complete hero mockup — headline, brand
+          mark, rating, feature icons and its own CTA/footer copy are all
+          already drawn into the image. Showing it as a `w-full h-auto`
+          block (not an absolutely-positioned `fill` background) means it
+          renders at its own aspect ratio, uncropped and unstretched, and
+          the page simply scrolls if it's taller than the viewport — no
+          zooming, no cover-crop. Only a real, clickable CTA + login link
+          are still rendered by the app below it; everything else the old
+          version duplicated in React on top of the photo's own baked-in
+          copy has been removed. */}
+      <Image
+        src="/quiz/69f89e00-e3b4-45e8-bc05-6d6e77897ca2.png"
+        alt="Transform your body, transform your life. GOALIFY — trusted by 50,000+ users, 4.9/5 average rating. Personalized for you, gym & home workouts, nutrition plan, track your progress."
+        width={853}
+        height={1844}
+        priority
+        sizes="100vw"
+        className="h-auto w-full"
       />
 
-      <div className="relative mt-auto flex flex-col items-center gap-4 px-6 pt-10 pb-10 text-center">
-        <div className="mb-1">
-          <Brand />
-        </div>
-
-        {/* ------------------------------------------------------ Social proof */}
-        <div className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 backdrop-blur-xl">
-          <span className="flex gap-0.5 text-[#FFC700]">
-            {Array.from({ length: 5 }).map((_, index) => (
-              <Star key={index} className="size-3.5 fill-current" />
-            ))}
-          </span>
-          <span className="text-xs font-bold text-white">
-            4.9/5 · rated by 50,000+ members
-          </span>
-        </div>
-
-        <h1 className="gf-display text-5xl leading-[1.05] font-black text-white sm:text-6xl">
-          Start Your{" "}
-          <span className="gf-text-gold-glow bg-gradient-to-b from-[#FFE59A] to-[#FFC700] bg-clip-text text-transparent">
-            Transformation
-          </span>
-        </h1>
-        <p className="max-w-md text-base leading-relaxed font-semibold text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] sm:text-lg">
-          Build your personalised 6-month training &amp; nutrition plan.
-        </p>
-
+      <div className="relative flex flex-col items-center gap-3 px-6 pt-6 pb-10 text-center">
         <GlowButton
           variant="cyber"
           size="xl"
@@ -100,7 +69,7 @@ export function WelcomeCtaStep({
             fireBurst(event.clientX, event.clientY, true);
             setAuthIntent("signup");
           }}
-          className="mt-3 h-[4.25rem] max-w-sm text-lg tracking-tight shadow-[0_0_50px_-6px_rgba(255,199,0,0.85)]"
+          className="h-[4.25rem] max-w-sm text-lg tracking-tight shadow-[0_0_50px_-6px_rgba(255,199,0,0.85)]"
         >
           GET MY PERSONALISED PLAN
           <ArrowRight className="size-5" />
@@ -113,17 +82,6 @@ export function WelcomeCtaStep({
         >
           Already have an account? Log in
         </button>
-
-        <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-bold text-white/90 backdrop-blur-xl">
-            <Timer className="size-3.5 text-[#FFC700]" strokeWidth={2.5} />
-            Takes 1 minute
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-bold text-white/90 backdrop-blur-xl">
-            <Lock className="size-3.5 text-[#FFC700]" strokeWidth={2.5} />
-            Privacy protected
-          </span>
-        </div>
       </div>
 
       {authIntent && (
