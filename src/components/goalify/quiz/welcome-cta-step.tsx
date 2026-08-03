@@ -18,28 +18,32 @@ import { fireBurst } from "./particle-burst";
  * the identical `/quiz?auth=start` round trip and let QuizFlow decide
  * between starting the quiz and jumping straight to `/home`, based on
  * the real session that comes back rather than which button was clicked.
- * `initialError` is how a failed Google round trip reports itself back
- * here on the next page load.
+ * `initialErrorCode` is how a failed Google round trip reports itself
+ * back here on the next page load — passed through to AuthModal raw
+ * (not pre-formatted) so it can react specifically to
+ * "OAuthAccountNotLinked" with its own inline linking flow instead of
+ * just a red banner.
  */
 export function WelcomeCtaStep({
   onStart,
   onLogin,
-  initialError,
+  initialErrorCode,
 }: {
   onStart: () => void;
   onLogin: () => void;
-  /** Friendly message from a Google attempt that failed on a previous
-   * page load (see QuizFlow, which parses the `?error=` NextAuth lands
-   * on `/quiz` with). Reopens the modal immediately to surface it. */
-  initialError?: string | null;
+  /** NextAuth's raw error code from a Google attempt that failed on a
+   * previous page load (see QuizFlow, which parses the `?error=`
+   * NextAuth lands on `/quiz` with). Reopens the modal immediately to
+   * surface it. */
+  initialErrorCode?: string | null;
 }) {
   const [authIntent, setAuthIntent] = useState<"signup" | "signin" | null>(null);
 
   useEffect(() => {
-    if (!initialError) return;
+    if (!initialErrorCode) return;
     const timer = setTimeout(() => setAuthIntent("signup"), 0);
     return () => clearTimeout(timer);
-  }, [initialError]);
+  }, [initialErrorCode]);
 
   return (
     <div className="relative -mx-5 overflow-hidden bg-[#0b0e14]">
@@ -103,7 +107,7 @@ export function WelcomeCtaStep({
       {authIntent && (
         <AuthModal
           initialMode={authIntent}
-          initialError={authIntent === "signup" ? initialError : null}
+          initialErrorCode={authIntent === "signup" ? initialErrorCode : null}
           googleCallbackUrl="/quiz?auth=start"
           heading={authIntent === "signin" ? "Welcome back" : undefined}
           subheading={

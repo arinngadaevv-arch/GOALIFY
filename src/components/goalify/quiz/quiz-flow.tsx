@@ -54,22 +54,6 @@ const COMMIT_VALUES: Partial<Record<keyof QuizAnswers, unknown>> = {
 /** How long the coach's reaction stays on screen before the next question. */
 const REACTION_MS = 1050;
 
-/**
- * NextAuth's own error codes for a failed Google round trip (see
- * `pages.error` in auth.ts) — mapped to copy a user can actually act on.
- * Anything unlisted falls back to a generic retry message.
- */
-const GOOGLE_ERROR_MESSAGES: Record<string, string> = {
-  AccessDenied: "Google sign-in was cancelled.",
-  OAuthAccountNotLinked:
-    "That email already has a password-based account — sign in with email and password, then connect Google from Settings so you can use it next time.",
-  Configuration: "Google sign-in isn't available right now — try email instead.",
-};
-
-function friendlyAuthError(code: string): string {
-  return GOOGLE_ERROR_MESSAGES[code] ?? "Google sign-in failed. Please try again.";
-}
-
 /** Slide direction for the step transition — positive for advancing,
  * negative for stepping back, so Back genuinely reverses the motion
  * instead of replaying the same forward animation. */
@@ -270,9 +254,7 @@ export function QuizFlow() {
         <WelcomeCtaStep
           onStart={() => setQuizStarted(true)}
           onLogin={() => router.push("/home")}
-          initialError={
-            authReturn?.error ? friendlyAuthError(authReturn.error) : null
-          }
+          initialErrorCode={authReturn?.error ?? null}
         />
       </main>
     );

@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { ChevronLeft, Loader2, Mail, X } from "lucide-react";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
+import { friendlyAuthError } from "@/lib/auth-errors";
 
 /**
  * The welcome screen's CTA opens this instead of navigating straight into
@@ -16,13 +17,25 @@ import { GlowButton } from "@/components/goalify/ui/glow-button";
  * not something that can complete in place like the email/password form
  * below. `handleGoogleSignIn` navigates the browser away entirely — see
  * its own comment for why `onAuthenticated` is never called from there.
+ *
+ * `initialErrorCode === "OAuthAccountNotLinked"` is the one Google failure
+ * this modal doesn't just show as a red banner: it means the email Google
+ * returned already has a password-based GOALIFY account, so instead it
+ * opens straight into a "confirm your password" form. A correct password
+ * proves ownership of that account well enough for `signIn("credentials")`
+ * to actually authenticate it — and once that session exists, retrying
+ * `signIn("google")` links Google to it through Auth.js's own safe,
+ * session-based linking path (see handleLoginOrRegister in @auth/core),
+ * not the email-match heuristic that failed the first time. No account
+ * linking ever happens here from an email the user typed alone — it's
+ * always gated behind a real, verified sign-in first.
  */
 export function AuthModal({
   onClose,
   onAuthenticated,
   googleCallbackUrl,
   initialMode = "signup",
-  initialError = null,
+  initialErrorCode = null,
   heading = "Create Your Account to Start",
   subheading = "Save your progress and access your tailored plan.",
 }: {
@@ -31,21 +44,28 @@ export function AuthModal({
   /** Where NextAuth lands the browser after a *successful* Google round trip. */
   googleCallbackUrl: string;
   initialMode?: "signup" | "signin";
-  /** A friendly message to show immediately, e.g. after bouncing back from
-   * a failed Google attempt on a previous page load. */
-  initialError?: string | null;
+  /** NextAuth's raw error code from a Google attempt that failed on a
+   * previous page load. Anything other than "OAuthAccountNotLinked" just
+   * shows as an inline banner; that one code switches this modal straight
+   * into the password-confirmation/linking form. */
+  initialErrorCode?: string | null;
   heading?: string;
   subheading?: string;
 }) {
   const { update } = useSession();
-  const [emailMode, setEmailMode] = useState(false);
-  const [mode, setMode] = useState<"signup" | "signin">(initialMode);
+  const isLinkFlow = initialErrorCode === "OAuthAccountNotLinked";
+  const [emailMode, setEmailMode] = useState(isLinkFlow);
+  const [mode, setMode] = useState<"signup" | "signin" | "linkGoogle">(
+    isLinkFlow ? "linkGoogle" : initialMode,
+  );
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [googleLoading, setGoogleLoading] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(initialError);
+  const [error, setError] = useState<string | null>(
+    initialErrorCode && !isLinkFlow ? friendlyAuthError(initialErrorCode) : null,
+  );
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -110,6 +130,17 @@ export function AuthModal({
         return;
       }
 
+      if (mode === "linkGoogle") {
+        // The password just verified above proves ownership of this
+        // account well enough for Auth.js's own safe rule: signIn("google")
+        // called from an authenticated session links the provider to that
+        // session directly (see handleLoginOrRegister in @auth/core),
+        // rather than the email-match check that rejected it earlier.
+        // Nothing after this ever runs — same as handleGoogleSignIn.
+        await signIn("google", { callbackUrl: googleCallbackUrl });
+        return;
+      }
+
       await update();
       onAuthenticated();
     } catch {
@@ -149,6 +180,7 @@ export function AuthModal({
             aria-label="Back"
             onClick={() => {
               setEmailMode(false);
+              setMode(initialMode);
               setError(null);
             }}
             className="gf-press mb-3 grid size-8 place-items-center rounded-full bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
@@ -164,14 +196,18 @@ export function AuthModal({
           {emailMode
             ? mode === "signup"
               ? "Create your account"
-              : "Welcome back"
+              : mode === "linkGoogle"
+                ? "Confirm your password"
+                : "Welcome back"
             : heading}
         </h2>
         <p className="mt-2 pr-10 text-sm leading-relaxed text-white/65">
           {emailMode
             ? mode === "signup"
               ? "A few details and your plan is saved for good."
-              : "Sign in to pick up right where you left off."
+              : mode === "linkGoogle"
+                ? "This email already has a GOALIFY account — enter your password to securely link Google to it."
+                : "Sign in to pick up right where you left off."
             : subheading}
         </p>
 
@@ -226,41 +262,47 @@ export function AuthModal({
                 disabled={loading || googleLoading}
               >
                 {loading && <Loader2 className="size-4.5 animate-spin" />}
-                {mode === "signup" ? "Create account & continue" : "Sign in & continue"}
+                {mode === "signup"
+                  ? "Create account & continue"
+                  : mode === "linkGoogle"
+                    ? "Confirm & link Google"
+                    : "Sign in & continue"}
               </GlowButton>
             </form>
 
-            <p className="mt-4 text-center text-xs font-semibold text-white/60">
-              {mode === "signup" ? (
-                <>
-                  Already have an account?{" "}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMode("signin");
-                      setError(null);
-                    }}
-                    className="font-black text-[#FFC700] hover:underline"
-                  >
-                    Sign in
-                  </button>
-                </>
-              ) : (
-                <>
-                  New here?{" "}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMode("signup");
-                      setError(null);
-                    }}
-                    className="font-black text-[#FFC700] hover:underline"
-                  >
-                    Create an account
-                  </button>
-                </>
-              )}
-            </p>
+            {mode !== "linkGoogle" && (
+              <p className="mt-4 text-center text-xs font-semibold text-white/60">
+                {mode === "signup" ? (
+                  <>
+                    Already have an account?{" "}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode("signin");
+                        setError(null);
+                      }}
+                      className="font-black text-[#FFC700] hover:underline"
+                    >
+                      Sign in
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    New here?{" "}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode("signup");
+                        setError(null);
+                      }}
+                      className="font-black text-[#FFC700] hover:underline"
+                    >
+                      Create an account
+                    </button>
+                  </>
+                )}
+              </p>
+            )}
           </>
         ) : (
           <div className="mt-6 space-y-3">
