@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { GlassCard } from "@/components/goalify/ui/glass-card";
 import { Pill } from "@/components/goalify/ui/stat";
+import { goalLabel, levelLabel } from "@/lib/goalify/plan";
+import type { Goal, Level } from "@/lib/goalify/types";
 
 type PlanTier = "FREE" | "PRO" | "BUSINESS";
 
@@ -24,6 +26,7 @@ export type AdminUserRow = {
   hasAcceptedTerms: boolean;
   createdAt: string;
   lastActiveAt: string | null;
+  quiz: { goal: Goal | null; level: Level | null; daysPerWeek: number | null; completedAt: string } | null;
   latestOrder: { tierLabel: string; priceCents: number; createdAt: string } | null;
 };
 
@@ -56,7 +59,7 @@ export function AdminDashboard({
   users: AdminUserRow[];
 }) {
   return (
-    <div className="min-h-dvh">
+    <div className="gf-cyber-scope min-h-dvh">
       <div className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -118,6 +121,7 @@ export function AdminDashboard({
                   <th className="px-4 py-3">Email</th>
                   <th className="px-4 py-3">Plan status</th>
                   <th className="px-4 py-3">Terms</th>
+                  <th className="px-4 py-3">Quiz</th>
                   <th className="px-4 py-3">Latest order</th>
                   <th className="px-4 py-3">Joined</th>
                 </tr>
@@ -128,7 +132,7 @@ export function AdminDashboard({
                 ))}
                 {users.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-mist">
+                    <td colSpan={7} className="px-4 py-8 text-center text-mist">
                       No users yet.
                     </td>
                   </tr>
@@ -228,6 +232,11 @@ function UserRow({ user }: { user: AdminUserRow }) {
             <XCircle className="size-3" /> Pending
           </Pill>
         )}
+      </td>
+      <td className="px-4 py-3 text-xs text-mist">
+        {user.quiz
+          ? `${user.quiz.goal ? goalLabel(user.quiz.goal) : "—"} · ${user.quiz.level ? levelLabel(user.quiz.level) : "—"}${user.quiz.daysPerWeek ? ` · ${user.quiz.daysPerWeek}d/wk` : ""}`
+          : "Not taken"}
       </td>
       <td className="px-4 py-3 text-xs text-mist">
         {user.latestOrder

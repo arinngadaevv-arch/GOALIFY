@@ -70,6 +70,9 @@ export type GoalifyState = {
   /** Today's accelerometer-detected step count — see use-step-tracker.ts. */
   steps: number;
   stepsUpdatedOn: string;
+  /** Set once the local quiz profile has been synced to the server (see
+   * api/user/quiz/route.ts) — null until then, never reset. */
+  quizSyncedAt: string | null;
   settings: Settings;
   photos: ProgressPhoto[];
 };

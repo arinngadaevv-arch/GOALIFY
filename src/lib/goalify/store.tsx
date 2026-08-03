@@ -33,6 +33,7 @@ const INITIAL_STATE: GoalifyState = {
   waterUpdatedOn: todayKey(),
   steps: 0,
   stepsUpdatedOn: todayKey(),
+  quizSyncedAt: null,
   settings: {
     kneeSafe: false,
     soundEffects: true,
@@ -179,6 +180,13 @@ export function useGoalify() {
     update(() => INITIAL_STATE);
   }, []);
 
+  /** Marks the local quiz profile as synced to the server (see
+   * api/user/quiz/route.ts) so terms-gate.tsx's sync effect doesn't retry
+   * forever once it actually lands. */
+  const markQuizSynced = useCallback(() => {
+    update((s) => (s.quizSyncedAt ? s : { ...s, quizSyncedAt: new Date().toISOString() }));
+  }, []);
+
   const answers = useMemo<QuizAnswers>(
     () => ({ ...DEFAULT_ANSWERS, ...state.draft, ...(state.profile ?? {}) }),
     [state.draft, state.profile],
@@ -208,6 +216,7 @@ export function useGoalify() {
     updateSettings,
     addPhoto,
     reset,
+    markQuizSynced,
   };
 }
 

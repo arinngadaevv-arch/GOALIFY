@@ -93,6 +93,15 @@ export const users = pgTable("user", {
   // request-driven "last seen" signal for the admin dashboard's active-user
   // count, not a fabricated one.
   lastActiveAt: timestamp("last_active_at"),
+  // Quiz answers live client-side (see lib/goalify/store.tsx) since the app
+  // is local-first for a signed-out visitor - these four columns are the
+  // one-time, best-effort sync of just the summary fields once a session
+  // exists (see api/user/quiz/route.ts), purely so the admin dashboard has
+  // real per-user quiz data instead of nothing. Null until that sync lands.
+  quizGoal: text("quiz_goal"),
+  quizLevel: text("quiz_level"),
+  quizDaysPerWeek: integer("quiz_days_per_week"),
+  quizCompletedAt: timestamp("quiz_completed_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Loader2, ShieldAlert } from "lucide-react";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
+import { useGoalify } from "@/lib/goalify/store";
 
 /**
  * The one mandatory gate every account — Google or email, brand new or
@@ -17,9 +18,43 @@ export function TermsGate({ children }: { children: React.ReactNode }) {
   const [checked, setChecked] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { state, markQuizSynced } = useGoalify();
 
   const mustAccept =
     status === "authenticated" && session?.user && !session.user.hasAcceptedTerms;
+
+  // Quiz answers are captured locally before an account necessarily exists
+  // (see quiz-flow.tsx) — this is the one place mounted for every
+  // authenticated route, so it's where the one-time, best-effort sync to
+  // the server happens once both a session and a completed local profile
+  // exist. Never blocks anything: a failed POST just leaves quizSyncedAt
+  // null, and the next authenticated page load tries again.
+  const profile = state.profile;
+  const syncingRef = useRef(false);
+  useEffect(() => {
+    if (status !== "authenticated" || !profile || state.quizSyncedAt || syncingRef.current) {
+      return;
+    }
+    syncingRef.current = true;
+    fetch("/api/user/quiz", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        goal: profile.goal,
+        level: profile.level,
+        daysPerWeek: profile.daysPerWeek,
+      }),
+    })
+      .then((res) => {
+        if (res.ok) markQuizSynced();
+      })
+      .catch(() => {
+        // Best-effort — silently retried on the next authenticated mount.
+      })
+      .finally(() => {
+        syncingRef.current = false;
+      });
+  }, [status, profile, state.quizSyncedAt, markQuizSynced]);
 
   async function handleContinue() {
     if (!checked || submitting) return;

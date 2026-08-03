@@ -1,14 +1,20 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { redirect } from "next/navigation";
 import { desc, sql } from "drizzle-orm";
 import { getAdminSession } from "@/lib/admin";
 import { db } from "@/lib/db";
 import { checkoutEvents, users } from "@/lib/db/schema";
 import { AdminDashboard } from "@/components/goalify/admin/admin-dashboard";
+import type { Goal, Level } from "@/lib/goalify/types";
 
 export const metadata: Metadata = {
   title: "Admin",
   robots: { index: false, follow: false },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0b0e14",
+  colorScheme: "dark",
 };
 
 const ACTIVE_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
@@ -33,7 +39,11 @@ export default async function AdminPage() {
       db
         .select({
           totalUsers: sql<number>`count(*)`.mapWith(Number),
-          activeUsers: sql<number>`count(*) filter (where ${users.lastActiveAt} >= ${activeSince})`.mapWith(
+          // postgres.js can't parameterize a raw `Date` object inside a
+          // tagged `sql` template (throws `ERR_INVALID_ARG_TYPE` at query
+          // time, not at build time) — an ISO string serializes cleanly and
+          // Postgres casts it against the timestamp column itself.
+          activeUsers: sql<number>`count(*) filter (where ${users.lastActiveAt} >= ${activeSince.toISOString()})`.mapWith(
             Number,
           ),
         })
@@ -56,6 +66,10 @@ export default async function AdminPage() {
           hasAcceptedTerms: users.hasAcceptedTerms,
           createdAt: users.createdAt,
           lastActiveAt: users.lastActiveAt,
+          quizGoal: users.quizGoal,
+          quizLevel: users.quizLevel,
+          quizDaysPerWeek: users.quizDaysPerWeek,
+          quizCompletedAt: users.quizCompletedAt,
         })
         .from(users)
         .orderBy(desc(users.createdAt))
@@ -94,6 +108,18 @@ export default async function AdminPage() {
       hasAcceptedTerms: user.hasAcceptedTerms,
       createdAt: user.createdAt.toISOString(),
       lastActiveAt: user.lastActiveAt ? user.lastActiveAt.toISOString() : null,
+      // quizGoal/quizLevel are plain `text` columns (not DB enums) — the API
+      // route that writes them (api/user/quiz/route.ts) validates against
+      // this same Goal/Level union before ever setting them, so the cast
+      // here just reflects that already-enforced invariant.
+      quiz: user.quizCompletedAt
+        ? {
+            goal: user.quizGoal as Goal | null,
+            level: user.quizLevel as Level | null,
+            daysPerWeek: user.quizDaysPerWeek,
+            completedAt: user.quizCompletedAt.toISOString(),
+          }
+        : null,
       latestOrder: latest
         ? {
             tierLabel: latest.tierLabel,
