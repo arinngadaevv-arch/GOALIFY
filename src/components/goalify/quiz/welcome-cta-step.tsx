@@ -40,13 +40,20 @@ export function WelcomeCtaStep({
 
   return (
     <div className="relative -mx-5 flex min-h-dvh flex-col overflow-hidden">
-      <div className="absolute inset-0">
+      {/* `object-contain` (not `-cover`) deliberately leaves the source photo
+          uncropped — it's already a tight portrait crop with almost no
+          headroom, so covering a full-height mobile viewport with it would
+          blow past the subject's shoulders on both sides. The empty space
+          `contain` leaves below the photo falls through to the page's own
+          obsidian canvas (see gf-cyber-scope), so it reads as intentional
+          negative space, not letterboxing. */}
+      <div className="absolute inset-0 bg-[#0b0e14]">
         <Image
           src="/quiz/onboarding-hero.png"
           alt=""
           fill
           priority
-          className="object-cover object-top"
+          className="object-contain object-top"
         />
       </div>
       {/* One smooth bottom-to-top wash — nearly clear at the very top so the

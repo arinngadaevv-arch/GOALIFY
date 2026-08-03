@@ -60,10 +60,21 @@ const GOOGLE_SECRET_ENV_KEYS = [
   "GOOGLE_SECRET",
 ] as const;
 
-function firstEnv(keys: readonly string[]): { key: string; value: string } | null {
+function firstEnv(
+  keys: readonly string[]
+): { key: string; value: string; hadWhitespace: boolean } | null {
   for (const key of keys) {
-    const value = process.env[key];
-    if (value) return { key, value };
+    const raw = process.env[key];
+    if (!raw) continue;
+    // A pasted secret with a trailing newline/space (very easy to pick up
+    // copying out of a terminal or a .env file) is byte-for-byte different
+    // from the real one to Google's token endpoint, and surfaces there as
+    // exactly "invalid_client: the provided client secret is invalid" —
+    // indistinguishable from a genuinely wrong secret unless this is
+    // stripped and flagged.
+    const value = raw.trim();
+    if (!value) continue;
+    return { key, value, hadWhitespace: value !== raw };
   }
   return null;
 }
@@ -93,8 +104,20 @@ if (googleId && googleSecret) {
       clientSecret: googleSecret.value,
     })
   );
+  // Lengths only, never the values — but enough to catch the classic
+  // "invalid_client: provided client secret is invalid" cause of a
+  // trailing newline or space that snuck in when the secret was pasted
+  // into Vercel, which trimming above silently fixes unless flagged here.
   console.log(
-    `[auth] Google OAuth enabled — using ${googleId.key} / ${googleSecret.key}.`
+    `[auth] Google OAuth enabled — using ${googleId.key} (${googleId.value.length} chars) / ${googleSecret.key} (${googleSecret.value.length} chars).` +
+      (googleId.hadWhitespace || googleSecret.hadWhitespace
+        ? ` Stripped surrounding whitespace from ${[
+            googleId.hadWhitespace && googleId.key,
+            googleSecret.hadWhitespace && googleSecret.key,
+          ]
+            .filter(Boolean)
+            .join(" and ")} — if Google still rejects this as invalid_client, re-copy the value directly from Google Cloud Console into Vercel rather than relying on this trim.`
+        : "")
   );
 } else if (googleId || googleSecret) {
   // Exactly one of the two is set — almost always a typo'd env var name on
