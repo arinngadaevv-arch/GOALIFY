@@ -79,6 +79,14 @@ export function QuizFlow() {
     error: string | null;
   } | null>(null);
   const [[index, direction], setIndexState] = useState<[number, number]>([0, 0]);
+  /** Set by the credentials "Log in" flow's `onAuthenticated` — deferring
+   * the actual redirect to the effect below (which reacts to `session`
+   * once it's actually settled) instead of reading `session` synchronously
+   * right after `AuthPanel`'s own `await update()` resolves. React's
+   * context propagation isn't guaranteed to have reached this sibling
+   * component by then, so a synchronous read here could still see the
+   * pre-login session and route on stale (or absent) plan/terms data. */
+  const [awaitingSigninRoute, setAwaitingSigninRoute] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [showSocialProof, setShowSocialProof] = useState(false);
   const [pending, setPending] = useState<Partial<QuizAnswers> | null>(null);
@@ -176,25 +184,45 @@ export function QuizFlow() {
   // invisibly, based on email match, during its own round trip). Deciding
   // here instead, from the real session that comes back, means a returning
   // member who instinctively taps the big CTA still lands on their
-  // dashboard rather than getting funneled back through onboarding:
-  // `hasAcceptedTerms` is only ever true for an account that has already
-  // cleared the mandatory terms gate at least once, which every existing
-  // member has and no brand-new signup can have yet.
+  // dashboard rather than getting funneled back through onboarding. The
+  // routing signal has to be `hasActivePlan` (has actually paid — the only
+  // thing the Lemon Squeezy webhook ever sets), not `hasAcceptedTerms`: the
+  // liability waiver is forced on every authenticated page load including
+  // the paywall itself, so a brand-new signup who hasn't paid a cent yet
+  // already has `hasAcceptedTerms: true` by the time they reach here.
   useEffect(() => {
     if (authStatus !== "authenticated" || !authReturn?.auth) return;
     const timer = setTimeout(() => {
       if (authReturn.auth === "results") {
         router.push("/plan");
       } else if (authReturn.auth === "start") {
-        if (session?.user?.hasAcceptedTerms) {
+        if (session?.user?.hasActivePlan) {
           router.push("/home");
+        } else if (state.profile) {
+          // Already has a completed plan locally, just never paid for it —
+          // straight to the paywall, not back through the whole quiz.
+          router.push("/plan");
         } else {
           setQuizStarted(true);
         }
       }
     }, 0);
     return () => clearTimeout(timer);
-  }, [authStatus, authReturn, session, router]);
+  }, [authStatus, authReturn, session, state.profile, router]);
+
+  // The credentials "Log in" form's counterpart to the Google effect above —
+  // same reasoning, same fix: wait for `session` to actually reflect the
+  // fresh sign-in (reactively, via this effect) rather than reading it
+  // synchronously in the click handler right after `AuthPanel`'s own
+  // `await update()` resolves.
+  useEffect(() => {
+    if (!awaitingSigninRoute || authStatus !== "authenticated") return;
+    const timer = setTimeout(() => {
+      router.push(session?.user?.hasActivePlan ? "/home" : "/plan");
+      setAwaitingSigninRoute(false);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [awaitingSigninRoute, authStatus, session, router]);
 
   if (analyzing) {
     return (
@@ -253,7 +281,7 @@ export function QuizFlow() {
       <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5">
         <WelcomeCtaStep
           onStart={() => setQuizStarted(true)}
-          onLogin={() => router.push("/home")}
+          onLogin={() => setAwaitingSigninRoute(true)}
           initialErrorCode={authReturn?.error ?? null}
         />
       </main>

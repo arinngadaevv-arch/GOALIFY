@@ -1,7 +1,8 @@
 import { lemonSqueezySetup } from "@lemonsqueezy/lemonsqueezy.js";
+import type { CheckoutTier } from "@/lib/goalify/pricing";
 
-export const CHECKOUT_TIERS = ["monthly", "quarterly", "annual"] as const;
-export type CheckoutTier = (typeof CHECKOUT_TIERS)[number];
+export { CHECKOUT_TIERS } from "@/lib/goalify/pricing";
+export type { CheckoutTier } from "@/lib/goalify/pricing";
 
 /** One real Lemon Squeezy variant per pricing tier — see paywall.tsx for
  * the matching price copy shown to the user before checkout. */

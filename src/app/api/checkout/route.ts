@@ -3,6 +3,7 @@ import { createCheckout } from "@lemonsqueezy/lemonsqueezy.js";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { CHECKOUT_TIERS, configureLemonSqueezy, getVariantId } from "@/lib/lemonsqueezy";
+import { getPricingTier } from "@/lib/goalify/pricing";
 
 // Creates a real, hosted Lemon Squeezy checkout for the signed-in user and
 // hands the URL back to the client to redirect to — no local "purchase" is
@@ -53,11 +54,43 @@ export async function POST(req: Request) {
     productOptions: {
       redirectUrl: `${appUrl}/success`,
     },
+    // Pulls back a `preview` block (subtotal/tax/total for this exact
+    // variant) without requiring a billing address — this is what makes the
+    // price-match check below possible at all.
+    preview: true,
   });
 
   if (result.error || !result.data) {
     console.error("[checkout] Lemon Squeezy createCheckout failed:", result.error);
     return NextResponse.json({ error: "Could not start checkout." }, { status: 502 });
+  }
+
+  // The one guarantee this whole flow depends on: the price the paywall
+  // advertised for this tier and the price the configured Lemon Squeezy
+  // variant will actually charge must be the exact same number. Comparing
+  // `preview.subtotal` (pre-tax, matches what we advertise) rather than
+  // `preview.total` (which folds in tax) avoids a false mismatch for a
+  // customer whose region adds tax at checkout. A real mismatch here means
+  // the variant's price was changed or misconfigured in the Lemon Squeezy
+  // dashboard without updating PRICING_TIERS (or vice versa) — refusing to
+  // send the user to checkout is the only acceptable response, since
+  // showing $19.99 and silently charging something else is exactly the
+  // failure this check exists to catch.
+  const expectedCents = getPricingTier(parsed.data.tier).priceCents;
+  const actualCents = result.data.data.attributes.preview?.subtotal;
+  if (actualCents !== expectedCents) {
+    console.error(
+      `[checkout] Price mismatch for tier "${parsed.data.tier}": PRICING_TIERS ` +
+        `expects ${expectedCents}¢ but the Lemon Squeezy variant (${variantId}) ` +
+        `is configured to charge ${actualCents ?? "unknown"}¢. Refusing to start ` +
+        `checkout — fix the variant's price in the Lemon Squeezy dashboard (or ` +
+        `update src/lib/goalify/pricing.ts if the variant is actually correct) ` +
+        `before this tier can be purchased again.`
+    );
+    return NextResponse.json(
+      { error: "This plan isn't available right now. Please try again shortly." },
+      { status: 502 }
+    );
   }
 
   return NextResponse.json({ url: result.data.data.attributes.url });

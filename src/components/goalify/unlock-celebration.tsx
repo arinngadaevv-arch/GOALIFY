@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import clsx from "clsx";
 import {
   ArrowRight,
@@ -39,6 +40,7 @@ const UNLOCKED = [
 
 export function UnlockCelebration() {
   const { answers, targets, purchase } = useGoalify();
+  const { update } = useSession();
   const [opened, setOpened] = useState(false);
 
   useEffect(() => {
@@ -55,6 +57,20 @@ export function UnlockCelebration() {
     const timer = setTimeout(() => purchase(), 0);
     return () => clearTimeout(timer);
   }, [purchase]);
+
+  // The session's `hasActivePlan` (see auth.ts / proxy.ts) is only ever as
+  // fresh as the last time the JWT actually re-read `users.plan` from the
+  // DB — plain page navigation doesn't trigger that. Forcing an `update()`
+  // here (no payload, so the jwt callback does a real DB refetch rather
+  // than trusting a client-supplied value — payment status is exactly the
+  // one thing a client can't be trusted to just assert) picks up whatever
+  // the order_created webhook has written by now, so proxy.ts's plan gate
+  // doesn't bounce a genuinely-just-paid user back to /plan the moment
+  // they tap through to /home or /workout/launch below.
+  useEffect(() => {
+    const timer = setTimeout(() => update(), 0);
+    return () => clearTimeout(timer);
+  }, [update]);
 
   return (
     <main className="relative mx-auto flex min-h-dvh w-full max-w-lg flex-col items-center justify-center px-5 py-14 text-center">

@@ -9,36 +9,7 @@ import { goalLabel } from "@/lib/goalify/plan";
 import { Brand } from "@/components/goalify/brand";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
 import { fireBurst, ParticleBurstLayer } from "@/components/goalify/quiz/particle-burst";
-
-const TIERS = [
-  {
-    id: "monthly",
-    label: "1 Month",
-    price: 19.99,
-    perWeek: 4.61,
-    was: 24.99,
-    billedLabel: "billed monthly",
-  },
-  {
-    id: "quarterly",
-    label: "3 Months",
-    price: 44.99,
-    perWeek: 3.46,
-    was: 59.99,
-    billedLabel: "billed every 3 months",
-    badge: "MOST POPULAR",
-    popular: true,
-  },
-  {
-    id: "annual",
-    label: "12 Months",
-    price: 99.99,
-    perWeek: 1.92,
-    was: 199.99,
-    billedLabel: "billed annually",
-    badge: "BEST VALUE",
-  },
-];
+import { centsToDollars, PRICING_TIERS } from "@/lib/goalify/pricing";
 
 /**
  * A single, tightly-scoped conversion page: headline, one high-impact
@@ -121,9 +92,11 @@ export function Paywall() {
           Choose your plan
         </p>
         <div className="mt-4 grid gap-3">
-          {TIERS.map((option) => {
+          {PRICING_TIERS.map((option) => {
             const active = option.id === tier;
-            const saved = Math.round((1 - option.price / option.was) * 100);
+            const price = centsToDollars(option.priceCents);
+            const was = centsToDollars(option.wasCents);
+            const saved = Math.round((1 - price / was) * 100);
 
             if (option.popular) {
               return (
@@ -168,7 +141,7 @@ export function Paywall() {
                         </span>
                       </span>
                       <span className="mt-1 block text-[11px] font-semibold whitespace-nowrap text-ink-soft">
-                        ${option.price.toFixed(2)} {option.billedLabel}
+                        ${price.toFixed(2)} {option.billedLabel}
                       </span>
                     </span>
                   </span>
@@ -212,7 +185,7 @@ export function Paywall() {
                     <span className="ml-0.5 text-[10px] font-bold text-mist">/wk</span>
                   </span>
                   <span className="mt-0.5 block text-[10px] font-semibold text-haze">
-                    ${option.price.toFixed(2)} {option.billedLabel}
+                    ${price.toFixed(2)} {option.billedLabel}
                   </span>
                 </span>
               </button>

@@ -237,13 +237,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       if (needsProfileRefresh) {
         const [dbUser] = await db
-          .select({ isAdmin: users.isAdmin, hasAcceptedTerms: users.hasAcceptedTerms })
+          .select({
+            isAdmin: users.isAdmin,
+            hasAcceptedTerms: users.hasAcceptedTerms,
+            plan: users.plan,
+          })
           .from(users)
           .where(eq(users.id, token.id as string))
           .limit(1);
         if (dbUser) {
           token.isAdmin = dbUser.isAdmin;
           token.hasAcceptedTerms = dbUser.hasAcceptedTerms;
+          // The only real "has paid" signal — `users.plan` only ever moves
+          // off "FREE" inside the Lemon Squeezy order_created webhook, after
+          // payment is actually confirmed (see api/webhooks/lemonsqueezy).
+          token.hasActivePlan = dbUser.plan !== "FREE";
         }
       }
 
@@ -254,6 +262,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = token.id as string;
         session.user.isAdmin = Boolean(token.isAdmin);
         session.user.hasAcceptedTerms = Boolean(token.hasAcceptedTerms);
+        session.user.hasActivePlan = Boolean(token.hasActivePlan);
       }
       return session;
     },

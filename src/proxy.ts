@@ -1,32 +1,45 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 
-// Everything past the quiz's mandatory sign-up gate — the main dashboard
-// and every screen a paying member reaches. `/quiz` itself is deliberately
-// not listed here: it self-gates client-side (nothing past its entry
-// screen renders without a session), and it doubles as the landing spot
-// below for anyone bounced off one of these routes.
-const PROTECTED_ROUTES = [
+// Routes that only require being signed in — deliberately NOT gated on
+// `hasActivePlan`, since a signed-in-but-unpaid user must still be able to
+// reach the paywall itself (/plan) to pay, land on Lemon Squeezy's redirect
+// target (/success) right after checkout — before the order_created webhook
+// has necessarily landed — and manage their account (/settings) either way.
+const LOGIN_ONLY_ROUTES = ["/plan", "/success", "/settings"];
+
+// The real app — every screen that should only ever be reachable by an
+// account whose `users.plan` is something other than "FREE" (see
+// `hasActivePlan` on the session, derived in auth.ts from the one place
+// that's actually true: the Lemon Squeezy order_created webhook). This is
+// the authoritative, server-side half of the payment gate — it holds even
+// if a client-side routing bug ever again tries to send someone here early.
+const REQUIRES_PLAN_ROUTES = [
   "/home",
-  "/plan",
   "/nutrition",
   "/progress",
-  "/settings",
   "/notifications",
   "/workouts",
   "/workout",
-  "/success",
 ];
+
+function matches(pathname: string, routes: string[]) {
+  return routes.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+}
 
 export default auth((req) => {
   const isLoggedIn = !!req.auth;
+  const hasActivePlan = Boolean(req.auth?.user?.hasActivePlan);
   const { pathname } = req.nextUrl;
 
-  const isProtected = PROTECTED_ROUTES.some(
-    (path) => pathname === path || pathname.startsWith(`${path}/`),
-  );
-  if (isProtected && !isLoggedIn) {
+  const requiresLogin = matches(pathname, LOGIN_ONLY_ROUTES);
+  const requiresPlan = matches(pathname, REQUIRES_PLAN_ROUTES);
+
+  if ((requiresLogin || requiresPlan) && !isLoggedIn) {
     return NextResponse.redirect(new URL("/quiz", req.nextUrl.origin));
+  }
+  if (requiresPlan && !hasActivePlan) {
+    return NextResponse.redirect(new URL("/plan", req.nextUrl.origin));
   }
 });
 
