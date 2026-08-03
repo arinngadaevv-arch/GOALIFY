@@ -11,10 +11,12 @@
     "dev": "next dev",
     "prebuild": "npm run gen:quiz-images",
     "build": "next build",
+    "vercel-build": "npm run db:migrate && npm run build",
     "start": "next start",
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
+    "db:migrate": "node scripts/migrate.mjs",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
