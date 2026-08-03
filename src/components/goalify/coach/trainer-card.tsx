@@ -64,15 +64,22 @@ export function TrainerCard({
   photoSrc,
   className,
   compact = false,
+  asHeading = false,
 }: {
   trainer: Trainer;
   photoSrc?: string;
   className?: string;
   compact?: boolean;
+  /** Renders the coach's name as an `<h3>` instead of a `<p>` — only correct
+   * when this card sits directly under an `<h2>` (the "Meet your coaches"
+   * grid). The hero slideshow reuses this same component above any heading
+   * at all, so it must keep the default `<p>` to avoid an orphaned h3. */
+  asHeading?: boolean;
 }) {
   const accentText =
     trainer.accent === "lime" ? "text-lime-deep" : "text-electric";
   const resolvedPhotoSrc = photoSrc ?? trainer.photoSrc;
+  const NameTag = asHeading ? "h3" : "p";
 
   return (
     <div
@@ -116,14 +123,14 @@ export function TrainerCard({
         >
           {trainer.speciality}
         </p>
-        <p
+        <NameTag
           className={clsx(
             "gf-display font-extrabold text-ink",
             compact ? "mt-0.5 text-base" : "mt-1 text-xl",
           )}
         >
           Coach {trainer.name}
-        </p>
+        </NameTag>
         {!compact && (
           <p className="mt-2 text-sm leading-relaxed text-ink-soft">
             &ldquo;{trainer.quote}&rdquo;

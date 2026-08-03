@@ -120,19 +120,21 @@ export default function LandingPage() {
       <section className="relative grid items-center gap-10 py-10 lg:grid-cols-[1.1fr_0.9fr] lg:py-16">
         <div className="gf-anim-rise">
           <Pill tone="lime">
-            <Sparkles className="size-3" /> No equipment required
+            <Sparkles className="size-3" /> Zero equipment. Zero judgment. Zero gym.
           </Pill>
 
           <h1 className="gf-display mt-5 text-5xl font-black text-ink sm:text-6xl lg:text-7xl">
-            NO GYM. NO EXCUSES.
+            YOU DON&apos;T NEED A GYM.
             <br />
-            <span className="gf-text-hype">BUILD YOUR ULTIMATE PHYSIQUE AT HOME.</span>
+            <span className="gf-text-hype">YOU NEED 24 MINUTES AND A CLOSED DOOR.</span>
           </h1>
 
           <p className="mt-6 max-w-lg text-lg leading-relaxed text-ink-soft">
-            Transform your body using pure bodyweight mastery. Get a
-            high-octane 30-day home blueprint engineered for fast muscle
-            growth and maximum fat loss.
+            Built for men who are overweight, out of shape, and done feeling
+            like the gym wasn&apos;t made for them. No membership, no
+            mirrors, no one watching your first rep — just a bodyweight plan
+            that meets your body exactly where it is and moves it forward,
+            24 minutes at a time.
           </p>
 
           {/* The coach speaks before the user has done anything. */}
@@ -144,7 +146,7 @@ export default function LandingPage() {
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <GlowLink href="/quiz" size="xl" pulse className="gf-anim-hype">
-              START MY HOME TRANSFORMATION ⚡
+              START MY 24-MINUTE PLAN ⚡
               <ArrowRight className="size-5" />
             </GlowLink>
             <span className="text-sm font-semibold text-mist">
@@ -221,7 +223,7 @@ export default function LandingPage() {
             <Sparkles className="size-3" /> Real member outcomes
           </Pill>
           <h2 className="gf-display mt-4 text-4xl font-black text-ink sm:text-5xl">
-            See it before you feel it
+            Real fat-loss results from home workouts
           </h2>
           <p className="mx-auto mt-3 max-w-md text-base text-ink-soft">
             Your own before/after vault unlocks from day one. This is what
@@ -295,7 +297,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-2xl text-center">
           <Pill>How it works</Pill>
           <h2 className="gf-display mt-4 text-4xl font-black text-ink sm:text-5xl">
-            90 seconds from now, you&apos;re training
+            How a home workout plan for beginners actually works
           </h2>
         </div>
 
@@ -323,7 +325,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-2xl text-center">
           <Pill tone="lime">Your corner</Pill>
           <h2 className="gf-display mt-4 text-4xl font-black text-ink sm:text-5xl">
-            Meet the team in your pocket
+            Meet your home workout coaches
           </h2>
           <p className="mx-auto mt-3 max-w-md text-base text-ink-soft">
             Whatever your body needs on the day, one of them is already
@@ -336,6 +338,7 @@ export default function LandingPage() {
             <TrainerCard
               key={trainer.id}
               trainer={trainer}
+              asHeading
               className={`gf-anim-swoop gf-delay-${index + 1}`}
             />
           ))}
@@ -347,7 +350,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-2xl text-center">
           <Pill tone="lime">Inside the app</Pill>
           <h2 className="gf-display mt-4 text-4xl font-black text-ink sm:text-5xl">
-            Every excuse. Engineered out.
+            Why overweight beginners choose GOALIFY over a gym
           </h2>
         </div>
 
@@ -373,7 +376,14 @@ export default function LandingPage() {
 
       {/* -------------------------------------------------------- Testimonials */}
       <section className="pb-20">
-        <div className="grid gap-5 md:grid-cols-3">
+        <div className="mx-auto max-w-2xl text-center">
+          <Pill>Real members</Pill>
+          <h2 className="gf-display mt-4 text-4xl font-black text-ink sm:text-5xl">
+            What members say about training at home
+          </h2>
+        </div>
+
+        <div className="mt-12 grid gap-5 md:grid-cols-3">
           {TESTIMONIALS.map(({ quote, name, detail }, index) => (
             <GlassCard
               key={name}
@@ -413,15 +423,15 @@ export default function LandingPage() {
         className="gf-anim-rise overflow-hidden px-7 py-14 text-center"
       >
         <h2 className="gf-display mx-auto max-w-xl text-4xl font-black text-ink sm:text-5xl">
-          You&apos;ve read enough.{" "}
-          <span className="gf-text-hype">Go earn it.</span>
+          Start Your First{" "}
+          <span className="gf-text-hype">24-Minute Workout</span> Today
         </h2>
         <p className="mx-auto mt-4 max-w-md text-base text-ink-soft">
           90 seconds of honest answers. A plan you can run today. And a coach
           who won&apos;t let you disappear in week three.
         </p>
         <GlowLink href="/quiz" size="xl" pulse className="mt-8">
-          START MY HOME TRANSFORMATION ⚡
+          START MY 24-MINUTE PLAN ⚡
           <ArrowRight className="size-5" />
         </GlowLink>
       </GlassCard>

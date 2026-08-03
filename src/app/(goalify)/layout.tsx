@@ -5,9 +5,9 @@ import { SessionProvider } from "@/components/session-provider";
 import { TermsGate } from "@/components/goalify/terms-gate";
 
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-const title = "GOALIFY — Your body, engineered";
+const title = "Home Workouts for Overweight Men — No Gym | GOALIFY";
 const description =
-  "A personalised training and nutrition system built around your goals, your fitness level and your joints. 3D AI form coaching on every rep.";
+  "Overweight, out of shape, and dread the gym? GOALIFY builds a private, bodyweight-only home plan for men — 24 minutes a day, zero equipment, zero judgment.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -18,12 +18,14 @@ export const metadata: Metadata = {
   description,
   applicationName: "GOALIFY",
   keywords: [
-    "fitness app",
-    "personalised workout plan",
-    "home workouts",
-    "knee safe training",
-    "nutrition targets",
-    "AI form coach",
+    "home workout for overweight men",
+    "lose weight without a gym",
+    "beginner fat loss workout at home",
+    "no equipment home workout for men",
+    "bodyweight workout for fat loss men",
+    "home workout for men who hate the gym",
+    "knee friendly workout for overweight men",
+    "24 minute home workout",
   ],
   alternates: { canonical: "/" },
   openGraph: {
