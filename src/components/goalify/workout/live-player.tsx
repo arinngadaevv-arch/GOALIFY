@@ -624,6 +624,45 @@ function CompletionScreen({
   const [outroFailed, setOutroFailed] = useState(false);
   const outroSrc = outroVideoUrl();
   const showOutroVideo = Boolean(outroSrc) && !outroFailed;
+  const outroVideoRef = useRef<HTMLVideoElement>(null);
+
+  // Native listeners, not React's onError/onLoadedData props — a same-origin
+  // request that fails near-instantly (e.g. a 404) can have its `error`
+  // event race React's synthetic-listener attachment and never fire the
+  // prop callback at all, even though the DOM's own videoElement.error ends
+  // up populated (confirmed via testing). The explicit `.error` check right
+  // after attaching covers exactly that race.
+  useEffect(() => {
+    const el = outroVideoRef.current;
+    if (!el || !outroSrc) return;
+
+    function reportError(source: "event" | "already-set") {
+      const mediaError = el?.error ?? null;
+      console.warn(
+        `[CompletionScreen] outro clip failed to load (${source}), ` +
+          `falling back to the static image.\n  URL: ${outroSrc}\n  ` +
+          `MediaError code: ${mediaError?.code ?? "n/a"} — check the ` +
+          `Network tab for this URL's actual HTTP status.`,
+      );
+      setOutroFailed(true);
+    }
+
+    function handleError() {
+      reportError("event");
+    }
+    function handleLoadedData() {
+      console.debug(`[CompletionScreen] outro clip loaded: ${outroSrc}`);
+    }
+
+    el.addEventListener("error", handleError);
+    el.addEventListener("loadeddata", handleLoadedData);
+    if (el.error) reportError("already-set");
+
+    return () => {
+      el.removeEventListener("error", handleError);
+      el.removeEventListener("loadeddata", handleLoadedData);
+    };
+  }, [outroSrc]);
 
   const weekDays = useMemo(() => currentWeekDays(), []);
   const weekCompletedCount = weekDays.filter((d) =>
@@ -654,12 +693,12 @@ function CompletionScreen({
           <div className="absolute top-0 right-0 h-full w-[70%] opacity-100">
             {showOutroVideo ? (
               <video
+                ref={outroVideoRef}
                 src={outroSrc ?? undefined}
                 autoPlay
                 muted
                 loop
                 playsInline
-                onError={() => setOutroFailed(true)}
                 className="absolute inset-0 h-full w-full [mask-image:linear-gradient(115deg,transparent_2%,black_28%,black_100%)] object-cover object-[62%_18%]"
               />
             ) : (

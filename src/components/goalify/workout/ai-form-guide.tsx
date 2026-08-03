@@ -1,9 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { Play } from "lucide-react";
 import { PoseIcon, type PoseKey } from "@/components/goalify/ui/pose-icon";
+
+/** `HTMLMediaElement.error.code` only ever comes back numeric — this is
+ * purely to make the console message readable instead of just "code 4". */
+const MEDIA_ERROR_NAMES: Record<number, string> = {
+  1: "MEDIA_ERR_ABORTED (loading was aborted)",
+  2: "MEDIA_ERR_NETWORK (a network error interrupted the fetch)",
+  3: "MEDIA_ERR_DECODE (the file was fetched but couldn't be decoded — corrupt or wrong codec)",
+  4: "MEDIA_ERR_SRC_NOT_SUPPORTED (browser refused the source — this is what a 403/404/private-bucket response, a wrong path, or a non-video Content-Type all look like from here)",
+};
 
 /**
  * The "3D coach" visual: a real looping clip from Supabase Storage (see
@@ -29,17 +38,85 @@ export function AIFormGuide({
   videoSrc?: string | null;
   className?: string;
 }) {
-  const [videoFailed, setVideoFailed] = useState(false);
+  // Tracks the *specific URL* that failed, not a plain resettable boolean —
+  // an earlier version used a boolean plus a "give a new clip a fresh
+  // chance" reset effect, but that reset ran on every mount (including the
+  // first one) and could race the failure-detection effect below, silently
+  // undoing a just-detected failure a moment after it was set. Keying off
+  // the failed URL itself needs no reset at all: the moment `videoSrc`
+  // changes to anything else, it can no longer equal `failedSrc`, so a new
+  // clip always gets a fresh chance with zero timing games.
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  // A new clip gets a fresh chance to load even if a previous one failed —
-  // deferred via setTimeout so this setState doesn't fire synchronously
-  // inside the effect body (react-hooks/set-state-in-effect).
+  // Logs exactly which URL is about to be requested, so the Network tab
+  // claim ("is it even asking for the right thing?") can be checked
+  // directly against this line instead of guessed at.
   useEffect(() => {
-    const timer = setTimeout(() => setVideoFailed(false), 0);
-    return () => clearTimeout(timer);
+    if (videoSrc) {
+      console.debug(`[AIFormGuide] requesting clip: ${videoSrc}`);
+    } else {
+      console.debug(
+        "[AIFormGuide] no video URL resolved for this phase — showing the " +
+          "placeholder. Most likely NEXT_PUBLIC_SUPABASE_URL isn't set in " +
+          "this build (see console warnings from lib/goalify/video.ts on " +
+          "page load).",
+      );
+    }
   }, [videoSrc]);
 
-  const showVideo = Boolean(videoSrc) && !videoFailed;
+  // React's synthetic `onError`/`onLoadedData` props on <video> can race the
+  // browser's own event dispatch: for a same-origin request that fails
+  // near-instantly (e.g. a 404), the native `error` event can fire before
+  // React finishes attaching its listener in the commit phase, and the
+  // synthetic handler then never runs at all — confirmed by testing, where
+  // the DOM's own `videoElement.error` ends up populated (MEDIA_ERR_SRC_NOT_SUPPORTED)
+  // even though no onError callback fired. Attaching real listeners here
+  // catches it regardless of that timing, and the explicit check right
+  // after attaching catches the case where the error already happened
+  // before this effect even ran.
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el || !videoSrc) return;
+    const src = videoSrc;
+
+    function reportError(source: "event" | "already-set") {
+      const mediaError = el?.error ?? null;
+      const detail = mediaError
+        ? (MEDIA_ERROR_NAMES[mediaError.code] ?? `unknown code ${mediaError.code}`)
+        : "no MediaError details available";
+      console.warn(
+        `[AIFormGuide] clip failed to load (${source}), falling back to ` +
+          `the placeholder.\n  URL: ${src}\n  Reason: ${detail}\n` +
+          `  Open DevTools → Network, filter by "mp4", and check this ` +
+          `exact URL's status code — 400/403 usually means the bucket or ` +
+          `file isn't actually public yet, 404 means the path/filename ` +
+          `doesn't match what's uploaded.`,
+      );
+      setFailedSrc(src);
+    }
+
+    function handleError() {
+      reportError("event");
+    }
+    function handleLoadedData() {
+      console.debug(`[AIFormGuide] clip loaded and playing: ${videoSrc}`);
+    }
+
+    el.addEventListener("error", handleError);
+    el.addEventListener("loadeddata", handleLoadedData);
+
+    // Covers the race described above — if the failure already landed on
+    // the element before this effect ran, catch it here instead of never.
+    if (el.error) reportError("already-set");
+
+    return () => {
+      el.removeEventListener("error", handleError);
+      el.removeEventListener("loadeddata", handleLoadedData);
+    };
+  }, [videoSrc]);
+
+  const showVideo = Boolean(videoSrc) && videoSrc !== failedSrc;
 
   return (
     <div
@@ -50,13 +127,13 @@ export function AIFormGuide({
     >
       {showVideo && (
         <video
+          ref={videoRef}
           key={videoSrc}
           src={videoSrc ?? undefined}
           autoPlay
           muted
           loop
           playsInline
-          onError={() => setVideoFailed(true)}
           className="absolute inset-0 z-0 h-full w-full object-cover"
         />
       )}
