@@ -47,12 +47,55 @@ const providers: Provider[] = [
   }),
 ];
 
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+// Vercel deployments have historically been set up under a few different
+// naming conventions for the same two secrets — our own docs/.env.example
+// say GOOGLE_CLIENT_ID/SECRET, Auth.js v5's own auto-detection convention is
+// AUTH_GOOGLE_ID/SECRET, and some setups just use GOOGLE_ID/SECRET. Checking
+// all three means a real, correctly-set credential is never silently
+// ignored just because it landed under a name this file didn't expect.
+const GOOGLE_ID_ENV_KEYS = ["GOOGLE_CLIENT_ID", "AUTH_GOOGLE_ID", "GOOGLE_ID"] as const;
+const GOOGLE_SECRET_ENV_KEYS = [
+  "GOOGLE_CLIENT_SECRET",
+  "AUTH_GOOGLE_SECRET",
+  "GOOGLE_SECRET",
+] as const;
+
+function firstEnv(keys: readonly string[]): { key: string; value: string } | null {
+  for (const key of keys) {
+    const value = process.env[key];
+    if (value) return { key, value };
+  }
+  return null;
+}
+
+const googleId = firstEnv(GOOGLE_ID_ENV_KEYS);
+const googleSecret = firstEnv(GOOGLE_SECRET_ENV_KEYS);
+
+if (googleId && googleSecret) {
   providers.push(
     Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      clientId: googleId.value,
+      clientSecret: googleSecret.value,
     })
+  );
+  console.log(
+    `[auth] Google OAuth enabled — using ${googleId.key} / ${googleSecret.key}.`
+  );
+} else if (googleId || googleSecret) {
+  // Exactly one of the two is set — almost always a typo'd env var name on
+  // the host rather than an intentional "Google is off" state, so this is
+  // loud (error, not warn) and never silently disables in a way that's hard
+  // to notice from the Vercel dashboard's function logs.
+  console.error(
+    `[auth] Google OAuth misconfigured: found ${
+      googleId ? `a client ID (${googleId.key})` : "no client ID"
+    } but ${
+      googleSecret ? `a client secret (${googleSecret.key})` : "no client secret"
+    }. Both are required — checked ${GOOGLE_ID_ENV_KEYS.join(", ")} for the ID and ${GOOGLE_SECRET_ENV_KEYS.join(", ")} for the secret. "Continue with Google" will be unavailable until both are set to matching values in Vercel.`
+  );
+} else {
+  console.warn(
+    `[auth] Google OAuth not configured — checked ${GOOGLE_ID_ENV_KEYS.join(", ")} for a client ID and ${GOOGLE_SECRET_ENV_KEYS.join(", ")} for a client secret, found neither. Running with the credentials (email/password) provider only.`
   );
 }
 
