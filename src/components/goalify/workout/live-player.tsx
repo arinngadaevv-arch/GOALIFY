@@ -31,6 +31,12 @@ import { poseForExercise } from "@/components/goalify/ui/pose-icon";
 import { AIFormGuide } from "@/components/goalify/workout/ai-form-guide";
 import { useWorkoutSounds } from "@/components/goalify/workout/use-workout-sounds";
 import { useHaptics } from "@/lib/goalify/use-haptics";
+import {
+  exerciseVideoUrl,
+  introVideoUrl,
+  outroVideoUrl,
+  restVideoUrl,
+} from "@/lib/goalify/video";
 import { ProgressRing } from "@/components/goalify/ui/progress-ring";
 import { Pill, Stat } from "@/components/goalify/ui/stat";
 import { fireBurst, ParticleBurstLayer } from "@/components/goalify/quiz/particle-burst";
@@ -228,6 +234,18 @@ export function LivePlayer() {
   // tick, so the ring for it should pop to its new value rather than sweep
   // like a countdown (see the ProgressRing transitionMs/easing override below).
   const isRepCounting = phase === "work" && !isTimed;
+  // Real clips from Supabase Storage (see lib/goalify/video.ts): the
+  // very first watch beat gets the workout's intro, rest breaks get the
+  // water clip, and every other watch/work beat gets that exercise's own
+  // numbered clip — `index` is 0-based here, the uploaded files are
+  // 1-indexed. Resolves to null (falls back to the pose-icon placeholder)
+  // whenever NEXT_PUBLIC_SUPABASE_URL isn't configured.
+  const videoSrc =
+    phase === "rest"
+      ? restVideoUrl()
+      : phase === "watch" && index === 0
+        ? introVideoUrl()
+        : exerciseVideoUrl(index + 1);
   const ringValue = phase === "rest"
     ? (secondsLeft / Math.max(1, exercise.restSeconds)) * 100
     : phase === "watch"
@@ -291,8 +309,9 @@ export function LivePlayer() {
                 ? "Coach idle / breathing loop"
                 : phase === "watch"
                   ? "Study the form — you're up in a few seconds"
-                  : `Looping ${exercise.name.toLowerCase()} demonstration renders here`
+                  : `${exercise.name} demonstration loop`
             }
+            videoSrc={videoSrc}
             className="h-64 w-full rounded-none sm:h-72"
           />
 
@@ -599,6 +618,13 @@ function CompletionScreen({
 }) {
   const { streak, state, answers } = useGoalify();
 
+  // This screen only mounts once per completion, so a plain flag (no reset
+  // effect needed, unlike AIFormGuide's per-phase clip) is enough — falls
+  // back to the static hero image if the outro clip 404s or never resolves.
+  const [outroFailed, setOutroFailed] = useState(false);
+  const outroSrc = outroVideoUrl();
+  const showOutroVideo = Boolean(outroSrc) && !outroFailed;
+
   const weekDays = useMemo(() => currentWeekDays(), []);
   const weekCompletedCount = weekDays.filter((d) =>
     state.completedDays.includes(d.key),
@@ -626,13 +652,25 @@ function CompletionScreen({
          * (painted first, below the trophy/headline siblings after it). */}
         <div className="absolute inset-0 bg-[#0b0e14]" aria-hidden>
           <div className="absolute top-0 right-0 h-full w-[70%] opacity-100">
-            <Image
-              src="/quiz/goal-burn.png"
-              alt=""
-              fill
-              priority
-              className="[mask-image:linear-gradient(115deg,transparent_2%,black_28%,black_100%)] object-cover object-[62%_18%]"
-            />
+            {showOutroVideo ? (
+              <video
+                src={outroSrc ?? undefined}
+                autoPlay
+                muted
+                loop
+                playsInline
+                onError={() => setOutroFailed(true)}
+                className="absolute inset-0 h-full w-full [mask-image:linear-gradient(115deg,transparent_2%,black_28%,black_100%)] object-cover object-[62%_18%]"
+              />
+            ) : (
+              <Image
+                src="/quiz/goal-burn.png"
+                alt=""
+                fill
+                priority
+                className="[mask-image:linear-gradient(115deg,transparent_2%,black_28%,black_100%)] object-cover object-[62%_18%]"
+              />
+            )}
           </div>
           <div className="absolute inset-0 bg-gradient-to-t from-[#0b0e14] via-[#0b0e14]/10 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0b0e14] via-[#0b0e14]/25 via-40% to-transparent" />
