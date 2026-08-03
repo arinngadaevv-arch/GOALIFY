@@ -119,6 +119,23 @@ if (googleId && googleSecret) {
             .join(" and ")} — if Google still rejects this as invalid_client, re-copy the value directly from Google Cloud Console into Vercel rather than relying on this trim.`
         : "")
   );
+
+  // Every real Google OAuth client ID ends in this suffix; a value that
+  // doesn't is either the wrong credential entirely or has the ID/secret
+  // fields swapped — both produce exactly "invalid_client" at Google's
+  // token endpoint with no more specific signal than that, so this is
+  // checked and named explicitly rather than left for the user to guess.
+  const GOOGLE_CLIENT_ID_SUFFIX = ".apps.googleusercontent.com";
+  if (!googleId.value.endsWith(GOOGLE_CLIENT_ID_SUFFIX)) {
+    console.error(
+      `[auth] ${googleId.key} doesn't end in "${GOOGLE_CLIENT_ID_SUFFIX}", which every real Google OAuth client ID does. Check that ${googleId.key} in Vercel actually holds the Client ID (from Google Cloud Console → APIs & Services → Credentials) and not the Client Secret or a stale/truncated value.`
+    );
+  }
+  if (googleSecret.value.endsWith(GOOGLE_CLIENT_ID_SUFFIX)) {
+    console.error(
+      `[auth] ${googleSecret.key} ends in "${GOOGLE_CLIENT_ID_SUFFIX}", which means it holds a Client ID, not a Client Secret. ${googleSecret.key} and ${googleId.key} are almost certainly swapped in Vercel.`
+    );
+  }
 } else if (googleId || googleSecret) {
   // Exactly one of the two is set — almost always a typo'd env var name on
   // the host rather than an intentional "Google is off" state, so this is
