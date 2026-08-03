@@ -96,13 +96,20 @@ export function AuthPanel({
 
   return (
     <div className="relative -mx-5 flex min-h-dvh flex-col overflow-hidden">
-      <div className="absolute inset-0">
+      {/* `object-contain`, not `-cover` — this photo is landscape (1408x768)
+          and this container is a tall mobile portrait strip, so `cover`
+          was scaling it up ~1.17x and cropping ~75% of its width off just
+          to fill the box edge to edge. `contain` shows the whole photo;
+          the gradient wash below already darkens most of the screen
+          regardless, so the letterboxed space it leaves reads as part of
+          that wash, not as an empty gap. */}
+      <div className="absolute inset-0 bg-[#0b0e14]">
         <Image
           src="/quiz/goal-athletic.png"
           alt=""
           fill
           priority
-          className="object-cover object-top"
+          className="object-contain object-top"
         />
       </div>
       <div

@@ -178,6 +178,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: "/quiz",
     error: "/quiz",
   },
+  // The inline banner on `/quiz` only ever shows a friendly *code*
+  // (Configuration, OAuthAccountNotLinked, ...) — it deliberately never
+  // shows raw internals to the user. This is the other half: the real
+  // Error Auth.js caught (adapter failure linking the Google account,
+  // etc.) goes to the server log instead, so a "Configuration" report can
+  // actually be diagnosed rather than just re-confirmed.
+  logger: {
+    error(error) {
+      console.error(
+        `[auth] ${error.name}: ${error.message}`,
+        (error as { cause?: unknown }).cause ?? ""
+      );
+    },
+  },
   providers,
   callbacks: {
     async jwt({ token, user, trigger }) {
