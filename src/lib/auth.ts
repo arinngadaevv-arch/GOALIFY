@@ -71,6 +71,21 @@ function firstEnv(keys: readonly string[]): { key: string; value: string } | nul
 const googleId = firstEnv(GOOGLE_ID_ENV_KEYS);
 const googleSecret = firstEnv(GOOGLE_SECRET_ENV_KEYS);
 
+// Explicit, unconditional truthy check for every candidate name, printed on
+// every boot regardless of which branch below ends up firing — grep Vercel's
+// Function Logs for "[auth] Google env check" to see exactly what this
+// deployment's process.env actually contains, without exposing any secret
+// values.
+console.log(
+  "[auth] Google env check —",
+  Object.fromEntries(
+    [...GOOGLE_ID_ENV_KEYS, ...GOOGLE_SECRET_ENV_KEYS].map((key) => [
+      key,
+      Boolean(process.env[key]),
+    ])
+  )
+);
+
 if (googleId && googleSecret) {
   providers.push(
     Google({
