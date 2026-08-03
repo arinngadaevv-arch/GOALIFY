@@ -236,16 +236,18 @@ export function LivePlayer() {
   const isRepCounting = phase === "work" && !isTimed;
   // Real clips from Supabase Storage (see lib/goalify/video.ts): the
   // very first watch beat gets the workout's intro, rest breaks get the
-  // water clip, and every other watch/work beat gets that exercise's own
-  // numbered clip — `index` is 0-based here, the uploaded files are
-  // 1-indexed. Resolves to null (falls back to the pose-icon placeholder)
-  // whenever NEXT_PUBLIC_SUPABASE_URL isn't configured.
+  // water clip, and every other watch/work beat gets whichever uploaded
+  // clip matches this exercise's name/focus (only a handful of named clips
+  // exist, not one per exercise — exerciseVideoUrl resolves to null for
+  // anything unmatched). Also resolves to null whenever
+  // NEXT_PUBLIC_SUPABASE_URL isn't configured — either way the pose-icon
+  // placeholder is the fallback.
   const videoSrc =
     phase === "rest"
       ? restVideoUrl()
       : phase === "watch" && index === 0
         ? introVideoUrl()
-        : exerciseVideoUrl(index + 1);
+        : exerciseVideoUrl(exercise.name, exercise.focus);
   const ringValue = phase === "rest"
     ? (secondsLeft / Math.max(1, exercise.restSeconds)) * 100
     : phase === "watch"
