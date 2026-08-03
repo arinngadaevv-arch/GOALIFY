@@ -194,9 +194,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   providers,
   callbacks: {
-    async jwt({ token, user, trigger }) {
+    async jwt({ token, user, trigger, session }) {
       if (user?.id) token.id = user.id;
       if (!token.id) return token;
+
+      // `update(data)` on the client hands `data` straight through here as
+      // `session` (see @auth/core's handleSession — `session: newSession`
+      // passed to this same callback). When the caller already knows the
+      // fresh value — e.g. TermsGate right after its own accept-terms POST
+      // has committed — trust it and skip the extra DB round trip below
+      // rather than re-querying for something we just wrote ourselves.
+      if (
+        trigger === "update" &&
+        session &&
+        typeof session === "object" &&
+        "hasAcceptedTerms" in session
+      ) {
+        token.hasAcceptedTerms = Boolean(
+          (session as { hasAcceptedTerms?: unknown }).hasAcceptedTerms
+        );
+        return token;
+      }
 
       // Two independent reasons to touch the DB, each throttled on its own:
       // a fresh profile fetch (new sign-in, or an explicit `update()` call

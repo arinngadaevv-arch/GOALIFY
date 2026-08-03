@@ -25,15 +25,31 @@ export function TermsGate({ children }: { children: React.ReactNode }) {
     if (!checked || submitting) return;
     setSubmitting(true);
     setError(null);
+
+    // This is a liability waiver, not a preference toggle — the app can't
+    // let someone through on the strength of a click alone, since the whole
+    // point is a durable record that the write actually landed. What CAN be
+    // cut is the redundant second round trip this used to cost: passing the
+    // known new value straight into `update()` lets the jwt callback (see
+    // auth.ts) trust it instead of re-querying the DB it was just told.
+    // A hard timeout still guarantees the spinner can't hang forever — a
+    // slow/dropped request surfaces as a clear, retryable error instead.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10_000);
     try {
-      const res = await fetch("/api/user/accept-terms", { method: "POST" });
+      const res = await fetch("/api/user/accept-terms", {
+        method: "POST",
+        signal: controller.signal,
+      });
       if (!res.ok) throw new Error("request failed");
-      // Refreshes the JWT so `session.user.hasAcceptedTerms` flips to true
-      // and this overlay unmounts itself — no manual navigation needed.
-      await update();
+      await update({ hasAcceptedTerms: true });
     } catch {
-      setError("Something went wrong. Please try again.");
+      setError(
+        "That's taking longer than expected. Please check your connection and try again."
+      );
       setSubmitting(false);
+    } finally {
+      clearTimeout(timeout);
     }
   }
 
