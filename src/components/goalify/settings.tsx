@@ -20,6 +20,7 @@ import {
   ShieldCheck,
   Sparkles,
   UserRound,
+  Vibrate,
   Zap,
 } from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
@@ -152,6 +153,13 @@ export function SettingsScreen() {
             label="Sound effects"
             description="Countdown beeps, exercise chimes and a finish-line celebration."
             icon={<Music2 className="size-4" />}
+          />
+          <Toggle
+            checked={settings.haptics}
+            onChange={(next) => updateSettings({ haptics: next })}
+            label="Haptic feedback"
+            description="A subtle buzz when you hit a milestone — daily step goal or a finished workout."
+            icon={<Vibrate className="size-4" />}
           />
           <Toggle
             checked={settings.units === "metric"}

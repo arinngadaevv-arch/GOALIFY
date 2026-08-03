@@ -67,6 +67,9 @@ export type GoalifyState = {
   programDay: number;
   waterGlasses: number;
   waterUpdatedOn: string;
+  /** Today's accelerometer-detected step count — see use-step-tracker.ts. */
+  steps: number;
+  stepsUpdatedOn: string;
   settings: Settings;
   photos: ProgressPhoto[];
 };
@@ -74,6 +77,8 @@ export type GoalifyState = {
 export type Settings = {
   kneeSafe: boolean;
   soundEffects: boolean;
+  /** Web Vibration API buzz on milestones — step goal, workout finish, streak day. */
+  haptics: boolean;
   pushMotivation: boolean;
   pushWater: boolean;
   pushWorkout: boolean;

@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import clsx from "clsx";
 import {
   ArrowRight,
   Beef,
@@ -9,19 +10,30 @@ import {
   Check,
   Dumbbell,
   Droplets,
+  Flame as FlameIcon,
+  Footprints,
   Library,
   Play,
   ShieldCheck,
   Timer,
   Zap,
 } from "lucide-react";
-import { useGoalify } from "@/lib/goalify/store";
+import {
+  ACTIVE_MINUTES_GOAL,
+  CALORIE_BURN_GOAL,
+  STEP_GOAL,
+  useGoalify,
+} from "@/lib/goalify/store";
 import { resolveWorkout } from "@/lib/goalify/workouts";
+import { useStepTracker } from "@/lib/goalify/use-step-tracker";
+import { useHaptics } from "@/lib/goalify/use-haptics";
+import { playCompletionCelebration } from "@/lib/goalify/sound";
 import { AppShell } from "./app-shell";
 import { GlassCard } from "./ui/glass-card";
 import { GlowLink } from "./ui/glow-button";
 import { VisualSlot } from "./ui/visual-slot";
 import { ProgressRing } from "./ui/progress-ring";
+import { ActivityRings, type ActivityMetric } from "./ui/activity-rings";
 import { Pill, SectionHeading, Stat } from "./ui/stat";
 import { fireBurst, ParticleBurstLayer } from "./quiz/particle-burst";
 
@@ -29,6 +41,13 @@ import { fireBurst, ParticleBurstLayer } from "./quiz/particle-burst";
  * are shared constants tuned for the light theme elsewhere in the app. */
 const RING_GOLD = "#e8b32c";
 const RING_CRIMSON = "#ff3b3b";
+const RING_LIME = "#39FF14";
+const RING_STEPS = "#0052FF";
+const RING_CALORIES = "#ff6a3b";
+
+/** Rough, commonly-cited energy cost per step — enough to make the calorie
+ * ring feel alive without pretending to be a calibrated metabolic measure. */
+const KCAL_PER_STEP = 0.04;
 
 const MOTIVATION_QUOTES = [
   "NO ZERO DAYS",
@@ -48,6 +67,7 @@ export function Dashboard() {
     setWater,
     waterGlasses,
     streak,
+    steps,
   } = useGoalify();
 
   const workout = resolveWorkout(todaysWorkout, state.settings.kneeSafe);
@@ -57,15 +77,106 @@ export function Dashboard() {
     Math.round((waterGlasses / targets.waterGlasses) * 100),
   );
 
+  const stepTracker = useStepTracker();
+  const haptics = useHaptics();
+  const soundsEnabled = state.settings.soundEffects;
+
+  const activeMinutesToday = workoutDoneToday ? workout.durationMinutes : 0;
+  const caloriesToday =
+    (workoutDoneToday ? workout.calories : 0) + Math.round(steps * KCAL_PER_STEP);
+
+  const activityMetrics: ActivityMetric[] = [
+    { key: "steps", label: "Steps", value: steps, goal: STEP_GOAL, unit: "", color: RING_STEPS, icon: Footprints },
+    { key: "active", label: "Active min", value: activeMinutesToday, goal: ACTIVE_MINUTES_GOAL, unit: "min", color: RING_LIME, icon: Timer },
+    { key: "calories", label: "Calories", value: caloriesToday, goal: CALORIE_BURN_GOAL, unit: "kcal", color: RING_CALORIES, icon: FlameIcon },
+  ];
+
+  // Fires once per crossing, not once per render — a ref-tracked previous
+  // value means the celebration only plays the moment a ring actually fills,
+  // never again just because the dashboard remounts while it's still full.
+  const celebratedRef = useRef({ steps: false, workout: false });
+  useEffect(() => {
+    const c = celebratedRef.current;
+    if (steps >= STEP_GOAL && !c.steps) {
+      c.steps = true;
+      fireBurst(window.innerWidth / 2, 160, true);
+      if (soundsEnabled) playCompletionCelebration();
+      haptics.milestone();
+    } else if (steps < STEP_GOAL) {
+      c.steps = false;
+    }
+  }, [steps, soundsEnabled, haptics]);
+
+  // Sound + haptic for finishing a workout already fire once, right on the
+  // live-player's own completion screen (see live-player.tsx) — this only
+  // adds a quiet visual flourish on the streak badge for landing back here
+  // with today's session freshly done, not a second buzz for the same event.
+  const [streakJustPopped, setStreakJustPopped] = useState(false);
+  useEffect(() => {
+    const c = celebratedRef.current;
+    if (!(workoutDoneToday && !c.workout)) {
+      if (!workoutDoneToday) c.workout = false;
+      return;
+    }
+    c.workout = true;
+    const showTimer = setTimeout(() => setStreakJustPopped(true), 0);
+    const hideTimer = setTimeout(() => setStreakJustPopped(false), 1600);
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(hideTimer);
+    };
+  }, [workoutDoneToday]);
+
   return (
     <AppShell dark>
       <ParticleBurstLayer />
 
       {/* ------------------------------------------------------- Streak badge */}
-      <StreakBadge day={state.programDay} streak={streak} />
+      <StreakBadge day={state.programDay} streak={streak} pulse={streakJustPopped} />
 
       {/* --------------------------------------------------- Motivation ticker */}
       <MotivationTicker />
+
+      {/* ------------------------------------------------- Live Activity rings */}
+      <section className="gf-anim-rise mb-6">
+        <SectionHeading
+          eyebrow="Real-time · on-device"
+          title="Live Activity"
+          action={
+            stepTracker.isTracking ? (
+              <Pill tone="lime">
+                <span className="gf-anim-pulse size-1.5 rounded-full bg-lime-neon" />
+                Live
+              </Pill>
+            ) : null
+          }
+        />
+        <GlassCard deep className="p-6">
+          <ActivityRings metrics={activityMetrics} />
+
+          {!stepTracker.isTracking && (
+            <button
+              type="button"
+              onClick={() => void stepTracker.start()}
+              className="gf-glass gf-press mt-5 flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-xs font-bold text-electric"
+            >
+              <Footprints className="size-4" />
+              {stepTracker.permission === "denied"
+                ? "Motion access denied — enable it in your browser/OS settings"
+                : stepTracker.permission === "unsupported"
+                  ? "No motion sensor on this device"
+                  : "Enable step tracking"}
+            </button>
+          )}
+          {stepTracker.permission === "unsupported" && (
+            <p className="mt-2 text-center text-[11px] text-haze">
+              Steps track live from your phone&apos;s own motion sensor — no
+              Apple Health or Google Fit account needed, and the readings
+              never leave this device.
+            </p>
+          )}
+        </GlassCard>
+      </section>
 
       {/* ------------------------------------------------ Dual progress rings */}
       <GlassCard deep className="gf-anim-rise gf-delay-1 flex items-center gap-6 p-6">
@@ -305,10 +416,24 @@ export function Dashboard() {
   );
 }
 
-/** Prominent top-of-dashboard streak callout — pulsing flame glow. */
-function StreakBadge({ day, streak }: { day: number; streak: number }) {
+/** Prominent top-of-dashboard streak callout — pulsing flame glow. Pops with
+ * a brief scale animation the moment today's workout is freshly completed. */
+function StreakBadge({
+  day,
+  streak,
+  pulse = false,
+}: {
+  day: number;
+  streak: number;
+  pulse?: boolean;
+}) {
   return (
-    <div className="gf-anim-rise gf-streak-badge mb-5 flex items-center justify-center gap-3 rounded-full border border-lime-deep/30 bg-linear-to-r from-lime-neon/10 via-electric/8 to-lime-neon/10 px-5 py-3">
+    <div
+      className={clsx(
+        "gf-anim-rise gf-streak-badge mb-5 flex items-center justify-center gap-3 rounded-full border border-lime-deep/30 bg-linear-to-r from-lime-neon/10 via-electric/8 to-lime-neon/10 px-5 py-3",
+        pulse && "gf-anim-pop",
+      )}
+    >
       <span className="gf-anim-flicker-flame text-2xl" aria-hidden>
         🔥🔥
       </span>

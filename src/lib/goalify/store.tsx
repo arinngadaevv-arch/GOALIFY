@@ -12,6 +12,13 @@ import { workoutForDay } from "./workouts";
 
 const STORAGE_KEY = "goalify.state.v1";
 
+/** Daily step target driving the Activity Rings' "Steps" ring. */
+export const STEP_GOAL = 8000;
+/** Daily "Move" calorie-burn target (steps + workout), Apple-Fitness style. */
+export const CALORIE_BURN_GOAL = 500;
+/** Daily active-minutes target — one completed session covers most days. */
+export const ACTIVE_MINUTES_GOAL = 30;
+
 export function todayKey(date = new Date()): string {
   return date.toISOString().slice(0, 10);
 }
@@ -24,9 +31,12 @@ const INITIAL_STATE: GoalifyState = {
   programDay: 1,
   waterGlasses: 0,
   waterUpdatedOn: todayKey(),
+  steps: 0,
+  stepsUpdatedOn: todayKey(),
   settings: {
     kneeSafe: false,
     soundEffects: true,
+    haptics: true,
     pushMotivation: true,
     pushWater: true,
     pushWorkout: true,
@@ -142,6 +152,18 @@ export function useGoalify() {
     }));
   }, []);
 
+  /** Called once per detected footfall by use-step-tracker.ts — accumulates
+   * onto today's count, resetting first if the last write was a prior day. */
+  const addSteps = useCallback((delta: number) => {
+    update((s) => {
+      const today = todayKey();
+      const base = s.stepsUpdatedOn === today ? s.steps : 0;
+      const next = Math.max(0, base + delta);
+      if (next === s.steps && s.stepsUpdatedOn === today) return s;
+      return { ...s, steps: next, stepsUpdatedOn: today };
+    });
+  }, []);
+
   const updateSettings = useCallback((patch: Partial<Settings>) => {
     update((s) => ({ ...s, settings: { ...s.settings, ...patch } }));
   }, []);
@@ -165,12 +187,14 @@ export function useGoalify() {
   // Hydration is derived, not stored, so a new day starts empty without a write.
   const waterGlasses =
     state.waterUpdatedOn === todayKey() ? state.waterGlasses : 0;
+  const steps = state.stepsUpdatedOn === todayKey() ? state.steps : 0;
 
   return {
     state,
     hydrated,
     answers,
     waterGlasses,
+    steps,
     streak: calculateStreak(state.completedDays),
     targets: nutritionTargets(answers),
     todaysWorkout: workoutForDay(state.programDay),
@@ -180,6 +204,7 @@ export function useGoalify() {
     purchase,
     completeWorkout,
     setWater,
+    addSteps,
     updateSettings,
     addPhoto,
     reset,

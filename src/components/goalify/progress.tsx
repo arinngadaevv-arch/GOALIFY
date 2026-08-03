@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import clsx from "clsx";
 import {
   Camera,
@@ -43,6 +43,8 @@ export function Progress() {
 
   const last30 = useMemo(() => buildGrid(state.completedDays), [state.completedDays]);
   const doneInGrid = last30.filter((day) => day.done).length;
+  const [selectedDayKey, setSelectedDayKey] = useState<string | null>(null);
+  const selectedDay = last30.find((day) => day.key === selectedDayKey) ?? null;
 
   return (
     <AppShell title="Progress & Evolution" subtitle="The proof it's working">
@@ -101,17 +103,24 @@ export function Progress() {
         <SectionHeading eyebrow="Consistency" title="30-day grid" />
         <GlassCard deep className="p-6">
           <div className="grid grid-cols-10 gap-1.5">
-            {last30.map((day) => (
-              <div
+            {last30.map((day, index) => (
+              <button
                 key={day.key}
+                type="button"
+                onClick={() =>
+                  setSelectedDayKey((current) => (current === day.key ? null : day.key))
+                }
                 title={`${day.key}${day.done ? " · completed" : ""}`}
+                aria-pressed={selectedDayKey === day.key}
+                style={{ animationDelay: `${index * 14}ms` }}
                 className={clsx(
-                  "aspect-square rounded-md transition-all duration-300",
+                  "gf-anim-pop relative aspect-square rounded-md transition-all duration-300 hover:z-10 hover:scale-125",
                   day.done
                     ? "bg-lime-neon shadow-[0_0_10px_rgba(57,255,20,0.55)]"
                     : day.isToday
                       ? "border-2 border-electric bg-electric/10"
                       : "bg-ink/6",
+                  selectedDayKey === day.key && "ring-2 ring-electric ring-offset-1",
                 )}
               />
             ))}
@@ -124,6 +133,30 @@ export function Progress() {
             </span>
             <span>Today</span>
           </div>
+
+          {selectedDay && (
+            <div className="gf-anim-pop mt-4 flex items-center justify-between rounded-2xl bg-ink/4 px-4 py-3">
+              <div>
+                <p className="text-xs font-extrabold text-ink">
+                  {formatDayLabel(selectedDay.key)}
+                </p>
+                <p className="mt-0.5 text-[11px] text-mist">
+                  {selectedDay.done
+                    ? "Workout completed ✓"
+                    : selectedDay.isToday
+                      ? "Today — not logged yet"
+                      : "No session logged"}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedDayKey(null)}
+                className="text-[11px] font-bold text-electric"
+              >
+                Close
+              </button>
+            </div>
+          )}
         </GlassCard>
       </section>
 
@@ -281,6 +314,14 @@ function PhotoTile({
   );
 }
 
+function formatDayLabel(key: string): string {
+  return new Date(`${key}T00:00:00`).toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+}
+
 function buildGrid(completedDays: string[]) {
   const done = new Set(completedDays);
   const today = todayKey();
@@ -296,6 +337,7 @@ function TrendChart({ points }: { points: { week: number; weight: number }[] }) 
   const width = 520;
   const height = 160;
   const padding = 12;
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
 
   const weights = points.map((p) => p.weight);
   const min = Math.min(...weights);
@@ -312,57 +354,120 @@ function TrendChart({ points }: { points: { week: number; weight: number }[] }) 
     .join(" ");
   const area = `${line} L${coords[coords.length - 1].x.toFixed(1)},${height} L${coords[0].x.toFixed(1)},${height} Z`;
 
+  function handlePointer(event: React.PointerEvent<SVGSVGElement>) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const relativeX = ((event.clientX - rect.left) / rect.width) * width;
+    let nearest = 0;
+    let nearestDist = Infinity;
+    coords.forEach((coord, index) => {
+      const dist = Math.abs(coord.x - relativeX);
+      if (dist < nearestDist) {
+        nearestDist = dist;
+        nearest = index;
+      }
+    });
+    setHoverIndex(nearest);
+  }
+
+  const hovered = hoverIndex !== null ? points[hoverIndex] : null;
+  const hoveredCoord = hoverIndex !== null ? coords[hoverIndex] : null;
+
   return (
-    <svg
-      viewBox={`0 0 ${width} ${height}`}
-      className="mt-5 w-full"
-      role="img"
-      aria-label={`Weight trending from ${points[0].weight} to ${points[points.length - 1].weight} kilograms over ${points.length - 1} weeks`}
-    >
-      <defs>
-        <linearGradient id="gf-trend" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#39FF14" stopOpacity="0.32" />
-          <stop offset="100%" stopColor="#39FF14" stopOpacity="0" />
-        </linearGradient>
-      </defs>
+    <div className="relative mt-5">
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        className="w-full touch-none cursor-crosshair"
+        role="img"
+        aria-label={`Weight trending from ${points[0].weight} to ${points[points.length - 1].weight} kilograms over ${points.length - 1} weeks`}
+        onPointerMove={handlePointer}
+        onPointerDown={handlePointer}
+        onPointerLeave={() => setHoverIndex(null)}
+      >
+        <defs>
+          <linearGradient id="gf-trend" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#39FF14" stopOpacity="0.32" />
+            <stop offset="100%" stopColor="#39FF14" stopOpacity="0" />
+          </linearGradient>
+        </defs>
 
-      {[0.25, 0.5, 0.75].map((fraction) => (
-        <line
-          key={fraction}
-          x1={padding}
-          x2={width - padding}
-          y1={padding + fraction * (height - padding * 2)}
-          y2={padding + fraction * (height - padding * 2)}
-          stroke="rgba(10,25,70,0.07)"
-          strokeWidth="1"
+        {[0.25, 0.5, 0.75].map((fraction) => (
+          <line
+            key={fraction}
+            x1={padding}
+            x2={width - padding}
+            y1={padding + fraction * (height - padding * 2)}
+            y2={padding + fraction * (height - padding * 2)}
+            stroke="rgba(10,25,70,0.07)"
+            strokeWidth="1"
+          />
+        ))}
+
+        <path d={area} fill="url(#gf-trend)" />
+        <path
+          d={line}
+          fill="none"
+          stroke="#0052FF"
+          strokeWidth="3.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         />
-      ))}
+        <circle
+          cx={coords[0].x}
+          cy={coords[0].y}
+          r="5"
+          fill="#0052FF"
+          stroke="#fff"
+          strokeWidth="3"
+        />
+        <circle
+          cx={coords[coords.length - 1].x}
+          cy={coords[coords.length - 1].y}
+          r="6"
+          fill="#39FF14"
+          stroke="#fff"
+          strokeWidth="3"
+        />
 
-      <path d={area} fill="url(#gf-trend)" />
-      <path
-        d={line}
-        fill="none"
-        stroke="#0052FF"
-        strokeWidth="3.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle
-        cx={coords[0].x}
-        cy={coords[0].y}
-        r="5"
-        fill="#0052FF"
-        stroke="#fff"
-        strokeWidth="3"
-      />
-      <circle
-        cx={coords[coords.length - 1].x}
-        cy={coords[coords.length - 1].y}
-        r="6"
-        fill="#39FF14"
-        stroke="#fff"
-        strokeWidth="3"
-      />
-    </svg>
+        {hoveredCoord && (
+          <g aria-hidden>
+            <line
+              x1={hoveredCoord.x}
+              x2={hoveredCoord.x}
+              y1={padding}
+              y2={height - padding}
+              stroke="rgba(10,25,70,0.22)"
+              strokeWidth="1"
+              strokeDasharray="3 3"
+            />
+            <circle
+              cx={hoveredCoord.x}
+              cy={hoveredCoord.y}
+              r="6.5"
+              fill="#0052FF"
+              stroke="#fff"
+              strokeWidth="2.5"
+            />
+          </g>
+        )}
+      </svg>
+
+      {hovered && hoveredCoord && (
+        <div
+          aria-hidden
+          className="gf-glass gf-anim-pop pointer-events-none absolute -translate-x-1/2 -translate-y-[calc(100%+10px)] rounded-xl px-3 py-1.5 text-center whitespace-nowrap shadow-lg"
+          style={{
+            left: `${(hoveredCoord.x / width) * 100}%`,
+            top: `${(hoveredCoord.y / height) * 100}%`,
+          }}
+        >
+          <span className="block text-[10px] font-semibold text-mist">
+            {hovered.week === 0 ? "Today" : `Week ${hovered.week}`}
+          </span>
+          <span className="gf-numeric text-xs font-black text-ink">
+            {hovered.weight} kg
+          </span>
+        </div>
+      )}
+    </div>
   );
 }

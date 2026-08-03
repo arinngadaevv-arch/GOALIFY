@@ -30,6 +30,7 @@ import { VisualSlot } from "@/components/goalify/ui/visual-slot";
 import { poseForExercise } from "@/components/goalify/ui/pose-icon";
 import { AIFormGuide } from "@/components/goalify/workout/ai-form-guide";
 import { useWorkoutSounds } from "@/components/goalify/workout/use-workout-sounds";
+import { useHaptics } from "@/lib/goalify/use-haptics";
 import { ProgressRing } from "@/components/goalify/ui/progress-ring";
 import { Pill, Stat } from "@/components/goalify/ui/stat";
 import { fireBurst, ParticleBurstLayer } from "@/components/goalify/quiz/particle-burst";
@@ -85,6 +86,7 @@ export function LivePlayer() {
   const isTimed = exercise.kind === "time";
   const { countdownBeep, exerciseChime, completionCelebration, goCue } =
     useWorkoutSounds();
+  const haptics = useHaptics();
 
   // Real wall-clock session length — set once on mount (inside an effect,
   // since Date.now() can't run during render), read once on completion, so
@@ -197,8 +199,9 @@ export function LivePlayer() {
       });
       completeWorkout();
       completionCelebration();
+      haptics.milestone();
     }
-  }, [phase, workout, completeWorkout, completionCelebration]);
+  }, [phase, workout, completeWorkout, completionCelebration, haptics]);
 
   if (phase === "done") {
     // Falls back to the live `workout` only for the single render before
