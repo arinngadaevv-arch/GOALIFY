@@ -42,7 +42,7 @@ export function WelcomeCtaStep({
     <div className="relative -mx-5 flex min-h-dvh flex-col overflow-hidden">
       <div className="absolute inset-0">
         <Image
-          src="/quiz/goal-athletic.png"
+          src="/quiz/onboarding-hero.png"
           alt=""
           fill
           priority
