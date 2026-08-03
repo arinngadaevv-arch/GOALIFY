@@ -20,6 +20,13 @@ export function ProgressRing({
   children,
   className,
   animate = true,
+  /** Tuned for a discrete percentage snapping to a new value (dashboard
+   * widgets). A per-second countdown instead wants `duration=1000` +
+   * `easing="linear"` — that makes the ring travel the *exact* distance a
+   * real second represents in a real second, so it reads as continuously
+   * closing rather than easing in and visibly pausing before each tick. */
+  transitionMs = 900,
+  easing = "cubic-bezier(0.16, 1, 0.3, 1)",
 }: {
   rings: Ring[];
   size?: number;
@@ -28,6 +35,8 @@ export function ProgressRing({
   children?: React.ReactNode;
   className?: string;
   animate?: boolean;
+  transitionMs?: number;
+  easing?: string;
 }) {
   const center = size / 2;
 
@@ -72,7 +81,7 @@ export function ProgressRing({
                 strokeDashoffset={offset}
                 style={{
                   transition: animate
-                    ? "stroke-dashoffset 0.9s cubic-bezier(0.16, 1, 0.3, 1)"
+                    ? `stroke-dashoffset ${transitionMs}ms ${easing}`
                     : undefined,
                   filter: `drop-shadow(0 0 6px ${ring.color}66)`,
                 }}

@@ -224,6 +224,10 @@ export function LivePlayer() {
   }
 
   const totalProgress = ((index + (phase === "rest" ? 1 : 0)) / workout.exercises.length) * 100;
+  // The only phase with no clock behind it — reps advance on a tap, not a
+  // tick, so the ring for it should pop to its new value rather than sweep
+  // like a countdown (see the ProgressRing transitionMs/easing override below).
+  const isRepCounting = phase === "work" && !isTimed;
   const ringValue = phase === "rest"
     ? (secondsLeft / Math.max(1, exercise.restSeconds)) * 100
     : phase === "watch"
@@ -233,11 +237,14 @@ export function LivePlayer() {
         : (reps / Math.max(1, exercise.amount)) * 100;
 
   return (
-    <main className="gf-cyber-scope mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pt-5 pb-32">
+    <main className="gf-cyber-scope mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pt-5 pb-48">
       <ParticleBurstLayer />
       <FloatingStreakBadge />
 
-      {/* ------------------------------------------------------------ Top bar */}
+      {/* ------------------------------------------------------------ Top bar
+          Just exit + progress here — pause/resume lives in exactly one
+          place, the big control at the bottom thumb zone, so there's never
+          a moment with two different buttons claiming to do the same thing. */}
       <header className="flex items-center gap-3">
         <Link
           href="/home"
@@ -261,19 +268,6 @@ export function LivePlayer() {
             />
           </div>
         </div>
-
-        <button
-          type="button"
-          onClick={() => setPaused((p) => !p)}
-          aria-label={paused ? "Resume" : "Pause"}
-          className="gf-glass gf-press grid size-10 shrink-0 place-items-center rounded-full text-ink-soft"
-        >
-          {paused ? (
-            <Play className="size-5 fill-current" />
-          ) : (
-            <Pause className="size-5 fill-current" />
-          )}
-        </button>
       </header>
 
       {/* --------------------------------------------- Form guide / animation */}
@@ -331,36 +325,41 @@ export function LivePlayer() {
               </p>
             </div>
           )}
-
-          {/* Subtitle cue strip */}
-          <div className="absolute inset-x-3 bottom-3">
-            <div className="gf-glass rounded-2xl px-4 py-2.5">
-              <p className="text-center text-sm leading-snug font-semibold text-ink">
-                {phase === "rest"
-                  ? "Breathe. Shake it out. Stay standing."
-                  : phase === "watch"
-                    ? "Watch the form, then it's your turn."
-                    : exercise.cue}
-              </p>
-            </div>
-          </div>
         </div>
       </GlassCard>
 
-      {/* ------------------------------------------------------ Timer / counter */}
-      <section className="mt-6 flex flex-col items-center">
+      {/* ------------------------------------------------------ Timer / counter
+          Single, unambiguous focal point: phase pill, then the exercise
+          name — big and centered, so it's the first thing read — then one
+          line of coaching context, then the ring. Nothing else competes for
+          attention here; the cue text that used to float on top of the
+          video above now lives in exactly one place. */}
+      <section className="mt-7 flex flex-col items-center">
         <Pill tone={phase === "rest" ? "lime" : "electric"}>
           {phase === "rest" ? "Rest" : phase === "watch" ? "Watch & Prepare" : exercise.focus}
         </Pill>
 
-        <h1 className="gf-display mt-3 text-center text-3xl font-black text-ink">
+        <h1 className="gf-display mt-3 text-center text-4xl leading-tight font-black text-ink sm:text-5xl">
           {phase === "rest" ? "Recover" : exercise.name}
         </h1>
 
+        <p className="mt-2 max-w-xs text-center text-sm leading-snug font-semibold text-mist">
+          {phase === "rest"
+            ? "Breathe. Shake it out. Stay standing."
+            : phase === "watch"
+              ? "Watch the form, then it's your turn."
+              : exercise.cue}
+        </p>
+
         <ProgressRing
-          className="mt-6"
+          className="mt-7"
           size={216}
           thickness={16}
+          // A real per-second countdown (watch / rest / timed work) gets a
+          // linear, tick-synced sweep so the ring visibly closes in step
+          // with the clock; rep-based work has no clock, so each tap just
+          // pops to its new value with the default snappy easing instead.
+          {...(isRepCounting ? {} : { transitionMs: 1000, easing: "linear" })}
           rings={[
             {
               value: ringValue,
@@ -391,20 +390,26 @@ export function LivePlayer() {
           )}
         </ProgressRing>
 
-        {/* Live calorie / exercise tracking — ticks up as the session runs. */}
+        {/* Live calorie / exercise tracking — each value pops on change (the
+            `key` remount replays `gf-anim-pop`) so ticking up reads as a
+            live, alive counter rather than a static number that jumps. */}
         <div className="mt-6 grid w-full grid-cols-2 gap-3">
-          <Stat
-            value={Math.round((workout.calories * totalProgress) / 100)}
-            suffix="kcal"
-            label="Burned so far"
-            tone="electric"
-          />
-          <Stat
-            value={index + (phase === "rest" ? 1 : 0)}
-            suffix={`/${workout.exercises.length}`}
-            label="Exercises done"
-            tone="lime"
-          />
+          <div key={`cal-${Math.round((workout.calories * totalProgress) / 100)}`} className="gf-anim-pop">
+            <Stat
+              value={Math.round((workout.calories * totalProgress) / 100)}
+              suffix="kcal"
+              label="Burned so far"
+              tone="electric"
+            />
+          </div>
+          <div key={`done-${index + (phase === "rest" ? 1 : 0)}`} className="gf-anim-pop">
+            <Stat
+              value={index + (phase === "rest" ? 1 : 0)}
+              suffix={`/${workout.exercises.length}`}
+              label="Exercises done"
+              tone="lime"
+            />
+          </div>
         </div>
 
         {phase === "work" && !isTimed && (
@@ -453,27 +458,32 @@ export function LivePlayer() {
         </GlassCard>
       )}
 
-      {/* --------------------------------------------------- Floating controls */}
-      <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-5 pb-[max(1rem,env(safe-area-inset-bottom))]">
-        <div className="gf-glass gf-glass-deep flex items-center gap-2 rounded-full p-2">
+      {/* --------------------------------------------------- Floating controls
+          The one control surface in the whole screen — big, centered,
+          squarely in the bottom thumb zone. Play/pause is the largest and
+          most central target since it's the one you'll reach for mid-rep,
+          sweaty and not looking; prev/next flank it, still comfortably
+          above the 44px touch-target minimum. */}
+      <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+        <div className="gf-glass gf-glass-deep flex items-center gap-3 rounded-full p-2.5">
           <ControlButton
             label="Previous exercise"
             onClick={() => goToExercise(Math.max(0, index - 1))}
             disabled={index === 0}
           >
-            <SkipBack className="size-5 fill-current" />
+            <SkipBack className="size-5.5 fill-current" />
           </ControlButton>
 
           <button
             type="button"
             onClick={() => setPaused((p) => !p)}
             aria-label={paused ? "Resume workout" : "Pause workout"}
-            className="gf-press gf-glow-electric grid size-16 place-items-center rounded-full bg-electric text-white [.gf-cyber-scope_&]:text-[#1a1100]"
+            className="gf-press gf-glow-electric grid size-19 place-items-center rounded-full bg-electric text-white [.gf-cyber-scope_&]:text-[#1a1100]"
           >
             {paused ? (
-              <Play className="size-7 fill-current" />
+              <Play className="size-8 fill-current" />
             ) : (
-              <Pause className="size-7 fill-current" />
+              <Pause className="size-8 fill-current" />
             )}
           </button>
 
@@ -483,7 +493,7 @@ export function LivePlayer() {
               phase === "rest" ? goToExercise(index + 1) : finishCurrent()
             }
           >
-            <SkipForward className="size-5 fill-current" />
+            <SkipForward className="size-5.5 fill-current" />
           </ControlButton>
         </div>
       </div>
@@ -508,7 +518,7 @@ function ControlButton({
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
-      className="gf-press grid size-12 place-items-center rounded-full text-ink-soft transition-colors hover:text-electric disabled:opacity-30"
+      className="gf-press grid size-14 place-items-center rounded-full text-ink-soft transition-colors hover:text-electric disabled:opacity-30"
     >
       {children}
     </button>
