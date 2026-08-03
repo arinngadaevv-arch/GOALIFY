@@ -21,8 +21,8 @@ import { CoachBubble } from "@/components/goalify/coach/coach-bubble";
 import { ParticleField } from "@/components/goalify/ui/particles";
 import { CountUp } from "@/components/goalify/ui/count-up";
 import { COACH_GREETINGS } from "@/lib/goalify/coach";
-import { TrainerSlideshow } from "@/components/goalify/coach/trainer-slideshow";
-import { TRAINERS, TrainerCard } from "@/components/goalify/coach/trainer-card";
+import { CoachHeroCard } from "@/components/goalify/coach/coach-hero-card";
+import { TRAINER, TrainerCard } from "@/components/goalify/coach/trainer-card";
 import { CoachGuide } from "@/components/goalify/coach/coach-guide";
 import { Pill } from "@/components/goalify/ui/stat";
 
@@ -140,7 +140,7 @@ export default function LandingPage() {
           {/* The coach speaks before the user has done anything. */}
           <CoachBubble
             message={COACH_GREETINGS[0]}
-            avatarPhotoSrc="/quiz/goal-athletic.png"
+            avatarPhotoSrc="/quiz/coach-portrait.png"
             className="mt-7 max-w-lg"
           />
 
@@ -182,7 +182,7 @@ export default function LandingPage() {
         </div>
 
         <div className="gf-anim-materialize relative">
-          <TrainerSlideshow />
+          <CoachHeroCard />
 
           <GlassCard
             deep
@@ -320,28 +320,21 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ------------------------------------------------------- Coaching team */}
+      {/* -------------------------------------------------------- Your coach */}
       <section className="pb-20">
         <div className="mx-auto max-w-2xl text-center">
           <Pill tone="lime">Your corner</Pill>
           <h2 className="gf-display mt-4 text-4xl font-black text-ink sm:text-5xl">
-            Meet your home workout coaches
+            Your Performance Coach
           </h2>
           <p className="mx-auto mt-3 max-w-md text-base text-ink-soft">
-            Whatever your body needs on the day, one of them is already
-            warmed up and waiting.
+            Whatever your body needs on the day, Atlas is already warmed up
+            and waiting.
           </p>
         </div>
 
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {TRAINERS.map((trainer, index) => (
-            <TrainerCard
-              key={trainer.id}
-              trainer={trainer}
-              asHeading
-              className={`gf-anim-swoop gf-delay-${index + 1}`}
-            />
-          ))}
+        <div className="mx-auto mt-12 max-w-sm">
+          <TrainerCard trainer={TRAINER} asHeading className="gf-anim-swoop" />
         </div>
       </section>
 

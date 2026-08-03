@@ -436,7 +436,7 @@ export function QuizFlow() {
 
       <CoachGuide
         autoOpen={false}
-        photoSrc="/quiz/goal-athletic.png"
+        photoSrc="/quiz/coach-portrait.png"
         idleMessage="You don't need a gym to build a legendary body. Just 20 minutes and zero excuses."
       />
     </main>

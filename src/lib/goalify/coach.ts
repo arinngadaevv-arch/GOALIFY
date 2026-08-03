@@ -4,16 +4,16 @@
  */
 
 export const COACH = {
-  name: "NOVA",
+  name: "ATLAS",
   role: "Your Performance Coach",
-  tagline: "I don't do generic. I build one plan — yours.",
+  tagline: "Add one rep. Then do it again tomorrow. That's the whole secret.",
 } as const;
 
 /** Rotating openers for the landing page hero. */
 export const COACH_GREETINGS: readonly string[] = [
-  "I'm NOVA. Give me 90 seconds and I'll build the plan you'll actually finish.",
+  "I'm ATLAS. Give me 90 seconds and I'll build the plan you'll actually finish.",
   "You're here because something needs to change. Good. Let's get to work.",
-  "No guesswork, no generic templates. Just your plan, built around you.",
+  "Add one rep. Then do it again tomorrow. That's the whole secret.",
 ];
 
 /**

@@ -14,50 +14,20 @@ export type Trainer = {
 };
 
 /**
- * The coaching roster shown across the landing page and workout headers.
- *
- * Each trainer renders a real photo when `photoSrc` is set (either here or
- * passed as a prop to `TrainerCard`); otherwise it falls back to a
- * stylised mocap figure on an energy gradient.
+ * GOALIFY has exactly one coach persona, shown identically everywhere —
+ * the landing page hero, the coaches section, and every floating coach
+ * widget across the app (see COACH in lib/goalify/coach.ts, which mirrors
+ * this name/tagline). There is no roster to rotate through.
  */
-export const TRAINERS: Trainer[] = [
-  {
-    id: "nova",
-    name: "NOVA",
-    speciality: "Fat burn & conditioning",
-    quote: "You don't need more time. You need a plan that fits the time you have.",
-    pose: "jack",
-    accent: "electric",
-    photoSrc: "/quiz/goal-athletic.png",
-  },
-  {
-    id: "atlas",
-    name: "ATLAS",
-    speciality: "Strength & mass",
-    quote: "Add one rep. Then do it again tomorrow. That's the whole secret.",
-    pose: "pushup",
-    accent: "lime",
-    photoSrc: "/quiz/workout-preview-pushup-closeup.png",
-  },
-  {
-    id: "vera",
-    name: "VERA",
-    speciality: "Joint-safe training",
-    quote: "Pain is information, not a stop sign. We train around it.",
-    pose: "bridge",
-    accent: "electric",
-    photoSrc: "/quiz/coach-portrait.png",
-  },
-  {
-    id: "kai",
-    name: "KAI",
-    speciality: "Core & definition",
-    quote: "Definition is built in the last three reps nobody wants to do.",
-    pose: "core",
-    accent: "lime",
-    photoSrc: "/quiz/workout-preview-squat.png",
-  },
-];
+export const TRAINER: Trainer = {
+  id: "atlas",
+  name: "ATLAS",
+  speciality: "Strength & mass",
+  quote: "Add one rep. Then do it again tomorrow. That's the whole secret.",
+  pose: "pushup",
+  accent: "lime",
+  photoSrc: "/quiz/workout-preview-pushup-closeup.png",
+};
 
 export function TrainerCard({
   trainer,

@@ -1,5 +1,5 @@
 /**
- * NOVA's face — a hand-drawn human trainer bust, not a bot glyph. Built to
+ * The coach's face — a hand-drawn human trainer bust, not a bot glyph. Built to
  * the same 24x24 stroke-icon convention as the lucide set it replaces
  * (round caps/joins, currentColor stroke) so it drops into every existing
  * icon slot at any size. A rounded head, a light smile, and shoulders wide
