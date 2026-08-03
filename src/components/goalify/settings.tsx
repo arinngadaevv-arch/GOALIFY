@@ -1,14 +1,19 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import {
   ArrowRight,
   Bell,
+  Check,
   CreditCard,
   Crown,
   Droplets,
   Flame,
+  Link2,
+  Loader2,
   LogOut,
   Music2,
   Ruler,
@@ -30,6 +35,39 @@ export function SettingsScreen() {
   const router = useRouter();
   const { state, answers, updateSettings, reset } = useGoalify();
   const { settings } = state;
+  const [googleLinked, setGoogleLinked] = useState<boolean | null>(null);
+  const [linking, setLinking] = useState(false);
+
+  // Reading `window.location.search` directly — rather than the
+  // `useSearchParams()` hook — avoids forcing this otherwise-static page
+  // into a Suspense boundary for what's only ever a one-time check (same
+  // reasoning as QuizFlow's own `?auth=`/`?error=` handling).
+  useEffect(() => {
+    const linked = new URLSearchParams(window.location.search).get("linked") === "1";
+    if (linked) window.history.replaceState(null, "", "/settings");
+
+    // Checked on every mount, not just after a `?linked=1` return trip —
+    // signIn("google") while already authenticated safely links Google to
+    // *this* account (see handleLoginOrRegister in @auth/core) without
+    // refreshing the session's own JWT claims, so this reads the real
+    // accounts table directly rather than trusting anything cached in the
+    // session.
+    let cancelled = false;
+    fetch("/api/user/accounts")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body) => {
+        if (!cancelled && body) setGoogleLinked(Boolean(body.google));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleLinkGoogle = () => {
+    setLinking(true);
+    void signIn("google", { callbackUrl: "/settings?linked=1" });
+  };
 
   const handleReset = () => {
     const confirmed = window.confirm(
@@ -211,6 +249,44 @@ export function SettingsScreen() {
         </GlassCard>
       </section>
 
+      {/* ------------------------------------------------------ Connected accounts */}
+      <section className="gf-anim-rise gf-delay-6 mt-8">
+        <SectionHeading eyebrow="Sign-in" title="Connected accounts" />
+        <GlassCard deep className="flex items-center gap-4 p-5">
+          <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-ink/5">
+            <GoogleIcon className="size-5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-extrabold text-ink">Google</p>
+            <p className="mt-0.5 text-xs text-ink-soft">
+              {googleLinked
+                ? "Signed in with Google is enabled for this account."
+                : "Link Google to sign in without a password next time."}
+            </p>
+          </div>
+          {googleLinked ? (
+            <Pill tone="lime">
+              <Check className="size-3" />
+              Connected
+            </Pill>
+          ) : (
+            <button
+              type="button"
+              onClick={handleLinkGoogle}
+              disabled={linking || googleLinked === null}
+              className="gf-press flex shrink-0 items-center gap-1.5 rounded-full border border-ink/10 px-3.5 py-2 text-xs font-bold text-ink-soft transition-colors hover:border-electric/40 hover:text-electric disabled:opacity-50"
+            >
+              {linking ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Link2 className="size-3.5" />
+              )}
+              Link
+            </button>
+          )}
+        </GlassCard>
+      </section>
+
       {/* -------------------------------------------------------------- Reset */}
       <section className="gf-anim-rise gf-delay-6 mt-8">
         <SectionHeading eyebrow="Danger zone" title="Device data" />
@@ -246,5 +322,28 @@ function DetailCell({ label, value }: { label: string; value: string }) {
       </p>
       <p className="gf-numeric mt-1 text-lg font-extrabold text-ink">{value}</p>
     </div>
+  );
+}
+
+function GoogleIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      <path
+        fill="#4285F4"
+        d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.47a5.53 5.53 0 0 1-2.4 3.63v3h3.87c2.27-2.09 3.58-5.17 3.58-8.82Z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 24c3.24 0 5.96-1.07 7.94-2.91l-3.87-3c-1.07.72-2.45 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.27v3.11A11.99 11.99 0 0 0 12 24Z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.27 14.28A7.2 7.2 0 0 1 4.89 12c0-.79.14-1.56.38-2.28V6.61H1.27A11.99 11.99 0 0 0 0 12c0 1.94.46 3.77 1.27 5.39l4-3.11Z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.44-3.44C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.69 1.27 6.61l4 3.11C6.22 6.86 8.87 4.75 12 4.75Z"
+      />
+    </svg>
   );
 }

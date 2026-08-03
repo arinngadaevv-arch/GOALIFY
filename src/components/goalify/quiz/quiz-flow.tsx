@@ -62,7 +62,7 @@ const REACTION_MS = 1050;
 const GOOGLE_ERROR_MESSAGES: Record<string, string> = {
   AccessDenied: "Google sign-in was cancelled.",
   OAuthAccountNotLinked:
-    "That email is already registered a different way — sign in with email and password instead.",
+    "That email already has a password-based account — sign in with email and password, then connect Google from Settings so you can use it next time.",
   Configuration: "Google sign-in isn't available right now — try email instead.",
 };
 
