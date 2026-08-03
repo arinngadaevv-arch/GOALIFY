@@ -57,6 +57,22 @@ export function Paywall() {
     fireBurst(event.clientX, event.clientY, true);
     window.setTimeout(() => fireBurst(event.clientX, event.clientY, false), 90);
     navigator.vibrate?.([30, 40, 60]);
+
+    const selected = TIERS.find((option) => option.id === tier);
+    if (selected) {
+      // Fire-and-forget — a real (checkout claim) record for the admin
+      // dashboard, never something the user waits on.
+      fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tier: selected.id,
+          tierLabel: selected.label,
+          priceCents: Math.round(selected.price * 100),
+        }),
+      }).catch(() => {});
+    }
+
     purchase();
     router.push("/success");
   };

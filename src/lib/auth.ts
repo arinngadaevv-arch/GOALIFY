@@ -82,13 +82,48 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   providers,
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user?.id) token.id = user.id;
+      if (!token.id) return token;
+
+      // Two independent reasons to touch the DB, each throttled on its own:
+      // a fresh profile fetch (new sign-in, or an explicit `update()` call
+      // after e.g. accepting the terms waiver) and a "last seen" touch for
+      // the admin dashboard's active-user count, capped to once per window
+      // so routine page loads don't hammer the DB.
+      const needsProfileRefresh = trigger === "update" || token.isAdmin === undefined;
+      const lastTouch =
+        typeof token.lastActiveTouch === "number" ? token.lastActiveTouch : 0;
+      const activityStale = Date.now() - lastTouch > 15 * 60 * 1000;
+
+      if (activityStale) {
+        const now = new Date();
+        await db
+          .update(users)
+          .set({ lastActiveAt: now })
+          .where(eq(users.id, token.id as string));
+        token.lastActiveTouch = now.getTime();
+      }
+
+      if (needsProfileRefresh) {
+        const [dbUser] = await db
+          .select({ isAdmin: users.isAdmin, hasAcceptedTerms: users.hasAcceptedTerms })
+          .from(users)
+          .where(eq(users.id, token.id as string))
+          .limit(1);
+        if (dbUser) {
+          token.isAdmin = dbUser.isAdmin;
+          token.hasAcceptedTerms = dbUser.hasAcceptedTerms;
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {
       if (session.user && token.id) {
         session.user.id = token.id as string;
+        session.user.isAdmin = Boolean(token.isAdmin);
+        session.user.hasAcceptedTerms = Boolean(token.hasAcceptedTerms);
       }
       return session;
     },

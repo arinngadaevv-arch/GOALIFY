@@ -86,6 +86,13 @@ export const users = pgTable("user", {
   cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false),
   // Gates the analyst approval queue. Manual flag - no self-serve admin signup.
   isAdmin: boolean("is_admin").notNull().default(false),
+  // Mandatory Terms of Service + health liability waiver, gated in the app
+  // shell before any workout/plan content is reachable (see terms-gate.tsx).
+  hasAcceptedTerms: boolean("has_accepted_terms").notNull().default(false),
+  // Touched (throttled) in the NextAuth `session` callback - a real,
+  // request-driven "last seen" signal for the admin dashboard's active-user
+  // count, not a fabricated one.
+  lastActiveAt: timestamp("last_active_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -208,6 +215,26 @@ export const planDays = pgTable("plan_day", {
   idea: text("idea").notNull(),
   contentType: planDayContentTypeEnum("content_type").notNull(),
   goal: planDayGoalEnum("goal").notNull(),
+});
+
+/**
+ * A real, append-only record of the moment a user clicks "claim my plan" on
+ * the paywall - tier + the price listed to them at that moment. GOALIFY has
+ * no live payment processor wired up, so this is honestly a checkout claim,
+ * not a settled payment; the admin dashboard labels it that way rather than
+ * implying collected revenue.
+ */
+export const checkoutEvents = pgTable("checkout_event", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  tier: text("tier").notNull(),
+  tierLabel: text("tier_label").notNull(),
+  priceCents: integer("price_cents").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const usageLogs = pgTable("usage_log", {
@@ -366,12 +393,17 @@ export const outcomesRelations = relations(outcomes, ({ one }) => ({
   }),
 }));
 
+export const checkoutEventsRelations = relations(checkoutEvents, ({ one }) => ({
+  user: one(users, { fields: [checkoutEvents.userId], references: [users.id] }),
+}));
+
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
   sessions: many(sessions),
   projects: many(projects),
   usageLogs: many(usageLogs),
   teamMembers: many(teamMembers),
+  checkoutEvents: many(checkoutEvents),
 }));
 
 export const projectsRelations = relations(projects, ({ one }) => ({
