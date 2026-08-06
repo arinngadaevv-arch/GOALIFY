@@ -12,8 +12,19 @@ const VARIANT_ENV_KEYS: Record<CheckoutTier, string> = {
   annual: "LEMONSQUEEZY_VARIANT_ID_ANNUAL",
 };
 
+/**
+ * Falls back to one shared `LEMONSQUEEZY_VARIANT_ID` when a tier doesn't
+ * have its own dedicated variant env var set — lets checkout go live off a
+ * single configured Lemon Squeezy variant before the other two exist.
+ * A variant has exactly one real price, though: the checkout route's
+ * price-match check (see api/checkout/route.ts) still compares that price
+ * against each tier's advertised price, so only the tier whose price
+ * actually equals the shared variant's real price will clear checkout —
+ * the other two correctly keep failing closed rather than charging a
+ * customer something other than what the paywall showed them.
+ */
 export function getVariantId(tier: CheckoutTier): string | undefined {
-  return process.env[VARIANT_ENV_KEYS[tier]];
+  return process.env[VARIANT_ENV_KEYS[tier]] || process.env.LEMONSQUEEZY_VARIANT_ID;
 }
 
 let configured = false;
