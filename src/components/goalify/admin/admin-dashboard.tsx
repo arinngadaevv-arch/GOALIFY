@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import clsx from "clsx";
 import {
   ArrowLeft,
   CheckCircle2,
   CircleDollarSign,
+  Loader2,
   ShieldCheck,
   Users,
   XCircle,
@@ -42,6 +44,17 @@ export type CheckoutConfig = {
   apiKey: boolean;
   webhookSecret: boolean;
   variants: { tier: string; label: string; configured: boolean }[];
+};
+
+type DiagnosticResult = {
+  tier: string;
+  label: string;
+  variantId: string | null;
+  ok: boolean;
+  expectedCents: number;
+  actualCents?: number | null;
+  error?: string;
+  cause?: string;
 };
 
 const PLAN_OPTIONS: PlanTier[] = ["FREE", "PRO", "BUSINESS"];
@@ -144,6 +157,7 @@ export function AdminDashboard({
               />
             ))}
           </GlassCard>
+          <CheckoutDiagnosticsPanel />
         </section>
 
         {/* --------------------------------------------------------- Users */}
@@ -190,6 +204,98 @@ function ConfigPill({ label, ok }: { label: string; ok: boolean }) {
       {ok ? <CheckCircle2 className="size-3" /> : <XCircle className="size-3" />}
       {label} · {ok ? "Configured" : "Missing"}
     </Pill>
+  );
+}
+
+/**
+ * Fires the same createCheckout() call the paywall triggers, for all three
+ * tiers, and surfaces Lemon Squeezy's actual error back in the UI — the
+ * config pills above only prove an env var is *set*, not that Lemon
+ * Squeezy accepts it (wrong store/variant, unpublished variant, a
+ * store/API-key mismatch, etc. all still 502 with just "Could not start
+ * checkout" on the paywall itself).
+ */
+function CheckoutDiagnosticsPanel() {
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState<DiagnosticResult[] | null>(null);
+  const [topLevelError, setTopLevelError] = useState<string | null>(null);
+
+  async function run() {
+    setLoading(true);
+    setTopLevelError(null);
+    try {
+      const res = await fetch("/api/admin/checkout-diagnostics");
+      const body = await res.json().catch(() => null);
+      if (!res.ok || !body?.results) {
+        setTopLevelError(body?.error ?? "Diagnostic request failed.");
+        setResults(null);
+        return;
+      }
+      setResults(body.results);
+    } catch {
+      setTopLevelError("Diagnostic request failed.");
+      setResults(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="mt-3">
+      <button
+        type="button"
+        onClick={run}
+        disabled={loading}
+        className="gf-press flex items-center gap-2 rounded-xl border border-electric/30 bg-electric/8 px-4 py-2 text-xs font-bold text-electric transition-colors hover:bg-electric/14 disabled:opacity-60"
+      >
+        {loading && <Loader2 className="size-3.5 animate-spin" />}
+        Run live checkout test
+      </button>
+
+      {topLevelError && (
+        <p className="mt-2 text-xs font-semibold text-red-400">{topLevelError}</p>
+      )}
+
+      {results && (
+        <div className="mt-3 flex flex-col gap-2">
+          {results.map((result) => (
+            <GlassCard
+              key={result.tier}
+              deep
+              className={clsx(
+                "p-3 text-xs",
+                result.ok ? "border border-lime-neon/25" : "border border-red-500/30",
+              )}
+            >
+              <div className="flex items-center gap-2 font-bold text-ink">
+                {result.ok ? (
+                  <CheckCircle2 className="size-3.5 text-lime-neon" />
+                ) : (
+                  <XCircle className="size-3.5 text-red-400" />
+                )}
+                {result.label}
+                {result.variantId && (
+                  <span className="font-normal text-haze">· variant {result.variantId}</span>
+                )}
+              </div>
+              {!result.ok && result.error && (
+                <p className="mt-1 text-red-300">{result.error}</p>
+              )}
+              {!result.ok && result.cause && (
+                <p className="mt-1 break-all text-haze">{result.cause}</p>
+              )}
+              {result.actualCents !== undefined && result.actualCents !== null && (
+                <p className="mt-1 text-mist">
+                  Expected {formatMoney(result.expectedCents)}, Lemon Squeezy charges{" "}
+                  {formatMoney(result.actualCents)}
+                  {!result.ok && " — mismatch"}
+                </p>
+              )}
+            </GlassCard>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
