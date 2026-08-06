@@ -160,6 +160,22 @@ export function AdminDashboard({
           <CheckoutDiagnosticsPanel />
         </section>
 
+        {/* ------------------------------------------ Lemon Squeezy variants */}
+        <section className="mt-10">
+          <h2 className="gf-display text-xl font-extrabold text-ink">
+            Lemon Squeezy variants
+          </h2>
+          <p className="mt-1 text-[11px] leading-relaxed text-haze">
+            Pulls the real, live list of variants Lemon Squeezy has for this
+            store — a 404 from checkout means the configured variant id
+            below simply doesn&apos;t exist on this list (recreated, deleted,
+            or copied from the wrong store). Compare the configured id
+            against the real ones here and fix it directly in Vercel&apos;s
+            env vars.
+          </p>
+          <LemonSqueezyVariantsPanel />
+        </section>
+
         {/* --------------------------------------------------------- Users */}
         <section className="mt-10">
           <h2 className="gf-display text-xl font-extrabold text-ink">
@@ -204,6 +220,160 @@ function ConfigPill({ label, ok }: { label: string; ok: boolean }) {
       {ok ? <CheckCircle2 className="size-3" /> : <XCircle className="size-3" />}
       {label} · {ok ? "Configured" : "Missing"}
     </Pill>
+  );
+}
+
+type LemonSqueezyVariant = {
+  variantId: string;
+  variantName: string;
+  productName: string;
+  status: string;
+  priceCents: number;
+  interval: string | null;
+  intervalCount: number | null;
+};
+
+type TierCheck = {
+  tier: string;
+  label: string;
+  configuredId: string | null;
+  expectedCents: number;
+  existsInStore: boolean;
+  suggestion: { variantId: string; variantName: string } | null;
+};
+
+function billingSummary(variant: LemonSqueezyVariant) {
+  if (!variant.interval) return "one-time";
+  const count = variant.intervalCount ?? 1;
+  return count === 1 ? `every ${variant.interval}` : `every ${count} ${variant.interval}s`;
+}
+
+/**
+ * Pulls the real, live variant list for the store straight from Lemon
+ * Squeezy and cross-checks it against each tier's configured env var — a
+ * 404 on checkout means the id below simply isn't in this list anymore.
+ */
+function LemonSqueezyVariantsPanel() {
+  const [loading, setLoading] = useState(false);
+  const [variants, setVariants] = useState<LemonSqueezyVariant[] | null>(null);
+  const [tierChecks, setTierChecks] = useState<TierCheck[] | null>(null);
+  const [topLevelError, setTopLevelError] = useState<string | null>(null);
+
+  async function run() {
+    setLoading(true);
+    setTopLevelError(null);
+    try {
+      const res = await fetch("/api/admin/lemonsqueezy-variants");
+      const body = await res.json().catch(() => null);
+      if (!res.ok || body?.error) {
+        setTopLevelError(body?.error ?? "Request failed.");
+        setVariants(null);
+        setTierChecks(null);
+        return;
+      }
+      setVariants(body.variants ?? []);
+      setTierChecks(body.tierChecks ?? []);
+    } catch {
+      setTopLevelError("Request failed.");
+      setVariants(null);
+      setTierChecks(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="mt-3">
+      <button
+        type="button"
+        onClick={run}
+        disabled={loading}
+        className="gf-press flex items-center gap-2 rounded-xl border border-electric/30 bg-electric/8 px-4 py-2 text-xs font-bold text-electric transition-colors hover:bg-electric/14 disabled:opacity-60"
+      >
+        {loading && <Loader2 className="size-3.5 animate-spin" />}
+        Fetch live variants from Lemon Squeezy
+      </button>
+
+      {topLevelError && (
+        <p className="mt-2 text-xs font-semibold text-red-400">{topLevelError}</p>
+      )}
+
+      {tierChecks && (
+        <div className="mt-3 flex flex-col gap-2">
+          {tierChecks.map((check) => (
+            <GlassCard
+              key={check.tier}
+              deep
+              className={clsx(
+                "p-3 text-xs",
+                check.existsInStore ? "border border-lime-neon/25" : "border border-red-500/30",
+              )}
+            >
+              <div className="flex items-center gap-2 font-bold text-ink">
+                {check.existsInStore ? (
+                  <CheckCircle2 className="size-3.5 text-lime-neon" />
+                ) : (
+                  <XCircle className="size-3.5 text-red-400" />
+                )}
+                {check.label}
+                <span className="font-normal text-haze">
+                  · configured: {check.configuredId ?? "not set"}
+                </span>
+              </div>
+              {!check.existsInStore && (
+                <p className="mt-1 text-red-300">
+                  This id doesn&apos;t exist in the store&apos;s variant list below —
+                  that&apos;s the 404.
+                </p>
+              )}
+              {!check.existsInStore && check.suggestion && (
+                <p className="mt-1 text-mist">
+                  Likely match by price ({formatMoney(check.expectedCents)}):{" "}
+                  <span className="font-bold text-ink">{check.suggestion.variantName}</span> — id{" "}
+                  <span className="font-mono">{check.suggestion.variantId}</span>
+                </p>
+              )}
+            </GlassCard>
+          ))}
+        </div>
+      )}
+
+      {variants && (
+        <GlassCard deep className="mt-3 overflow-x-auto p-0">
+          <table className="w-full min-w-[640px] border-collapse text-xs">
+            <thead>
+              <tr className="border-b border-ink/8 text-left font-bold tracking-[0.06em] text-mist uppercase">
+                <th className="px-3 py-2">Variant id</th>
+                <th className="px-3 py-2">Product / variant</th>
+                <th className="px-3 py-2">Status</th>
+                <th className="px-3 py-2">Price</th>
+                <th className="px-3 py-2">Billing</th>
+              </tr>
+            </thead>
+            <tbody>
+              {variants.map((variant) => (
+                <tr key={variant.variantId} className="border-b border-ink/6 last:border-0">
+                  <td className="px-3 py-2 font-mono text-ink">{variant.variantId}</td>
+                  <td className="px-3 py-2 text-ink">
+                    {variant.productName} — {variant.variantName}
+                  </td>
+                  <td className="px-3 py-2 text-mist">{variant.status}</td>
+                  <td className="px-3 py-2 text-mist">{formatMoney(variant.priceCents)}</td>
+                  <td className="px-3 py-2 text-mist">{billingSummary(variant)}</td>
+                </tr>
+              ))}
+              {variants.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-3 py-6 text-center text-mist">
+                    No variants found for this store.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </GlassCard>
+      )}
+    </div>
   );
 }
 
