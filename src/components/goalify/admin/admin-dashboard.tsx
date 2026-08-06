@@ -37,6 +37,13 @@ export type AdminStats = {
   projectedRevenueCents: number;
 };
 
+export type CheckoutConfig = {
+  storeId: boolean;
+  apiKey: boolean;
+  webhookSecret: boolean;
+  variants: { tier: string; label: string; configured: boolean }[];
+};
+
 const PLAN_OPTIONS: PlanTier[] = ["FREE", "PRO", "BUSINESS"];
 
 function formatMoney(cents: number) {
@@ -54,9 +61,11 @@ function formatDate(iso: string) {
 export function AdminDashboard({
   stats,
   users,
+  checkoutConfig,
 }: {
   stats: AdminStats;
   users: AdminUserRow[];
+  checkoutConfig: CheckoutConfig;
 }) {
   return (
     <div className="gf-cyber-scope min-h-dvh">
@@ -108,6 +117,35 @@ export function AdminDashboard({
           started but not completed.
         </p>
 
+        {/* ---------------------------------------------- Checkout config */}
+        <section className="mt-10">
+          <h2 className="gf-display text-xl font-extrabold text-ink">
+            Checkout config
+          </h2>
+          <p className="mt-1 text-[11px] leading-relaxed text-haze">
+            Live read of the server&apos;s env vars — the exact same check
+            api/checkout runs before it will start a checkout. A red{" "}
+            &ldquo;Missing&rdquo; here is why the paywall shows &ldquo;Checkout
+            isn&apos;t available right now&rdquo; (503), and it means the var
+            below isn&apos;t set for this deployment. If you just added it in
+            the hosting dashboard, that host still needs a fresh
+            deploy/redeploy to pick it up — saving the value alone doesn&apos;t
+            reach an already-running server.
+          </p>
+          <GlassCard deep className="mt-3 flex flex-wrap gap-2 p-4">
+            <ConfigPill label="Store ID" ok={checkoutConfig.storeId} />
+            <ConfigPill label="API key" ok={checkoutConfig.apiKey} />
+            <ConfigPill label="Webhook secret" ok={checkoutConfig.webhookSecret} />
+            {checkoutConfig.variants.map((variant) => (
+              <ConfigPill
+                key={variant.tier}
+                label={`${variant.label} variant`}
+                ok={variant.configured}
+              />
+            ))}
+          </GlassCard>
+        </section>
+
         {/* --------------------------------------------------------- Users */}
         <section className="mt-10">
           <h2 className="gf-display text-xl font-extrabold text-ink">
@@ -143,6 +181,15 @@ export function AdminDashboard({
         </section>
       </div>
     </div>
+  );
+}
+
+function ConfigPill({ label, ok }: { label: string; ok: boolean }) {
+  return (
+    <Pill tone={ok ? "lime" : "neutral"}>
+      {ok ? <CheckCircle2 className="size-3" /> : <XCircle className="size-3" />}
+      {label} · {ok ? "Configured" : "Missing"}
+    </Pill>
   );
 }
 

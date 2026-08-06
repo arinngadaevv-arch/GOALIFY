@@ -6,6 +6,8 @@ import { db } from "@/lib/db";
 import { checkoutEvents, users } from "@/lib/db/schema";
 import { AdminDashboard } from "@/components/goalify/admin/admin-dashboard";
 import type { Goal, Level } from "@/lib/goalify/types";
+import { CHECKOUT_TIERS, getVariantId } from "@/lib/lemonsqueezy";
+import { getPricingTier } from "@/lib/goalify/pricing";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -130,6 +132,21 @@ export default async function AdminPage() {
     };
   });
 
+  // Reads the exact same env vars, through the exact same helper
+  // (getVariantId), that api/checkout/route.ts reads on every request — so
+  // this panel can never drift from what actually decides the 503. Booleans
+  // only; no secret value is ever passed to the client.
+  const checkoutConfig = {
+    storeId: Boolean(process.env.LEMONSQUEEZY_STORE_ID),
+    apiKey: Boolean(process.env.LEMONSQUEEZY_API_KEY),
+    webhookSecret: Boolean(process.env.LEMONSQUEEZY_WEBHOOK_SECRET),
+    variants: CHECKOUT_TIERS.map((tier) => ({
+      tier,
+      label: getPricingTier(tier).label,
+      configured: Boolean(getVariantId(tier)),
+    })),
+  };
+
   return (
     <AdminDashboard
       stats={{
@@ -139,6 +156,7 @@ export default async function AdminPage() {
         projectedRevenueCents: checkoutTotals?.projectedRevenueCents ?? 0,
       }}
       users={tableUsers}
+      checkoutConfig={checkoutConfig}
     />
   );
 }
