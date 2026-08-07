@@ -327,7 +327,6 @@ export function QuizFlow() {
       <ParticleBurstLayer />
       <ConfettiBurstLayer />
       <ShockwaveLayer />
-      <QuizTrustBadge />
       <header className="relative flex items-center gap-4 py-3">
         {/* Inline styles carry every property that makes this visible at
             all (size, colors, border) — deliberately not left to Tailwind
@@ -385,11 +384,11 @@ export function QuizFlow() {
       </header>
 
       {/* --------------------------------------------- Live diagnostic readout */}
-      <div className="relative flex items-center justify-between">
-        <p className="gf-cyber-glow-text text-[10px] font-black tracking-[0.16em] uppercase">
+      <div className="relative flex items-center justify-between gap-2">
+        <p className="gf-cyber-glow-text min-w-0 truncate text-[10px] font-black tracking-[0.16em] uppercase">
           {step.hudPhrase} · {Math.round(((index + 1) / QUIZ_STEPS.length) * 100)}%
         </p>
-        {hudToast && <HypeToast text={hudToast} />}
+        {hudToast ? <HypeToast text={hudToast} /> : <QuizTrustBadge />}
       </div>
 
       {/* Headline + content animate together as one unit, sliding in from
