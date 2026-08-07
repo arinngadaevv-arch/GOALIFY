@@ -7,22 +7,26 @@ import { AuthModal } from "./auth-modal";
 import { fireBurst } from "./particle-burst";
 
 /**
- * The true front door of the funnel. Neither action here navigates away
- * for email/password — both the primary CTA and the quiet "Log in" link
- * open the same `AuthModal` in place (signup vs. signin), and for that
- * form the distinction is reliable: /api/auth/register only ever creates
- * a brand-new row, so a successful signin there really is an existing
- * account. Google is different — the same button click could complete a
+ * The true front door of the funnel. The primary CTA goes straight into
+ * the quiz with zero auth interaction — no account exists yet, nothing to
+ * sign in to. The only mandatory account gate is later, after the quiz
+ * finishes (see QuizFlow's `showResultsGate`, which renders `AuthPanel`
+ * once there's an actual plan worth saving).
+ *
+ * The quiet "Log in" link is the one exception: it's for someone who
+ * already has an account and would rather resume than redo the quiz, so
+ * it opens `AuthModal` in signin mode. Google is different from the
+ * email/password form there — the same button click could complete a
  * fresh signup or an existing account's login (Google decides that
- * invisibly based on email match), so both intents send Google through
- * the identical `/quiz?auth=start` round trip and let QuizFlow decide
- * between starting the quiz and jumping straight to `/home`, based on
- * the real session that comes back rather than which button was clicked.
+ * invisibly based on email match), so it goes through the `/quiz?auth=start`
+ * round trip and lets QuizFlow decide where to land based on the real
+ * session that comes back, not which button was clicked.
  * `initialErrorCode` is how a failed Google round trip reports itself
  * back here on the next page load — passed through to AuthModal raw
  * (not pre-formatted) so it can react specifically to
  * "OAuthAccountNotLinked" with its own inline linking flow instead of
- * just a red banner.
+ * just a red banner. It can only ever originate from the Log in link
+ * now, since Google is never offered before the quiz.
  */
 export function WelcomeCtaStep({
   onStart,
@@ -37,11 +41,11 @@ export function WelcomeCtaStep({
    * surface it. */
   initialErrorCode?: string | null;
 }) {
-  const [authIntent, setAuthIntent] = useState<"signup" | "signin" | null>(null);
+  const [showLogin, setShowLogin] = useState(false);
 
   useEffect(() => {
     if (!initialErrorCode) return;
-    const timer = setTimeout(() => setAuthIntent("signup"), 0);
+    const timer = setTimeout(() => setShowLogin(true), 0);
     return () => clearTimeout(timer);
   }, [initialErrorCode]);
 
@@ -70,7 +74,7 @@ export function WelcomeCtaStep({
         type="button"
         onClick={(event) => {
           fireBurst(event.clientX, event.clientY, true);
-          setAuthIntent("signup");
+          onStart();
         }}
         className="gf-press gf-anim-pulse absolute inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-[#f0c14b] to-[#c8890f] font-bold tracking-tight text-[#1a1100] shadow-[0_0_0_1px_rgba(232,179,44,0.6),0_18px_44px_-10px_rgba(232,179,44,0.8)] transition-all duration-200 select-none hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_rgba(232,179,44,0.85),0_24px_54px_-8px_rgba(232,179,44,1)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#e8b32c]"
         style={{
@@ -91,7 +95,7 @@ export function WelcomeCtaStep({
           link's own text. */}
       <button
         type="button"
-        onClick={() => setAuthIntent("signin")}
+        onClick={() => setShowLogin(true)}
         className="gf-press absolute flex items-center justify-center rounded-full bg-[#0b0e14] font-bold text-white/80 underline-offset-4 hover:text-white hover:underline"
         style={{
           left: "12%",
@@ -104,19 +108,15 @@ export function WelcomeCtaStep({
         Already have an account? Log in
       </button>
 
-      {authIntent && (
+      {showLogin && (
         <AuthModal
-          initialMode={authIntent}
-          initialErrorCode={authIntent === "signup" ? initialErrorCode : null}
+          initialMode="signin"
+          initialErrorCode={initialErrorCode}
           googleCallbackUrl="/quiz?auth=start"
-          heading={authIntent === "signin" ? "Welcome back" : undefined}
-          subheading={
-            authIntent === "signin"
-              ? "Sign in to pick up right where you left off."
-              : undefined
-          }
-          onClose={() => setAuthIntent(null)}
-          onAuthenticated={authIntent === "signin" ? onLogin : onStart}
+          heading="Welcome back"
+          subheading="Sign in to pick up right where you left off."
+          onClose={() => setShowLogin(false)}
+          onAuthenticated={onLogin}
         />
       )}
     </div>
