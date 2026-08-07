@@ -15,23 +15,28 @@ import { fireBurst } from "./particle-burst";
  * invisible click targets, not drawn UI — see the comment on the button
  * below for why nothing is painted here until a zone is selected.
  */
-// The chest rect previously ran from left:16 to 73 while the arm rects sit
-// at [2,20] and [80,98] — that overlapped the arm hit-targets on the left
-// (16–20 double-covered, arms winning since they're later in DOM order)
-// and left a dead 7-point gap on the right (73–80) where the chest panel
-// is still visually there in the photo but nothing was clickable. Now
-// bridges exactly arm-edge to arm-edge: zero overlap, zero gap.
+// Measured directly against bodymap-full-body.png's own baked-in panel
+// outlines (a fine percentage grid overlaid on the source PNG, read
+// per-zone) rather than assumed/eyeballed — the previous rects had the
+// chest panel's right edge at 80% when the actual panel ends around 65%,
+// and the right arm rect starting at 80% when the real arm sits at
+// 63–79%, so it floated entirely in blank background to the right of the
+// body with zero relation to the artwork. Every rect below is that same
+// direct-measurement pass, zone by zone; a hairline 2–4pt overlap at a
+// couple of seams (e.g. chest/arms, arms/legs) is intentional and
+// harmless — later-in-DOM zones win those pixels, and the seam itself
+// falls on a curved, un-rectangular body contour anyway.
 const ZONE_SHAPES: Record<string, { left: number; top: number; width: number; height: number }[]> = {
-  chest: [{ left: 20, top: 19, width: 60, height: 11 }],
+  chest: [{ left: 19, top: 16, width: 46, height: 14 }],
   arms: [
-    { left: 2, top: 20, width: 18, height: 34 },
-    { left: 80, top: 20, width: 18, height: 34 },
+    { left: 2, top: 16, width: 19, height: 36 },
+    { left: 63, top: 16, width: 16, height: 36 },
   ],
-  abs: [{ left: 21, top: 32, width: 47, height: 11 }],
-  glutes: [{ left: 22, top: 46.5, width: 46, height: 4.5 }],
+  abs: [{ left: 20, top: 30, width: 45, height: 14 }],
+  glutes: [{ left: 22, top: 44, width: 46, height: 6 }],
   legs: [
-    { left: 18, top: 54, width: 26, height: 39 },
-    { left: 56, top: 54, width: 26, height: 39 },
+    { left: 17, top: 50, width: 28, height: 44 },
+    { left: 56, top: 50, width: 27, height: 44 },
   ],
 };
 
