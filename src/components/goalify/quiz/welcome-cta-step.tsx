@@ -52,61 +52,61 @@ export function WelcomeCtaStep({
   return (
     <div className="relative -mx-5 overflow-hidden bg-[#0b0e14]">
       {/* The uploaded design stays a single, uncut image — the whole hero
-          section, exactly as delivered. Its own flat "START YOUR FREE
-          ASSESSMENT" button isn't clickable, so instead of cutting the
-          image apart, a real button is absolutely-positioned directly on
-          top of it, sized and placed to the flat button's own pixel
-          bounding box (as a % of the 853x1844 source, so it tracks the
-          image at any viewport width). Same for the login link over the
-          "Takes 2 minutes" line just below it. Nothing about the image's
-          layout, spacing, or flow is touched. */}
-      <Image
-        src="/quiz/69f89e00-e3b4-45e8-bc05-6d6e77897ca2.png"
-        alt="Transform your body, transform your life. GOALIFY — trusted by 50,000+ users, 4.9/5 average rating. Personalized for you, gym & home workouts, nutrition plan, track your progress."
-        width={853}
-        height={1844}
-        priority
-        sizes="100vw"
-        className="block h-auto w-full"
-      />
+          section, exactly as delivered. Its own flat "START MY
+          PERSONALIZED PLAN" button isn't clickable, so instead of cutting
+          the image apart, a real button is absolutely-positioned directly
+          on top of it, sized and placed to the flat button's own pixel
+          bounding box, measured directly against the 862x1824 source
+          (x 31-831px, y 1584-1651px) and expressed as a % so it tracks the
+          image at any viewport width. That math only works if this
+          relative wrapper's height equals the image's own rendered height
+          — hence the dedicated div instead of sizing off the outer
+          container, which also holds the "Log in" paragraph below the
+          image. Unlike the previous image, this one has no baked-in "log
+          in" caption to overlay, so that link is real DOM content below
+          the image instead of a coordinate-matched overlay. Nothing about
+          the image's own layout is touched. */}
+      <div className="relative">
+        <Image
+          src="/quiz/d71b1b7e-3748-4102-a818-8d5758effdb6.png"
+          alt="Meet your personal AI coach. GOALIFY — 4.9/5 from 3,200+ reviews, 50,000+ happy members. Follow step-by-step workouts, get a plan personalized to your goals, track your progress, real before/after transformations."
+          width={862}
+          height={1824}
+          priority
+          sizes="100vw"
+          className="block h-auto w-full"
+        />
 
-      <button
-        type="button"
-        onClick={(event) => {
-          fireBurst(event.clientX, event.clientY, true);
-          onStart();
-        }}
-        className="gf-press gf-anim-pulse absolute inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-[#f0c14b] to-[#c8890f] font-bold tracking-tight text-[#1a1100] shadow-[0_0_0_1px_rgba(232,179,44,0.6),0_18px_44px_-10px_rgba(232,179,44,0.8)] transition-all duration-200 select-none hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_rgba(232,179,44,0.85),0_24px_54px_-8px_rgba(232,179,44,1)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#e8b32c]"
-        style={{
-          left: "2.8%",
-          width: "94.3%",
-          top: "75.5%",
-          height: "4.7%",
-          fontSize: "clamp(0.65rem, 3.1vw, 1.05rem)",
-        }}
-      >
-        GET MY PERSONALISED PLAN
-        <ArrowRight className="size-[1em]" />
-      </button>
+        <button
+          type="button"
+          onClick={(event) => {
+            fireBurst(event.clientX, event.clientY, true);
+            onStart();
+          }}
+          className="gf-press gf-anim-pulse absolute inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-[#f0c14b] to-[#c8890f] font-bold tracking-tight text-[#1a1100] shadow-[0_0_0_1px_rgba(232,179,44,0.6),0_18px_44px_-10px_rgba(232,179,44,0.8)] transition-all duration-200 select-none hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_rgba(232,179,44,0.85),0_24px_54px_-8px_rgba(232,179,44,1)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#e8b32c]"
+          style={{
+            left: "3.6%",
+            width: "92.8%",
+            top: "86.8%",
+            height: "3.7%",
+            fontSize: "clamp(0.65rem, 3.1vw, 1.05rem)",
+          }}
+        >
+          START MY PERSONALIZED PLAN
+          <ArrowRight className="size-[1em]" />
+        </button>
+      </div>
 
-      {/* Sits directly over the image's own "Takes 2 minutes" caption —
-          a solid backdrop (not just text) is required here, otherwise the
-          baked-in copy underneath shows through and garbles with this
-          link's own text. */}
-      <button
-        type="button"
-        onClick={() => setShowLogin(true)}
-        className="gf-press absolute flex items-center justify-center rounded-full bg-[#0b0e14] font-bold text-white/80 underline-offset-4 hover:text-white hover:underline"
-        style={{
-          left: "12%",
-          width: "76%",
-          top: "80.9%",
-          height: "2.3%",
-          fontSize: "clamp(0.6rem, 2.6vw, 0.875rem)",
-        }}
-      >
-        Already have an account? Log in
-      </button>
+      <p className="relative mt-4 mb-2 text-center text-xs font-semibold text-white/60">
+        Already have an account?{" "}
+        <button
+          type="button"
+          onClick={() => setShowLogin(true)}
+          className="font-black text-[#FFC700] underline-offset-4 hover:underline"
+        >
+          Log in
+        </button>
+      </p>
 
       {showLogin && (
         <AuthModal
