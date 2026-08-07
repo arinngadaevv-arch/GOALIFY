@@ -15,8 +15,14 @@ import { fireBurst } from "./particle-burst";
  * invisible click targets, not drawn UI — see the comment on the button
  * below for why nothing is painted here until a zone is selected.
  */
+// The chest rect previously ran from left:16 to 73 while the arm rects sit
+// at [2,20] and [80,98] — that overlapped the arm hit-targets on the left
+// (16–20 double-covered, arms winning since they're later in DOM order)
+// and left a dead 7-point gap on the right (73–80) where the chest panel
+// is still visually there in the photo but nothing was clickable. Now
+// bridges exactly arm-edge to arm-edge: zero overlap, zero gap.
 const ZONE_SHAPES: Record<string, { left: number; top: number; width: number; height: number }[]> = {
-  chest: [{ left: 16, top: 19, width: 57, height: 11 }],
+  chest: [{ left: 20, top: 19, width: 60, height: 11 }],
   arms: [
     { left: 2, top: 20, width: 18, height: 34 },
     { left: 80, top: 20, width: 18, height: 34 },

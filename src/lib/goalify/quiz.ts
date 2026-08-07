@@ -96,9 +96,8 @@ export const QUIZ_STEPS: QuizStep[] = [
     kind: "choice",
     layout: "wide",
     chapter: "The target",
-    title: "Select the exact physique you want in 30 days",
-    subtitle:
-      "Every rep, every calorie in your program is engineered around this one choice. Pick the outcome you actually want.",
+    title: "Pick your dream physique",
+    subtitle: "Every rep and calorie in your plan builds toward this.",
     hudPhrase: "PHYSICAL TARGET DIAGNOSIS",
     options: [
       {
@@ -143,9 +142,8 @@ export const QUIZ_STEPS: QuizStep[] = [
     id: "joints",
     kind: "commit",
     chapter: "The commitment",
-    title: "Do you want to wake up 30 days from now and actually love the mirror?",
-    subtitle:
-      "Total pride. Real energy. No more talking yourself out of it. Say it with me.",
+    title: "Ready to love the mirror in 30 days?",
+    subtitle: "Total pride. Real energy. No more excuses.",
     hudPhrase: "COMMITMENT VERIFICATION",
     buttonLabel: "YES! I'M READY 🔥",
     bgPhoto: "/quiz/commit-workout-complete.png",
@@ -156,8 +154,8 @@ export const QUIZ_STEPS: QuizStep[] = [
     layout: "wide",
     speedRound: true,
     chapter: "The obstacle",
-    title: "What's holding you back from feeling 100% confident at the beach?",
-    subtitle: "Name it. This is exactly what your plan is engineered to destroy.",
+    title: "What's really holding you back?",
+    subtitle: "Name it — your plan is built to destroy it.",
     hudPhrase: "PERFORMANCE BARRIER ASSESSMENT",
     options: [
       {
@@ -206,9 +204,8 @@ export const QUIZ_STEPS: QuizStep[] = [
     id: "focusZones",
     kind: "bodyMap",
     chapter: "The blueprint",
-    title: "Where do you hold the most unwanted body fat?",
-    subtitle:
-      "Tap every zone you want transformed. Your program locks in and prioritizes these areas from day one.",
+    title: "Where do you carry the most fat?",
+    subtitle: "Tap every zone you want transformed.",
     hudPhrase: "PRIORITY ZONE MAPPING",
     zones: [
       { value: "chest", label: "Chest" },
@@ -224,7 +221,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     layout: "tile",
     chapter: "The benchmark",
     title: "Where are you starting from?",
-    subtitle: "Be honest — I'll calibrate your first week to guarantee early wins.",
+    subtitle: "Be honest — I'll calibrate week one around it.",
     hudPhrase: "TRAINING BASELINE ASSESSMENT",
     options: [
       {
@@ -263,8 +260,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     layout: "tile",
     chapter: "The starting point",
     title: "Estimate your current body fat %",
-    subtitle:
-      "Pick the closest match. This precision-tunes your calorie and macro targets from day one — no guessing.",
+    subtitle: "Pick the closest match — it tunes your calories from day one.",
     hudPhrase: "BODY COMPOSITION ESTIMATE",
     options: [
       {
@@ -318,15 +314,15 @@ export const QUIZ_STEPS: QuizStep[] = [
     kind: "vitals",
     chapter: "The science",
     title: "Lock in your numbers",
-    subtitle: "This is what turns a generic plan into your exact calories and macros.",
+    subtitle: "Turns a generic plan into your exact numbers.",
     hudPhrase: "CALIBRATING METABOLIC POTENTIAL",
   },
   {
     id: "commitment",
     kind: "commit",
     chapter: "The pact",
-    title: "Are you ready to stop making excuses and follow a plan built just for you?",
-    subtitle: "Say yes, and I'll build it right now — no more thinking about it.",
+    title: "Ready to stop making excuses?",
+    subtitle: "Say yes and I'll build it right now.",
     hudPhrase: "PROGRAM AUTHORIZATION",
     buttonLabel: "ABSOLUTELY, LET'S DO THIS ⚡",
     bgPhoto: "/quiz/commit-workout-complete.png",

@@ -109,6 +109,14 @@ export function QuizFlow() {
   const isLast = index === QUIZ_STEPS.length - 1;
   const progress = (index / QUIZ_STEPS.length) * 100;
 
+  // Every question starts at the top, even if the previous one was long
+  // enough to scroll — otherwise stepping forward from partway down a
+  // scrolled page lands mid-way through the new question instead of on
+  // its headline.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [index]);
+
   const draft = state.draft;
   const currentValue = draft[step.id];
 
@@ -292,14 +300,18 @@ export function QuizFlow() {
     <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-28">
       <ParticleBurstLayer />
       <FloatingStreakBadge />
-      <header className="relative flex items-center gap-4 py-5 pl-14">
+      <header className="relative flex items-center gap-4 py-5">
         {/* Inline styles carry every property that makes this visible at
-            all (position, size, colors, border, z-index) — deliberately
-            not left to Tailwind utility classes alone, so no build-time
-            purge/JIT gap or CSS specificity fight can ever cause this to
-            silently fail to render. Absolutely positioned at the header's
-            fixed top-left corner, independent of the flex layout beside
-            it (which gets pl-14 above to reserve its footprint). */}
+            all (size, colors, border) — deliberately not left to Tailwind
+            utility classes alone, so no build-time purge/JIT gap or CSS
+            specificity fight can ever cause this to silently fail to
+            render. A real flex child now, not absolutely positioned: the
+            previous fixed left/top offsets didn't reliably clear the
+            header's actual content height, so the button could overlap
+            the progress bar and the HUD line right below it.
+            `visibility: hidden` (not `display: none`) on step one keeps
+            its footprint reserved either way, so the progress bar doesn't
+            shift horizontally the moment the button appears on step two. */}
         <button
           type="button"
           aria-label="Back"
@@ -307,11 +319,8 @@ export function QuizFlow() {
           disabled={index === 0}
           tabIndex={index === 0 ? -1 : 0}
           style={{
-            position: "absolute",
-            left: 16,
-            top: 16,
-            zIndex: 50,
-            display: index === 0 ? "none" : "flex",
+            visibility: index === 0 ? "hidden" : "visible",
+            display: "flex",
             alignItems: "center",
             justifyContent: "center",
             width: 44,
@@ -320,6 +329,7 @@ export function QuizFlow() {
             background: "#161B26",
             color: "#FFC700",
             border: "2px solid #FFC700",
+            flexShrink: 0,
           }}
           className="gf-press"
         >

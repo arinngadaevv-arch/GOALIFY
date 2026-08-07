@@ -6,14 +6,14 @@ type Size = "sm" | "md" | "lg" | "xl";
 
 const VARIANTS: Record<Variant, string> = {
   electric:
-    "bg-electric text-white gf-glow-electric hover:bg-[#0047db] hover:shadow-[0_18px_40px_-10px_rgba(0,82,255,0.72)] focus-visible:outline-electric",
-  lime: "bg-lime-neon text-ink gf-glow-lime hover:bg-[#2ef00c] hover:shadow-[0_18px_40px_-10px_rgba(57,255,20,0.68)] focus-visible:outline-lime-deep",
+    "bg-electric text-white gf-glow-electric shadow-[0_12px_32px_-8px_rgba(0,82,255,0.65)] hover:bg-[#0047db] hover:shadow-[0_22px_48px_-10px_rgba(0,82,255,0.8)] focus-visible:outline-electric",
+  lime: "bg-lime-neon text-ink shadow-[0_12px_32px_-8px_rgba(57,255,20,0.55)] gf-glow-lime hover:bg-[#2ef00c] hover:shadow-[0_22px_48px_-10px_rgba(57,255,20,0.75)] focus-visible:outline-lime-deep",
   glass:
-    "gf-glass text-ink hover:border-electric/40 hover:shadow-[0_18px_36px_-16px_rgba(8,22,66,0.38)] focus-visible:outline-electric",
+    "gf-glass text-ink border border-ink/15 shadow-[0_10px_28px_-12px_rgba(8,22,66,0.45)] hover:border-electric/50 hover:shadow-[0_20px_42px_-14px_rgba(8,22,66,0.5)] focus-visible:outline-electric",
   ghost:
-    "text-ink-soft hover:text-electric hover:bg-electric/6 focus-visible:outline-electric",
+    "text-ink-soft hover:text-electric hover:bg-electric/8 focus-visible:outline-electric",
   cyber:
-    "bg-gradient-to-r from-[#f0c14b] to-[#c8890f] text-[#1a1100] shadow-[0_0_0_1px_rgba(232,179,44,0.6),0_18px_44px_-10px_rgba(232,179,44,0.8)] hover:shadow-[0_0_0_1px_rgba(232,179,44,0.85),0_24px_54px_-8px_rgba(232,179,44,1)] focus-visible:outline-[#e8b32c]",
+    "bg-gradient-to-r from-[#f0c14b] to-[#c8890f] text-[#1a1100] shadow-[0_0_0_1px_rgba(232,179,44,0.6),0_20px_50px_-8px_rgba(232,179,44,0.9)] hover:shadow-[0_0_0_1px_rgba(232,179,44,0.9),0_28px_60px_-6px_rgba(232,179,44,1)] focus-visible:outline-[#e8b32c]",
 };
 
 const SIZES: Record<Size, string> = {
@@ -32,7 +32,7 @@ function classes(
 ) {
   return clsx(
     "inline-flex items-center justify-center gap-2.5 rounded-full font-bold tracking-tight",
-    "gf-press transition-all duration-200 select-none hover:-translate-y-0.5",
+    "gf-press transition-all duration-200 select-none hover:-translate-y-1 hover:scale-[1.015]",
     "focus-visible:outline-2 focus-visible:outline-offset-3",
     "disabled:opacity-40 disabled:pointer-events-none",
     VARIANTS[variant],
