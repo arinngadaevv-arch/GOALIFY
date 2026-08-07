@@ -1,34 +1,39 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { motion, type Easing } from "framer-motion";
-import { Flame } from "lucide-react";
+import { motion } from "framer-motion";
 
 /**
- * The commitment step's "no going back" moment gets its own full-screen
- * curtain-cut instead of the quiz's usual left/right slide: two panels
- * slam shut over the viewport, hold just long enough to cover the ordinary
- * step swap happening underneath (quiz-flow's shared REACTION_MS advance,
- * ~550ms — well inside the hold window below), then split back open onto
- * the next question. Same external-store pattern as particle-burst.tsx /
- * coach-guide.tsx so CommitStep can fire it without prop drilling.
+ * The commitment button's "you're in" moment: a glowing shockwave that
+ * rings outward from the button's tap point and washes the screen in a
+ * brief gold glow. Replaces an earlier curtain-cut overlay, which read as
+ * an abrupt hard cut rather than a premium feeling of momentum — this
+ * stays purely additive on top of the step's own zoom/fade transition
+ * (see quiz-flow.tsx's zoomVariants) instead of covering it. Same
+ * external-store pattern as particle-burst.tsx / confetti-burst.tsx so
+ * CommitStep can fire it without prop drilling.
  */
-let active = false;
+type Shock = { x: number; y: number; key: number } | null;
+
+let current: Shock = null;
+let seq = 0;
 const listeners = new Set<() => void>();
 
 function emit() {
   for (const listener of listeners) listener();
 }
 
-const TOTAL_MS = 1050;
+const LIFETIME_MS = 750;
 
-export function triggerCommitSplit() {
-  active = true;
+/** Fire a shockwave ring expanding outward from a viewport point. */
+export function triggerShockwave(x: number, y: number) {
+  seq += 1;
+  current = { x, y, key: seq };
   emit();
   window.setTimeout(() => {
-    active = false;
+    current = null;
     emit();
-  }, TOTAL_MS);
+  }, LIFETIME_MS);
 }
 
 function subscribe(listener: () => void) {
@@ -38,66 +43,48 @@ function subscribe(listener: () => void) {
   };
 }
 
-const getSnapshot = () => active;
-const getServerSnapshot = () => false;
+const getSnapshot = () => current;
+const getServerSnapshot = (): Shock => null;
 
-const DURATION_S = TOTAL_MS / 1000;
-/** Shared beat map: 0 → closing, 0.34 → fully shut, 0.58 → starts
- * reopening, 1 → fully open again. */
-const PANEL_TIMES = [0, 0.34, 0.58, 1];
-const PANEL_EASE: Easing[] = ["easeIn", "linear", "easeInOut"];
-
-export function CommitSplitOverlay() {
-  const isActive = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  if (!isActive) return null;
+/** Mount once near the quiz root — renders whatever shockwave is live. */
+export function ShockwaveLayer() {
+  const shock = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  if (!shock) return null;
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-[75]" aria-hidden>
-      {/* Impact flash right as the curtain slams shut. */}
+    <div className="pointer-events-none fixed inset-0 z-[75] overflow-hidden" aria-hidden>
+      {/* Soft full-screen wash, right as the wave passes through. */}
       <motion.div
-        className="absolute inset-0 bg-[#e8b32c]"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: [0, 0, 0.5, 0] }}
-        transition={{ duration: DURATION_S, times: [0, 0.3, 0.38, 0.5], ease: "easeOut" }}
-      />
-
-      {/* Top curtain panel */}
-      <motion.div
-        className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-[#0b0e14] via-[#12151f] to-[#0b0e14]"
-        style={{ boxShadow: "0 6px 44px -4px rgba(232,179,44,0.9)" }}
-        initial={{ y: "-100%" }}
-        animate={{ y: ["-100%", "0%", "0%", "-100%"] }}
-        transition={{ duration: DURATION_S, times: PANEL_TIMES, ease: PANEL_EASE }}
-      />
-
-      {/* Bottom curtain panel */}
-      <motion.div
-        className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#0b0e14] via-[#12151f] to-[#0b0e14]"
-        style={{ boxShadow: "0 -6px 44px -4px rgba(232,179,44,0.9)" }}
-        initial={{ y: "100%" }}
-        animate={{ y: ["100%", "0%", "0%", "100%"] }}
-        transition={{ duration: DURATION_S, times: PANEL_TIMES, ease: PANEL_EASE }}
-      />
-
-      {/* Gold seam glow + emblem, visible only while fully covered. */}
-      <motion.div
-        className="absolute inset-x-0 top-1/2 flex -translate-y-1/2 items-center justify-center gap-3"
-        initial={{ opacity: 0, scale: 0.7 }}
-        animate={{ opacity: [0, 0, 1, 1, 0], scale: [0.7, 0.7, 1, 1, 0.85] }}
-        transition={{
-          duration: DURATION_S,
-          times: [0, 0.34, 0.42, 0.56, 0.64],
-          ease: "easeOut",
+        key={`glow-${shock.key}`}
+        className="absolute inset-0"
+        style={{
+          background: `radial-gradient(circle at ${shock.x}px ${shock.y}px, rgba(232,179,44,0.38), transparent 60%)`,
         }}
-      >
-        <span className="h-px w-14 bg-gradient-to-r from-transparent to-[#e8b32c]" />
-        <Flame
-          className="size-9 text-[#e8b32c]"
-          strokeWidth={2.4}
-          style={{ filter: "drop-shadow(0 0 14px rgba(232,179,44,0.9))" }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: [0, 1, 0] }}
+        transition={{ duration: 0.55, times: [0, 0.3, 1], ease: "easeOut" }}
+      />
+
+      {/* Two staggered rings, expanding well past the viewport diagonal. */}
+      {[0, 1].map((i) => (
+        <motion.span
+          key={`${shock.key}-ring-${i}`}
+          className="absolute rounded-full"
+          style={{
+            left: shock.x,
+            top: shock.y,
+            width: 24,
+            height: 24,
+            marginLeft: -12,
+            marginTop: -12,
+            border: "2px solid rgba(232,179,44,0.9)",
+            boxShadow: "0 0 24px 4px rgba(232,179,44,0.55)",
+          }}
+          initial={{ scale: 0, opacity: 0.9 }}
+          animate={{ scale: 50, opacity: 0 }}
+          transition={{ duration: 0.7, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] }}
         />
-        <span className="h-px w-14 bg-gradient-to-l from-transparent to-[#e8b32c]" />
-      </motion.div>
+      ))}
     </div>
   );
 }

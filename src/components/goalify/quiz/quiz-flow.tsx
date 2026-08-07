@@ -32,7 +32,7 @@ import { WelcomeCtaStep } from "./welcome-cta-step";
 import { AuthPanel } from "./auth-panel";
 import { fireBurst, ParticleBurstLayer } from "./particle-burst";
 import { ConfettiBurstLayer } from "./confetti-burst";
-import { CommitSplitOverlay } from "./commit-transition";
+import { ShockwaveLayer } from "./commit-transition";
 
 /** Wraps a click handler so every tap also fires a micro-particle burst
  * from the exact point of contact. */
@@ -66,6 +66,20 @@ const stepVariants = {
   center: { opacity: 1, x: 0 },
   exit: (direction: number) => ({ opacity: 0, x: direction >= 0 ? -32 : 32 }),
 };
+
+/** The commitment step's own transition — a smooth zoom + fade instead of
+ * the usual left/right slide, so the "yes" moment carries straight through
+ * into the next question instead of getting undercut by a sideways slide.
+ * Used both for the commit step itself (its exit, when the user commits,
+ * matters more than its entrance) and for the step immediately after it
+ * (its entrance zooms in to match). */
+const zoomVariants = {
+  enter: { opacity: 0, scale: 0.92 },
+  center: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 1.06 },
+};
+const ZOOM_TRANSITION = { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const };
+const SLIDE_TRANSITION = { duration: 0.32, ease: [0.22, 1, 0.36, 1] as const };
 
 export function QuizFlow() {
   const router = useRouter();
@@ -112,6 +126,14 @@ export function QuizFlow() {
   const step = QUIZ_STEPS[index];
   const isLast = index === QUIZ_STEPS.length - 1;
   const progress = (index / QUIZ_STEPS.length) * 100;
+
+  // The commit step's own transition zooms rather than slides — covers
+  // both its entrance and, more importantly, its exit when the user taps
+  // "yes" — and the step right after it enters with a matching zoom-in so
+  // the whole handoff reads as one continuous motion.
+  const prevStep = index > 0 ? QUIZ_STEPS[index - 1] : null;
+  const useZoomTransition =
+    step.kind === "commit" || (direction >= 0 && prevStep?.kind === "commit");
 
   // Every question starts at the top, even if the previous one was long
   // enough to scroll — otherwise stepping forward from partway down a
@@ -304,7 +326,7 @@ export function QuizFlow() {
     <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-28">
       <ParticleBurstLayer />
       <ConfettiBurstLayer />
-      <CommitSplitOverlay />
+      <ShockwaveLayer />
       <FloatingStreakBadge />
       <header className="relative flex items-center gap-4 py-5">
         {/* Inline styles carry every property that makes this visible at
@@ -377,11 +399,11 @@ export function QuizFlow() {
         <motion.div
           key={step.id}
           custom={direction}
-          variants={stepVariants}
+          variants={useZoomTransition ? zoomVariants : stepVariants}
           initial="enter"
           animate="center"
           exit="exit"
-          transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+          transition={useZoomTransition ? ZOOM_TRANSITION : SLIDE_TRANSITION}
           className="relative flex flex-1 flex-col"
         >
           {/* --------------------------------------------------- Big headline */}

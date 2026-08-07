@@ -3,22 +3,25 @@
 import { useState } from "react";
 import Image from "next/image";
 import clsx from "clsx";
+import { motion } from "framer-motion";
 import { PartyPopper } from "lucide-react";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
 import type { QuizAnswers } from "@/lib/goalify/types";
 import { fireBurst } from "./particle-burst";
 import { fireConfetti } from "./confetti-burst";
-import { triggerCommitSplit } from "./commit-transition";
+import { triggerShockwave } from "./commit-transition";
 
 /**
  * A pure "yes-set" rhetorical commitment card — one giant button, no real
  * choice to weigh. The firecracker badge above the button is its own tap
  * target: a standalone confetti explosion, playful and repeatable, with no
  * effect on the actual commitment. The button itself is the real moment —
- * tapping it has to feel like unlocking something, so it fires a full-screen
- * curtain-cut transition (see commit-transition.tsx) on top of the usual
- * burst/badge/lock feedback, before the funnel advances. A full-bleed
- * athletic photo behind the moment raises the stakes further.
+ * tapping it has to feel like unlocking something, so it bounces with a
+ * satisfying scale-pop and fires a glowing shockwave ring outward from the
+ * tap point (see commit-transition.tsx), on top of the usual burst/badge/
+ * lock feedback, before the funnel zooms into the next question (see
+ * quiz-flow.tsx's zoomVariants). A full-bleed athletic photo behind the
+ * moment raises the stakes further.
  */
 export function CommitStep({
   buttonLabel,
@@ -49,10 +52,7 @@ export function CommitStep({
     fireBurst(event.clientX, event.clientY, true);
     window.setTimeout(() => fireBurst(event.clientX, event.clientY, false), 90);
     fireConfetti(event.clientX, event.clientY);
-    // The full-screen curtain covers the screen well before the underlying
-    // step actually swaps (see quiz-flow's shared REACTION_MS advance), so
-    // the state change below never flashes on screen uncovered.
-    triggerCommitSplit();
+    triggerShockwave(event.clientX, event.clientY);
     // Best-effort haptic punch — silently unsupported on desktop/Safari.
     navigator.vibrate?.([30, 40, 60]);
     onPick(patch, value);
@@ -87,17 +87,23 @@ export function CommitStep({
           />
         </button>
 
-        <GlowButton
-          variant="cyber"
-          size="xl"
-          fullWidth
-          pulse={!unlocked}
-          disabled={locked || unlocked}
-          onClick={commit}
-          className="text-lg tracking-tight shadow-[0_0_40px_-8px_rgba(232,179,44,0.75)]"
+        <motion.div
+          className="w-full"
+          animate={unlocked ? { scale: [1, 1.16, 0.94, 1.05, 1] } : { scale: 1 }}
+          transition={{ duration: 0.6, times: [0, 0.22, 0.48, 0.74, 1], ease: "easeInOut" }}
         >
-          {buttonLabel}
-        </GlowButton>
+          <GlowButton
+            variant="cyber"
+            size="xl"
+            fullWidth
+            pulse={!unlocked}
+            disabled={locked || unlocked}
+            onClick={commit}
+            className="text-lg tracking-tight shadow-[0_0_40px_-8px_rgba(232,179,44,0.75)]"
+          >
+            {buttonLabel}
+          </GlowButton>
+        </motion.div>
 
         <p className="text-xs font-semibold text-white/70">
           {unlocked ? "Locked in. Building your plan around it..." : "Tap to commit — no going back 😏"}
