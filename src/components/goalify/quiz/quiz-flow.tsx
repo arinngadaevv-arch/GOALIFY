@@ -51,8 +51,10 @@ const COMMIT_VALUES: Partial<Record<keyof QuizAnswers, unknown>> = {
   commitment: "allin",
 };
 
-/** How long the coach's reaction stays on screen before the next question. */
-const REACTION_MS = 1050;
+/** How long the selection's feedback (ring, tint, coach reaction) stays on
+ * screen before auto-advancing — long enough for the pick to feel seen,
+ * short enough that the funnel doesn't feel like it's waiting on you. */
+const REACTION_MS = 550;
 
 /** Slide direction for the step transition — positive for advancing,
  * negative for stepping back, so Back genuinely reverses the motion
@@ -379,17 +381,17 @@ export function QuizFlow() {
           className="relative flex flex-1 flex-col"
         >
           {/* --------------------------------------------------- Big headline */}
-          <div className="relative pt-3">
+          <div className="relative pt-4">
             <p className="text-[11px] font-black tracking-[0.16em] text-electric uppercase">
               {step.chapter}
             </p>
-            <h1 className="gf-display relative mt-2 text-4xl leading-[1.05] font-black text-ink sm:text-5xl">
+            <h1 className="gf-display relative mt-2.5 text-4xl leading-[1.05] font-black text-ink sm:text-5xl">
               {step.title}
             </h1>
           </div>
 
           <div className="relative flex-1 pt-8">
-            <p className="mb-6 text-sm leading-relaxed text-mist">
+            <p className="mb-7 text-sm leading-relaxed text-ink-soft">
               {step.subtitle}
             </p>
 
@@ -492,7 +494,7 @@ function ChoiceStep({
 
     return (
       <>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           {step.options.map((option) => (
             <OptionCard
               key={option.value}
@@ -543,9 +545,8 @@ function ChoiceStep({
     <div>
       <div
         className={clsx(
-          "grid gap-3",
+          "grid gap-4",
           layout !== "wide" && "grid-cols-2",
-          (layout === "portrait" || layout === "tile") && "gap-4",
           layout === "portrait" && "mt-14",
         )}
       >
@@ -640,10 +641,10 @@ function PhotoOptionCard({
         disabled={disabled}
         aria-pressed={selected}
         className={clsx(
-          "gf-card gf-cyber-border gf-press relative flex flex-col items-center gap-2 rounded-3xl p-5 text-center transition-all duration-300",
+          "gf-card gf-cyber-border gf-press relative flex flex-col items-center gap-2.5 rounded-3xl p-5 text-center transition-all duration-300 ease-out",
           "hover:scale-[1.04] hover:shadow-[0_0_28px_-6px_rgba(232,179,44,0.75)]",
           LEVEL_CARD_BG[option.value],
-          selected ? "gf-card-active scale-[1.02]" : "",
+          selected ? "gf-card-active scale-[1.03]" : "",
         )}
       >
         {checkBadge}
@@ -652,7 +653,7 @@ function PhotoOptionCard({
           {option.label}
         </span>
         {option.description && (
-          <span className="relative text-xs leading-snug text-mist">
+          <span className="relative text-xs leading-snug text-ink-soft">
             {option.description}
           </span>
         )}
@@ -680,8 +681,8 @@ function PhotoOptionCard({
   }
 
   const base = clsx(
-    "gf-card gf-card-hover gf-press relative text-left transition-all duration-300",
-    selected && "gf-card-active scale-[1.02]",
+    "gf-card gf-card-hover gf-press relative text-left transition-all duration-300 ease-out",
+    selected && "gf-card-active scale-[1.03]",
     disabled && !selected && "opacity-50",
   );
 
@@ -693,7 +694,7 @@ function PhotoOptionCard({
           onClick={withBurst(onClick)}
           disabled={disabled}
           aria-pressed={selected}
-          className={clsx(base, "flex min-h-52 flex-col justify-end overflow-hidden p-5")}
+          className={clsx(base, "flex min-h-56 flex-col justify-end overflow-hidden p-5")}
         >
           <div className="absolute inset-0">
             <OptionPhoto
@@ -708,12 +709,21 @@ function PhotoOptionCard({
             className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent"
             aria-hidden
           />
+          {/* Warm gold wash, only on the selected card — reads as instant
+              feedback even before the eye reaches the ring/badge. */}
+          <div
+            className={clsx(
+              "absolute inset-0 bg-gradient-to-t from-electric/45 via-electric/10 to-transparent transition-opacity duration-300 ease-out",
+              selected ? "opacity-100" : "opacity-0",
+            )}
+            aria-hidden
+          />
           {checkBadge}
           <span className="gf-display relative text-2xl leading-tight font-extrabold text-white">
             {option.label}
           </span>
           {option.description && (
-            <span className="relative mt-1 text-xs leading-snug text-white/85">
+            <span className="relative mt-1.5 text-xs leading-snug text-white/90">
               {option.description}
             </span>
           )}
@@ -736,7 +746,7 @@ function PhotoOptionCard({
             {option.label}
           </span>
           {option.description && (
-            <span className="mt-0.5 block text-xs leading-snug text-mist">
+            <span className="mt-1 block text-xs leading-snug text-ink-soft">
               {option.description}
             </span>
           )}
@@ -811,12 +821,19 @@ function PhotoOptionCard({
           className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/15 to-transparent"
           aria-hidden
         />
+        <div
+          className={clsx(
+            "absolute inset-0 bg-gradient-to-t from-electric/45 via-electric/10 to-transparent transition-opacity duration-300 ease-out",
+            selected ? "opacity-100" : "opacity-0",
+          )}
+          aria-hidden
+        />
         {checkBadge}
         <span className="gf-display relative text-lg leading-tight font-extrabold text-white">
           {option.label}
         </span>
         {option.description && (
-          <span className="relative mt-0.5 text-[11px] leading-snug font-bold text-white/80">
+          <span className="relative mt-1 text-[11px] leading-snug font-bold text-white/90">
             {option.description}
           </span>
         )}
@@ -830,7 +847,7 @@ function PhotoOptionCard({
       onClick={withBurst(onClick)}
       disabled={disabled}
       aria-pressed={selected}
-      className={clsx(base, "flex flex-col items-center gap-2 p-5 text-center")}
+      className={clsx(base, "flex flex-col items-center gap-2.5 p-5 text-center")}
     >
       {checkBadge}
       <QuizIconBadge icon={option.icon} size="lg" active={selected} />
@@ -838,7 +855,7 @@ function PhotoOptionCard({
         {option.label}
       </span>
       {option.description && (
-        <span className="text-xs leading-snug text-mist">{option.description}</span>
+        <span className="mt-0.5 text-xs leading-snug text-ink-soft">{option.description}</span>
       )}
       {option.socialProof && <SocialProofLine text={option.socialProof} />}
     </button>
@@ -850,8 +867,8 @@ function SocialProofLine({ text, light = false }: { text: string; light?: boolea
   return (
     <span
       className={clsx(
-        "relative mt-1.5 flex items-center gap-1 text-[11px] font-bold",
-        light ? "text-white/85" : "text-electric",
+        "relative mt-2 flex items-center gap-1 text-[11px] font-bold",
+        light ? "text-white/90" : "text-electric",
       )}
     >
       <TrendingUp className="size-3 shrink-0" strokeWidth={3} />
@@ -884,8 +901,8 @@ function OptionCard({
       disabled={disabled}
       aria-pressed={selected}
       className={clsx(
-        "gf-glass gf-card-hover gf-press relative flex flex-col items-center rounded-3xl p-4 text-center transition-all duration-300",
-        selected ? "gf-card-active scale-[1.02]" : "disabled:opacity-45",
+        "gf-glass gf-card-hover gf-press relative flex flex-col items-center rounded-3xl p-4 text-center transition-all duration-300 ease-out",
+        selected ? "gf-card-active scale-[1.03]" : "disabled:opacity-45",
       )}
     >
       {selected && (
@@ -898,7 +915,7 @@ function OptionCard({
         {label}
       </span>
       {description && (
-        <span className="mt-1 block text-xs leading-snug text-mist">
+        <span className="mt-1.5 block text-xs leading-snug text-ink-soft">
           {description}
         </span>
       )}

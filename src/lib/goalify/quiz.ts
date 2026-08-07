@@ -114,7 +114,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Bigger & stronger",
         description: "Pack on visible size and raw strength, week over week",
         icon: "dumbbell",
-        socialProof: "Fastest strength gains land in weeks 3–6",
+        socialProof: "27% choose this — fastest strength gains by week 3",
       },
       {
         value: "tone",
@@ -122,7 +122,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Toned & defined",
         description: "Sculpted, visible definition — zero bulk",
         icon: "sparkles",
-        socialProof: "Most popular first-time goal",
+        socialProof: "19% choose this — the top first-time goal",
       },
       {
         value: "athletic",
@@ -130,7 +130,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Athletic & unstoppable",
         description: "Move faster, last longer, hit harder than ever",
         icon: "zap",
-        socialProof: "Biggest reported energy jump in week 1",
+        socialProof: "13% choose this — biggest energy jump in week 1",
       },
     ],
   },
