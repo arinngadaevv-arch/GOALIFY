@@ -1229,6 +1229,55 @@ html.goalify ::-webkit-scrollbar-thumb {
   animation: gf-cyber-particle 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* --- Confetti burst (commitment step's firecracker button) --------------- */
+
+@keyframes gf-confetti-fly {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(var(--gf-c-angle)) translateX(0) translateY(0);
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--gf-c-angle)) translateX(var(--gf-c-dist))
+      translateY(58px);
+  }
+}
+
+@keyframes gf-confetti-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(var(--gf-c-rotate));
+  }
+}
+
+.gf-confetti-piece {
+  position: absolute;
+  top: var(--gf-c-y, 50%);
+  left: var(--gf-c-x, 50%);
+  pointer-events: none;
+  animation: gf-confetti-fly 0.95s cubic-bezier(0.22, 0.61, 0.36, 1) var(--gf-c-delay, 0s) both;
+}
+
+.gf-confetti-piece > span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  animation: gf-confetti-spin 0.95s linear var(--gf-c-delay, 0s) both;
+}
+
+.gf-confetti-rect > span {
+  border-radius: 1px;
+}
+
+.gf-confetti-dot > span {
+  border-radius: 999px;
+}
+
 /* --- Body-map: neon target panels ----------------------------------------- */
 
 /* --- Tactile arc gauge ------------------------------------------------------ */
@@ -1350,7 +1399,9 @@ html.goalify ::-webkit-scrollbar-thumb {
 @media (prefers-reduced-motion: reduce) {
   .gf-cyber-border::before,
   .gf-cyber-hype-badge,
-  .gf-cyber-particle {
+  .gf-cyber-particle,
+  .gf-confetti-piece,
+  .gf-confetti-piece > span {
     animation: none !important;
   }
 }

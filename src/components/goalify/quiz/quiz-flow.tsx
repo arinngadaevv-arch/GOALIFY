@@ -31,6 +31,8 @@ import { VitalsStep } from "./vitals-step";
 import { WelcomeCtaStep } from "./welcome-cta-step";
 import { AuthPanel } from "./auth-panel";
 import { fireBurst, ParticleBurstLayer } from "./particle-burst";
+import { ConfettiBurstLayer } from "./confetti-burst";
+import { CommitSplitOverlay } from "./commit-transition";
 
 /** Wraps a click handler so every tap also fires a micro-particle burst
  * from the exact point of contact. */
@@ -301,6 +303,8 @@ export function QuizFlow() {
   return (
     <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-28">
       <ParticleBurstLayer />
+      <ConfettiBurstLayer />
+      <CommitSplitOverlay />
       <FloatingStreakBadge />
       <header className="relative flex items-center gap-4 py-5">
         {/* Inline styles carry every property that makes this visible at

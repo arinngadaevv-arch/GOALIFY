@@ -7,13 +7,18 @@ import { PartyPopper } from "lucide-react";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
 import type { QuizAnswers } from "@/lib/goalify/types";
 import { fireBurst } from "./particle-burst";
+import { fireConfetti } from "./confetti-burst";
+import { triggerCommitSplit } from "./commit-transition";
 
 /**
  * A pure "yes-set" rhetorical commitment card — one giant button, no real
- * choice to weigh. Tapping it has to feel like unlocking something: a
- * bigger-than-usual particle burst, a badge snapping in, and the button
- * itself locking into a "done" state for a beat before the funnel advances.
- * A full-bleed athletic photo behind the moment raises the stakes further.
+ * choice to weigh. The firecracker badge above the button is its own tap
+ * target: a standalone confetti explosion, playful and repeatable, with no
+ * effect on the actual commitment. The button itself is the real moment —
+ * tapping it has to feel like unlocking something, so it fires a full-screen
+ * curtain-cut transition (see commit-transition.tsx) on top of the usual
+ * burst/badge/lock feedback, before the funnel advances. A full-bleed
+ * athletic photo behind the moment raises the stakes further.
  */
 export function CommitStep({
   buttonLabel,
@@ -32,12 +37,22 @@ export function CommitStep({
 }) {
   const [unlocked, setUnlocked] = useState(false);
 
+  const popConfetti = (event: React.MouseEvent) => {
+    fireConfetti(event.clientX, event.clientY);
+    navigator.vibrate?.(20);
+  };
+
   const commit = (event: React.MouseEvent) => {
     if (locked || unlocked) return;
     setUnlocked(true);
     // Two staggered bursts read as a bigger celebration than one.
     fireBurst(event.clientX, event.clientY, true);
     window.setTimeout(() => fireBurst(event.clientX, event.clientY, false), 90);
+    fireConfetti(event.clientX, event.clientY);
+    // The full-screen curtain covers the screen well before the underlying
+    // step actually swaps (see quiz-flow's shared REACTION_MS advance), so
+    // the state change below never flashes on screen uncovered.
+    triggerCommitSplit();
     // Best-effort haptic punch — silently unsupported on desktop/Safari.
     navigator.vibrate?.([30, 40, 60]);
     onPick(patch, value);
@@ -54,12 +69,14 @@ export function CommitStep({
       />
 
       <div className="relative flex min-h-[62vh] flex-col items-center justify-end gap-6 px-5 pt-10 pb-6 text-center">
-        <span
+        <button
+          type="button"
+          aria-label="Celebrate — confetti!"
+          onClick={popConfetti}
           className={clsx(
-            "gf-cyber-border grid size-20 place-items-center rounded-full bg-black/40 transition-transform duration-300",
+            "gf-cyber-border gf-press grid size-20 place-items-center rounded-full bg-black/40 transition-transform duration-300 hover:scale-110",
             unlocked && "gf-anim-unlock",
           )}
-          aria-hidden
         >
           <PartyPopper
             className={clsx(
@@ -68,7 +85,7 @@ export function CommitStep({
             )}
             strokeWidth={2.2}
           />
-        </span>
+        </button>
 
         <GlowButton
           variant="cyber"
