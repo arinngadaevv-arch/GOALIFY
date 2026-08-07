@@ -164,7 +164,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "No time",
         description: "Schedule fills up and training gets cut first",
         icon: "hourglass",
-        socialProof: "Solved: 92% finish our 15-minute sessions",
+        socialProof: "31% say this — 92% finish our 15-min sessions",
       },
       {
         value: "motivation",
@@ -172,7 +172,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Fading motivation",
         description: "Strong start, then momentum drops by week three",
         icon: "batteryLow",
-        socialProof: "Our streak system keeps members going past week 8",
+        socialProof: "24% say this — streaks keep 8/10 past week 8",
       },
       {
         value: "confusion",
@@ -180,7 +180,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "No clear plan",
         description: "Too many conflicting plans and opinions",
         icon: "helpCircle",
-        socialProof: "Every session is pre-decided — zero guesswork",
+        socialProof: "19% say this — every session pre-decided",
       },
       {
         value: "injury",
@@ -188,7 +188,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Pain or injury",
         description: "Flare-ups cause repeated setbacks",
         icon: "heartPulse",
-        socialProof: "Joint-safe swaps built into every single movement",
+        socialProof: "14% say this — joint-safe swaps built in",
       },
       {
         value: "restart",
@@ -196,7 +196,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Repeated false starts",
         description: "Started many times, never followed through",
         icon: "rotateCcw",
-        socialProof: "Engineered to be the last plan you ever start",
+        socialProof: "12% say this — your last false start, guaranteed",
       },
     ],
   },

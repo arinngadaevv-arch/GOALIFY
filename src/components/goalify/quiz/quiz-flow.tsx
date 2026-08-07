@@ -18,7 +18,6 @@ import { useGoalify } from "@/lib/goalify/store";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
 import { CoachGuide, sayCoach } from "@/components/goalify/coach/coach-guide";
 import { useUiSounds } from "@/components/goalify/use-ui-sounds";
-import { FloatingStreakBadge } from "@/components/goalify/ui/floating-streak-badge";
 import { hasRealPhoto, OptionPhoto } from "./option-photo";
 import { QuizIconBadge, type QuizIconKey } from "./quiz-icons";
 import { AnalyzingScreen } from "./analyzing-screen";
@@ -54,9 +53,9 @@ const COMMIT_VALUES: Partial<Record<keyof QuizAnswers, unknown>> = {
 };
 
 /** How long the selection's feedback (ring, tint, coach reaction) stays on
- * screen before auto-advancing — long enough for the pick to feel seen,
- * short enough that the funnel doesn't feel like it's waiting on you. */
-const REACTION_MS = 550;
+ * screen before auto-advancing — kept right at the edge of "instant" so a
+ * tap reads as select-and-go, not a pause before a second action. */
+const REACTION_MS = 400;
 
 /** Slide direction for the step transition — positive for advancing,
  * negative for stepping back, so Back genuinely reverses the motion
@@ -323,12 +322,11 @@ export function QuizFlow() {
   }
 
   return (
-    <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-28">
+    <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-20">
       <ParticleBurstLayer />
       <ConfettiBurstLayer />
       <ShockwaveLayer />
-      <FloatingStreakBadge />
-      <header className="relative flex items-center gap-4 py-5">
+      <header className="relative flex items-center gap-4 py-3">
         {/* Inline styles carry every property that makes this visible at
             all (size, colors, border) — deliberately not left to Tailwind
             utility classes alone, so no build-time purge/JIT gap or CSS
@@ -407,17 +405,17 @@ export function QuizFlow() {
           className="relative flex flex-1 flex-col"
         >
           {/* --------------------------------------------------- Big headline */}
-          <div className="relative pt-4">
+          <div className="relative pt-2">
             <p className="text-[11px] font-black tracking-[0.16em] text-electric uppercase">
               {step.chapter}
             </p>
-            <h1 className="gf-display relative mt-2.5 text-4xl leading-[1.05] font-black text-ink sm:text-5xl">
+            <h1 className="gf-display relative mt-1.5 text-3xl leading-[1.08] font-black text-ink sm:text-5xl">
               {step.title}
             </h1>
           </div>
 
-          <div className="relative flex-1 pt-8">
-            <p className="mb-7 text-sm leading-relaxed text-ink-soft">
+          <div className="relative flex-1 pt-4">
+            <p className="mb-4 text-sm leading-relaxed text-ink-soft">
               {step.subtitle}
             </p>
 
@@ -468,7 +466,7 @@ export function QuizFlow() {
         </motion.div>
       </AnimatePresence>
 
-      <footer className="relative pt-8 text-center">
+      <footer className="relative pt-4 text-center">
         <p className="text-xs text-haze">Your answers stay on this device</p>
       </footer>
 
@@ -571,8 +569,8 @@ function ChoiceStep({
     <div>
       <div
         className={clsx(
-          "grid gap-4",
-          layout !== "wide" && "grid-cols-2",
+          "grid",
+          layout === "wide" ? "gap-2.5" : "grid-cols-2 gap-4",
           layout === "portrait" && "mt-14",
         )}
       >
@@ -714,46 +712,38 @@ function PhotoOptionCard({
 
   if (layout === "wide") {
     if (hasPhoto) {
+      // A compact row, not a full-bleed hero card — with 4-5 options per
+      // step, a card tall enough to show off a background photo pushed the
+      // lower options off the bottom of a real phone screen entirely. The
+      // photo shrinks to a fixed thumbnail so every row stays short enough
+      // that at least 3-4 options are on screen at once, no scrolling.
       return (
         <button
           type="button"
           onClick={withBurst(onClick)}
           disabled={disabled}
           aria-pressed={selected}
-          className={clsx(base, "flex min-h-56 flex-col justify-end overflow-hidden p-5")}
+          className={clsx(base, "flex items-center gap-3.5 overflow-hidden p-3 pr-4")}
         >
-          <div className="absolute inset-0">
-            <OptionPhoto
-              src={option.image}
-              alt={option.label}
-              label={option.label}
-              icon={option.icon}
-              className="h-full w-full"
-            />
-          </div>
-          <div
-            className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent"
-            aria-hidden
+          <OptionPhoto
+            src={option.image}
+            alt={option.label}
+            label={option.label}
+            icon={option.icon}
+            className="size-16 shrink-0 rounded-xl"
           />
-          {/* Warm gold wash, only on the selected card — reads as instant
-              feedback even before the eye reaches the ring/badge. */}
-          <div
-            className={clsx(
-              "absolute inset-0 bg-gradient-to-t from-electric/45 via-electric/10 to-transparent transition-opacity duration-300 ease-out",
-              selected ? "opacity-100" : "opacity-0",
-            )}
-            aria-hidden
-          />
-          {checkBadge}
-          <span className="gf-display relative text-2xl leading-tight font-extrabold text-white">
-            {option.label}
-          </span>
-          {option.description && (
-            <span className="relative mt-1.5 text-xs leading-snug text-white/90">
-              {option.description}
+          <span className="min-w-0 flex-1">
+            <span className="gf-display block truncate text-base leading-tight font-extrabold text-ink">
+              {option.label}
             </span>
-          )}
-          {option.socialProof && <SocialProofLine text={option.socialProof} light />}
+            {option.description && (
+              <span className="mt-0.5 block truncate text-[11px] leading-snug text-ink-soft">
+                {option.description}
+              </span>
+            )}
+            {option.socialProof && <SocialProofLine text={option.socialProof} compact />}
+          </span>
+          {checkBadge}
         </button>
       );
     }
@@ -888,17 +878,29 @@ function PhotoOptionCard({
   );
 }
 
-/** A quiet, native-app-style stat caption — no pill, no badge background. */
-function SocialProofLine({ text, light = false }: { text: string; light?: boolean }) {
+/** A quiet, native-app-style stat caption — no pill, no badge background.
+ * `compact` trims the margin/size further for the dense option-row layout,
+ * where it sits directly under a truncated description line instead of
+ * over a full-bleed photo. */
+function SocialProofLine({
+  text,
+  light = false,
+  compact = false,
+}: {
+  text: string;
+  light?: boolean;
+  compact?: boolean;
+}) {
   return (
     <span
       className={clsx(
-        "relative mt-2 flex items-center gap-1 text-[11px] font-bold",
+        "relative flex items-center gap-1 font-bold",
+        compact ? "mt-0.5 text-[10px]" : "mt-2 text-[11px]",
         light ? "text-white/90" : "text-electric",
       )}
     >
-      <TrendingUp className="size-3 shrink-0" strokeWidth={3} />
-      {text}
+      <TrendingUp className={clsx("shrink-0", compact ? "size-2.5" : "size-3")} strokeWidth={3} />
+      <span className="truncate">{text}</span>
     </span>
   );
 }
