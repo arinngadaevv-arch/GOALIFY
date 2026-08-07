@@ -1,7 +1,11 @@
 import Link from "next/link";
+import Image from "next/image";
 import clsx from "clsx";
-import { Zap } from "lucide-react";
 
+/** The real logo (house/dumbbell/lightning mark + "GOALIFY" wordmark baked
+ * into the artwork) — rendered as a single image rather than paired with a
+ * separate text label, since the wordmark is already part of the file and
+ * showing both would duplicate it. */
 export function Brand({
   href = "/",
   className,
@@ -10,17 +14,15 @@ export function Brand({
   className?: string;
 }) {
   return (
-    <Link
-      href={href}
-      className={clsx(
-        "flex shrink-0 items-center gap-2 font-extrabold tracking-[-0.04em]",
-        className,
-      )}
-    >
-      <span className="gf-glow-electric grid size-9 place-items-center rounded-xl bg-electric">
-        <Zap className="size-5 text-lime-neon" strokeWidth={2.8} />
-      </span>
-      <span className="gf-display text-xl text-ink">GOALIFY</span>
+    <Link href={href} className={clsx("flex shrink-0 items-center", className)}>
+      <Image
+        src="/brand/logo.jpg"
+        alt="GOALIFY — AI home fitness coach"
+        width={224}
+        height={224}
+        priority
+        className="size-11 rounded-xl"
+      />
     </Link>
   );
 }
