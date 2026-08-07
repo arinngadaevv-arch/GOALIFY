@@ -135,13 +135,10 @@ export function Paywall() {
                     </span>
                     <span className="shrink-0 text-right">
                       <span className="gf-numeric block text-3xl font-black whitespace-nowrap text-[#FFC700]">
-                        ${option.perWeek.toFixed(2)}
-                        <span className="ml-0.5 text-xs font-bold text-[#FFC700]/70">
-                          /wk
-                        </span>
+                        ${price.toFixed(2)}
                       </span>
                       <span className="mt-1 block text-[11px] font-semibold whitespace-nowrap text-ink-soft">
-                        ${price.toFixed(2)} {option.billedLabel}
+                        {option.billedLabel}
                       </span>
                     </span>
                   </span>
@@ -181,11 +178,10 @@ export function Paywall() {
                 </span>
                 <span className="shrink-0 text-right">
                   <span className="gf-numeric block text-lg font-extrabold text-ink">
-                    ${option.perWeek.toFixed(2)}
-                    <span className="ml-0.5 text-[10px] font-bold text-mist">/wk</span>
+                    ${price.toFixed(2)}
                   </span>
                   <span className="mt-0.5 block text-[10px] font-semibold text-haze">
-                    ${price.toFixed(2)} {option.billedLabel}
+                    {option.billedLabel}
                   </span>
                 </span>
               </button>
