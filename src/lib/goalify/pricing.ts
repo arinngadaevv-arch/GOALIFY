@@ -41,9 +41,10 @@ export const PRICING_TIERS: PricingTier[] = [
   {
     id: "quarterly",
     label: "3 Months",
-    // $12.99/mo x 3 — the total Lemon Squeezy must actually charge.
-    priceCents: 3897,
-    perWeek: 38.97 / WEEKS_PER_QUARTER,
+    // $29.99 flat for 3 months — the total Lemon Squeezy must actually charge
+    // (matches the real configured price of variant 1989656).
+    priceCents: 2999,
+    perWeek: 29.99 / WEEKS_PER_QUARTER,
     wasCents: 5999,
     billedLabel: "billed every 3 months",
     badge: "MOST POPULAR",
