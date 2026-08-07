@@ -416,10 +416,6 @@ export function QuizFlow() {
           </div>
 
           <div className="relative flex-1 pt-4">
-            <p className="mb-4 text-sm leading-relaxed text-ink-soft">
-              {step.subtitle}
-            </p>
-
             {step.kind === "choice" && step.speedRound && (
               <SpeedRound key={step.id} locked={pending !== null} />
             )}
