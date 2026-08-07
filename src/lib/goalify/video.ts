@@ -22,33 +22,38 @@ const RAW_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_URL = RAW_SUPABASE_URL?.replace(/\/+$/, "");
 const VIDEOS_BUCKET = "videos";
 
+/**
+ * The same three checks the console warning below runs, exposed so the
+ * admin video-diagnostics panel (see checkout-diagnostics' sibling) can
+ * show the identical verdict in the UI instead of only in DevTools —
+ * `NEXT_PUBLIC_SUPABASE_URL` is a browser-exposed var by Next.js
+ * convention, so there's nothing secret being surfaced here.
+ */
+export function diagnoseSupabaseUrl(): string | null {
+  if (!RAW_SUPABASE_URL) {
+    return "NEXT_PUBLIC_SUPABASE_URL is not set — every clip falls back to the placeholder.";
+  }
+  if (/supabase\.com\/dashboard/.test(RAW_SUPABASE_URL)) {
+    return "This looks like a Supabase dashboard URL, not the project's API base URL (Settings > API > Project URL).";
+  }
+  if (!/^https?:\/\//.test(RAW_SUPABASE_URL)) {
+    return 'Doesn\'t start with "http://" or "https://" — every video URL built from it will be broken.';
+  }
+  return null;
+}
+
 // Client-side only, and only ever once per page load — this is a
 // configuration problem, not a per-render concern, and the user asked
 // specifically to be able to see what's wrong from DevTools' Console tab.
 if (typeof window !== "undefined") {
-  if (!RAW_SUPABASE_URL) {
+  const problem = diagnoseSupabaseUrl();
+  if (problem) {
     console.warn(
-      "[goalify/video] NEXT_PUBLIC_SUPABASE_URL is not set — workout clips " +
-        "will fall back to the placeholder animation. Set it to your " +
-        "project's base URL (e.g. https://<project-ref>.supabase.co — " +
-        "Settings > API > Project URL in the Supabase dashboard, NOT the " +
-        "dashboard page URL itself), then REDEPLOY: NEXT_PUBLIC_ vars are " +
-        "baked into the JS bundle at build time, so changing the value in " +
-        "Vercel's env var settings alone does nothing until the next build.",
-    );
-  } else if (/supabase\.com\/dashboard/.test(RAW_SUPABASE_URL)) {
-    console.warn(
-      `[goalify/video] NEXT_PUBLIC_SUPABASE_URL ("${RAW_SUPABASE_URL}") ` +
-        "looks like a Supabase dashboard URL, not the project's API base " +
-        "URL — those are different hosts. Use " +
-        "https://<project-ref>.supabase.co instead (Settings > API > " +
-        "Project URL), then redeploy.",
-    );
-  } else if (!/^https?:\/\//.test(RAW_SUPABASE_URL)) {
-    console.warn(
-      `[goalify/video] NEXT_PUBLIC_SUPABASE_URL ("${RAW_SUPABASE_URL}") ` +
-        'doesn\'t start with "http://" or "https://" — every video URL ' +
-        "built from it will be broken. Redeploy after fixing it.",
+      `[goalify/video] ${problem} Set it to your project's base URL ` +
+        "(e.g. https://<project-ref>.supabase.co), then REDEPLOY: " +
+        "NEXT_PUBLIC_ vars are baked into the JS bundle at build time, so " +
+        "changing the value in Vercel's env var settings alone does " +
+        "nothing until the next build.",
     );
   }
 }
@@ -104,4 +109,23 @@ export function exerciseVideoUrl(name: string, focus: string): string | null {
     if (pattern.test(focus)) return videoUrl(fileName);
   }
   return null;
+}
+
+/**
+ * Every clip this app ever requests, labeled, for the admin video
+ * diagnostics panel — lets it check each real file's actual HTTP status
+ * (200 vs 404 vs 403) instead of only knowing whether the base URL is
+ * configured at all.
+ */
+export function allKnownClips(): { label: string; fileName: string; url: string | null }[] {
+  return [
+    { label: "Intro (first watch phase)", fileName: "start.mp4", url: videoUrl("start.mp4") },
+    { label: "Rest / recovery", fileName: "Water outage.mp4", url: videoUrl("Water outage.mp4") },
+    { label: "Outro (completion screen)", fileName: "outro.mp4", url: videoUrl("outro.mp4") },
+    ...EXERCISE_CLIPS.map(([, fileName]) => ({
+      label: fileName.replace(/\.mp4$/, ""),
+      fileName,
+      url: videoUrl(fileName),
+    })),
+  ];
 }

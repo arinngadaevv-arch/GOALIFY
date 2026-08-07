@@ -20,6 +20,7 @@ import { GlassCard } from "@/components/goalify/ui/glass-card";
 import { Pill } from "@/components/goalify/ui/stat";
 import { goalLabel, levelLabel } from "@/lib/goalify/plan";
 import type { Goal, Level } from "@/lib/goalify/types";
+import { allKnownClips, diagnoseSupabaseUrl } from "@/lib/goalify/video";
 
 type PlanTier = "FREE" | "PRO" | "BUSINESS";
 
@@ -206,6 +207,24 @@ export function AdminDashboard({
           <LemonSqueezyVariantsPanel />
         </section>
 
+        {/* -------------------------------------------------- Workout videos */}
+        <section className="mt-10">
+          <h2 className="gf-display text-xl font-extrabold text-ink">
+            Workout videos
+          </h2>
+          <p className="mt-1 text-[11px] leading-relaxed text-haze">
+            If the live workout player is only showing the stick-figure
+            placeholder instead of real clips, it&apos;s always one of three
+            things: <code>NEXT_PUBLIC_SUPABASE_URL</code> isn&apos;t set (or
+            redeployed after being set — it&apos;s baked into the JS bundle
+            at build time), the Storage bucket named &ldquo;videos&rdquo;
+            isn&apos;t actually public, or an uploaded filename doesn&apos;t
+            exactly match what&apos;s expected below. This checks all three
+            directly in your browser — nothing here touches the server.
+          </p>
+          <VideoDiagnosticsPanel />
+        </section>
+
         {/* --------------------------------------------------------- Users */}
         <section className="mt-10">
           <h2 className="gf-display text-xl font-extrabold text-ink">
@@ -314,6 +333,156 @@ function billingSummary(variant: LemonSqueezyVariant) {
   if (!variant.interval) return "one-time";
   const count = variant.intervalCount ?? 1;
   return count === 1 ? `every ${variant.interval}` : `every ${count} ${variant.interval}s`;
+}
+
+type ClipCheck = {
+  label: string;
+  fileName: string;
+  url: string | null;
+  status: "unconfigured" | "checking" | "ok" | "error";
+  httpStatus?: number;
+  detail?: string;
+};
+
+/**
+ * Checks every workout clip's real URL directly from the browser — no
+ * server round trip needed, since NEXT_PUBLIC_SUPABASE_URL is already
+ * inlined into this client bundle at build time, same as what
+ * AIFormGuide/video.ts use to build these URLs in the first place. A HEAD
+ * request per clip distinguishes "bucket not public" (403), "wrong
+ * filename" (404), and "works fine" (200) instead of every failure
+ * collapsing into the same silent placeholder.
+ */
+function VideoDiagnosticsPanel() {
+  const urlProblem = diagnoseSupabaseUrl();
+  const [checks, setChecks] = useState<ClipCheck[] | null>(null);
+  const [running, setRunning] = useState(false);
+
+  async function run() {
+    setRunning(true);
+    const clips = allKnownClips();
+    const initial: ClipCheck[] = clips.map((clip) => ({
+      ...clip,
+      status: clip.url ? "checking" : "unconfigured",
+    }));
+    setChecks(initial);
+
+    await Promise.all(
+      clips.map(async (clip, i) => {
+        if (!clip.url) return;
+        try {
+          const res = await fetch(clip.url, { method: "HEAD", cache: "no-store" });
+          setChecks((prev) => {
+            if (!prev) return prev;
+            const next = [...prev];
+            next[i] = {
+              ...next[i],
+              status: res.ok ? "ok" : "error",
+              httpStatus: res.status,
+              detail: res.ok
+                ? undefined
+                : res.status === 404
+                  ? "Not found — filename doesn't match what's uploaded."
+                  : res.status === 403 || res.status === 400
+                    ? "Forbidden — the bucket or file likely isn't public yet."
+                    : `Unexpected status ${res.status}.`,
+            };
+            return next;
+          });
+        } catch {
+          setChecks((prev) => {
+            if (!prev) return prev;
+            const next = [...prev];
+            next[i] = {
+              ...next[i],
+              status: "error",
+              detail:
+                "Request failed (network error or CORS) — open the URL directly in a new tab to check manually.",
+            };
+            return next;
+          });
+        }
+      }),
+    );
+    setRunning(false);
+  }
+
+  return (
+    <div className="mt-3">
+      <GlassCard deep className="flex flex-wrap items-center gap-2 p-4">
+        <Pill tone={urlProblem ? "neutral" : "lime"}>
+          {urlProblem ? <XCircle className="size-3" /> : <CheckCircle2 className="size-3" />}
+          NEXT_PUBLIC_SUPABASE_URL · {urlProblem ?? "looks valid"}
+        </Pill>
+      </GlassCard>
+
+      <button
+        type="button"
+        onClick={run}
+        disabled={running}
+        className="gf-press mt-3 flex items-center gap-2 rounded-xl border border-electric/30 bg-electric/8 px-4 py-2 text-xs font-bold text-electric transition-colors hover:bg-electric/14 disabled:opacity-60"
+      >
+        {running && <Loader2 className="size-3.5 animate-spin" />}
+        Check video files
+      </button>
+
+      {checks && (
+        <GlassCard deep className="mt-3 overflow-x-auto p-0">
+          <table className="w-full min-w-[560px] border-collapse text-xs">
+            <thead>
+              <tr className="border-b border-ink/8 text-left font-bold tracking-[0.06em] text-mist uppercase">
+                <th className="px-3 py-2">Clip</th>
+                <th className="px-3 py-2">Filename</th>
+                <th className="px-3 py-2">Result</th>
+              </tr>
+            </thead>
+            <tbody>
+              {checks.map((check) => (
+                <tr key={check.fileName} className="border-b border-ink/6 last:border-0">
+                  <td className="px-3 py-2 text-ink">{check.label}</td>
+                  <td className="px-3 py-2 font-mono text-mist">{check.fileName}</td>
+                  <td className="px-3 py-2">
+                    {check.status === "unconfigured" && (
+                      <span className="text-mist">No base URL configured</span>
+                    )}
+                    {check.status === "checking" && (
+                      <span className="flex items-center gap-1.5 text-mist">
+                        <Loader2 className="size-3 animate-spin" /> checking…
+                      </span>
+                    )}
+                    {check.status === "ok" && (
+                      <span className="flex items-center gap-1.5 text-lime-neon">
+                        <CheckCircle2 className="size-3.5" /> 200 OK
+                      </span>
+                    )}
+                    {check.status === "error" && (
+                      <span className="flex flex-col gap-0.5 text-red-400">
+                        <span className="flex items-center gap-1.5">
+                          <XCircle className="size-3.5" />
+                          {check.httpStatus ?? "Failed"}
+                        </span>
+                        {check.detail && <span className="text-[11px] text-red-300">{check.detail}</span>}
+                        {check.url && (
+                          <a
+                            href={check.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-[11px] break-all text-electric underline"
+                          >
+                            {check.url}
+                          </a>
+                        )}
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </GlassCard>
+      )}
+    </div>
+  );
 }
 
 /**
