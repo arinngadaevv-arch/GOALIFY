@@ -32,6 +32,7 @@ import { AuthPanel } from "./auth-panel";
 import { fireBurst, ParticleBurstLayer } from "./particle-burst";
 import { ConfettiBurstLayer } from "./confetti-burst";
 import { ShockwaveLayer } from "./commit-transition";
+import { QuizTrustBadge } from "./trust-badge";
 
 /** Wraps a click handler so every tap also fires a micro-particle burst
  * from the exact point of contact. */
@@ -326,6 +327,7 @@ export function QuizFlow() {
       <ParticleBurstLayer />
       <ConfettiBurstLayer />
       <ShockwaveLayer />
+      <QuizTrustBadge />
       <header className="relative flex items-center gap-4 py-3">
         {/* Inline styles carry every property that makes this visible at
             all (size, colors, border) — deliberately not left to Tailwind
