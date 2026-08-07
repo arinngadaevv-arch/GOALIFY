@@ -510,9 +510,16 @@ export function LivePlayer() {
 
           <ControlButton
             label="Skip exercise"
-            onClick={() =>
-              phase === "rest" ? goToExercise(index + 1) : finishCurrent()
-            }
+            // Always jumps straight to the next exercise, from any phase —
+            // distinct from finishCurrent() (used by "Set complete" and a
+            // timed set's own countdown), which correctly still routes
+            // through a rest period first. Previously this only did that
+            // for phase === "rest"; from "watch"/"work" it called
+            // finishCurrent() instead, which — whenever the exercise has
+            // restSeconds > 0 — just entered rest for the *same* exercise
+            // without changing `index`, so one tap on Skip looked like it
+            // did nothing.
+            onClick={() => goToExercise(index + 1)}
           >
             <SkipForward className="size-5.5 fill-current" />
           </ControlButton>
