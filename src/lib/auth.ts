@@ -9,6 +9,17 @@ import { db } from "@/lib/db";
 import { users, accounts, sessions, verificationTokens } from "@/lib/db/schema";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
+/**
+ * Owner dev bypass — same address as `OWNER_EMAILS` in `src/lib/admin.ts`
+ * (kept as a separate local constant rather than imported, since admin.ts
+ * imports `auth` from this file and importing back would be circular).
+ * Both spellings for the same reason admin.ts lists both: it's unconfirmed
+ * which one the real signed-up account actually used. This only ever
+ * narrows who gets the bypass, never widens it — an attacker can't make
+ * their own account's email match either literal string.
+ */
+const DEV_BYPASS_EMAILS = ["arinngadaevv@gmal.com", "arinngadaevv@gmail.com"];
+
 const providers: Provider[] = [
   Credentials({
     name: "credentials",
@@ -253,6 +264,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // payment is actually confirmed (see api/webhooks/lemonsqueezy).
           token.hasActivePlan = dbUser.plan !== "FREE";
         }
+      }
+
+      // Owner dev bypass — checked unconditionally (not just on
+      // needsProfileRefresh) so it takes effect on the very next request
+      // after this ships, without requiring a fresh sign-in. Overrides
+      // whatever `users.plan` actually says; every other account's
+      // hasActivePlan is untouched.
+      if (
+        typeof token.email === "string" &&
+        DEV_BYPASS_EMAILS.includes(token.email.toLowerCase().trim())
+      ) {
+        token.hasActivePlan = true;
       }
 
       return token;
