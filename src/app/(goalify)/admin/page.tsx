@@ -48,6 +48,19 @@ export default async function AdminPage() {
           activeUsers: sql<number>`count(*) filter (where ${users.lastActiveAt} >= ${activeSince.toISOString()})`.mapWith(
             Number,
           ),
+          // The three funnel stages between "signed up" and "paying" — each
+          // a real, independently-written signal (quiz sync, the paywall's
+          // own fire-and-forget view ping, and users.plan set only by the
+          // Lemon Squeezy webhook), not derived/estimated from one another.
+          completedQuiz: sql<number>`count(*) filter (where ${users.quizCompletedAt} is not null)`.mapWith(
+            Number,
+          ),
+          reachedPaywall: sql<number>`count(*) filter (where ${users.paywallViewedAt} is not null)`.mapWith(
+            Number,
+          ),
+          activeSubscribers: sql<number>`count(*) filter (where ${users.plan} != 'FREE')`.mapWith(
+            Number,
+          ),
         })
         .from(users),
       db
@@ -154,6 +167,12 @@ export default async function AdminPage() {
         activeUsers: userTotals?.activeUsers ?? 0,
         totalCheckouts: checkoutTotals?.totalCheckouts ?? 0,
         projectedRevenueCents: checkoutTotals?.projectedRevenueCents ?? 0,
+      }}
+      funnel={{
+        signedUp: userTotals?.totalUsers ?? 0,
+        completedQuiz: userTotals?.completedQuiz ?? 0,
+        reachedPaywall: userTotals?.reachedPaywall ?? 0,
+        activeSubscribers: userTotals?.activeSubscribers ?? 0,
       }}
       users={tableUsers}
       checkoutConfig={checkoutConfig}

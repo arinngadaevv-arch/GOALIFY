@@ -7,8 +7,12 @@ import {
   ArrowLeft,
   CheckCircle2,
   CircleDollarSign,
+  ClipboardCheck,
+  CreditCard,
+  Crown,
   Loader2,
   ShieldCheck,
+  UserPlus,
   Users,
   XCircle,
 } from "lucide-react";
@@ -37,6 +41,13 @@ export type AdminStats = {
   activeUsers: number;
   totalCheckouts: number;
   projectedRevenueCents: number;
+};
+
+export type FunnelStats = {
+  signedUp: number;
+  completedQuiz: number;
+  reachedPaywall: number;
+  activeSubscribers: number;
 };
 
 export type CheckoutConfig = {
@@ -74,10 +85,12 @@ function formatDate(iso: string) {
 
 export function AdminDashboard({
   stats,
+  funnel,
   users,
   checkoutConfig,
 }: {
   stats: AdminStats;
+  funnel: FunnelStats;
   users: AdminUserRow[];
   checkoutConfig: CheckoutConfig;
 }) {
@@ -130,6 +143,22 @@ export function AdminDashboard({
           has actually settled — nothing here reflects a checkout that was
           started but not completed.
         </p>
+
+        {/* --------------------------------------------------------- Funnel */}
+        <section className="mt-10">
+          <h2 className="gf-display text-xl font-extrabold text-ink">
+            Analytics
+          </h2>
+          <p className="mt-1 text-[11px] leading-relaxed text-haze">
+            Total signups plus each real stage in between: quiz completion is
+            synced once the client posts a summary, &ldquo;reached
+            paywall&rdquo; is a fire-and-forget ping the paywall itself sends
+            on load, and &ldquo;active subscribers&rdquo; reads{" "}
+            <code>users.plan</code> — the same field the app itself gates
+            real routes on. None of these are estimated from each other.
+          </p>
+          <FunnelChart funnel={funnel} />
+        </section>
 
         {/* ---------------------------------------------- Checkout config */}
         <section className="mt-10">
@@ -212,6 +241,44 @@ export function AdminDashboard({
         </section>
       </div>
     </div>
+  );
+}
+
+function FunnelChart({ funnel }: { funnel: FunnelStats }) {
+  const stages = [
+    { icon: UserPlus, label: "Signed up", value: funnel.signedUp },
+    { icon: ClipboardCheck, label: "Completed questionnaire", value: funnel.completedQuiz },
+    { icon: CreditCard, label: "Reached paywall", value: funnel.reachedPaywall },
+    { icon: Crown, label: "Active subscribers", value: funnel.activeSubscribers },
+  ];
+  const base = funnel.signedUp || 1;
+
+  return (
+    <GlassCard deep className="mt-3 flex flex-col gap-4 p-4">
+      {stages.map((stage) => {
+        const pct = Math.round((stage.value / base) * 100);
+        return (
+          <div key={stage.label}>
+            <div className="flex items-center justify-between gap-3 text-xs">
+              <span className="flex items-center gap-1.5 font-bold text-ink">
+                <stage.icon className="size-3.5 text-electric" />
+                {stage.label}
+              </span>
+              <span className="gf-numeric font-extrabold text-ink">
+                {stage.value.toLocaleString("en-US")}
+                <span className="ml-1.5 font-semibold text-mist">{pct}%</span>
+              </span>
+            </div>
+            <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-ink/8">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-electric to-lime-neon"
+                style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </GlassCard>
   );
 }
 

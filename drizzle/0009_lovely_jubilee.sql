@@ -1,0 +1,1 @@
+ALTER TABLE "user" ADD COLUMN "paywall_viewed_at" timestamp;

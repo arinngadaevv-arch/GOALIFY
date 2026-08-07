@@ -102,6 +102,11 @@ export const users = pgTable("user", {
   quizLevel: text("quiz_level"),
   quizDaysPerWeek: integer("quiz_days_per_week"),
   quizCompletedAt: timestamp("quiz_completed_at"),
+  // Fire-and-forget signal, same pattern as quizCompletedAt (see
+  // api/user/paywall-view/route.ts) — set the first time this account's
+  // client actually renders the paywall, purely so the admin funnel has a
+  // real "reached paywall" stage instead of approximating it from signup.
+  paywallViewedAt: timestamp("paywall_viewed_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

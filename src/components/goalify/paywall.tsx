@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import clsx from "clsx";
 import { Check, Loader2, Lock, ShieldCheck } from "lucide-react";
@@ -23,6 +23,13 @@ export function Paywall() {
   const [tier, setTier] = useState("quarterly");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Fire-and-forget — records that this account actually reached the
+  // paywall, purely for the admin funnel (see api/user/paywall-view).
+  // Never blocks rendering or the checkout flow either way.
+  useEffect(() => {
+    fetch("/api/user/paywall-view", { method: "POST" }).catch(() => {});
+  }, []);
 
   const checkout = async (event: React.MouseEvent) => {
     if (loading) return;
