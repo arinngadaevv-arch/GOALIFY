@@ -53,6 +53,7 @@ type DiagnosticResult = {
   ok: boolean;
   expectedCents: number;
   actualCents?: number | null;
+  statusCode?: number | null;
   error?: string;
   cause?: string;
 };
@@ -449,7 +450,12 @@ function CheckoutDiagnosticsPanel() {
                 )}
               </div>
               {!result.ok && result.error && (
-                <p className="mt-1 text-red-300">{result.error}</p>
+                <p className="mt-1 text-red-300">
+                  {result.statusCode && (
+                    <span className="mr-1 font-mono font-black">{result.statusCode}</span>
+                  )}
+                  {result.error}
+                </p>
               )}
               {!result.ok && result.cause && (
                 <p className="mt-1 break-all text-haze">{result.cause}</p>

@@ -52,6 +52,7 @@ export async function GET() {
           variantId,
           ok: false,
           expectedCents,
+          statusCode: result.statusCode,
           error: result.error?.message || "Unknown error.",
           cause: result.error?.cause ? JSON.stringify(result.error.cause) : undefined,
         };
