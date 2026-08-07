@@ -57,6 +57,8 @@ const INITIAL_STATE: GoalifyState = {
     units: "metric",
   },
   photos: [],
+  beforePhotoUrl: null,
+  afterPhotoUrl: null,
 };
 
 /* -------------------------------------------------------------------------
@@ -263,6 +265,14 @@ export function useGoalify() {
     }));
   }, []);
 
+  /** Sets the fixed Before/After vault slot's photo (see progress.tsx) —
+   * distinct from `photos`, which is the free-form weekly log. */
+  const setVaultPhoto = useCallback((slot: "before" | "after", dataUrl: string) => {
+    update((s) =>
+      slot === "before" ? { ...s, beforePhotoUrl: dataUrl } : { ...s, afterPhotoUrl: dataUrl },
+    );
+  }, []);
+
   const reset = useCallback(() => {
     update(() => INITIAL_STATE);
   }, []);
@@ -302,6 +312,7 @@ export function useGoalify() {
     addSteps,
     updateSettings,
     addPhoto,
+    setVaultPhoto,
     reset,
     markQuizSynced,
   };

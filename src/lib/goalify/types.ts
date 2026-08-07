@@ -75,6 +75,11 @@ export type GoalifyState = {
   quizSyncedAt: string | null;
   settings: Settings;
   photos: ProgressPhoto[];
+  /** Data URLs for the two fixed Before/After vault slots (see progress.tsx)
+   * — device-only, never uploaded, so a plain data URL in localStorage is
+   * the whole storage layer. Null until the user actually picks a photo. */
+  beforePhotoUrl: string | null;
+  afterPhotoUrl: string | null;
 };
 
 export type Settings = {

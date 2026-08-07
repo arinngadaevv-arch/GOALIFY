@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import {
   Camera,
@@ -43,7 +43,7 @@ const BADGES = [
 ];
 
 export function Progress() {
-  const { state, answers, streak, addPhoto } = useGoalify();
+  const { state, answers, streak, addPhoto, setVaultPhoto } = useGoalify();
   const completed = state.completedDays.length;
   const projection = useMemo(() => projectWeight(answers), [answers]);
   const weeks = weeksToTarget(answers);
@@ -189,12 +189,20 @@ export function Progress() {
           }
         />
         <div className="grid grid-cols-2 gap-3">
-          <PhotoTile label="Before" caption="Day 1" icon={Camera} />
+          <PhotoTile
+            label="Before"
+            caption="Day 1"
+            icon={Camera}
+            photoUrl={state.beforePhotoUrl}
+            onPhotoSelected={(dataUrl) => setVaultPhoto("before", dataUrl)}
+          />
           <PhotoTile
             label="After"
             caption={completed > 0 ? `Day ${completed}` : "Not yet"}
             icon={Sparkles}
             locked={completed < 7}
+            photoUrl={state.afterPhotoUrl}
+            onPhotoSelected={(dataUrl) => setVaultPhoto("after", dataUrl)}
           />
         </div>
 
@@ -298,21 +306,67 @@ function PhotoTile({
   caption,
   icon,
   locked = false,
+  photoUrl,
+  onPhotoSelected,
 }: {
   label: string;
   caption: string;
   icon: LucideIcon;
   locked?: boolean;
+  photoUrl?: string | null;
+  onPhotoSelected?: (dataUrl: string) => void;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || !onPhotoSelected) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") onPhotoSelected(reader.result);
+    };
+    reader.readAsDataURL(file);
+  }
+
   return (
     <div className="relative">
-      <VisualSlot
-        label={label}
-        hint={locked ? "Unlocks at 7 sessions" : "Tap to add a photo"}
-        icon={locked ? Lock : icon}
-        className="aspect-3/4 w-full"
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        disabled={locked}
+        className="gf-press block w-full text-left disabled:cursor-not-allowed"
+      >
+        {photoUrl ? (
+          // A user-picked local file read as a data URL — next/image's
+          // optimizer/loader is for remote or static assets, not a one-off
+          // in-memory blob, so a plain <img> is the correct tool here.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={photoUrl}
+            alt={`${label} progress photo`}
+            className="aspect-3/4 w-full rounded-glass object-cover"
+          />
+        ) : (
+          <VisualSlot
+            label={label}
+            hint={locked ? "Unlocks at 7 sessions" : "Tap to add a photo"}
+            icon={locked ? Lock : icon}
+            className="aspect-3/4 w-full"
+          />
+        )}
+      </button>
+      {/* Invisible — triggered via the button above so the whole tile,
+          not just a native file-input button, is the tap target. */}
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={handleFileChange}
+        className="hidden"
       />
-      <div className="absolute inset-x-3 bottom-3 flex items-center justify-between">
+      <div className="pointer-events-none absolute inset-x-3 bottom-3 flex items-center justify-between">
         <span className="gf-glass rounded-full px-2.5 py-1 text-[10px] font-black tracking-[0.1em] text-ink uppercase">
           {label}
         </span>
