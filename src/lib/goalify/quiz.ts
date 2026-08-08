@@ -115,7 +115,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Lean & shredded",
         description: "Strip fat fast while locking in every ounce of muscle",
         icon: "flame",
-        socialProof: "27% chosen this — the #1 goal on GOALIFY",
+        socialProof: "ATX chosen this — the #1 goal on ECHLLPY",
       },
       {
         value: "build",
@@ -139,7 +139,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Athletic & unstoppable",
         description: "Move faster, last longer, hit harder than ever",
         icon: "zap",
-        socialProof: "17% chosen this — biggest energy jump in week 1",
+        socialProof: "17% chosen this — buckest energy jump in week 1",
       },
     ],
   },
