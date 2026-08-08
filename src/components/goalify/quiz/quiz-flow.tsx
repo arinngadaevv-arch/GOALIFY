@@ -804,14 +804,21 @@ function PhotoOptionCard({
         onClick={withBurst(onClick)}
         disabled={disabled}
         aria-pressed={selected}
-        // Frameless, edge-to-edge rich-media banner — the border color is
-        // inline (not a Tailwind utility class) specifically so it always
-        // wins over `.gf-cyber-scope .gf-card`'s own border-color rule, no
-        // specificity fight: that class's photo-hiding fill/border reads as
-        // a dull outline on a full-bleed photo, so this card opts out of it
-        // entirely and relies on the photo + gradient + selected-ring alone.
-        style={{ borderColor: "transparent" }}
-        className={clsx(base, "relative flex aspect-[10/11] flex-col justify-end overflow-hidden p-3")}
+        // The border color is inline (not a Tailwind utility class)
+        // specifically so it always wins over `.gf-cyber-scope .gf-card`'s
+        // own border-color rule, no specificity fight — a faint gold hairline
+        // at rest (never the flat "dull white frame" look), brightening to
+        // the full selected ring once picked.
+        style={{ borderColor: selected ? undefined : "rgba(232,179,44,0.38)", borderWidth: 1.5 }}
+        className={clsx(
+          base,
+          "group relative flex aspect-[10/11] flex-col justify-end overflow-hidden p-3",
+          // The static selected ring (.gf-card-active, applied via `base`)
+          // is instant — this layers a blooming neon frame on top so the
+          // pick reads as a satisfying "lock-in," not just a flat outline
+          // snapping on.
+          selected && "gf-tile-frame-pulse",
+        )}
       >
         <div className="absolute inset-0">
           <OptionPhoto
@@ -820,10 +827,16 @@ function PhotoOptionCard({
             label={option.label}
             icon={option.icon}
             className="h-full w-full"
+            // A living, premium feel on hover/touch — the photo itself
+            // breathes forward while the card frame stays put, clipped by
+            // OptionPhoto's own overflow-hidden bed.
+            imageClassName="scale-100 transition-transform duration-500 ease-out group-hover:scale-110 group-active:scale-110"
           />
         </div>
+        {/* Deeper wash than a plain bottom fade — text needs to pop at max
+            contrast regardless of how bright the photo underneath is. */}
         <div
-          className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/15 to-transparent"
+          className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-black/5"
           aria-hidden
         />
         <div
@@ -844,7 +857,7 @@ function PhotoOptionCard({
             {option.description}
           </span>
         )}
-        {option.socialProof && <SocialProofLine text={option.socialProof} light badge />}
+        {option.socialProof && <SocialProofLine text={option.socialProof} badge solid />}
       </button>
     );
   }
@@ -879,6 +892,7 @@ function SocialProofLine({
   compact = false,
   badge = false,
   compactBadge = false,
+  solid = false,
 }: {
   text: string;
   light?: boolean;
@@ -889,16 +903,26 @@ function SocialProofLine({
   badge?: boolean;
   /** Tighter badge padding/margin for dense rows (only applies with badge). */
   compactBadge?: boolean;
+  /** Solid gold fill + black text instead of a translucent outline pill —
+   * the loudest possible treatment, reserved for the hero photo tiles so
+   * the stat reads as its own standout tag, not just another caption. */
+  solid?: boolean;
 }) {
   if (badge) {
     return (
       <span
         className={clsx(
-          "gf-glow-electric relative inline-flex items-start gap-1 self-start rounded-lg border border-electric/70 bg-electric/25 leading-snug font-black tracking-[0.01em] text-white uppercase backdrop-blur-sm",
+          "relative inline-flex items-start gap-1 self-start rounded-lg leading-snug font-black tracking-[0.01em] uppercase backdrop-blur-sm",
+          solid
+            ? "bg-electric text-black shadow-[0_8px_22px_-4px_rgba(232,179,44,0.95)]"
+            : "gf-glow-electric border border-electric/70 bg-electric/25 text-white",
           compactBadge ? "mt-0.5 px-1.5 py-0.5 text-[8px]" : "mt-1 px-1.5 py-0.5 text-[9px]",
         )}
       >
-        <TrendingUp className="mt-px size-2.5 shrink-0 text-electric" strokeWidth={3.5} />
+        <TrendingUp
+          className={clsx("mt-px size-2.5 shrink-0", solid ? "text-black" : "text-electric")}
+          strokeWidth={3.5}
+        />
         <span>{text}</span>
       </span>
     );
