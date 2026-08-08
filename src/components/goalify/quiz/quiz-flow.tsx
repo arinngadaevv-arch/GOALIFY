@@ -551,7 +551,7 @@ function ChoiceStep({
       <div
         className={clsx(
           "grid",
-          layout === "wide" ? "gap-1.5" : "grid-cols-2 gap-3",
+          layout === "wide" ? "gap-2" : "grid-cols-2 gap-3",
           layout === "portrait" && "mt-14",
         )}
       >
@@ -698,32 +698,30 @@ function PhotoOptionCard({
       // lower options off the bottom of a real phone screen entirely. The
       // photo shrinks to a fixed thumbnail so every row stays short enough
       // that at least 3-4 options are on screen at once, no scrolling.
+      // No subtitle copy either — title + stat badge only, so the whole
+      // row scans and taps in one glance instead of reading like a list.
       return (
         <button
           type="button"
           onClick={withBurst(onClick)}
           disabled={disabled}
           aria-pressed={selected}
-          style={{ borderColor: selected ? undefined : "rgba(232,179,44,0.4)", borderWidth: 1.5 }}
-          className={clsx(base, "flex items-center gap-2 overflow-hidden p-1.5 pr-2.5")}
+          style={{ borderColor: selected ? undefined : "rgba(232,179,44,0.42)", borderWidth: 1.5 }}
+          className={clsx(base, "group flex items-center gap-2.5 overflow-hidden p-2 pr-3")}
         >
           <OptionPhoto
             src={option.image}
             alt={option.label}
             label={option.label}
             icon={option.icon}
-            className="size-11 shrink-0 rounded-xl"
+            className="size-12 shrink-0 rounded-xl"
+            imageClassName="transition-transform duration-300 ease-out group-active:scale-110"
           />
           <span className="min-w-0 flex-1">
-            <span className="gf-display block truncate text-sm leading-tight font-extrabold text-ink">
+            <span className="gf-display block truncate text-lg leading-tight font-extrabold text-ink">
               {option.label}
             </span>
-            {option.description && (
-              <span className="block truncate text-[10px] leading-snug text-ink-soft">
-                {option.description}
-              </span>
-            )}
-            {option.socialProof && <SocialProofLine text={option.socialProof} badge compactBadge />}
+            {option.socialProof && <SocialProofLine text={option.socialProof} badge compactBadge solid />}
           </span>
           {checkBadge}
         </button>
