@@ -59,6 +59,15 @@ export type QuizStep = {
        *   selection dot on the right instead of a corner check badge
        */
       layout?: "portrait" | "wide" | "tile" | "list" | "radio";
+      /** Portrait photo bled into the top-right of the headline, alongside
+       * the title/subtitle instead of inside any option card. */
+      heroPhoto?: string;
+      /** Trailing portion of `title` (must match its exact end) rendered in
+       * the accent gold instead of the default ink color. */
+      titleHighlight?: string;
+      /** Understated reassurance banner rendered under the option list —
+       * for questions where the "right" answer might feel exposing. */
+      reassurance?: { title: string; body: string };
       options: ChoiceOption[];
     }
   | {
@@ -140,14 +149,50 @@ export const QUIZ_STEPS: QuizStep[] = [
     layout: "radio",
     chapter: "The timeline",
     title: "When was the last time you had your ideal body?",
-    subtitle: "This tells us how much muscle memory we're working with.",
+    titleHighlight: "ideal body?",
+    heroPhoto: "/quiz/timeline-hero-thinking.png",
+    subtitle: "This helps us understand your fitness journey better.",
     hudPhrase: "TIMELINE ASSESSMENT",
+    reassurance: {
+      title: "There's no wrong answer.",
+      body: "We're here to help you achieve your goal.",
+    },
     options: [
-      { value: "now", label: "Right now", icon: "smile" },
-      { value: "under1", label: "<1 year ago", icon: "calendar" },
-      { value: "oneToThree", label: "1~3 years ago", icon: "calendar" },
-      { value: "over3", label: ">3 years ago", icon: "calendar" },
-      { value: "never", label: "Never", icon: "ban" },
+      {
+        value: "now",
+        label: "Right now",
+        description: "I'm in the best shape of my life",
+        icon: "smile",
+        image: "/quiz/timeline-now-jogging.png",
+      },
+      {
+        value: "under1",
+        label: "<1 year ago",
+        description: "I was in great shape not long ago",
+        icon: "calendar",
+        image: "/quiz/timeline-under1-calendar.png",
+      },
+      {
+        value: "oneToThree",
+        label: "1~3 years ago",
+        description: "It's been a while",
+        icon: "calendar",
+        image: "/quiz/timeline-onetothree-curl.png",
+      },
+      {
+        value: "over3",
+        label: ">3 years ago",
+        description: "Feels like ages ago",
+        icon: "calendar",
+        image: "/quiz/timeline-over3-back.png",
+      },
+      {
+        value: "never",
+        label: "Never",
+        description: "I've never had my ideal body",
+        icon: "ban",
+        image: "/quiz/timeline-never-sitting.png",
+      },
     ],
   },
   {

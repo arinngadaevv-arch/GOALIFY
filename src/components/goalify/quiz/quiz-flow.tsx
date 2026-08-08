@@ -1,11 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { AnimatePresence, motion } from "framer-motion";
 import clsx from "clsx";
-import { ArrowRight, Check, ChevronLeft, TrendingUp } from "lucide-react";
+import { ArrowRight, Check, ChevronLeft, ChevronsRight, Target, TrendingUp } from "lucide-react";
 import {
   QUIZ_STEPS,
   type ChoiceOption,
@@ -88,13 +89,33 @@ const BODY_MAP_IMAGE = "/quiz/bodymap-character-v2.png";
  * the body map). */
 function stepImageUrls(step: QuizStep): string[] {
   if (step.kind === "choice") {
-    return step.options
+    const optionUrls = step.options
       .map((option) => option.image)
       .filter((src): src is string => hasRealPhoto(src));
+    return step.heroPhoto ? [step.heroPhoto, ...optionUrls] : optionUrls;
   }
   if (step.kind === "bodyMap") return [BODY_MAP_IMAGE];
   if (step.kind === "commit") return [step.bgPhoto];
   return [];
+}
+
+/** Renders `title` with its trailing `highlight` substring (if given, and
+ * if it really is the tail of `title`) recolored to the accent gold. */
+function HeadlineTitle({ title, highlight }: { title: string; highlight?: string }) {
+  if (!highlight || !title.endsWith(highlight)) {
+    return (
+      <h1 className="gf-display relative mt-1 text-2xl leading-[1.08] font-black text-ink sm:text-5xl">
+        {title}
+      </h1>
+    );
+  }
+  const lead = title.slice(0, title.length - highlight.length);
+  return (
+    <h1 className="gf-display relative mt-1 text-2xl leading-[1.08] font-black text-ink sm:text-5xl">
+      {lead}
+      <span className="text-electric">{highlight}</span>
+    </h1>
+  );
 }
 
 export function QuizFlow() {
@@ -469,9 +490,33 @@ export function QuizFlow() {
             <p className="text-[11px] font-black tracking-[0.16em] text-electric uppercase">
               {step.chapter}
             </p>
-            <h1 className="gf-display relative mt-1 text-2xl leading-[1.08] font-black text-ink sm:text-5xl">
-              {step.title}
-            </h1>
+            {step.kind === "choice" && step.heroPhoto ? (
+              <div className="flex items-start gap-3">
+                <div className="min-w-0 flex-1">
+                  <HeadlineTitle title={step.title} highlight={step.titleHighlight} />
+                  <p className="mt-2 text-sm leading-snug text-ink-soft">{step.subtitle}</p>
+                </div>
+                <div className="relative -mt-1 h-24 w-20 shrink-0 overflow-hidden rounded-2xl sm:h-40 sm:w-32">
+                  <Image
+                    src={step.heroPhoto}
+                    alt=""
+                    fill
+                    unoptimized
+                    priority
+                    sizes="140px"
+                    className="object-cover"
+                  />
+                  <div
+                    className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-canvas/80"
+                    aria-hidden
+                  />
+                </div>
+              </div>
+            ) : (
+              <h1 className="gf-display relative mt-1 text-2xl leading-[1.08] font-black text-ink sm:text-5xl">
+                {step.title}
+              </h1>
+            )}
           </div>
 
           <div className="relative flex-1 pt-2">
@@ -612,7 +657,7 @@ function ChoiceStep({
       <div
         className={clsx(
           "grid",
-          layout === "wide" || layout === "radio" ? "gap-1.5" : "grid-cols-2 gap-3",
+          layout === "radio" ? "gap-1" : layout === "wide" ? "gap-1.5" : "grid-cols-2 gap-3",
           layout === "portrait" && "mt-14",
         )}
       >
@@ -649,6 +694,21 @@ function ChoiceStep({
               {option.label}
             </button>
           ))}
+        </div>
+      )}
+
+      {step.reassurance && (
+        <div className="gf-card mt-3 flex items-center gap-3 rounded-2xl p-3">
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-electric/12 text-electric">
+            <Target className="size-5" strokeWidth={2.25} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-extrabold text-ink">
+              {step.reassurance.title}
+            </span>
+            <span className="block text-xs text-ink-soft">{step.reassurance.body}</span>
+          </span>
+          <ChevronsRight className="gf-glow-electric size-6 shrink-0 text-electric" aria-hidden />
         </div>
       )}
     </div>
@@ -747,6 +807,61 @@ function PhotoOptionCard({
   }
 
   if (layout === "radio") {
+    const radioDot = (
+      <span
+        className={clsx(
+          "grid size-6 shrink-0 place-items-center rounded-full border-2 transition-all duration-200 ease-out",
+          selected ? "border-electric bg-electric" : "border-ink-soft/40",
+        )}
+        aria-hidden
+      >
+        {selected && <Check className="size-3.5 text-white" strokeWidth={3.5} />}
+      </span>
+    );
+    const labelBlock = (
+      <span className="min-w-0 flex-1">
+        <span className="gf-display block text-base leading-tight font-extrabold text-ink">
+          {option.label}
+        </span>
+        {option.description && (
+          <span className="mt-0.5 block text-xs leading-snug text-ink-soft">
+            {option.description}
+          </span>
+        )}
+      </span>
+    );
+
+    if (hasPhoto) {
+      return (
+        <button
+          type="button"
+          onClick={withBurst(onClick)}
+          disabled={disabled}
+          aria-pressed={selected}
+          className={clsx(
+            "gf-card gf-card-hover gf-press relative flex items-center gap-3 overflow-hidden p-1.5 pr-3 text-left transition-all duration-300 ease-out",
+            selected && "gf-card-active",
+            disabled && !selected && "opacity-50",
+          )}
+        >
+          <div className="relative size-11 shrink-0 overflow-hidden rounded-lg">
+            <OptionPhoto
+              src={option.image}
+              alt={option.label}
+              label={option.label}
+              icon={option.icon}
+              className="size-full"
+            />
+            <span className="absolute top-1 left-1 z-10 drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]">
+              <QuizIconBadge icon={option.icon} size="xs" active={selected} />
+            </span>
+          </div>
+          {labelBlock}
+          {radioDot}
+        </button>
+      );
+    }
+
     return (
       <button
         type="button"
@@ -760,25 +875,8 @@ function PhotoOptionCard({
         )}
       >
         <QuizIconBadge icon={option.icon} size="md" active={selected} />
-        <span className="min-w-0 flex-1">
-          <span className="gf-display block text-base leading-tight font-extrabold text-ink">
-            {option.label}
-          </span>
-          {option.description && (
-            <span className="mt-0.5 block text-xs leading-snug text-ink-soft">
-              {option.description}
-            </span>
-          )}
-        </span>
-        <span
-          className={clsx(
-            "grid size-6 shrink-0 place-items-center rounded-full border-2 transition-all duration-200 ease-out",
-            selected ? "border-electric bg-electric" : "border-ink-soft/40",
-          )}
-          aria-hidden
-        >
-          {selected && <Check className="size-3.5 text-white" strokeWidth={3.5} />}
-        </span>
+        {labelBlock}
+        {radioDot}
       </button>
     );
   }
