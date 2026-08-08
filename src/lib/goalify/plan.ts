@@ -145,21 +145,8 @@ export function planHighlights(p: QuizAnswers): string[] {
     highlights.push("Full-range programming with progressive overload");
   }
 
-  highlights.push(`Built around your #1 blocker: ${painLabel(p.painTrigger)}`);
   highlights.push("3D AI form coach on every single rep");
   return highlights;
-}
-
-const PAIN_LABEL: Record<QuizAnswers["painTrigger"], string> = {
-  time: "never having enough time",
-  motivation: "motivation fading",
-  confusion: "not knowing what to do",
-  injury: "pain interrupting progress",
-  restart: "starting over and over",
-};
-
-export function painLabel(trigger: QuizAnswers["painTrigger"]): string {
-  return PAIN_LABEL[trigger];
 }
 
 const VISION_LABEL: Record<QuizAnswers["vision"], string> = {
@@ -226,7 +213,6 @@ export const DEFAULT_ANSWERS: QuizAnswers = {
   heightCm: 175,
   weightKg: 78,
   targetWeightKg: 70,
-  painTrigger: "motivation",
   vision: "confident",
   commitment: "allin",
 };

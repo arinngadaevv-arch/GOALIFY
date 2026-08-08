@@ -5,7 +5,6 @@ export const HUD_STEP_META: Record<keyof QuizAnswers, { hype: string }> = {
   goal: { hype: "TARGET LOCKED 🔥" },
   lastIdealBody: { hype: "TIMELINE MAPPED ⏳" },
   focusZones: { hype: "ZONES MAPPED 🎯" },
-  painTrigger: { hype: "WEAKNESS FOUND ⚡" },
   vision: { hype: "VISION SET 👁️" },
   level: { hype: "BASELINE SET 📊" },
   joints: { hype: "COMMITMENT LOCKED 🔥" },

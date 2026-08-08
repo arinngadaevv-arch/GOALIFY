@@ -34,12 +34,12 @@ const REACTIONS: Record<string, Record<string, string>> = {
     glutes: "Glutes, locked in. Your lower-body volume just went up.",
     legs: "Legs, noted — nothing changes a physique faster than strong legs.",
   },
-  painTrigger: {
-    time: "I hear you — time is the number one killer. That's exactly why your sessions are built to finish, not to impress.",
-    motivation: "Week three is where most plans die. I'm engineering your streak so it doesn't.",
-    confusion: "That ends today. You'll never open this app and wonder what to do again.",
-    injury: "Thank you for telling me. Nothing in your plan will put you back on the sidelines.",
-    restart: "Starting again takes more guts than starting the first time. Respect. Let's make this the last restart.",
+  lastIdealBody: {
+    now: "Right now? Then we're not rebuilding — we're locking in and pushing past your ceiling.",
+    under1: "Recent muscle memory is gold. Your body remembers exactly how to get back there, fast.",
+    oneToThree: "That's still very recoverable. Your body hasn't forgotten how — we're just waking it back up.",
+    over3: "It's been a while, but that just means the gains ahead are bigger. Let's go get them.",
+    never: "Then this is the first time — and I intend to make it count.",
   },
   vision: {
     confident: "That's the one. Confidence is built in the reps nobody sees. I'll be there for all of them.",

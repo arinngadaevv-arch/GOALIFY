@@ -84,8 +84,8 @@ const BODY_MAP_IMAGE = "/quiz/bodymap-character-v2.png";
 /** Every real photo URL a step will paint, so the preloader can warm the
  * browser's image cache a step (or two) ahead of the user actually
  * reaching it — the fetch itself, not the animation, was the real source
- * of the "blank flash" on photo-heavy steps (goal, painTrigger,
- * bodyFatPercent, the body map). */
+ * of the "blank flash" on photo-heavy steps (goal, bodyFatPercent,
+ * the body map). */
 function stepImageUrls(step: QuizStep): string[] {
   if (step.kind === "choice") {
     return step.options

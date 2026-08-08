@@ -82,8 +82,8 @@ export type QuizStep = {
 );
 
 /**
- * A short, high-energy "yes-ladder": the target outcome first, an
- * immediate emotional commitment, the obstacle that's blocked them, the
+ * A short, high-energy "yes-ladder": the target outcome first, how long
+ * it's been since they had it, an immediate emotional commitment, the
  * interactive blueprint, a fast benchmark, then only the numbers that are
  * actually load-bearing for the plan — closing on a second, bigger yes
  * right before the plan unlocks. Every question either sells the outcome
@@ -198,49 +198,6 @@ export const QUIZ_STEPS: QuizStep[] = [
     hudPhrase: "COMMITMENT VERIFICATION",
     buttonLabel: "YES! I'M READY 🔥",
     bgPhoto: "/quiz/commit-workout-complete.png",
-  },
-  {
-    id: "painTrigger",
-    kind: "choice",
-    layout: "wide",
-    chapter: "The obstacle",
-    title: "What's really holding you back?",
-    subtitle: "Name it — your plan is built to destroy it.",
-    hudPhrase: "PERFORMANCE BARRIER ASSESSMENT",
-    options: [
-      {
-        value: "time",
-        image: "/quiz/no-time.png",
-        label: "No time",
-        description: "Schedule fills up and training gets cut first",
-        icon: "hourglass",
-        socialProof: "31% say this — 92% finish our 15-min sessions",
-      },
-      {
-        value: "motivation",
-        image: "/quiz/motivation.jpg",
-        label: "Fading motivation",
-        description: "Strong start, then momentum drops by week three",
-        icon: "batteryLow",
-        socialProof: "24% say this — streaks keep 8/10 past week 8",
-      },
-      {
-        value: "confusion",
-        image: "/quiz/no-plan.png",
-        label: "No clear plan",
-        description: "Too many conflicting plans and opinions",
-        icon: "helpCircle",
-        socialProof: "19% say this — every session pre-decided",
-      },
-      {
-        value: "injury",
-        image: "/quiz/injury.png",
-        label: "Pain or injury",
-        description: "Flare-ups cause repeated setbacks",
-        icon: "heartPulse",
-        socialProof: "14% say this — joint-safe swaps built in",
-      },
-    ],
   },
   {
     id: "focusZones",
