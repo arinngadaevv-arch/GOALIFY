@@ -12,11 +12,9 @@ import {
   type QuizStep,
 } from "@/lib/goalify/quiz";
 import { DEFAULT_ANSWERS } from "@/lib/goalify/plan";
-import { coachReaction } from "@/lib/goalify/coach";
 import type { QuizAnswers } from "@/lib/goalify/types";
 import { useGoalify } from "@/lib/goalify/store";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
-import { CoachGuide, sayCoach } from "@/components/goalify/coach/coach-guide";
 import { useUiSounds } from "@/components/goalify/use-ui-sounds";
 import { hasRealPhoto, OptionPhoto } from "./option-photo";
 import { QuizIconBadge, type QuizIconKey } from "./quiz-icons";
@@ -155,18 +153,14 @@ export function QuizFlow() {
   );
 
   /**
-   * Writes the answer immediately (so the option shows as selected), fires the
-   * coach's reaction, and queues the advance so the reaction has a beat to land.
+   * Writes the answer immediately (so the option shows as selected) and
+   * queues the advance so the selection's own feedback has a beat to land.
    */
   const pick = useCallback(
-    (patch: Partial<QuizAnswers>, value: unknown) => {
+    (patch: Partial<QuizAnswers>) => {
       setDraft(patch);
       setPending(patch);
       hypeSelect();
-      // The reaction only ever surfaces in the floating coach widget now —
-      // there's no more inline panel to hold it on-screen.
-      const line = coachReaction(String(step.id), value);
-      if (line) sayCoach(line);
 
       const meta = HUD_STEP_META[step.id];
       if (meta) setHudToast(meta.hype);
@@ -328,7 +322,7 @@ export function QuizFlow() {
   }
 
   return (
-    <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-16">
+    <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-8">
       <ParticleBurstLayer />
       <ConfettiBurstLayer />
       <ShockwaveLayer />
@@ -467,12 +461,6 @@ export function QuizFlow() {
           </div>
         </motion.div>
       </AnimatePresence>
-
-      <CoachGuide
-        autoOpen={false}
-        photoSrc="/quiz/coach-portrait.png"
-        idleMessage="You don't need a gym to build a legendary body. Just 20 minutes and zero excuses."
-      />
     </main>
   );
 }
