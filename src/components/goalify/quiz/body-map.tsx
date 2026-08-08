@@ -76,7 +76,7 @@ export function BodyMapStep({
 
   return (
     <div>
-      <div className="relative mx-auto w-full max-w-[185px]">
+      <div className="relative mx-auto w-full max-w-[196px]">
         {/* Soft ambient glow behind the silhouette. */}
         <div
           className="absolute inset-0 -z-10 rounded-full bg-electric/16 blur-3xl"
@@ -161,7 +161,7 @@ export function BodyMapStep({
         </div>
       </div>
 
-      <div className="relative mt-4 grid place-items-center overflow-hidden">
+      <div className="relative mt-2 grid place-items-center overflow-hidden">
         <AnimatePresence mode="popLayout" initial={false}>
           <motion.p
             key={selected.length}
@@ -189,7 +189,7 @@ export function BodyMapStep({
         variant="cyber"
         size="lg"
         fullWidth
-        className="mt-4"
+        className="mt-2"
         disabled={selected.length === 0 || locked}
         onClick={(event) => {
           fireBurst(event.clientX, event.clientY, true);
