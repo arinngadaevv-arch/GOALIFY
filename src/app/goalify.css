@@ -1094,6 +1094,42 @@ html.goalify ::-webkit-scrollbar-thumb {
   }
 }
 
+/* A living border for row/list option cards — CSS-driven (not JS state) so
+   it fires identically for mouse hover and the brief `:active` window a
+   touch tap produces, with zero extra event wiring. Loops while the
+   pointer stays down/hovered, unlike the one-shot selection pulses above. */
+@keyframes gf-glow-pulse-loop {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1.5px rgba(232, 179, 44, 0.75),
+      0 0 14px -2px rgba(232, 179, 44, 0.45);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2.5px rgba(232, 179, 44, 1),
+      0 0 26px 0px rgba(232, 179, 44, 0.8);
+  }
+}
+
+.gf-glow-hover:hover,
+.gf-glow-hover:focus-visible,
+.gf-glow-hover:active {
+  border-color: var(--color-electric) !important;
+  animation: gf-glow-pulse-loop 1.1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gf-glow-hover:hover,
+  .gf-glow-hover:focus-visible,
+  .gf-glow-hover:active {
+    animation: none !important;
+    box-shadow:
+      0 0 0 2px rgba(232, 179, 44, 0.9),
+      0 0 20px -2px rgba(232, 179, 44, 0.6);
+  }
+}
+
 .gf-cyber-scope .gf-glass-electric {
   background: rgba(232, 179, 44, 0.1);
   border-color: rgba(232, 179, 44, 0.3);

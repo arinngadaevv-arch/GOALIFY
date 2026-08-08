@@ -563,7 +563,7 @@ function ChoiceStep({
       <div
         className={clsx(
           "grid",
-          layout === "wide" ? "gap-2" : "grid-cols-2 gap-3",
+          layout === "wide" ? "gap-1.5" : "grid-cols-2 gap-3",
           layout === "portrait" && "mt-14",
         )}
       >
@@ -719,7 +719,14 @@ function PhotoOptionCard({
           disabled={disabled}
           aria-pressed={selected}
           style={{ borderColor: selected ? undefined : "rgba(232,179,44,0.42)", borderWidth: 1.5 }}
-          className={clsx(base, "group flex items-center gap-2.5 overflow-hidden p-2 pr-3")}
+          className={clsx(
+            base,
+            "group gf-glow-hover flex items-center gap-3.5 overflow-hidden p-2.5 pr-3.5",
+            // The shared `scale-[1.03]` from `base` reads as a flat zoom on a
+            // wide, short row — pairing it with a slight lift makes the pick
+            // feel like the card rose off the page, not just grew.
+            selected && "-translate-y-0.5",
+          )}
         >
           <OptionPhoto
             src={option.image}
@@ -729,11 +736,17 @@ function PhotoOptionCard({
             className="size-12 shrink-0 rounded-xl"
             imageClassName="transition-transform duration-300 ease-out group-active:scale-110"
           />
-          <span className="min-w-0 flex-1">
+          {/* Title + badge as one centered unit, not two independently
+              placed lines — a fixed one-line badge (truncateBadge) keeps
+              every row the same height, which is most of what made this
+              feel aligned instead of ad hoc. */}
+          <span className="flex min-w-0 flex-1 flex-col justify-center gap-1">
             <span className="gf-display block truncate text-lg leading-tight font-extrabold text-ink">
               {option.label}
             </span>
-            {option.socialProof && <SocialProofLine text={option.socialProof} badge compactBadge solid />}
+            {option.socialProof && (
+              <SocialProofLine text={option.socialProof} badge compactBadge solid truncateBadge />
+            )}
           </span>
           {checkBadge}
         </button>
@@ -901,6 +914,7 @@ function SocialProofLine({
   badge = false,
   compactBadge = false,
   solid = false,
+  truncateBadge = false,
 }: {
   text: string;
   light?: boolean;
@@ -915,23 +929,30 @@ function SocialProofLine({
    * the loudest possible treatment, reserved for the hero photo tiles so
    * the stat reads as its own standout tag, not just another caption. */
   solid?: boolean;
+  /** Clamps the badge to one line — for dense row lists where a stat that
+   * wraps to 2 lines on some options but not others makes every card a
+   * different height, which reads as sloppy rather than just "compact." */
+  truncateBadge?: boolean;
 }) {
   if (badge) {
     return (
       <span
         className={clsx(
-          "relative inline-flex items-start gap-1 self-start rounded-lg leading-snug font-black tracking-[0.01em] uppercase backdrop-blur-sm",
+          "relative inline-flex gap-1 self-start rounded-lg leading-snug font-black tracking-[0.01em] uppercase backdrop-blur-sm",
+          truncateBadge ? "max-w-full items-center" : "items-start",
           solid
             ? "bg-electric text-black shadow-[0_8px_22px_-4px_rgba(232,179,44,0.95)]"
             : "gf-glow-electric border border-electric/70 bg-electric/25 text-white",
-          compactBadge ? "mt-0.5 px-1.5 py-0.5 text-[8px]" : "mt-2 px-2 py-1 text-[9.5px]",
+          compactBadge
+            ? clsx("px-1.5 py-0.5 text-[8px]", !truncateBadge && "mt-0.5")
+            : "mt-2 px-2 py-1 text-[9.5px]",
         )}
       >
         <TrendingUp
-          className={clsx("mt-px size-2.5 shrink-0", solid ? "text-black" : "text-electric")}
+          className={clsx("shrink-0", truncateBadge ? "size-2.5" : "mt-px size-2.5", solid ? "text-black" : "text-electric")}
           strokeWidth={3.5}
         />
-        <span>{text}</span>
+        <span className={truncateBadge ? "min-w-0 truncate" : undefined}>{text}</span>
       </span>
     );
   }
