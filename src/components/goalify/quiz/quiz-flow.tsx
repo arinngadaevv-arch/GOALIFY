@@ -849,14 +849,12 @@ function PhotoOptionCard({
           aria-hidden
         />
         {checkBadge}
-        <span className="gf-display relative text-base leading-tight font-extrabold text-white">
+        {/* Title + stat badge only — no subtitle. Nobody reads card copy at
+            a glance, so the pitch has to land in two beats: what it is,
+            then the proof everyone else already picked it. */}
+        <span className="gf-display relative text-lg leading-tight font-extrabold text-white">
           {option.label}
         </span>
-        {option.description && (
-          <span className="relative mt-0.5 text-[10px] leading-snug font-bold text-white/90">
-            {option.description}
-          </span>
-        )}
         {option.socialProof && <SocialProofLine text={option.socialProof} badge solid />}
       </button>
     );
@@ -916,7 +914,7 @@ function SocialProofLine({
           solid
             ? "bg-electric text-black shadow-[0_8px_22px_-4px_rgba(232,179,44,0.95)]"
             : "gf-glow-electric border border-electric/70 bg-electric/25 text-white",
-          compactBadge ? "mt-0.5 px-1.5 py-0.5 text-[8px]" : "mt-1 px-1.5 py-0.5 text-[9px]",
+          compactBadge ? "mt-0.5 px-1.5 py-0.5 text-[8px]" : "mt-2 px-2 py-1 text-[9.5px]",
         )}
       >
         <TrendingUp
