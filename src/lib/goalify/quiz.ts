@@ -349,7 +349,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     subtitle: "Say yes and I'll build it right now.",
     hudPhrase: "PROGRAM AUTHORIZATION",
     buttonLabel: "ABSOLUTELY, LET'S DO THIS ⚡",
-    bgPhoto: "/quiz/commit-workout-complete.png",
+    bgPhoto: "/quiz/commit-discipline-chains.png",
   },
 ];
 
