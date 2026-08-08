@@ -17,27 +17,25 @@ import { fireBurst } from "./particle-burst";
  * below for why nothing is painted here until a zone is selected.
  */
 // Measured directly against bodymap-full-body.png's own baked-in panel
-// outlines (a fine percentage grid overlaid on the source PNG, read
-// per-zone) rather than assumed/eyeballed — the previous rects had the
-// chest panel's right edge at 80% when the actual panel ends around 65%,
-// and the right arm rect starting at 80% when the real arm sits at
-// 63–79%, so it floated entirely in blank background to the right of the
-// body with zero relation to the artwork. Every rect below is that same
-// direct-measurement pass, zone by zone; a hairline 2–4pt overlap at a
-// couple of seams (e.g. chest/arms, arms/legs) is intentional and
-// harmless — later-in-DOM zones win those pixels, and the seam itself
+// outlines using a 1%-resolution pixel grid overlaid on the source PNG,
+// read edge-by-edge per zone (not eyeballed) — re-measured again after the
+// glutes rect was found running ~6pt past the panel's actual right edge
+// (68% vs. the panel's real ~62%), with chest/arms tightened similarly.
+// Every rect below is that direct-measurement pass; a hairline 1–2pt
+// overlap at a couple of seams (e.g. chest/arms, arms/legs) is intentional
+// and harmless — later-in-DOM zones win those pixels, and the seam itself
 // falls on a curved, un-rectangular body contour anyway.
 const ZONE_SHAPES: Record<string, { left: number; top: number; width: number; height: number }[]> = {
-  chest: [{ left: 19, top: 16, width: 46, height: 14 }],
+  chest: [{ left: 19, top: 19, width: 46, height: 11 }],
   arms: [
-    { left: 2, top: 16, width: 19, height: 36 },
-    { left: 63, top: 16, width: 16, height: 36 },
+    { left: 2, top: 18, width: 20, height: 34 },
+    { left: 63, top: 18, width: 17, height: 34 },
   ],
   abs: [{ left: 20, top: 30, width: 45, height: 14 }],
-  glutes: [{ left: 22, top: 44, width: 46, height: 6 }],
+  glutes: [{ left: 22, top: 45, width: 40, height: 5 }],
   legs: [
     { left: 17, top: 50, width: 28, height: 44 },
-    { left: 56, top: 50, width: 27, height: 44 },
+    { left: 55, top: 50, width: 27, height: 44 },
   ],
 };
 

@@ -134,9 +134,13 @@ export function QuizFlow() {
   // Every question starts at the top, even if the previous one was long
   // enough to scroll — otherwise stepping forward from partway down a
   // scrolled page lands mid-way through the new question instead of on
-  // its headline.
+  // its headline. Instant, not smooth — a smooth scroll racing the step's
+  // own slide/zoom transition left a window where the new step sat
+  // mid-scroll (bottom of viewport, content cut off) at the same time it
+  // was still animating in, which reads as a layout bug rather than a
+  // scroll in progress.
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: "auto" });
   }, [index]);
 
   const draft = state.draft;
@@ -391,8 +395,16 @@ export function QuizFlow() {
 
       {/* Headline + content animate together as one unit, sliding in from
           the right when advancing and from the left when stepping back —
-          `custom={direction}` is how the variants below know which. */}
-      <AnimatePresence custom={direction} initial={false}>
+          `custom={direction}` is how the variants below know which.
+          `mode="popLayout"` matters as much as the variants themselves:
+          without it, the exiting step and the entering step both sit in
+          normal document flow for the ~300-500ms crossfade, so the new
+          step's headline and content get pushed down by the old step's
+          still-fading-out block above it — every zone/label on the body
+          map (or any step) reads as shifted/misaligned for that whole
+          window. popLayout takes the exiting element out of flow the
+          instant the new one mounts, so there's never a stacked frame. */}
+      <AnimatePresence custom={direction} initial={false} mode="popLayout">
         <motion.div
           key={step.id}
           custom={direction}
