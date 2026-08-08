@@ -84,7 +84,7 @@ const SLIDE_TRANSITION = { duration: 0.32, ease: [0.22, 1, 0.36, 1] as const };
 export function QuizFlow() {
   const router = useRouter();
   const { data: session, status: authStatus } = useSession();
-  const { state, setDraft, completeQuiz } = useGoalify();
+  const { state, setDraft, resetDraft, completeQuiz } = useGoalify();
   const [quizStarted, setQuizStarted] = useState(false);
   const [showResultsGate, setShowResultsGate] = useState(false);
   /** Set once, on mount, from the `?auth=`/`?error=` NextAuth lands Google
@@ -314,7 +314,13 @@ export function QuizFlow() {
     return (
       <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5">
         <WelcomeCtaStep
-          onStart={() => setQuizStarted(true)}
+          onStart={() => {
+            // Every fresh attempt starts blank — otherwise a step like the
+            // body-map can reopen with whatever was last selected on an
+            // earlier, abandoned attempt still checked (see resetDraft).
+            resetDraft();
+            setQuizStarted(true);
+          }}
           onLogin={() => setAwaitingSigninRoute(true)}
           initialErrorCode={authReturn?.error ?? null}
         />

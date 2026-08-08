@@ -1280,6 +1280,36 @@ html.goalify ::-webkit-scrollbar-thumb {
 
 /* --- Body-map: neon target panels ----------------------------------------- */
 
+/* A one-shot bright flash the instant a zone is tapped — the persistent
+   ring (.gf-anim-pop) reads as "selected," this reads as "the app just
+   registered that tap." Fires fresh every time because the span itself
+   mounts fresh on every false→true transition (see body-map.tsx). */
+@keyframes gf-zone-flash {
+  0% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.gf-zone-flash {
+  animation: gf-zone-flash 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(232, 179, 44, 0.95),
+    rgba(232, 179, 44, 0.35) 60%,
+    transparent 100%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gf-zone-flash {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}
+
 /* --- Tactile arc gauge ------------------------------------------------------ */
 
 .gf-cyber-gauge-fill {

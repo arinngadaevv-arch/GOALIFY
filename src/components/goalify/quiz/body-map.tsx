@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import Image from "next/image";
+import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Check } from "lucide-react";
 import type { QuizStep } from "@/lib/goalify/quiz";
 import type { QuizAnswers } from "@/lib/goalify/types";
@@ -114,7 +115,7 @@ export function BodyMapStep({
                 aria-label={zone.label}
                 disabled={locked}
                 onClick={(event) => {
-                  fireBurst(event.clientX, event.clientY);
+                  fireBurst(event.clientX, event.clientY, true);
                   toggle(zone.value);
                 }}
                 className="gf-press absolute grid place-items-center rounded-[18px] transition-all duration-200"
@@ -127,6 +128,12 @@ export function BodyMapStep({
               >
                 {active && (
                   <>
+                    {/* Fresh element every false→true transition, so the
+                        flash replays on every tap rather than only once. */}
+                    <span
+                      className="gf-zone-flash absolute inset-0 rounded-[18px]"
+                      aria-hidden
+                    />
                     <span
                       className="gf-anim-pop absolute inset-0 rounded-[18px] ring-2 ring-electric shadow-[0_0_24px_-2px_rgba(232,179,44,0.9),inset_0_0_20px_-4px_rgba(255,255,255,0.35)]"
                       aria-hidden
@@ -145,11 +152,29 @@ export function BodyMapStep({
         </div>
       </div>
 
-      <p className="mt-6 text-center text-xs font-semibold text-mist">
-        {selected.length === 0
-          ? "Tap the areas you want to prioritize"
-          : `${selected.length} area${selected.length === 1 ? "" : "s"} selected`}
-      </p>
+      <div className="relative mt-6 grid place-items-center overflow-hidden">
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.p
+            key={selected.length}
+            initial={{ opacity: 0, y: -8, scale: 0.92 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.92 }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            className="col-start-1 row-start-1 text-center text-xs font-semibold text-mist"
+          >
+            {selected.length === 0 ? (
+              "Tap the areas you want to prioritize"
+            ) : (
+              <>
+                <span className="gf-numeric text-sm font-black text-electric">
+                  {selected.length}
+                </span>{" "}
+                area{selected.length === 1 ? "" : "s"} selected
+              </>
+            )}
+          </motion.p>
+        </AnimatePresence>
+      </div>
 
       <GlowButton
         variant="cyber"

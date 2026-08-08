@@ -214,6 +214,19 @@ export function useGoalify() {
     update((s) => ({ ...s, draft: { ...s.draft, ...patch } }));
   }, []);
 
+  /**
+   * Wipes the in-progress quiz draft back to a blank slate — called when
+   * the welcome screen's CTA starts a fresh attempt, so a step like the
+   * body-map doesn't silently reopen with whatever was last selected on a
+   * previous attempt (this same browser/account, an earlier abandoned
+   * quiz) still checked. Deliberately narrow: only `draft` resets, never
+   * `profile`/`purchased`/workout history — those belong to a completed
+   * quiz or a paying account and must survive a fresh "Start" tap.
+   */
+  const resetDraft = useCallback(() => {
+    update((s) => (Object.keys(s.draft).length === 0 ? s : { ...s, draft: {} }));
+  }, []);
+
   const completeQuiz = useCallback((answers: QuizAnswers) => {
     update((s) => ({ ...s, profile: toProfile(answers), draft: answers }));
   }, []);
@@ -305,6 +318,7 @@ export function useGoalify() {
     todaysWorkout: workoutForDay(state.programDay),
     workoutDoneToday: state.completedDays.includes(todayKey()),
     setDraft,
+    resetDraft,
     completeQuiz,
     purchase,
     completeWorkout,
