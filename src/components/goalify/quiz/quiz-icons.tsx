@@ -1,5 +1,6 @@
 import {
   Award,
+  Ban,
   BatteryLow,
   BicepsFlexed,
   Calendar,
@@ -21,6 +22,7 @@ import {
   Shield,
   ShieldAlert,
   ShieldCheck,
+  Smile,
   Sparkles,
   Sprout,
   Target,
@@ -70,6 +72,8 @@ export const QUIZ_ICONS = {
   target: Target,
   rocket: Rocket,
   utensils: Utensils,
+  smile: Smile,
+  ban: Ban,
 } as const satisfies Record<string, LucideIcon>;
 
 export type QuizIconKey = keyof typeof QUIZ_ICONS;

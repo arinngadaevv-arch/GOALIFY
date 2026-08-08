@@ -15,6 +15,10 @@ export type PainTrigger =
 /** The feeling they're chasing, echoed back throughout the app. */
 export type Vision = "confident" | "strong" | "energised" | "proud";
 
+/** How long it's been since they last had the body they want — the more
+ * recent, the more "muscle memory" framing the plan can lean on. */
+export type LastIdealBody = "now" | "under1" | "oneToThree" | "over3" | "never";
+
 /** How hard they committed — sets the accountability tone. */
 export type Commitment = "allin" | "most" | "unsure";
 
@@ -33,6 +37,7 @@ export type BodyFatBand =
 
 export type QuizAnswers = {
   goal: Goal;
+  lastIdealBody: LastIdealBody;
   /** Body zones tapped on the interactive target map — drives programming emphasis. */
   focusZones: string[];
   level: Level;

@@ -214,6 +214,7 @@ export function milestones(p: QuizAnswers): Milestone[] {
 
 export const DEFAULT_ANSWERS: QuizAnswers = {
   goal: "burn",
+  lastIdealBody: "over3",
   focusZones: [],
   level: "returning",
   joints: ["none"],

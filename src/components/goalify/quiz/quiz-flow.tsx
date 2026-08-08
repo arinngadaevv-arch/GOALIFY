@@ -612,7 +612,7 @@ function ChoiceStep({
       <div
         className={clsx(
           "grid",
-          layout === "wide" ? "gap-1.5" : "grid-cols-2 gap-3",
+          layout === "wide" || layout === "radio" ? "gap-1.5" : "grid-cols-2 gap-3",
           layout === "portrait" && "mt-14",
         )}
       >
@@ -681,7 +681,7 @@ function PhotoOptionCard({
   onClick,
 }: {
   option: ChoiceOption;
-  layout: "portrait" | "wide" | "tile" | "list";
+  layout: "portrait" | "wide" | "tile" | "list" | "radio";
   /** Precomputed by the caller — true only when every option in the step
    * has a real photo, so a card never shows a photo in isolation. */
   hasPhoto: boolean;
@@ -743,6 +743,43 @@ function PhotoOptionCard({
         disabled={disabled}
         onClick={onClick}
       />
+    );
+  }
+
+  if (layout === "radio") {
+    return (
+      <button
+        type="button"
+        onClick={withBurst(onClick)}
+        disabled={disabled}
+        aria-pressed={selected}
+        className={clsx(
+          "gf-card gf-card-hover gf-press relative flex items-center gap-3.5 p-3.5 text-left transition-all duration-300 ease-out",
+          selected && "gf-card-active",
+          disabled && !selected && "opacity-50",
+        )}
+      >
+        <QuizIconBadge icon={option.icon} size="md" active={selected} />
+        <span className="min-w-0 flex-1">
+          <span className="gf-display block text-base leading-tight font-extrabold text-ink">
+            {option.label}
+          </span>
+          {option.description && (
+            <span className="mt-0.5 block text-xs leading-snug text-ink-soft">
+              {option.description}
+            </span>
+          )}
+        </span>
+        <span
+          className={clsx(
+            "grid size-6 shrink-0 place-items-center rounded-full border-2 transition-all duration-200 ease-out",
+            selected ? "border-electric bg-electric" : "border-ink-soft/40",
+          )}
+          aria-hidden
+        >
+          {selected && <Check className="size-3.5 text-white" strokeWidth={3.5} />}
+        </span>
+      </button>
     );
   }
 

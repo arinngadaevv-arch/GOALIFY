@@ -55,8 +55,10 @@ export type QuizStep = {
        * - `wide` — full-width rows, label left and photo bleeding right
        * - `tile` — two columns, photo inside the card above the label
        * - `list` (default) — compact two-column icon tiles
+       * - `radio` — full-width rows, icon + label left, a radio-style
+       *   selection dot on the right instead of a corner check badge
        */
-      layout?: "portrait" | "wide" | "tile" | "list";
+      layout?: "portrait" | "wide" | "tile" | "list" | "radio";
       options: ChoiceOption[];
     }
   | {
@@ -130,6 +132,22 @@ export const QUIZ_STEPS: QuizStep[] = [
         icon: "zap",
         socialProof: "13% choose this — biggest energy jump in week 1",
       },
+    ],
+  },
+  {
+    id: "lastIdealBody",
+    kind: "choice",
+    layout: "radio",
+    chapter: "The timeline",
+    title: "When was the last time you had your ideal body?",
+    subtitle: "This tells us how much muscle memory we're working with.",
+    hudPhrase: "TIMELINE ASSESSMENT",
+    options: [
+      { value: "now", label: "Right now", icon: "smile" },
+      { value: "under1", label: "<1 year ago", icon: "calendar" },
+      { value: "oneToThree", label: "1~3 years ago", icon: "calendar" },
+      { value: "over3", label: ">3 years ago", icon: "calendar" },
+      { value: "never", label: "Never", icon: "ban" },
     ],
   },
   {
