@@ -32,7 +32,6 @@ import { AuthPanel } from "./auth-panel";
 import { fireBurst, ParticleBurstLayer } from "./particle-burst";
 import { ConfettiBurstLayer } from "./confetti-burst";
 import { ShockwaveLayer } from "./commit-transition";
-import { QuizTrustBadge } from "./trust-badge";
 
 /** Wraps a click handler so every tap also fires a micro-particle burst
  * from the exact point of contact. */
@@ -329,11 +328,11 @@ export function QuizFlow() {
   }
 
   return (
-    <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-20">
+    <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-16">
       <ParticleBurstLayer />
       <ConfettiBurstLayer />
       <ShockwaveLayer />
-      <header className="relative flex items-center gap-4 py-3">
+      <header className="relative flex items-center gap-4 py-2">
         {/* Inline styles carry every property that makes this visible at
             all (size, colors, border) — deliberately not left to Tailwind
             utility classes alone, so no build-time purge/JIT gap or CSS
@@ -394,7 +393,7 @@ export function QuizFlow() {
         <p className="gf-cyber-glow-text min-w-0 truncate text-[10px] font-black tracking-[0.16em] uppercase">
           {step.hudPhrase} · {Math.round(((index + 1) / QUIZ_STEPS.length) * 100)}%
         </p>
-        {hudToast ? <HypeToast text={hudToast} /> : <QuizTrustBadge />}
+        {hudToast && <HypeToast text={hudToast} />}
       </div>
 
       {/* Headline + content animate together as one unit, sliding in from
@@ -412,16 +411,16 @@ export function QuizFlow() {
           className="relative flex flex-1 flex-col"
         >
           {/* --------------------------------------------------- Big headline */}
-          <div className="relative pt-2">
+          <div className="relative pt-1">
             <p className="text-[11px] font-black tracking-[0.16em] text-electric uppercase">
               {step.chapter}
             </p>
-            <h1 className="gf-display relative mt-1.5 text-3xl leading-[1.08] font-black text-ink sm:text-5xl">
+            <h1 className="gf-display relative mt-1 text-2xl leading-[1.08] font-black text-ink sm:text-5xl">
               {step.title}
             </h1>
           </div>
 
-          <div className="relative flex-1 pt-4">
+          <div className="relative flex-1 pt-2">
             {step.kind === "choice" && step.speedRound && (
               <SpeedRound key={step.id} locked={pending !== null} />
             )}
@@ -468,10 +467,6 @@ export function QuizFlow() {
           </div>
         </motion.div>
       </AnimatePresence>
-
-      <footer className="relative pt-4 text-center">
-        <p className="text-xs text-haze">Your answers stay on this device</p>
-      </footer>
 
       <CoachGuide
         autoOpen={false}
@@ -573,7 +568,7 @@ function ChoiceStep({
       <div
         className={clsx(
           "grid",
-          layout === "wide" ? "gap-2.5" : "grid-cols-2 gap-4",
+          layout === "wide" ? "gap-2.5" : "grid-cols-2 gap-3",
           layout === "portrait" && "mt-14",
         )}
       >
@@ -825,7 +820,14 @@ function PhotoOptionCard({
         onClick={withBurst(onClick)}
         disabled={disabled}
         aria-pressed={selected}
-        className={clsx(base, "relative flex aspect-4/5 flex-col justify-end overflow-hidden p-4")}
+        // Frameless, edge-to-edge rich-media banner — the border color is
+        // inline (not a Tailwind utility class) specifically so it always
+        // wins over `.gf-cyber-scope .gf-card`'s own border-color rule, no
+        // specificity fight: that class's photo-hiding fill/border reads as
+        // a dull outline on a full-bleed photo, so this card opts out of it
+        // entirely and relies on the photo + gradient + selected-ring alone.
+        style={{ borderColor: "transparent" }}
+        className={clsx(base, "relative flex aspect-[10/11] flex-col justify-end overflow-hidden p-3")}
       >
         <div className="absolute inset-0">
           <OptionPhoto
@@ -850,11 +852,11 @@ function PhotoOptionCard({
           aria-hidden
         />
         {checkBadge}
-        <span className="gf-display relative text-lg leading-tight font-extrabold text-white">
+        <span className="gf-display relative text-base leading-tight font-extrabold text-white">
           {option.label}
         </span>
         {option.description && (
-          <span className="relative mt-1 text-[11px] leading-snug font-bold text-white/90">
+          <span className="relative mt-0.5 text-[10px] leading-snug font-bold text-white/90">
             {option.description}
           </span>
         )}
@@ -903,7 +905,7 @@ function SocialProofLine({
 }) {
   if (badge) {
     return (
-      <span className="gf-glow-electric relative mt-1.5 inline-flex items-start gap-1 self-start rounded-lg border border-electric/70 bg-electric/25 px-1.5 py-1 text-[9px] leading-snug font-black tracking-[0.01em] text-white uppercase backdrop-blur-sm">
+      <span className="gf-glow-electric relative mt-1 inline-flex items-start gap-1 self-start rounded-lg border border-electric/70 bg-electric/25 px-1.5 py-0.5 text-[9px] leading-snug font-black tracking-[0.01em] text-white uppercase backdrop-blur-sm">
         <TrendingUp className="mt-px size-2.5 shrink-0 text-electric" strokeWidth={3.5} />
         <span>{text}</span>
       </span>
