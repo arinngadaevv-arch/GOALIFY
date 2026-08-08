@@ -839,12 +839,13 @@ function PhotoOptionCard({
           disabled={disabled}
           aria-pressed={selected}
           className={clsx(
-            "gf-card gf-card-hover gf-press relative flex items-center gap-3 overflow-hidden p-1.5 pr-3 text-left transition-all duration-300 ease-out",
+            "gf-card gf-card-hover gf-press relative flex items-center gap-3 overflow-hidden p-2.5 pr-3 text-left transition-all duration-300 ease-out",
             selected && "gf-card-active",
             disabled && !selected && "opacity-50",
           )}
         >
-          <div className="relative size-11 shrink-0 overflow-hidden rounded-lg">
+          <QuizIconBadge icon={option.icon} size="sm" active={selected} className="shrink-0" />
+          <div className="relative h-14 w-11 shrink-0 overflow-hidden rounded-lg">
             <OptionPhoto
               src={option.image}
               alt={option.label}
@@ -852,9 +853,6 @@ function PhotoOptionCard({
               icon={option.icon}
               className="size-full"
             />
-            <span className="absolute top-1 left-1 z-10 drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]">
-              <QuizIconBadge icon={option.icon} size="xs" active={selected} />
-            </span>
           </div>
           {labelBlock}
           {radioDot}
