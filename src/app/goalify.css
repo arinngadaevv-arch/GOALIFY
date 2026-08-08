@@ -1028,6 +1028,36 @@ html.goalify ::-webkit-scrollbar-thumb {
     0 24px 54px -22px rgba(0, 0, 0, 0.85);
 }
 
+/* One-shot "explosive" flash the instant a photo tile is picked — the
+   persistent gold wash (opacity-100 below) reads as "selected," this is
+   the extra pop at the moment of the tap itself. Fresh every time the
+   class is (re)applied, since it's added exactly on the false→true
+   transition, never left sitting on the element while true. */
+@keyframes gf-tile-select-pulse {
+  0% {
+    opacity: 0;
+    filter: brightness(1);
+  }
+  22% {
+    opacity: 1;
+    filter: brightness(1.9);
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
+.gf-tile-select-pulse {
+  animation: gf-tile-select-pulse 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gf-tile-select-pulse {
+    animation: none !important;
+  }
+}
+
 .gf-cyber-scope .gf-glass-electric {
   background: rgba(232, 179, 44, 0.1);
   border-color: rgba(232, 179, 44, 0.3);

@@ -94,7 +94,7 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "goal",
     kind: "choice",
-    layout: "wide",
+    layout: "tile",
     chapter: "The target",
     title: "Pick your dream physique",
     subtitle: "Every rep and calorie in your plan builds toward this.",

@@ -842,8 +842,10 @@ function PhotoOptionCard({
         />
         <div
           className={clsx(
-            "absolute inset-0 bg-gradient-to-t from-electric/45 via-electric/10 to-transparent transition-opacity duration-300 ease-out",
-            selected ? "opacity-100" : "opacity-0",
+            "absolute inset-0 bg-gradient-to-t from-electric/50 via-electric/15 to-transparent",
+            selected
+              ? "gf-tile-select-pulse opacity-100"
+              : "opacity-0 transition-opacity duration-300 ease-out",
           )}
           aria-hidden
         />
@@ -856,7 +858,7 @@ function PhotoOptionCard({
             {option.description}
           </span>
         )}
-        {option.socialProof && <SocialProofLine text={option.socialProof} light />}
+        {option.socialProof && <SocialProofLine text={option.socialProof} light badge />}
       </button>
     );
   }
@@ -889,11 +891,24 @@ function SocialProofLine({
   text,
   light = false,
   compact = false,
+  badge = false,
 }: {
   text: string;
   light?: boolean;
   compact?: boolean;
+  /** Renders as a highlighted gold pill instead of plain text — for the
+   * big photo tiles, where peer-validation stats need to visually scream
+   * rather than read as a quiet caption. */
+  badge?: boolean;
 }) {
+  if (badge) {
+    return (
+      <span className="gf-glow-electric relative mt-1.5 inline-flex items-start gap-1 self-start rounded-lg border border-electric/70 bg-electric/25 px-1.5 py-1 text-[9px] leading-snug font-black tracking-[0.01em] text-white uppercase backdrop-blur-sm">
+        <TrendingUp className="mt-px size-2.5 shrink-0 text-electric" strokeWidth={3.5} />
+        <span>{text}</span>
+      </span>
+    );
+  }
   return (
     <span
       className={clsx(
