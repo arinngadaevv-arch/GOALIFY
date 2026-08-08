@@ -114,7 +114,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Bigger & stronger",
         description: "Pack on visible size and raw strength, week over week",
         icon: "dumbbell",
-        socialProof: "27% choose this — fastest strength gains by week 3",
+        socialProof: "37% choose this — fastest strength gains by week 3",
       },
       {
         value: "tone",
