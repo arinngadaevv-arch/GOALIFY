@@ -58,8 +58,6 @@ export type QuizStep = {
        */
       layout?: "portrait" | "wide" | "tile" | "list";
       options: ChoiceOption[];
-      /** Renders as a 5-second "instinct round" with a burning countdown. */
-      speedRound?: boolean;
     }
   | {
       kind: "bodyMap";
@@ -152,7 +150,6 @@ export const QUIZ_STEPS: QuizStep[] = [
     id: "painTrigger",
     kind: "choice",
     layout: "wide",
-    speedRound: true,
     chapter: "The obstacle",
     title: "What's really holding you back?",
     subtitle: "Name it — your plan is built to destroy it.",

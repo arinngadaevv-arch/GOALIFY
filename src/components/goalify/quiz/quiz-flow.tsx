@@ -20,7 +20,6 @@ import { hasRealPhoto, OptionPhoto } from "./option-photo";
 import { QuizIconBadge, type QuizIconKey } from "./quiz-icons";
 import { AnalyzingScreen } from "./analyzing-screen";
 import { BodyMapStep } from "./body-map";
-import { SpeedRound } from "./speed-round";
 import { HUD_STEP_META, HypeToast } from "./hype-toast";
 import { CommitStep } from "./commit-step";
 import { SocialProofScreen } from "./social-proof-screen";
@@ -415,10 +414,6 @@ export function QuizFlow() {
           </div>
 
           <div className="relative flex-1 pt-2">
-            {step.kind === "choice" && step.speedRound && (
-              <SpeedRound key={step.id} locked={pending !== null} />
-            )}
-
             <div>
               {step.kind === "choice" ? (
                 <ChoiceStep
@@ -556,7 +551,7 @@ function ChoiceStep({
       <div
         className={clsx(
           "grid",
-          layout === "wide" ? "gap-2.5" : "grid-cols-2 gap-3",
+          layout === "wide" ? "gap-1.5" : "grid-cols-2 gap-3",
           layout === "portrait" && "mt-14",
         )}
       >
@@ -709,25 +704,26 @@ function PhotoOptionCard({
           onClick={withBurst(onClick)}
           disabled={disabled}
           aria-pressed={selected}
-          className={clsx(base, "flex items-center gap-3.5 overflow-hidden p-3 pr-4")}
+          style={{ borderColor: selected ? undefined : "rgba(232,179,44,0.4)", borderWidth: 1.5 }}
+          className={clsx(base, "flex items-center gap-2 overflow-hidden p-1.5 pr-2.5")}
         >
           <OptionPhoto
             src={option.image}
             alt={option.label}
             label={option.label}
             icon={option.icon}
-            className="size-16 shrink-0 rounded-xl"
+            className="size-11 shrink-0 rounded-xl"
           />
           <span className="min-w-0 flex-1">
-            <span className="gf-display block truncate text-base leading-tight font-extrabold text-ink">
+            <span className="gf-display block truncate text-sm leading-tight font-extrabold text-ink">
               {option.label}
             </span>
             {option.description && (
-              <span className="mt-0.5 block truncate text-[11px] leading-snug text-ink-soft">
+              <span className="block truncate text-[10px] leading-snug text-ink-soft">
                 {option.description}
               </span>
             )}
-            {option.socialProof && <SocialProofLine text={option.socialProof} compact />}
+            {option.socialProof && <SocialProofLine text={option.socialProof} badge compactBadge />}
           </span>
           {checkBadge}
         </button>
@@ -882,6 +878,7 @@ function SocialProofLine({
   light = false,
   compact = false,
   badge = false,
+  compactBadge = false,
 }: {
   text: string;
   light?: boolean;
@@ -890,10 +887,17 @@ function SocialProofLine({
    * big photo tiles, where peer-validation stats need to visually scream
    * rather than read as a quiet caption. */
   badge?: boolean;
+  /** Tighter badge padding/margin for dense rows (only applies with badge). */
+  compactBadge?: boolean;
 }) {
   if (badge) {
     return (
-      <span className="gf-glow-electric relative mt-1 inline-flex items-start gap-1 self-start rounded-lg border border-electric/70 bg-electric/25 px-1.5 py-0.5 text-[9px] leading-snug font-black tracking-[0.01em] text-white uppercase backdrop-blur-sm">
+      <span
+        className={clsx(
+          "gf-glow-electric relative inline-flex items-start gap-1 self-start rounded-lg border border-electric/70 bg-electric/25 leading-snug font-black tracking-[0.01em] text-white uppercase backdrop-blur-sm",
+          compactBadge ? "mt-0.5 px-1.5 py-0.5 text-[8px]" : "mt-1 px-1.5 py-0.5 text-[9px]",
+        )}
+      >
         <TrendingUp className="mt-px size-2.5 shrink-0 text-electric" strokeWidth={3.5} />
         <span>{text}</span>
       </span>
