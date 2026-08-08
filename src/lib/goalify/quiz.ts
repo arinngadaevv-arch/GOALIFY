@@ -187,14 +187,6 @@ export const QUIZ_STEPS: QuizStep[] = [
         icon: "heartPulse",
         socialProof: "14% say this — joint-safe swaps built in",
       },
-      {
-        value: "restart",
-        image: "/quiz/false-starts.png",
-        label: "Repeated false starts",
-        description: "Started many times, never followed through",
-        icon: "rotateCcw",
-        socialProof: "12% say this — your last false start, guaranteed",
-      },
     ],
   },
   {
