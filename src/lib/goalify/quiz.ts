@@ -106,7 +106,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Lean & shredded",
         description: "Strip fat fast while locking in every ounce of muscle",
         icon: "flame",
-        socialProof: "41% choose this — the #1 goal on GOALIFY",
+        socialProof: "36% choose this — the #1 goal on GOALIFY",
       },
       {
         value: "build",
@@ -114,7 +114,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Bigger & stronger",
         description: "Pack on visible size and raw strength, week over week",
         icon: "dumbbell",
-        socialProof: "37% choose this — fastest strength gains by week 3",
+        socialProof: "34% choose this — fastest strength gains by week 3",
       },
       {
         value: "tone",
@@ -122,7 +122,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Toned & defined",
         description: "Sculpted, visible definition — zero bulk",
         icon: "sparkles",
-        socialProof: "19% choose this — the top first-time goal",
+        socialProof: "18% choose this — the top first-time goal",
       },
       {
         value: "athletic",
@@ -130,7 +130,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Athletic & unstoppable",
         description: "Move faster, last longer, hit harder than ever",
         icon: "zap",
-        socialProof: "13% choose this — biggest energy jump in week 1",
+        socialProof: "12% choose this — biggest energy jump in week 1",
       },
     ],
   },
