@@ -758,16 +758,16 @@ function PhotoOptionCard({
         onClick={withBurst(onClick)}
         disabled={disabled}
         aria-pressed={selected}
-        className={clsx(base, "flex items-center gap-4 p-5")}
+        className={clsx(base, "flex items-center gap-3.5 p-3.5")}
       >
         {checkBadge}
-        <QuizIconBadge icon={option.icon} size="lg" active={selected} />
+        <QuizIconBadge icon={option.icon} size="md" active={selected} />
         <span className="min-w-0 flex-1">
-          <span className="gf-display block text-xl font-extrabold text-ink">
+          <span className="gf-display block text-base leading-tight font-extrabold text-ink">
             {option.label}
           </span>
           {option.description && (
-            <span className="mt-1 block text-xs leading-snug text-ink-soft">
+            <span className="mt-0.5 block text-xs leading-snug text-ink-soft">
               {option.description}
             </span>
           )}

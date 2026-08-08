@@ -2,12 +2,73 @@
 
 import { useEffect, useState } from "react";
 import clsx from "clsx";
-import { Check, Cpu, Loader } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Check, Cpu, Loader, Star } from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
 import { ProgressRing } from "@/components/goalify/ui/progress-ring";
 import { ParticleField } from "@/components/goalify/ui/particles";
 import { CoachBadge } from "@/components/goalify/coach/coach-bubble";
 import { useUiSounds } from "@/components/goalify/use-ui-sounds";
+
+/**
+ * PLACEHOLDER MARKETING COPY — same convention as social-proof-screen.tsx's
+ * STORIES: illustrative snippets, not sourced from real reviews. Wire to
+ * verified, consented testimonials before this reaches real users.
+ */
+const TRUST_QUOTES = [
+  { quote: "Totally changed my body in 8 weeks. Best decision I've made.", name: "Jake R." },
+  { quote: "Finally a plan that actually fits my schedule. Down 14 kg.", name: "Priya S." },
+  { quote: "The coaching feels personal, not generic. I'm never going back.", name: "Marcus T." },
+];
+const TRUST_QUOTE_MS = 2600;
+
+/** Compact rating + rotating-quote card — the "someone already trusts this"
+ * beat, shown while the analysis itself is still running rather than only
+ * after, on the separate full-screen carousel (SocialProofScreen). */
+function TrustCard() {
+  const [quoteIndex, setQuoteIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(
+      () => setQuoteIndex((i) => (i + 1) % TRUST_QUOTES.length),
+      TRUST_QUOTE_MS,
+    );
+    return () => clearInterval(timer);
+  }, []);
+
+  const current = TRUST_QUOTES[quoteIndex];
+
+  return (
+    <div className="gf-glass relative mt-2.5 w-full rounded-2xl px-4 py-2 text-left">
+      <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-0.5 text-electric">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Star key={i} className="gf-glow-electric size-3 fill-current" />
+          ))}
+        </div>
+        <span className="gf-numeric text-sm font-black text-ink">4.9</span>
+        <span className="text-[9px] font-bold tracking-[0.06em] text-mist uppercase">
+          · 12,000+ reviews
+        </span>
+      </div>
+      <div className="relative mt-2 overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={quoteIndex}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="text-xs leading-snug text-ink-soft"
+          >
+            &ldquo;{current.quote}&rdquo;{" "}
+            <span className="font-bold text-mist">— {current.name}</span>
+          </motion.p>
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
 
 const STAGES = [
   {
@@ -109,7 +170,7 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
   const noise = () => String(Math.floor(Math.abs(Math.sin(scramble) * 9000)) + 500);
 
   return (
-    <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center px-5 py-10 text-center">
+    <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center px-5 py-4 text-center">
       <ParticleField />
 
       <div className="relative flex items-center gap-2.5">
@@ -119,14 +180,14 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
         </p>
       </div>
 
-      <div className="relative mt-6">
+      <div className="relative mt-3">
         {/* Outer pulse rings for raw energy. */}
         <span
-          className="gf-anim-burst absolute inset-0 m-auto size-40 rounded-full border-2 border-electric/40"
+          className="gf-anim-burst absolute inset-0 m-auto size-32 rounded-full border-2 border-electric/40"
           aria-hidden
         />
         <span
-          className="gf-anim-burst absolute inset-0 m-auto size-40 rounded-full border-2 border-lime-neon/40"
+          className="gf-anim-burst absolute inset-0 m-auto size-32 rounded-full border-2 border-lime-neon/40"
           style={{ animationDelay: "0.7s" }}
           aria-hidden
         />
@@ -145,29 +206,44 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
               trackColor: "rgba(255,255,255,0.08)",
             },
           ]}
-          size={190}
-          thickness={12}
-          gap={6}
+          size={132}
+          thickness={10}
+          gap={4}
         >
           <div>
-            <p className="gf-numeric text-4xl font-black text-ink">{percent}%</p>
-            <p className="text-[10px] font-bold tracking-[0.14em] text-mist uppercase">
-              <Cpu className="mr-0.5 inline size-3" />
+            <p className="gf-numeric text-2xl font-black text-ink">{percent}%</p>
+            <p className="text-[9px] font-bold tracking-[0.14em] text-mist uppercase">
+              <Cpu className="mr-0.5 inline size-2.5" />
               Analysing
             </p>
           </div>
         </ProgressRing>
       </div>
 
-      <h1 className="gf-display relative mt-7 text-3xl font-black text-ink">
+      <h1 className="gf-display relative mt-3 text-xl font-black text-ink">
         Engineering your <span className="gf-text-hype">roadmap</span>
       </h1>
-      <p className="relative mt-2 text-sm text-mist">
-        Every number below comes from your own answers.
-      </p>
+
+      {/* High-impact linear readout of the same percent the ring shows —
+          the ring is the hero visual, this is the "receipt" underneath it. */}
+      <div
+        className="relative mt-2.5 h-2 w-full overflow-hidden rounded-full bg-ink/10"
+        role="progressbar"
+        aria-valuenow={percent}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label="Analysis progress"
+      >
+        <div
+          className="gf-progress-fill h-full rounded-full bg-gradient-to-r from-electric to-lime-neon transition-[width] duration-500 ease-out"
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+
+      <TrustCard />
 
       {/* Live metrics resolving one by one. */}
-      <div className="gf-glass relative mt-6 grid w-full grid-cols-3 gap-2 rounded-2xl px-4 py-3">
+      <div className="gf-glass relative mt-2.5 grid w-full grid-cols-3 gap-2 rounded-2xl px-4 py-2">
         <SpinningMetric
           label="kcal / day"
           value={stage >= 3 ? targets.calories.toLocaleString() : noise()}
@@ -185,7 +261,7 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
         />
       </div>
 
-      <ul className="relative mt-5 w-full space-y-2 text-left">
+      <ul className="relative mt-2.5 w-full space-y-1 text-left">
         {STAGES.map((item, index) => {
           const done = index < stage;
           const active = index === stage;
@@ -193,7 +269,7 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
             <li
               key={item.label}
               className={clsx(
-                "gf-glass flex items-center gap-3 rounded-2xl px-4 py-2.5 transition-all duration-500",
+                "gf-glass flex items-center gap-2.5 rounded-2xl px-3.5 py-1.5 transition-all duration-500",
                 done || active ? "opacity-100" : "opacity-35",
                 active && "border-electric/40",
                 done && "border-lime-neon/40",
@@ -201,20 +277,20 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
             >
               <span
                 className={clsx(
-                  "grid size-7 shrink-0 place-items-center rounded-full transition-colors",
+                  "grid size-6 shrink-0 place-items-center rounded-full transition-colors",
                   done ? "bg-lime-neon text-ink" : "bg-ink/6 text-mist",
                 )}
               >
                 {done ? (
-                  <Check className="size-4" strokeWidth={3.5} />
+                  <Check className="size-3.5" strokeWidth={3.5} />
                 ) : (
                   <Loader
-                    className={clsx("size-3.5", active && "gf-anim-spin-slow")}
+                    className={clsx("size-3", active && "gf-anim-spin-slow")}
                   />
                 )}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-xs font-semibold text-ink-soft">
+                <span className="block text-[11px] font-semibold text-ink-soft">
                   {item.label}
                 </span>
                 {/* Live energy meter while this stage computes. */}

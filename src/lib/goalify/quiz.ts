@@ -133,6 +133,41 @@ export const QUIZ_STEPS: QuizStep[] = [
     ],
   },
   {
+    id: "vision",
+    kind: "choice",
+    layout: "wide",
+    chapter: "The why",
+    title: "What drives you?",
+    subtitle: "The feeling you're chasing shapes how we coach you.",
+    hudPhrase: "MOTIVATION PROFILE SCAN",
+    options: [
+      {
+        value: "confident",
+        label: "Feel confident",
+        description: "Walk into any room and own it",
+        icon: "sparkles",
+      },
+      {
+        value: "strong",
+        label: "Feel strong",
+        description: "Real, visible strength — not just a number on a scale",
+        icon: "dumbbell",
+      },
+      {
+        value: "energised",
+        label: "Have more energy",
+        description: "No more 3pm crashes or dragging through the day",
+        icon: "zap",
+      },
+      {
+        value: "proud",
+        label: "Finally prove it",
+        description: "Clothes fit better and you're proud of what you see",
+        icon: "trophy",
+      },
+    ],
+  },
+  {
     // Reuses the "joints" slot — full injury customization got cut from the
     // funnel (it defaults to "no restrictions"), but the field still exists
     // on QuizAnswers, so this yes-set card anchors here instead of needing
