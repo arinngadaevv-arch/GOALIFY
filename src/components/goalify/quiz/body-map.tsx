@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
+import clsx from "clsx";
 import { ArrowRight, Check } from "lucide-react";
 import type { QuizStep } from "@/lib/goalify/quiz";
 import type { QuizAnswers } from "@/lib/goalify/types";
@@ -11,41 +12,38 @@ import { fireBurst } from "./particle-burst";
 
 /**
  * Percentage-based hit-targets over the real photo background
- * (bodymap-full-body.png). The photo already renders the glowing gold
- * zone panels and labels baked into the image itself, so these rects are
- * invisible click targets, not drawn UI — see the comment on the button
- * below for why nothing is painted here until a zone is selected.
+ * (bodymap-character-v2.png) — a plain, unmarked photo (no baked-in panel
+ * graphics or labels, unlike the previous asset), so every zone's outline
+ * and label is real DOM here, not something the image already draws.
  */
-// Measured directly against bodymap-full-body.png's own baked-in panel
-// outlines using a 1%-resolution pixel grid overlaid on the source PNG,
-// read edge-by-edge per zone (not eyeballed) — re-measured again after the
-// glutes rect was found running ~6pt past the panel's actual right edge
-// (68% vs. the panel's real ~62%), with chest/arms tightened similarly.
-// Every rect below is that direct-measurement pass; a hairline 1–2pt
-// overlap at a couple of seams (e.g. chest/arms, arms/legs) is intentional
-// and harmless — later-in-DOM zones win those pixels, and the seam itself
-// falls on a curved, un-rectangular body contour anyway.
+// Measured directly against bodymap-character-v2.png at 1%-resolution:
+// scanned every row of the image for background-vs-body pixels, took the
+// min/max x per body part across its full y-range (not eyeballed), so
+// these track the new photo's actual proportions rather than reused
+// coordinates from the old asset. A hairline 1–2pt overlap at a couple of
+// seams (e.g. chest/arms, arms/legs) is intentional and harmless —
+// later-in-DOM zones win those pixels, and the seam itself falls on a
+// curved, un-rectangular body contour anyway.
 const ZONE_SHAPES: Record<string, { left: number; top: number; width: number; height: number }[]> = {
-  chest: [{ left: 19, top: 19, width: 46, height: 11 }],
+  chest: [{ left: 23, top: 21, width: 54, height: 13 }],
   arms: [
-    { left: 2, top: 18, width: 20, height: 34 },
-    { left: 63, top: 18, width: 17, height: 34 },
+    { left: 2, top: 17, width: 22, height: 42 },
+    { left: 76, top: 17, width: 22, height: 42 },
   ],
-  abs: [{ left: 20, top: 30, width: 45, height: 14 }],
-  glutes: [{ left: 22, top: 45, width: 40, height: 5 }],
+  abs: [{ left: 18, top: 34, width: 65, height: 15 }],
+  glutes: [{ left: 22, top: 48, width: 53, height: 6 }],
   legs: [
-    { left: 17, top: 50, width: 28, height: 44 },
-    { left: 55, top: 50, width: 27, height: 44 },
+    { left: 21, top: 70, width: 22, height: 20 },
+    { left: 57, top: 70, width: 23, height: 20 },
   ],
 };
 
 /**
  * The interactive body-target selector, laid over a real athletic photo
- * (not an illustrated silhouette) — the photo itself already carries the
- * glowing gold zone panels and labels, so each button here is an
- * invisible hit-target that only paints something once its zone is
- * selected (a bright ring + check badge), rather than redrawing a second
- * copy of the panel/label the photo already shows.
+ * (not an illustrated silhouette). Unlike the previous photo asset, this
+ * one carries no baked-in panel/label graphics, so each zone renders its
+ * own outline + label as real DOM at rest, in addition to the bright
+ * ring + check badge it already got once selected.
  */
 export function BodyMapStep({
   step,
@@ -78,7 +76,7 @@ export function BodyMapStep({
 
   return (
     <div>
-      <div className="relative mx-auto w-full max-w-[280px]">
+      <div className="relative mx-auto w-full max-w-[185px]">
         {/* Soft ambient glow behind the silhouette. */}
         <div
           className="absolute inset-0 -z-10 rounded-full bg-electric/16 blur-3xl"
@@ -87,19 +85,22 @@ export function BodyMapStep({
 
         <div
           className="relative overflow-hidden rounded-[28px]"
-          style={{ aspectRatio: "540 / 814" }}
+          style={{ aspectRatio: "410 / 842" }}
         >
-          {/* Real athletic photo, neck to feet — the glowing gold zone
-              panels and labels are already part of the image itself, so
-              the buttons below are click targets only, not a second layer
-              of UI drawn on top. */}
+          {/* Real athletic photo, head to shoes — plain, no baked-in
+              zone graphics, so `contain` (never `cover`) is what keeps the
+              whole figure on screen instead of letting a mismatched
+              container aspect ratio crop the head or feet off. The
+              container's aspect-ratio above already matches the source
+              photo exactly, so this never has to letterbox in practice —
+              it's the safety net if that ever drifts. */}
           <Image
-            src="/quiz/bodymap-full-body.png"
-            alt="Male athletic body with target zones highlighted"
+            src="/quiz/bodymap-character-v2.png"
+            alt="Male body with target zones highlighted"
             fill
             unoptimized
             priority
-            className="object-cover object-top"
+            className="object-contain object-top"
           />
 
           {step.zones.map((zone) => {
@@ -116,7 +117,12 @@ export function BodyMapStep({
                   fireBurst(event.clientX, event.clientY, true);
                   toggle(zone.value);
                 }}
-                className="gf-press absolute grid place-items-center rounded-[18px] transition-all duration-200"
+                className={clsx(
+                  "gf-press gf-glow-hover absolute grid place-items-center overflow-hidden rounded-[14px] border transition-all duration-200",
+                  active
+                    ? "border-transparent"
+                    : "border-electric/45 bg-electric/10",
+                )}
                 style={{
                   left: `${rect.left}%`,
                   top: `${rect.top}%`,
@@ -124,16 +130,21 @@ export function BodyMapStep({
                   height: `${rect.height}%`,
                 }}
               >
+                {!active && (
+                  <span className="gf-display relative text-[10px] leading-tight font-black tracking-[0.08em] text-white uppercase [text-shadow:0_1px_4px_rgba(0,0,0,0.9)]">
+                    {zone.label}
+                  </span>
+                )}
                 {active && (
                   <>
                     {/* Fresh element every false→true transition, so the
                         flash replays on every tap rather than only once. */}
                     <span
-                      className="gf-zone-flash absolute inset-0 rounded-[18px]"
+                      className="gf-zone-flash absolute inset-0 rounded-[14px]"
                       aria-hidden
                     />
                     <span
-                      className="gf-anim-pop absolute inset-0 rounded-[18px] ring-2 ring-electric shadow-[0_0_24px_-2px_rgba(232,179,44,0.9),inset_0_0_20px_-4px_rgba(255,255,255,0.35)]"
+                      className="gf-anim-pop absolute inset-0 rounded-[14px] ring-2 ring-electric shadow-[0_0_24px_-2px_rgba(232,179,44,0.9),inset_0_0_20px_-4px_rgba(255,255,255,0.35)]"
                       aria-hidden
                     />
                     <span
@@ -150,7 +161,7 @@ export function BodyMapStep({
         </div>
       </div>
 
-      <div className="relative mt-6 grid place-items-center overflow-hidden">
+      <div className="relative mt-4 grid place-items-center overflow-hidden">
         <AnimatePresence mode="popLayout" initial={false}>
           <motion.p
             key={selected.length}
@@ -178,7 +189,7 @@ export function BodyMapStep({
         variant="cyber"
         size="lg"
         fullWidth
-        className="mt-6"
+        className="mt-4"
         disabled={selected.length === 0 || locked}
         onClick={(event) => {
           fireBurst(event.clientX, event.clientY, true);
