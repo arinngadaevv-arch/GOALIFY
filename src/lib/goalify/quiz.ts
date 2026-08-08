@@ -91,58 +91,22 @@ export type QuizStep = {
 );
 
 /**
- * A short, high-energy "yes-ladder": the target outcome first, how long
- * it's been since they had it, an immediate emotional commitment, the
+ * A short, high-energy "yes-ladder": how long it's been since they had
+ * their ideal body first, an immediate emotional commitment, the
  * interactive blueprint, a fast benchmark, then only the numbers that are
  * actually load-bearing for the plan — closing on a second, bigger yes
  * right before the plan unlocks. Every question either sells the outcome
  * or captures something the calorie/macro engine truly needs; nothing
  * "dry" survives just to feel thorough.
+ *
+ * `goal` is no longer collected by any step (the "Pick your dream
+ * physique" screen was removed) — it stays on QuizAnswers purely because
+ * the nutrition engine, plan naming, and coach copy still key off it, and
+ * every user now rides on DEFAULT_ANSWERS.goal ("burn") since nothing
+ * ever overwrites it, the same way `joints` already always resolves to
+ * "none" via its commit-card slot below.
  */
 export const QUIZ_STEPS: QuizStep[] = [
-  {
-    id: "goal",
-    kind: "choice",
-    layout: "tile",
-    chapter: "The target",
-    title: "Pick your dream physique",
-    subtitle: "Every rep and calorie in your plan builds toward this.",
-    hudPhrase: "PHYSICAL TARGET DIAGNOSIS",
-    options: [
-      {
-        value: "burn",
-        image: "/quiz/goal-burn.png",
-        label: "Lean & shredded",
-        description: "Strip fat fast while locking in every ounce of muscle",
-        icon: "flame",
-        socialProof: "40% choose this — the #1 goal on GOALIFY",
-      },
-      {
-        value: "build",
-        image: "/quiz/goal-build.png",
-        label: "Bigger & stronger",
-        description: "Pack on visible size and raw strength, week over week",
-        icon: "dumbbell",
-        socialProof: "30% choose this — fastest strength gains by week 3",
-      },
-      {
-        value: "tone",
-        image: "/quiz/goal-tone.png",
-        label: "Toned & defined",
-        description: "Sculpted, visible definition — zero bulk",
-        icon: "sparkles",
-        socialProof: "20% choose this — the top first-time goal",
-      },
-      {
-        value: "athletic",
-        image: "/quiz/goal-athletic.png",
-        label: "Athletic & unstoppable",
-        description: "Move faster, last longer, hit harder than ever",
-        icon: "zap",
-        socialProof: "10% choose this — biggest energy jump in week 1",
-      },
-    ],
-  },
   {
     id: "lastIdealBody",
     kind: "choice",
