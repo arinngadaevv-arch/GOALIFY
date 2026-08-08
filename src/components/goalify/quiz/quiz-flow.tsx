@@ -74,8 +74,28 @@ const zoomVariants = {
   center: { opacity: 1, scale: 1 },
   exit: { opacity: 0, scale: 1.06 },
 };
-const ZOOM_TRANSITION = { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const };
-const SLIDE_TRANSITION = { duration: 0.32, ease: [0.22, 1, 0.36, 1] as const };
+const ZOOM_TRANSITION = { duration: 0.38, ease: [0.16, 1, 0.3, 1] as const };
+const SLIDE_TRANSITION = { duration: 0.3, ease: [0.22, 1, 0.36, 1] as const };
+
+/** Not part of QuizStep data — body-map.tsx hardcodes this asset, so the
+ * preloader below has to know it by name to warm it ahead of that step. */
+const BODY_MAP_IMAGE = "/quiz/bodymap-character-v2.png";
+
+/** Every real photo URL a step will paint, so the preloader can warm the
+ * browser's image cache a step (or two) ahead of the user actually
+ * reaching it — the fetch itself, not the animation, was the real source
+ * of the "blank flash" on photo-heavy steps (goal, painTrigger,
+ * bodyFatPercent, the body map). */
+function stepImageUrls(step: QuizStep): string[] {
+  if (step.kind === "choice") {
+    return step.options
+      .map((option) => option.image)
+      .filter((src): src is string => hasRealPhoto(src));
+  }
+  if (step.kind === "bodyMap") return [BODY_MAP_IMAGE];
+  if (step.kind === "commit") return [step.bgPhoto];
+  return [];
+}
 
 export function QuizFlow() {
   const router = useRouter();
@@ -141,6 +161,27 @@ export function QuizFlow() {
   // scroll in progress.
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
+  }, [index]);
+
+  // Warms the browser's image cache for the next couple of steps (runs even
+  // before the quiz starts, since `index` is already 0 while the welcome
+  // screen shows) — by the time the user actually advances, the photos for
+  // wherever they land are already downloaded, so the real <Image> mount
+  // just paints from cache instead of racing a fresh network fetch.
+  useEffect(() => {
+    const urls = [QUIZ_STEPS[index + 1], QUIZ_STEPS[index + 2]]
+      .filter((s): s is QuizStep => Boolean(s))
+      .flatMap(stepImageUrls);
+    const preloaded = urls.map((src) => {
+      const img = new window.Image();
+      img.src = src;
+      return img;
+    });
+    return () => {
+      preloaded.forEach((img) => {
+        img.src = "";
+      });
+    };
   }, [index]);
 
   const draft = state.draft;
@@ -398,12 +439,19 @@ export function QuizFlow() {
           `custom={direction}` is how the variants below know which.
           `mode="popLayout"` matters as much as the variants themselves:
           without it, the exiting step and the entering step both sit in
-          normal document flow for the ~300-500ms crossfade, so the new
+          normal document flow for the ~300-380ms crossfade, so the new
           step's headline and content get pushed down by the old step's
           still-fading-out block above it — every zone/label on the body
           map (or any step) reads as shifted/misaligned for that whole
           window. popLayout takes the exiting element out of flow the
-          instant the new one mounts, so there's never a stacked frame. */}
+          instant the new one mounts, so there's never a stacked frame.
+          Both transitions stay under 400ms (300ms slide, 380ms zoom) and
+          only ever animate transform/opacity — the properties a browser
+          can run on the compositor without a layout/paint pass — with
+          `willChange` as an explicit hint for that, so the motion itself
+          never becomes the bottleneck; the "instant/native" feel above
+          that is what the image-preload effect above targets, since a
+          mid-flight photo fetch was the actual stutter. */}
       <AnimatePresence custom={direction} initial={false} mode="popLayout">
         <motion.div
           key={step.id}
@@ -413,6 +461,7 @@ export function QuizFlow() {
           animate="center"
           exit="exit"
           transition={useZoomTransition ? ZOOM_TRANSITION : SLIDE_TRANSITION}
+          style={{ willChange: "transform, opacity" }}
           className="relative flex flex-1 flex-col"
         >
           {/* --------------------------------------------------- Big headline */}

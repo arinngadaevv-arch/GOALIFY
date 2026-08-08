@@ -62,6 +62,7 @@ export function OptionPhoto({
           alt={alt}
           fill
           unoptimized
+          priority
           sizes="(max-width: 640px) 50vw, 240px"
           onError={() => setFailed(true)}
           className={clsx("object-cover object-top", imageClassName)}
