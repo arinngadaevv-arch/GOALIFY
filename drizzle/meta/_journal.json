@@ -71,6 +71,13 @@
       "when": 1786101606927,
       "tag": "0009_lovely_jubilee",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1786284326961,
+      "tag": "0010_furry_bruce_banner",
+      "breakpoints": true
     }
   ]
 }

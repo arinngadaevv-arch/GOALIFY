@@ -250,6 +250,7 @@ export const checkoutEvents = pgTable("checkout_event", {
   tierLabel: text("tier_label").notNull(),
   priceCents: integer("price_cents").notNull(),
   lemonSqueezyOrderId: text("lemon_squeezy_order_id").unique(),
+  whopPaymentId: text("whop_payment_id").unique(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
