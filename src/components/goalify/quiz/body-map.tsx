@@ -121,7 +121,7 @@ export function BodyMapStep({
                   "gf-press gf-glow-hover absolute grid place-items-center overflow-hidden rounded-[14px] border transition-all duration-200",
                   active
                     ? "border-transparent"
-                    : "border-electric/45 bg-electric/10",
+                    : "gf-glow-electric border-electric/70 bg-electric/25",
                 )}
                 style={{
                   left: `${rect.left}%`,
