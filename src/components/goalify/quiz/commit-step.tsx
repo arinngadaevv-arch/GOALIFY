@@ -59,7 +59,7 @@ export function CommitStep({
   };
 
   return (
-    <div className="relative -mx-5 min-h-[62vh] overflow-hidden">
+    <div className="relative -mx-5 flex flex-1 flex-col min-h-[62vh] overflow-hidden">
       <div className="absolute inset-0">
         <Image src={bgPhoto} alt="" fill priority className="object-cover object-top" />
       </div>
@@ -68,7 +68,7 @@ export function CommitStep({
         aria-hidden
       />
 
-      <div className="relative flex min-h-[62vh] flex-col items-center justify-end gap-6 px-5 pt-10 pb-6 text-center">
+      <div className="relative flex flex-1 min-h-[62vh] flex-col items-center justify-end gap-6 px-5 pt-10 pb-6 text-center">
         <button
           type="button"
           aria-label="Celebrate — confetti!"

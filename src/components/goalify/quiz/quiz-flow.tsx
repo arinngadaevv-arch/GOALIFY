@@ -519,8 +519,8 @@ export function QuizFlow() {
             )}
           </div>
 
-          <div className="relative flex-1 pt-2">
-            <div>
+          <div className="relative flex flex-1 flex-col pt-2">
+            <div className={step.kind === "commit" ? "flex flex-1 flex-col" : undefined}>
               {step.kind === "choice" ? (
                 <ChoiceStep
                   step={step}
