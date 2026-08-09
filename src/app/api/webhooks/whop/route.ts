@@ -11,18 +11,12 @@ import { checkoutEvents, users } from "@/lib/db/schema";
  * side ever writes to checkoutEvents or touches users.plan directly, so a
  * user can't grant themselves a paid plan just by hitting a redirect URL.
  *
- * KNOWN GAP: Whop's `payment.succeeded` event identifies the buyer via
- * `data.member.id` and whatever `data.metadata` the checkout was created
- * with — it does NOT include an email directly. The paywall's current
- * checkout button (see paywall.tsx) is one static, pre-made Whop checkout
- * link, which cannot carry a `metadata.userId` the way the old Lemon
- * Squeezy flow did via `custom_data`. Until either (a) checkout is switched
- * to a per-user Whop "checkout configuration" created server-side with
- * `metadata: { userId }`, or (b) a confirmed Whop API endpoint for
- * resolving a member's email is wired in below, this handler verifies and
- * logs every real payment event but has no reliable way to know *which*
- * account to credit — see the `resolveUserId` TODO below. It deliberately
- * does not guess at an unverified Whop API endpoint for that lookup.
+ * Whop's `payment.succeeded` event identifies the buyer via `data.member.id`
+ * and whatever `data.metadata` the checkout was created with — it does NOT
+ * include an email directly. api/checkout/whop creates a per-user Whop
+ * checkout configuration with `metadata: { userId }` (the same role
+ * `custom_data.userId` plays in the Lemon Squeezy flow), so `resolveUserId`
+ * below reads it straight back out of the payment event.
  */
 const whopEventSchema = z.object({
   id: z.string(),
@@ -75,10 +69,11 @@ function isValidSignature(
 }
 
 /**
- * TODO: no verified way yet to map a Whop payment to a GOALIFY account —
- * see the KNOWN GAP note above. Returns null until one of the two fixes
- * described there is in place; callers must treat null as "can't credit
- * this automatically" rather than guessing.
+ * Reads the userId api/checkout/whop attached as checkout metadata back out
+ * of the payment event. Returns null for any payment that didn't originate
+ * from that route (e.g. one made directly against the plan outside the
+ * app) — callers must treat null as "can't credit this automatically"
+ * rather than guessing.
  */
 function resolveUserId(metadata: Record<string, unknown> | undefined): string | null {
   const userId = metadata?.userId;

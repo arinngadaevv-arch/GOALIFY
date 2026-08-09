@@ -11,10 +11,12 @@ import {
   CreditCard,
   Crown,
   Loader2,
+  Search,
   ShieldCheck,
   UserPlus,
   Users,
   XCircle,
+  Zap,
 } from "lucide-react";
 import { GlassCard } from "@/components/goalify/ui/glass-card";
 import { Pill } from "@/components/goalify/ui/stat";
@@ -95,6 +97,19 @@ export function AdminDashboard({
   users: AdminUserRow[];
   checkoutConfig: CheckoutConfig;
 }) {
+  const [query, setQuery] = useState("");
+  const [planFilter, setPlanFilter] = useState<PlanTier | "ALL">("ALL");
+
+  const filteredUsers = users.filter((user) => {
+    if (planFilter !== "ALL" && user.plan !== planFilter) return false;
+    if (!query.trim()) return true;
+    const needle = query.trim().toLowerCase();
+    return (
+      user.email.toLowerCase().includes(needle) ||
+      (user.name ?? "").toLowerCase().includes(needle)
+    );
+  });
+
   return (
     <div className="gf-cyber-scope min-h-dvh">
       <div className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8">
@@ -140,9 +155,10 @@ export function AdminDashboard({
         </div>
         <p className="mt-3 text-[11px] leading-relaxed text-haze">
           &ldquo;Orders&rdquo; and &ldquo;Revenue&rdquo; are written only by
-          Lemon Squeezy&apos;s <code>order_created</code> webhook once a payment
-          has actually settled — nothing here reflects a checkout that was
-          started but not completed.
+          Lemon Squeezy&apos;s <code>order_created</code> webhook or Whop&apos;s{" "}
+          <code>payment.succeeded</code> webhook once a payment has actually
+          settled — nothing here reflects a checkout that was started but not
+          completed.
         </p>
 
         {/* --------------------------------------------------------- Funnel */}
@@ -230,6 +246,46 @@ export function AdminDashboard({
           <h2 className="gf-display text-xl font-extrabold text-ink">
             Users &amp; plans
           </h2>
+          <GlassCard deep tone="electric" className="mt-3 flex items-start gap-2.5 p-4">
+            <Zap className="mt-0.5 size-4 shrink-0 text-electric" />
+            <p className="text-[11px] leading-relaxed text-ink-soft">
+              <span className="font-bold text-ink">
+                Whop payments now activate accounts automatically
+              </span>{" "}
+              — no manual step needed for a normal purchase. The table below
+              is for the exceptions: comping someone free access, fixing a
+              payment Whop&apos;s webhook couldn&apos;t match to an account,
+              or a downgrade/refund. Find the person by name or email and use
+              the <span className="font-mono">Plan status</span> dropdown (or
+              the quick &ldquo;Grant PRO&rdquo; button) — it takes effect
+              immediately, no redeploy needed.
+            </p>
+          </GlassCard>
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-haze" />
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search by name or email…"
+                className="w-full rounded-xl border border-ink/10 bg-transparent py-2 pr-3 pl-8 text-sm text-ink outline-none placeholder:text-haze focus:border-electric/40"
+              />
+            </div>
+            <select
+              value={planFilter}
+              onChange={(event) => setPlanFilter(event.target.value as PlanTier | "ALL")}
+              className="rounded-xl border border-ink/10 bg-transparent px-3 py-2 text-xs font-bold text-ink outline-none focus:border-electric/40"
+            >
+              <option value="ALL">All plans</option>
+              {PLAN_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <GlassCard deep className="mt-3 overflow-x-auto p-0">
             <table className="w-full min-w-[820px] border-collapse text-sm">
               <thead>
@@ -244,13 +300,15 @@ export function AdminDashboard({
                 </tr>
               </thead>
               <tbody>
-                {users.map((user) => (
+                {filteredUsers.map((user) => (
                   <UserRow key={user.id} user={user} />
                 ))}
-                {users.length === 0 && (
+                {filteredUsers.length === 0 && (
                   <tr>
                     <td colSpan={7} className="px-4 py-8 text-center text-mist">
-                      No users yet.
+                      {users.length === 0
+                        ? "No users yet."
+                        : "No users match this search/filter."}
                     </td>
                   </tr>
                 )}
@@ -736,10 +794,12 @@ function UserRow({ user }: { user: AdminUserRow }) {
   const [plan, setPlan] = useState<PlanTier>(user.plan);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
 
   async function save(patch: Partial<{ name: string; plan: PlanTier }>) {
     setSaving(true);
     setError(false);
+    setJustSaved(false);
     try {
       const res = await fetch(`/api/admin/users/${user.id}`, {
         method: "PATCH",
@@ -747,6 +807,8 @@ function UserRow({ user }: { user: AdminUserRow }) {
         body: JSON.stringify(patch),
       });
       if (!res.ok) throw new Error();
+      setJustSaved(true);
+      window.setTimeout(() => setJustSaved(false), 2000);
     } catch {
       setError(true);
     } finally {
@@ -769,23 +831,46 @@ function UserRow({ user }: { user: AdminUserRow }) {
       </td>
       <td className="px-4 py-3 text-mist">{user.email}</td>
       <td className="px-4 py-3">
-        <select
-          value={plan}
-          onChange={(event) => {
-            const next = event.target.value as PlanTier;
-            setPlan(next);
-            save({ plan: next });
-          }}
-          className="rounded-lg border border-ink/10 bg-transparent px-2 py-1 text-xs font-bold text-ink outline-none focus:border-electric/40"
-        >
-          {PLAN_OPTIONS.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-        {saving && <span className="ml-2 text-[10px] text-mist">Saving…</span>}
-        {error && <span className="ml-2 text-[10px] text-red-500">Failed</span>}
+        <div className="flex items-center gap-2">
+          <select
+            value={plan}
+            onChange={(event) => {
+              const next = event.target.value as PlanTier;
+              setPlan(next);
+              save({ plan: next });
+            }}
+            className="rounded-lg border border-ink/10 bg-transparent px-2 py-1 text-xs font-bold text-ink outline-none focus:border-electric/40"
+          >
+            {PLAN_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+          {plan === "FREE" && !saving && (
+            <button
+              type="button"
+              onClick={() => {
+                setPlan("PRO");
+                save({ plan: "PRO" });
+              }}
+              className="gf-press whitespace-nowrap rounded-lg border border-lime-neon/40 bg-lime-neon/10 px-2 py-1 text-[10px] font-bold text-lime-deep transition-colors hover:bg-lime-neon/18"
+            >
+              Grant PRO
+            </button>
+          )}
+        </div>
+        {saving && (
+          <span className="mt-1 flex items-center gap-1 text-[10px] text-mist">
+            <Loader2 className="size-2.5 animate-spin" /> Saving…
+          </span>
+        )}
+        {justSaved && !saving && (
+          <span className="mt-1 flex items-center gap-1 text-[10px] font-semibold text-lime-deep">
+            <CheckCircle2 className="size-2.5" /> Saved
+          </span>
+        )}
+        {error && <span className="mt-1 block text-[10px] text-red-500">Failed — try again</span>}
       </td>
       <td className="px-4 py-3">
         {user.hasAcceptedTerms ? (

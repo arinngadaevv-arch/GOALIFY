@@ -36,21 +36,33 @@ export function Paywall() {
     fetch("/api/user/paywall-view", { method: "POST" }).catch(() => {});
   }, []);
 
-  const checkout = (event: React.MouseEvent) => {
+  const checkout = async (event: React.MouseEvent) => {
     if (loading) return;
     fireBurst(event.clientX, event.clientY, true);
     window.setTimeout(() => fireBurst(event.clientX, event.clientY, false), 90);
     navigator.vibrate?.([30, 40, 60]);
 
+    setError(null);
     setLoading(true);
-    // A fixed, hosted Whop checkout link — this leaves the app entirely.
-    // Nothing here marks the purchase as complete: unlike the Lemon Squeezy
-    // flow it replaces (still wired up below in /api/checkout and
-    // api/webhooks/lemonsqueezy, just unused by this button for now), there
-    // is currently no Whop webhook crediting `users.plan` after payment, so
-    // a paying customer's account needs to be activated some other way
-    // (e.g. the admin panel) until that integration exists.
-    window.location.href = "https://whop.com/checkout/plan_gMVdfDFjDAdqL";
+    try {
+      const res = await fetch("/api/checkout/whop", { method: "POST" });
+      const body = await res.json().catch(() => null);
+      if (!res.ok || !body?.url) {
+        setError(body?.error ?? "Couldn't start checkout — please try again.");
+        setLoading(false);
+        return;
+      }
+      // A real, per-user hosted Whop checkout (see api/checkout/whop) —
+      // this leaves the app entirely. Nothing here marks the purchase as
+      // complete: the plan only actually unlocks once Whop's
+      // payment.succeeded webhook confirms payment (see
+      // api/webhooks/whop), which reads the userId this checkout was
+      // created with back out of the payment's metadata.
+      window.location.href = body.url;
+    } catch {
+      setError("Couldn't start checkout — please try again.");
+      setLoading(false);
+    }
   };
 
   // Owner-only preview shortcut — see api/dev/skip-payment. Grants the
