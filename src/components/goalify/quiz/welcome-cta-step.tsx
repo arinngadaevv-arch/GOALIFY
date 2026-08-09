@@ -56,22 +56,22 @@ export function WelcomeCtaStep({
           PERSONALIZED PLAN" button isn't clickable, so instead of cutting
           the image apart, a real button is absolutely-positioned directly
           on top of it, sized and placed to the flat button's own pixel
-          bounding box, measured directly against the 862x1824 source
-          (x 31-831px, y 1584-1651px) and expressed as a % so it tracks the
-          image at any viewport width. That math only works if this
-          relative wrapper's height equals the image's own rendered height
-          — hence the dedicated div instead of sizing off the outer
-          container, which also holds the "Log in" paragraph below the
-          image. Unlike the previous image, this one has no baked-in "log
-          in" caption to overlay, so that link is real DOM content below
-          the image instead of a coordinate-matched overlay. Nothing about
-          the image's own layout is touched. */}
+          bounding box, measured directly against the 852x1846 source
+          (x 32-819px, y 1488-1577px, found via color-mask detection, not
+          eyeballed) and expressed as a % so it tracks the image at any
+          viewport width. That math only works if this relative wrapper's
+          height equals the image's own rendered height — hence the
+          dedicated div instead of sizing off the outer container, which
+          also holds the "Log in" paragraph below the image. This image has
+          no baked-in "log in" caption to overlay, so that link is real DOM
+          content below the image instead of a coordinate-matched overlay.
+          Nothing about the image's own layout is touched. */}
       <div className="relative">
         <Image
-          src="/quiz/d71b1b7e-3748-4102-a818-8d5758effdb6.png"
-          alt="Meet your personal AI coach. GOALIFY — 4.9/5 from 3,200+ reviews, 50,000+ happy members. Follow step-by-step workouts, get a plan personalized to your goals, track your progress, real before/after transformations."
-          width={862}
-          height={1824}
+          src="/quiz/66a025e8-c605-48e2-9d8f-ac2a5848fd0a.png"
+          alt="Meet your personal AI coach. GOALIFY — 4.9/5 from 3,290+ reviews, 30,000+ happy members. AI-powered plans, real-time adaptation, expert support, real before/after transformations."
+          width={852}
+          height={1846}
           priority
           sizes="100vw"
           className="block h-auto w-full"
@@ -85,10 +85,10 @@ export function WelcomeCtaStep({
           }}
           className="gf-press gf-anim-pulse absolute inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-[#f0c14b] to-[#c8890f] font-bold tracking-tight text-[#1a1100] shadow-[0_0_0_1px_rgba(232,179,44,0.6),0_18px_44px_-10px_rgba(232,179,44,0.8)] transition-all duration-200 select-none hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_rgba(232,179,44,0.85),0_24px_54px_-8px_rgba(232,179,44,1)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#e8b32c]"
           style={{
-            left: "3.6%",
-            width: "92.8%",
-            top: "86.8%",
-            height: "3.7%",
+            left: "3.76%",
+            width: "92.37%",
+            top: "80.6%",
+            height: "4.82%",
             fontSize: "clamp(0.65rem, 3.1vw, 1.05rem)",
           }}
         >
