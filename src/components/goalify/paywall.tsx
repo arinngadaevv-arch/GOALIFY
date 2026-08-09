@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import clsx from "clsx";
 import { Check, Loader2, Lock, ShieldCheck } from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
 import { goalLabel } from "@/lib/goalify/plan";
+import { isOwnerEmail } from "@/lib/owner";
 import { Brand } from "@/components/goalify/brand";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
 import { fireBurst, ParticleBurstLayer } from "@/components/goalify/quiz/particle-burst";
@@ -20,9 +22,12 @@ import { centsToDollars, PRICING_TIERS } from "@/lib/goalify/pricing";
  */
 export function Paywall() {
   const { answers, hydrated } = useGoalify();
+  const { data: authSession, update: refreshSession } = useSession();
   const [tier, setTier] = useState("quarterly");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [skipping, setSkipping] = useState(false);
+  const isOwner = isOwnerEmail(authSession?.user?.email) || Boolean(authSession?.user?.isAdmin);
 
   // Fire-and-forget — records that this account actually reached the
   // paywall, purely for the admin funnel (see api/user/paywall-view).
@@ -61,6 +66,30 @@ export function Paywall() {
     } catch {
       setError("Couldn't start checkout — please try again.");
       setLoading(false);
+    }
+  };
+
+  // Owner-only preview shortcut — see api/dev/skip-payment. Grants the
+  // signed-in owner account a plan without a real charge, then forces the
+  // JWT to re-read `users.plan` (same `update()` pattern as the real
+  // post-checkout flow in unlock-celebration.tsx) so proxy.ts's plan gate
+  // immediately lets them through to the post-payment screens.
+  const skipPayment = async () => {
+    if (skipping) return;
+    setError(null);
+    setSkipping(true);
+    try {
+      const res = await fetch("/api/dev/skip-payment", { method: "POST" });
+      if (!res.ok) {
+        setError("Test mode isn't available for this account.");
+        setSkipping(false);
+        return;
+      }
+      await refreshSession();
+      window.location.href = "/home";
+    } catch {
+      setError("Couldn't skip payment — please try again.");
+      setSkipping(false);
     }
   };
 
@@ -233,6 +262,22 @@ export function Paywall() {
               Secure Checkout
             </span>
           </div>
+
+          {/* Owner-only preview shortcut — see api/dev/skip-payment.
+              Invisible to every other signed-in account, so this is safe
+              to ship live: nobody can grant themselves a plan through it
+              but the site owner's own account. TEMPORARY — remove once
+              the post-payment screens have been previewed. */}
+          {isOwner && (
+            <button
+              type="button"
+              onClick={skipPayment}
+              disabled={skipping}
+              className="mt-2 block w-full text-center text-[10px] font-bold tracking-[0.06em] text-ink-soft/60 uppercase underline-offset-2 hover:text-electric hover:underline disabled:opacity-50"
+            >
+              {skipping ? "Skipping…" : "Skip Payment (Test Mode)"}
+            </button>
+          )}
         </div>
       </div>
     </main>
