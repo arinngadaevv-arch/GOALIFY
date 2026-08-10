@@ -47,6 +47,15 @@ export function AIFormGuide({
   // changes to anything else, it can no longer equal `failedSrc`, so a new
   // clip always gets a fresh chance with zero timing games.
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  // Tracks the specific URL that has actually produced a frame — not just
+  // "a URL was requested." On a slow connection a clip can take a long
+  // time to buffer, and swapping straight from the placeholder to an
+  // empty/black <video> the instant `videoSrc` resolves means the user
+  // sees nothing moving for however long that takes, which reads as the
+  // whole screen being stuck rather than a clip still loading. Keeping
+  // the animated placeholder up until this fires gives continuous visual
+  // feedback the whole time instead of a dead gap.
+  const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Logs exactly which URL is about to be requested, so the Network tab
@@ -101,6 +110,7 @@ export function AIFormGuide({
     }
     function handleLoadedData() {
       console.debug(`[AIFormGuide] clip loaded and playing: ${videoSrc}`);
+      setLoadedSrc(src);
     }
 
     el.addEventListener("error", handleError);
@@ -116,7 +126,11 @@ export function AIFormGuide({
     };
   }, [videoSrc]);
 
-  const showVideo = Boolean(videoSrc) && videoSrc !== failedSrc;
+  // The element is mounted as soon as a clip is attempted (so it can
+  // actually start buffering/loading), but only actually shown — instead
+  // of the placeholder — once it's confirmed to have a real frame ready.
+  const attemptingVideo = Boolean(videoSrc) && videoSrc !== failedSrc;
+  const videoReady = attemptingVideo && videoSrc === loadedSrc;
 
   return (
     <div
@@ -125,7 +139,7 @@ export function AIFormGuide({
         className,
       )}
     >
-      {showVideo && (
+      {attemptingVideo && (
         <video
           ref={videoRef}
           key={videoSrc}
@@ -134,7 +148,11 @@ export function AIFormGuide({
           muted
           loop
           playsInline
-          className="absolute inset-0 z-0 h-full w-full object-cover"
+          preload="metadata"
+          className={clsx(
+            "absolute inset-0 z-0 h-full w-full object-cover transition-opacity duration-300",
+            videoReady ? "opacity-100" : "opacity-0",
+          )}
         />
       )}
 
@@ -170,7 +188,7 @@ export function AIFormGuide({
         ),
       )}
 
-      {!showVideo && (
+      {!videoReady && (
         <PoseIcon
           pose={pose}
           className="gf-anim-float relative z-10 h-28 w-28 drop-shadow-[0_6px_10px_rgba(0,82,255,0.28)] sm:h-32 sm:w-32 [.gf-cyber-scope_&]:drop-shadow-[0_6px_14px_rgba(232,179,44,0.32)]"
