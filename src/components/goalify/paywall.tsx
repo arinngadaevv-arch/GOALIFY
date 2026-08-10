@@ -45,7 +45,11 @@ export function Paywall() {
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch("/api/checkout/whop", { method: "POST" });
+      const res = await fetch("/api/checkout/whop", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tier }),
+      });
       const body = await res.json().catch(() => null);
       if (!res.ok || !body?.url) {
         setError(body?.error ?? "Couldn't start checkout — please try again.");
