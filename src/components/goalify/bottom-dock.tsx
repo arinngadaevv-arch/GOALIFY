@@ -3,16 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
-import { Apple, House, TrendingUp } from "lucide-react";
-
-// Settings uses the literal ⚙️ emoji glyph instead of a Lucide icon, on
-// request — the other three tabs stay vector icons.
-const NAV = [
-  { href: "/home", label: "Home", Icon: House },
-  { href: "/nutrition", label: "Nutrition", Icon: Apple },
-  { href: "/progress", label: "Progress", Icon: TrendingUp },
-  { href: "/settings", label: "Settings", Icon: null },
-] as const;
+import { NAV_ITEMS as NAV } from "./nav-items";
 
 export function BottomDock() {
   const pathname = usePathname();
@@ -24,7 +15,7 @@ export function BottomDock() {
   return (
     <nav
       aria-label="Primary"
-      className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
+      className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:hidden"
     >
       <div className="gf-glass gf-glass-deep relative flex w-full max-w-md items-center gap-1 rounded-full p-2">
         {/* Sliding highlight — the dock's "dynamic" element. */}

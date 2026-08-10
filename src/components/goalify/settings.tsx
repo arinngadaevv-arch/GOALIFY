@@ -100,8 +100,10 @@ export function SettingsScreen() {
         </div>
       </GlassCard>
 
+      {/* See dashboard.tsx's matching comment — CSS-multicol, no reordering. */}
+      <div className="lg:columns-2 lg:gap-6">
       {/* ------------------------------------------------------- Body details */}
-      <section className="gf-anim-rise gf-delay-2 mt-8">
+      <section className="gf-anim-rise gf-delay-2 mt-8 lg:break-inside-avoid">
         <SectionHeading
           eyebrow="Your numbers"
           title="Profile details"
@@ -125,7 +127,7 @@ export function SettingsScreen() {
       </section>
 
       {/* ---------------------------------------------------------- Training */}
-      <section className="gf-anim-rise gf-delay-3 mt-8">
+      <section className="gf-anim-rise gf-delay-3 mt-8 lg:break-inside-avoid">
         <SectionHeading eyebrow="Safety first" title="Training preferences" />
         <GlassCard
           tone={settings.kneeSafe ? "lime" : "plain"}
@@ -170,7 +172,7 @@ export function SettingsScreen() {
       </section>
 
       {/* ----------------------------------------------------- Notifications */}
-      <section className="gf-anim-rise gf-delay-4 mt-8">
+      <section className="gf-anim-rise gf-delay-4 mt-8 lg:break-inside-avoid">
         <SectionHeading
           eyebrow="Three a day, max"
           title="Notifications"
@@ -206,7 +208,7 @@ export function SettingsScreen() {
       </section>
 
       {/* ------------------------------------------------------- Subscription */}
-      <section className="gf-anim-rise gf-delay-5 mt-8">
+      <section className="gf-anim-rise gf-delay-5 mt-8 lg:break-inside-avoid">
         <SectionHeading eyebrow="Billing" title="Subscription" />
         <GlassCard tone="electric" deep className="p-6">
           <div className="flex items-center gap-3">
@@ -254,7 +256,7 @@ export function SettingsScreen() {
       </section>
 
       {/* ------------------------------------------------------ Connected accounts */}
-      <section className="gf-anim-rise gf-delay-6 mt-8">
+      <section className="gf-anim-rise gf-delay-6 mt-8 lg:break-inside-avoid">
         <SectionHeading eyebrow="Sign-in" title="Connected accounts" />
         <GlassCard deep className="flex items-center gap-4 p-5">
           <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-ink/5">
@@ -292,7 +294,7 @@ export function SettingsScreen() {
       </section>
 
       {/* -------------------------------------------------------------- Reset */}
-      <section className="gf-anim-rise gf-delay-6 mt-8">
+      <section className="gf-anim-rise gf-delay-6 mt-8 lg:break-inside-avoid">
         <SectionHeading eyebrow="Danger zone" title="Device data" />
         <GlassCard className="p-5">
           <p className="text-xs leading-relaxed text-mist">
@@ -309,6 +311,7 @@ export function SettingsScreen() {
           </button>
         </GlassCard>
       </section>
+      </div>
 
       <p className="mt-8 flex items-center justify-center gap-1.5 text-center text-xs text-haze">
         <Bell className="size-3.5" />

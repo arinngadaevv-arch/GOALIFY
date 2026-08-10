@@ -79,8 +79,10 @@ export function Nutrition() {
         </p>
       </GlassCard>
 
+      {/* See dashboard.tsx's matching comment — CSS-multicol, no reordering. */}
+      <div className="lg:columns-2 lg:gap-6">
       {/* -------------------------------------------------------- Macro split */}
-      <section className="gf-anim-rise gf-delay-2 mt-6">
+      <section className="gf-anim-rise gf-delay-2 mt-6 lg:break-inside-avoid">
         <SectionHeading eyebrow="Daily split" title="Your macros" />
         <div className="grid grid-cols-3 gap-3">
           <MacroCard
@@ -117,7 +119,7 @@ export function Nutrition() {
       </section>
 
       {/* ------------------------------------------------------ Meal templates */}
-      <section className="gf-anim-rise gf-delay-3 mt-8">
+      <section className="gf-anim-rise gf-delay-3 mt-8 lg:break-inside-avoid">
         <SectionHeading eyebrow="Rough shape of the day" title="Your plate" />
         <div className="grid grid-cols-3 gap-3">
           {meals.map((meal) => (
@@ -144,7 +146,7 @@ export function Nutrition() {
       </section>
 
       {/* ------------------------------------------------- Pre / post workout */}
-      <section className="gf-anim-rise gf-delay-4 mt-8">
+      <section className="gf-anim-rise gf-delay-4 mt-8 lg:break-inside-avoid">
         <SectionHeading eyebrow="Timing rules" title="Around your session" />
         <div className="grid gap-3">
           {RULES.map((rule) => (
@@ -175,13 +177,13 @@ export function Nutrition() {
       </section>
 
       {/* ------------------------------------------------------ Water tracker */}
-      <section className="gf-anim-rise gf-delay-5 mt-8">
+      <section className="gf-anim-rise gf-delay-5 mt-8 lg:break-inside-avoid">
         <SectionHeading eyebrow="Hydration" title="Daily water" />
         <WaterTracker />
       </section>
 
       {/* --------------------------------------------------------- Quick tips */}
-      <section className="gf-anim-rise gf-delay-6 mt-8">
+      <section className="gf-anim-rise gf-delay-6 mt-8 lg:break-inside-avoid">
         <SectionHeading eyebrow="Make it stick" title="Three habits" />
         <div className="grid gap-3">
           <TipRow
@@ -201,6 +203,7 @@ export function Nutrition() {
           />
         </div>
       </section>
+      </div>
     </AppShell>
   );
 }

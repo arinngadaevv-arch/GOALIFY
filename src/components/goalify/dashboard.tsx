@@ -136,8 +136,13 @@ export function Dashboard() {
       {/* --------------------------------------------------- Motivation ticker */}
       <MotivationTicker />
 
+      {/* On phones this is just a plain vertical stack. At lg+ it flows into
+          two CSS-multicol columns — no DOM reordering, no JS masonry lib,
+          each top-level block just gets `lg:break-inside-avoid` so it never
+          splits mid-card across the column break. */}
+      <div className="lg:columns-2 lg:gap-6">
       {/* ------------------------------------------------- Live Activity rings */}
-      <section className="gf-anim-rise mb-6">
+      <section className="gf-anim-rise mb-6 lg:break-inside-avoid">
         <SectionHeading
           eyebrow="Real-time · on-device"
           title="Live Activity"
@@ -178,7 +183,7 @@ export function Dashboard() {
       </section>
 
       {/* ------------------------------------------------ Dual progress rings */}
-      <GlassCard deep className="gf-anim-rise gf-delay-1 flex items-center gap-6 p-6">
+      <GlassCard deep className="gf-anim-rise gf-delay-1 flex items-center gap-6 p-6 lg:break-inside-avoid">
         <ProgressRing
           size={148}
           thickness={13}
@@ -215,7 +220,7 @@ export function Dashboard() {
       </GlassCard>
 
       {/* ------------------------------------------------ Today's workout card */}
-      <section className="mt-8">
+      <section className="mt-8 lg:break-inside-avoid">
         <SectionHeading
           eyebrow={`Day ${state.programDay}`}
           title="Today's Workout"
@@ -293,7 +298,7 @@ export function Dashboard() {
       </section>
 
       {/* ------------------------------------------------------ Library link */}
-      <Link href="/workouts" className="mt-5 block">
+      <Link href="/workouts" className="mt-5 block lg:break-inside-avoid">
         <GlassCard
           tone="lime"
           interactive
@@ -315,7 +320,7 @@ export function Dashboard() {
       </Link>
 
       {/* ----------------------------------------------- Nutrition targets card */}
-      <section className="mt-8">
+      <section className="mt-8 lg:break-inside-avoid">
         <SectionHeading
           eyebrow="No food logging"
           title="Daily Fuel Targets"
@@ -385,7 +390,7 @@ export function Dashboard() {
       </section>
 
       {/* ------------------------------------------------------ Reminders link */}
-      <Link href="/notifications" className="mt-5 block">
+      <Link href="/notifications" className="mt-5 block lg:break-inside-avoid">
         <GlassCard
           tone="electric"
           interactive
@@ -405,6 +410,7 @@ export function Dashboard() {
           <ArrowRight className="size-4 shrink-0 text-electric" />
         </GlassCard>
       </Link>
+      </div>
 
       <p className="mt-8 flex items-center justify-center gap-1.5 text-center text-xs text-haze">
         <Timer className="size-3.5" />

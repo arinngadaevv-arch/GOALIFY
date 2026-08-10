@@ -47,7 +47,7 @@ const FAQS = [
 
 export function SeoContent() {
   return (
-    <section className="relative mx-auto mt-10 mb-16 max-w-lg space-y-8 text-white/80">
+    <section className="relative mx-auto mt-10 mb-16 max-w-lg space-y-8 text-white/80 lg:max-w-3xl lg:px-12">
       <script
         type="application/ld+json"
         // Static, hand-written content — no user input ever flows into
@@ -90,7 +90,7 @@ export function SeoContent() {
         <h2 className="gf-display text-2xl leading-tight font-black text-white">
           Frequently asked questions
         </h2>
-        <div className="mt-4 space-y-3">
+        <div className="mt-4 space-y-3 lg:columns-2 lg:gap-4 lg:space-y-0 [&>*]:lg:mb-4 [&>*]:lg:break-inside-avoid">
           {FAQS.map((faq) => (
             <details
               key={faq.question}

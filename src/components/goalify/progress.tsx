@@ -65,8 +65,10 @@ export function Progress() {
         <Stat value={`${doneInGrid}/30`} label="Last 30 days" tone="ink" />
       </GlassCard>
 
+      {/* See dashboard.tsx's matching comment — CSS-multicol, no reordering. */}
+      <div className="lg:columns-2 lg:gap-6">
       {/* -------------------------------------------------------- Trendline */}
-      <section className="gf-anim-rise gf-delay-2 mt-8">
+      <section className="gf-anim-rise gf-delay-2 mt-8 lg:break-inside-avoid">
         <SectionHeading
           eyebrow="Projection"
           title="Weight trendline"
@@ -109,7 +111,7 @@ export function Progress() {
       </section>
 
       {/* ------------------------------------------------------ Completion grid */}
-      <section className="gf-anim-rise gf-delay-3 mt-8">
+      <section className="gf-anim-rise gf-delay-3 mt-8 lg:break-inside-avoid">
         <SectionHeading eyebrow="Consistency" title="30-day grid" />
         <GlassCard deep className="p-6">
           <div className="grid grid-cols-10 gap-1.5">
@@ -171,7 +173,7 @@ export function Progress() {
       </section>
 
       {/* -------------------------------------------------------- Photo vault */}
-      <section className="gf-anim-rise gf-delay-4 mt-8">
+      <section className="gf-anim-rise gf-delay-4 mt-8 lg:break-inside-avoid">
         <SectionHeading
           eyebrow="Private to you"
           title="Before / After vault"
@@ -235,7 +237,7 @@ export function Progress() {
       </section>
 
       {/* ------------------------------------------------------- Trophy shelf */}
-      <section className="gf-anim-rise gf-delay-5 mt-8">
+      <section className="gf-anim-rise gf-delay-5 mt-8 lg:break-inside-avoid">
         <SectionHeading
           eyebrow="Trophy shelf"
           title="Your badges"
@@ -288,7 +290,7 @@ export function Progress() {
 
       <GlassCard
         tone="electric"
-        className="gf-anim-rise gf-delay-6 mt-8 flex items-center gap-4 p-5"
+        className="gf-anim-rise gf-delay-6 mt-8 flex items-center gap-4 p-5 lg:break-inside-avoid"
       >
         <Flame className="size-5 shrink-0 text-electric" strokeWidth={2.6} />
         <p className="text-xs leading-relaxed text-ink-soft">
@@ -297,6 +299,7 @@ export function Progress() {
             : `${completed} session${completed === 1 ? "" : "s"} logged. Keep the grid green — that's the only metric that compounds.`}
         </p>
       </GlassCard>
+      </div>
     </AppShell>
   );
 }
