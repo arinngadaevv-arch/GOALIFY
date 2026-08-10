@@ -53,7 +53,7 @@ export function NotificationsPreview() {
   const active = SLOTS.filter((slot) => state.settings[slot.key]);
 
   return (
-    <AppShell title="Daily Reminders" subtitle="Lock-screen preview">
+    <AppShell dark title="Daily Reminders" subtitle="Lock-screen preview">
       <GlassCard tone="electric" className="gf-anim-rise flex items-center gap-3 p-4">
         <Bell className="size-4 shrink-0 text-electric" />
         <p className="text-xs leading-relaxed text-ink-soft">
@@ -67,7 +67,11 @@ export function NotificationsPreview() {
         <div
           className={clsx(
             "relative w-full max-w-[19rem] overflow-hidden rounded-[2.75rem] p-3",
-            "border-[6px] border-ink/85 bg-ink",
+            // A real phone's bezel — deliberately fixed black regardless of
+            // `dark`'s cyber scope, unlike the token-based `ink` class (which
+            // flips to white there), since this represents a physical device,
+            // not themed app chrome.
+            "border-[6px] border-black/85 bg-black",
             "shadow-[0_40px_80px_-30px_rgba(8,22,66,0.6),inset_0_0_0_1px_rgba(255,255,255,0.12)]",
           )}
         >

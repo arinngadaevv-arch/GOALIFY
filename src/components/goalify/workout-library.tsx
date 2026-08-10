@@ -33,7 +33,7 @@ export function WorkoutLibrary() {
   const { state, todaysWorkout } = useGoalify();
 
   return (
-    <AppShell title="Workout Library" subtitle="Pick your track">
+    <AppShell dark title="Workout Library" subtitle="Pick your track">
       <GlassCard tone="electric" className="gf-anim-rise flex items-center gap-3 p-4">
         <Zap className="size-4 shrink-0 text-electric" />
         <p className="text-xs leading-relaxed text-ink-soft">
