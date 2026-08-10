@@ -1060,6 +1060,19 @@ function WhopCheckoutDiagnosticsPanel() {
                   {renderSafe(result.error)}
                 </p>
               )}
+              {!result.ok && result.statusCode === 404 && (
+                <p className="mt-1 text-haze">
+                  A 404 here (as opposed to a 401) means the key <em>is</em>{" "}
+                  authenticating — Whop just can&apos;t find this exact plan id
+                  on the host shown above. Plan ids are scoped per
+                  environment same as keys: this one was most likely copied
+                  from the <em>other</em> Whop dashboard (sandbox vs.
+                  production) than the one being tested. Either copy the
+                  matching plan id from the dashboard for the tested host, or
+                  flip <span className="font-mono">WHOP_SANDBOX</span> to
+                  match wherever this plan id actually lives.
+                </p>
+              )}
               {!result.ok && renderSafe(result.raw) && (
                 <p className="mt-1 break-all text-haze">{renderSafe(result.raw)}</p>
               )}
