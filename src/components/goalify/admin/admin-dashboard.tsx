@@ -232,17 +232,19 @@ export function AdminDashboard({
             Whop checkout
           </h2>
           <p className="mt-1 text-[11px] leading-relaxed text-haze">
-            Live read of the server&apos;s env vars — the exact same check
-            api/checkout/whop runs before it will start a checkout. A red{" "}
-            &ldquo;Missing&rdquo; here is why the paywall shows &ldquo;Could
-            not start checkout&rdquo;. If you just added a var in Vercel,
-            it still needs a fresh redeploy to actually reach this
-            already-running server — saving the value alone doesn&apos;t do
-            it.
+            API key and plan pills are the exact same check api/checkout/whop
+            runs before it will start a checkout — a red &ldquo;Missing&rdquo;
+            on any of those is why the paywall shows &ldquo;Could not start
+            checkout&rdquo;. The webhook secret pill is separate: it&apos;s
+            read by api/webhooks/whop, not api/checkout/whop, so it has no
+            effect on whether checkout starts — it only controls whether a
+            completed payment can be auto-credited (see the note under Users
+            &amp; plans below). If you just added a var in Vercel, it still
+            needs a fresh redeploy to actually reach this already-running
+            server — saving the value alone doesn&apos;t do it.
           </p>
           <GlassCard deep className="mt-3 flex flex-wrap gap-2 p-4">
             <ConfigPill label="API key" ok={whopCheckoutConfig.apiKey} />
-            <ConfigPill label="Webhook secret" ok={whopCheckoutConfig.webhookSecret} />
             {whopCheckoutConfig.plans.map((plan) => (
               <ConfigPill
                 key={plan.tier}
@@ -252,6 +254,10 @@ export function AdminDashboard({
             ))}
           </GlassCard>
           <WhopCheckoutDiagnosticsPanel />
+
+          <GlassCard deep className="mt-3 flex items-start gap-2.5 p-4">
+            <ConfigPill label="Webhook secret (auto-credit only, not checkout)" ok={whopCheckoutConfig.webhookSecret} />
+          </GlassCard>
         </section>
 
         {/* ------------------------------------------ Lemon Squeezy variants */}
