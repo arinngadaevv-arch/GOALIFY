@@ -23,6 +23,19 @@ const REQUIRES_PLAN_ROUTES = [
   "/workout",
 ];
 
+// The marketing landing page and the quiz's own welcome step — both are
+// the "come sign up" front door for a brand-new visitor. A signed-in
+// account can only ever reach either one by explicitly navigating back
+// (or via the Google OAuth round trip's callback URL, which lands here
+// too — see auth-panel.tsx / welcome-cta-step.tsx), and since the account
+// gate only ever fires *after* a real quiz completion, any signed-in
+// session on these routes necessarily already has a finished quiz behind
+// it. Sending them through the whole quiz again would be pure friction —
+// straight to /home (or /plan to finish paying) is the same place their
+// own post-quiz/post-checkout client code would send them anyway, just
+// without the detour through quiz UI they don't need to see again.
+const SKIP_QUIZ_IF_LOGGED_IN_ROUTES = ["/", "/quiz"];
+
 function matches(pathname: string, routes: string[]) {
   return routes.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 }
@@ -34,6 +47,7 @@ export default auth((req) => {
 
   const requiresLogin = matches(pathname, LOGIN_ONLY_ROUTES);
   const requiresPlan = matches(pathname, REQUIRES_PLAN_ROUTES);
+  const skipQuizIfLoggedIn = matches(pathname, SKIP_QUIZ_IF_LOGGED_IN_ROUTES);
 
   if ((requiresLogin || requiresPlan) && !isLoggedIn) {
     return NextResponse.redirect(new URL("/quiz", req.nextUrl.origin));
@@ -41,10 +55,17 @@ export default auth((req) => {
   if (requiresPlan && !hasActivePlan) {
     return NextResponse.redirect(new URL("/plan", req.nextUrl.origin));
   }
+  if (skipQuizIfLoggedIn && isLoggedIn) {
+    return NextResponse.redirect(
+      new URL(hasActivePlan ? "/home" : "/plan", req.nextUrl.origin),
+    );
+  }
 });
 
 export const config = {
   matcher: [
+    "/",
+    "/quiz",
     "/home",
     "/plan",
     "/nutrition",
