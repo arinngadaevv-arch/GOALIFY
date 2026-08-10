@@ -582,6 +582,22 @@ body.goalify-body:has(.gf-cyber-scope) .gf-ambience {
 .gf-anim-float {
   animation: gf-float 5.5s ease-in-out infinite;
 }
+
+/* --- Scroll-down hint: a short, snappy bob (not the slow gf-float drift),
+   distinct enough to read as "there's more below, scroll here." ------------ */
+@keyframes gf-bounce-down {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(7px);
+  }
+}
+
+.gf-anim-bounce-down {
+  animation: gf-bounce-down 1.3s ease-in-out infinite;
+}
 .gf-anim-rise {
   animation: gf-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }

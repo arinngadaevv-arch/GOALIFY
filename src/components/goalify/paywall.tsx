@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import clsx from "clsx";
-import { Check, Loader2, Lock, ShieldCheck } from "lucide-react";
+import { Check, ChevronDown, Loader2, Lock, ShieldCheck } from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
 import { goalLabel } from "@/lib/goalify/plan";
 import { isOwnerEmail } from "@/lib/owner";
@@ -97,7 +97,7 @@ export function Paywall() {
     <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-36">
       <ParticleBurstLayer />
 
-      <header className="relative flex items-center justify-center py-6">
+      <header className="relative flex items-center justify-center py-4">
         <Brand />
       </header>
 
@@ -106,10 +106,10 @@ export function Paywall() {
         <span className="inline-flex items-center gap-1.5 rounded-full bg-lime-neon/18 px-3 py-1.5 text-[11px] font-bold tracking-[0.1em] text-lime-deep uppercase">
           <Check className="size-3" strokeWidth={3} /> Analysis complete
         </span>
-        <h1 className="gf-display mt-4 text-4xl leading-[1.05] font-black text-ink sm:text-5xl">
+        <h1 className="gf-display mt-3 text-4xl leading-[1.05] font-black text-ink sm:text-5xl">
           YOUR <span className="gf-text-hype">TRANSFORMATION</span> IS READY 🔥
         </h1>
-        <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-ink-soft">
+        <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-ink-soft">
           Your personalised {goalLabel(answers.goal).toLowerCase()} blueprint is
           built and waiting — zero equipment, zero excuses.
         </p>
@@ -122,8 +122,22 @@ export function Paywall() {
         goal={goalLabel(answers.goal)}
       />
 
+      {/* The plan cards sit below the fold on most phones, and the sticky
+          CTA at the bottom is tappable without ever scrolling to see them
+          — this nudge sits right at that boundary so it's visible exactly
+          when a fresh page load runs out of viewport, then scrolls out of
+          view naturally once the user reaches the plans below (it's plain
+          inline content, not fixed/floating, so nothing needs to track
+          scroll position to hide it again). */}
+      <div className="mt-3 flex flex-col items-center gap-0.5 text-mist">
+        <p className="text-[11px] font-bold tracking-[0.08em] uppercase">
+          Scroll to choose your plan
+        </p>
+        <ChevronDown className="gf-anim-bounce-down size-5 text-electric" aria-hidden />
+      </div>
+
       {/* ------------------------------------------------------ Plan selection */}
-      <section className="relative mt-8">
+      <section className="relative mt-4">
         <p className="text-center text-[11px] font-black tracking-[0.16em] text-mist uppercase">
           Choose your plan
         </p>
@@ -302,7 +316,7 @@ function TransformationCard({
   goal: string;
 }) {
   return (
-    <div className="gf-anim-rise relative mt-6 overflow-hidden rounded-3xl border-2 border-[#FFC700]/45 bg-gradient-to-b from-[#FFC700]/12 via-[#161B26] to-[#0b0e14] p-6 shadow-[0_0_0_1px_rgba(255,199,0,0.12),0_0_54px_-16px_rgba(255,199,0,0.55)]">
+    <div className="gf-anim-rise relative mt-4 overflow-hidden rounded-3xl border-2 border-[#FFC700]/45 bg-gradient-to-b from-[#FFC700]/12 via-[#161B26] to-[#0b0e14] p-5 shadow-[0_0_0_1px_rgba(255,199,0,0.12),0_0_54px_-16px_rgba(255,199,0,0.55)]">
       <p className="text-center text-[11px] font-black tracking-[0.18em] text-[#FFC700] uppercase">
         Your 6-month trajectory
       </p>
@@ -314,7 +328,7 @@ function TransformationCard({
           width={1448}
           height={1086}
           sizes="(min-width: 640px) 512px, 100vw"
-          className="h-auto w-full object-cover"
+          className="h-auto max-h-[190px] w-full object-cover"
           priority
         />
         <div
@@ -323,7 +337,7 @@ function TransformationCard({
         />
       </div>
 
-      <div className="mt-4 flex items-center justify-center gap-2 text-sm font-extrabold text-ink">
+      <div className="mt-3 flex items-center justify-center gap-2 text-sm font-extrabold text-ink">
         <span>{weightKg} kg</span>
         <svg
           viewBox="0 0 24 24"
