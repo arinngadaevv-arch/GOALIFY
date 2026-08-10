@@ -60,6 +60,12 @@ export type CheckoutConfig = {
   variants: { tier: string; label: string; configured: boolean }[];
 };
 
+export type WhopCheckoutConfig = {
+  apiKey: boolean;
+  webhookSecret: boolean;
+  plans: { tier: string; label: string; configured: boolean }[];
+};
+
 type DiagnosticResult = {
   tier: string;
   label: string;
@@ -70,6 +76,17 @@ type DiagnosticResult = {
   statusCode?: number | null;
   error?: string;
   cause?: string;
+};
+
+type WhopDiagnosticResult = {
+  tier: string;
+  label: string;
+  planId: string | null;
+  ok: boolean;
+  statusCode?: number;
+  error?: string;
+  raw?: string;
+  purchaseUrl?: string;
 };
 
 const PLAN_OPTIONS: PlanTier[] = ["FREE", "PRO", "BUSINESS"];
@@ -91,11 +108,13 @@ export function AdminDashboard({
   funnel,
   users,
   checkoutConfig,
+  whopCheckoutConfig,
 }: {
   stats: AdminStats;
   funnel: FunnelStats;
   users: AdminUserRow[];
   checkoutConfig: CheckoutConfig;
+  whopCheckoutConfig: WhopCheckoutConfig;
 }) {
   const [query, setQuery] = useState("");
   const [planFilter, setPlanFilter] = useState<PlanTier | "ALL">("ALL");
@@ -205,6 +224,34 @@ export function AdminDashboard({
             ))}
           </GlassCard>
           <CheckoutDiagnosticsPanel />
+        </section>
+
+        {/* --------------------------------------------------- Whop checkout */}
+        <section className="mt-10">
+          <h2 className="gf-display text-xl font-extrabold text-ink">
+            Whop checkout
+          </h2>
+          <p className="mt-1 text-[11px] leading-relaxed text-haze">
+            Live read of the server&apos;s env vars — the exact same check
+            api/checkout/whop runs before it will start a checkout. A red{" "}
+            &ldquo;Missing&rdquo; here is why the paywall shows &ldquo;Could
+            not start checkout&rdquo;. If you just added a var in Vercel,
+            it still needs a fresh redeploy to actually reach this
+            already-running server — saving the value alone doesn&apos;t do
+            it.
+          </p>
+          <GlassCard deep className="mt-3 flex flex-wrap gap-2 p-4">
+            <ConfigPill label="API key" ok={whopCheckoutConfig.apiKey} />
+            <ConfigPill label="Webhook secret" ok={whopCheckoutConfig.webhookSecret} />
+            {whopCheckoutConfig.plans.map((plan) => (
+              <ConfigPill
+                key={plan.tier}
+                label={`${plan.label} plan`}
+                ok={plan.configured}
+              />
+            ))}
+          </GlassCard>
+          <WhopCheckoutDiagnosticsPanel />
         </section>
 
         {/* ------------------------------------------ Lemon Squeezy variants */}
@@ -760,6 +807,99 @@ function CheckoutDiagnosticsPanel() {
                   {formatMoney(result.actualCents)}
                   {!result.ok && " — mismatch"}
                 </p>
+              )}
+            </GlassCard>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Fires the same checkout_configurations call api/checkout/whop triggers,
+ * for all three tiers, and surfaces Whop's actual response/error back in
+ * the UI — this is the only way to see *why* checkout is failing without
+ * access to Vercel's function logs (this app has no way to read those
+ * directly). Each run creates a real (but never visited) Whop checkout
+ * configuration tagged metadata.diagnostic — nobody pays anything.
+ */
+function WhopCheckoutDiagnosticsPanel() {
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState<WhopDiagnosticResult[] | null>(null);
+  const [topLevelError, setTopLevelError] = useState<string | null>(null);
+
+  async function run() {
+    setLoading(true);
+    setTopLevelError(null);
+    try {
+      const res = await fetch("/api/admin/whop-checkout-diagnostics");
+      const body = await res.json().catch(() => null);
+      if (!res.ok || !body?.results) {
+        setTopLevelError(body?.error ?? "Diagnostic request failed.");
+        setResults(null);
+        return;
+      }
+      setResults(body.results);
+    } catch {
+      setTopLevelError("Diagnostic request failed.");
+      setResults(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="mt-3">
+      <button
+        type="button"
+        onClick={run}
+        disabled={loading}
+        className="gf-press flex items-center gap-2 rounded-xl border border-electric/30 bg-electric/8 px-4 py-2 text-xs font-bold text-electric transition-colors hover:bg-electric/14 disabled:opacity-60"
+      >
+        {loading && <Loader2 className="size-3.5 animate-spin" />}
+        Run live Whop checkout test
+      </button>
+
+      {topLevelError && (
+        <p className="mt-2 text-xs font-semibold text-red-400">{topLevelError}</p>
+      )}
+
+      {results && (
+        <div className="mt-3 flex flex-col gap-2">
+          {results.map((result) => (
+            <GlassCard
+              key={result.tier}
+              deep
+              className={clsx(
+                "p-3 text-xs",
+                result.ok ? "border border-lime-neon/25" : "border border-red-500/30",
+              )}
+            >
+              <div className="flex items-center gap-2 font-bold text-ink">
+                {result.ok ? (
+                  <CheckCircle2 className="size-3.5 text-lime-neon" />
+                ) : (
+                  <XCircle className="size-3.5 text-red-400" />
+                )}
+                {result.label}
+                {result.planId && (
+                  <span className="font-normal text-haze">· plan {result.planId}</span>
+                )}
+              </div>
+              {!result.ok && result.error && (
+                <p className="mt-1 text-red-300">
+                  {result.statusCode && (
+                    <span className="mr-1 font-mono font-black">{result.statusCode}</span>
+                  )}
+                  {result.error}
+                </p>
+              )}
+              {!result.ok && result.raw && (
+                <p className="mt-1 break-all text-haze">{result.raw}</p>
+              )}
+              {result.ok && (
+                <p className="mt-1 text-mist">Whop accepted this plan and returned a checkout URL.</p>
               )}
             </GlassCard>
           ))}
