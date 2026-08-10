@@ -328,7 +328,7 @@ function TransformationCard({
           width={1448}
           height={1086}
           sizes="(min-width: 640px) 512px, 100vw"
-          className="h-auto max-h-[190px] w-full object-cover"
+          className="h-auto max-h-[190px] w-full object-cover object-top"
           priority
         />
         <div
