@@ -9,7 +9,7 @@
  * The clips actually uploaded are named after the exercise/moment itself,
  * not a numeric position, and several include spaces, hyphens or an "&" —
  * exactly the filenames as they exist in the bucket today:
- *   start.mp4, Water outage.mp4, outro.mp4,
+ *   start.mp4, Water outage.mp4,
  *   Plank.mp4, Jump & Jacks.mp4, Sit-ups.mp4, Squats.mp4, Push-ups.mp4,
  *   Arm circle warm-up.mp4, Shoulder rotation warm-up.mp4,
  *   Running in place.mp4
@@ -76,11 +76,6 @@ export function restVideoUrl(): string | null {
   return videoUrl("Water outage.mp4");
 }
 
-/** Plays once on the workout-complete screen. */
-export function outroVideoUrl(): string | null {
-  return videoUrl("outro.mp4");
-}
-
 /**
  * There's no per-position clip for every exercise in the library (see
  * lib/goalify/workouts.ts) — only a handful of named clips exist in the
@@ -121,7 +116,6 @@ export function allKnownClips(): { label: string; fileName: string; url: string 
   return [
     { label: "Intro (first watch phase)", fileName: "start.mp4", url: videoUrl("start.mp4") },
     { label: "Rest / recovery", fileName: "Water outage.mp4", url: videoUrl("Water outage.mp4") },
-    { label: "Outro (completion screen)", fileName: "outro.mp4", url: videoUrl("outro.mp4") },
     ...EXERCISE_CLIPS.map(([, fileName]) => ({
       label: fileName.replace(/\.mp4$/, ""),
       fileName,

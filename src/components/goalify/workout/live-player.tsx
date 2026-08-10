@@ -34,7 +34,6 @@ import { useHaptics } from "@/lib/goalify/use-haptics";
 import {
   exerciseVideoUrl,
   introVideoUrl,
-  outroVideoUrl,
   restVideoUrl,
 } from "@/lib/goalify/video";
 import { ProgressRing } from "@/components/goalify/ui/progress-ring";
@@ -627,52 +626,6 @@ function CompletionScreen({
 }) {
   const { streak, state, answers } = useGoalify();
 
-  // This screen only mounts once per completion, so a plain flag (no reset
-  // effect needed, unlike AIFormGuide's per-phase clip) is enough — falls
-  // back to the static hero image if the outro clip 404s or never resolves.
-  const [outroFailed, setOutroFailed] = useState(false);
-  const outroSrc = outroVideoUrl();
-  const showOutroVideo = Boolean(outroSrc) && !outroFailed;
-  const outroVideoRef = useRef<HTMLVideoElement>(null);
-
-  // Native listeners, not React's onError/onLoadedData props — a same-origin
-  // request that fails near-instantly (e.g. a 404) can have its `error`
-  // event race React's synthetic-listener attachment and never fire the
-  // prop callback at all, even though the DOM's own videoElement.error ends
-  // up populated (confirmed via testing). The explicit `.error` check right
-  // after attaching covers exactly that race.
-  useEffect(() => {
-    const el = outroVideoRef.current;
-    if (!el || !outroSrc) return;
-
-    function reportError(source: "event" | "already-set") {
-      const mediaError = el?.error ?? null;
-      console.warn(
-        `[CompletionScreen] outro clip failed to load (${source}), ` +
-          `falling back to the static image.\n  URL: ${outroSrc}\n  ` +
-          `MediaError code: ${mediaError?.code ?? "n/a"} — check the ` +
-          `Network tab for this URL's actual HTTP status.`,
-      );
-      setOutroFailed(true);
-    }
-
-    function handleError() {
-      reportError("event");
-    }
-    function handleLoadedData() {
-      console.debug(`[CompletionScreen] outro clip loaded: ${outroSrc}`);
-    }
-
-    el.addEventListener("error", handleError);
-    el.addEventListener("loadeddata", handleLoadedData);
-    if (el.error) reportError("already-set");
-
-    return () => {
-      el.removeEventListener("error", handleError);
-      el.removeEventListener("loadeddata", handleLoadedData);
-    };
-  }, [outroSrc]);
-
   const weekDays = useMemo(() => currentWeekDays(), []);
   const weekCompletedCount = weekDays.filter((d) =>
     state.completedDays.includes(d.key),
@@ -700,25 +653,13 @@ function CompletionScreen({
          * (painted first, below the trophy/headline siblings after it). */}
         <div className="absolute inset-0 bg-[#0b0e14]" aria-hidden>
           <div className="absolute top-0 right-0 h-full w-[70%] opacity-100">
-            {showOutroVideo ? (
-              <video
-                ref={outroVideoRef}
-                src={outroSrc ?? undefined}
-                autoPlay
-                muted
-                loop
-                playsInline
-                className="absolute inset-0 h-full w-full [mask-image:linear-gradient(115deg,transparent_2%,black_28%,black_100%)] object-cover object-[62%_18%]"
-              />
-            ) : (
-              <Image
-                src="/quiz/goal-burn.png"
-                alt=""
-                fill
-                priority
-                className="[mask-image:linear-gradient(115deg,transparent_2%,black_28%,black_100%)] object-cover object-[62%_18%]"
-              />
-            )}
+            <Image
+              src="/quiz/goal-burn.png"
+              alt=""
+              fill
+              priority
+              className="[mask-image:linear-gradient(115deg,transparent_2%,black_28%,black_100%)] object-cover object-[62%_18%]"
+            />
           </div>
           <div className="absolute inset-0 bg-gradient-to-t from-[#0b0e14] via-[#0b0e14]/10 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0b0e14] via-[#0b0e14]/25 via-40% to-transparent" />
