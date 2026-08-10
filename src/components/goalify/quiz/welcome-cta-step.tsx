@@ -51,6 +51,18 @@ export function WelcomeCtaStep({
 
   return (
     <div className="relative -mx-5 overflow-hidden bg-[#0b0e14]">
+      {/* The hero below is a single flattened image (see the comment on
+          that <Image>), so it carries zero real text for a crawler — this
+          is the page's actual <h1>, kept off-screen for search engines and
+          screen readers while the visual hero (which says the same thing
+          graphically) is what sighted visitors see. Not an SEO trick: the
+          content matches the page 1:1, it's just not duplicated visibly on
+          top of the image. */}
+      <h1 className="sr-only">
+        GOALIFY — Home Workout Plans for Overweight Men, No Gym or Equipment
+        Needed
+      </h1>
+
       {/* The uploaded design stays a single, uncut image — the whole hero
           section, exactly as delivered. Its own flat "START MY
           PERSONALIZED PLAN" button isn't clickable, so instead of cutting

@@ -26,6 +26,7 @@ import { CommitStep } from "./commit-step";
 import { SocialProofScreen } from "./social-proof-screen";
 import { VitalsStep } from "./vitals-step";
 import { WelcomeCtaStep } from "./welcome-cta-step";
+import { SeoContent } from "./seo-content";
 import { AuthPanel } from "./auth-panel";
 import { fireBurst, ParticleBurstLayer } from "./particle-burst";
 import { ConfettiBurstLayer } from "./confetti-burst";
@@ -382,6 +383,7 @@ export function QuizFlow() {
           onLogin={() => setAwaitingSigninRoute(true)}
           initialErrorCode={authReturn?.error ?? null}
         />
+        <SeoContent />
       </main>
     );
   }

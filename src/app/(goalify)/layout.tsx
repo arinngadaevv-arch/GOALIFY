@@ -26,6 +26,10 @@ export const metadata: Metadata = {
     "home workout for men who hate the gym",
     "knee friendly workout for overweight men",
     "24 minute home workout",
+    "home workout for beginners",
+    "home workout no equipment",
+    "home workout plan for beginners",
+    "bodyweight workout plan",
   ],
   alternates: { canonical: "/" },
   openGraph: {
