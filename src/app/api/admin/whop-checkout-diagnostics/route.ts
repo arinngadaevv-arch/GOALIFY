@@ -63,8 +63,12 @@ export async function GET() {
   }
 
   try {
-    const results = await runDiagnostics(apiKey);
-    return NextResponse.json({ results, apiBaseUrl: getWhopApiBaseUrl() });
+    const apiBaseUrl = getWhopApiBaseUrl();
+    const [accountCheck, results] = await Promise.all([
+      checkAccount(apiKey, apiBaseUrl),
+      runDiagnostics(apiKey),
+    ]);
+    return NextResponse.json({ results, apiBaseUrl, accountCheck });
   } catch (err) {
     // Every per-tier failure is already caught inside runDiagnostics — this
     // is the outer safety net for anything else (a throw from
@@ -83,6 +87,57 @@ export async function GET() {
       },
       { status: 500 },
     );
+  }
+}
+
+/**
+ * Hits Whop's `GET /accounts/me` — an authenticated endpoint that needs no
+ * special permission scopes beyond the key being valid at all — separately
+ * from `checkout_configurations`, which per Whop's docs additionally
+ * requires the key to carry checkout_configuration:create, plan:create,
+ * access_pass:create, access_pass:update, and checkout_configuration:basic
+ * :read. That split matters: if this succeeds but every tier below still
+ * 401s, the key itself is fine and the real fix is adding those specific
+ * permissions to it in the Whop dashboard, not regenerating it blind. If
+ * this also fails, the key itself is the problem (wrong/revoked/wrong
+ * environment). Bonus: a successful response includes the account's real
+ * company id, which can fill in WHOP_COMPANY_ID directly.
+ */
+async function checkAccount(apiKey: string, apiBaseUrl: string) {
+  try {
+    const res = await fetch(`${apiBaseUrl}/accounts/me`, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    });
+    const rawText = await res.text();
+    let body: Record<string, unknown> | null = null;
+    try {
+      body = JSON.parse(rawText);
+    } catch {
+      // rawText itself is still surfaced below via `raw`.
+    }
+
+    if (!res.ok) {
+      return {
+        ok: false,
+        statusCode: res.status,
+        error:
+          stringifyUnknown(body?.error) ??
+          stringifyUnknown(body?.message) ??
+          `Whop returned ${res.status}.`,
+        raw: rawText ? rawText.slice(0, 2000) : undefined,
+      };
+    }
+
+    const companyId = body?.company_id ?? body?.companyId;
+    return {
+      ok: true,
+      companyId: typeof companyId === "string" ? companyId : undefined,
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? `${err.name}: ${err.message}` : stringifyUnknown(err) ?? "Request to Whop failed.",
+    };
   }
 }
 

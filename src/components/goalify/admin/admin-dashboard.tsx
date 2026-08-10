@@ -90,6 +90,14 @@ type WhopDiagnosticResult = {
   purchaseUrl?: string;
 };
 
+type WhopAccountCheck = {
+  ok: boolean;
+  statusCode?: number;
+  error?: string;
+  raw?: string;
+  companyId?: string;
+};
+
 const PLAN_OPTIONS: PlanTier[] = ["FREE", "PRO", "BUSINESS"];
 
 function formatMoney(cents: number) {
@@ -900,6 +908,7 @@ function WhopCheckoutDiagnosticsPanel() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<WhopDiagnosticResult[] | null>(null);
   const [apiBaseUrl, setApiBaseUrl] = useState<string | null>(null);
+  const [accountCheck, setAccountCheck] = useState<WhopAccountCheck | null>(null);
   const [topLevelError, setTopLevelError] = useState<string | null>(null);
 
   async function run() {
@@ -913,7 +922,12 @@ function WhopCheckoutDiagnosticsPanel() {
       // catch block below would show a flat generic message instead of
       // whatever the server actually sent back.
       const rawText = await res.text();
-      let body: { results?: unknown; error?: string; apiBaseUrl?: string } | null = null;
+      let body: {
+        results?: unknown;
+        error?: string;
+        apiBaseUrl?: string;
+        accountCheck?: WhopAccountCheck;
+      } | null = null;
       try {
         body = JSON.parse(rawText);
       } catch {
@@ -925,10 +939,12 @@ function WhopCheckoutDiagnosticsPanel() {
         );
         setResults(null);
         setApiBaseUrl(null);
+        setAccountCheck(null);
         return;
       }
       setResults(body.results as WhopDiagnosticResult[]);
       setApiBaseUrl(body.apiBaseUrl ?? null);
+      setAccountCheck(body.accountCheck ?? null);
     } catch (err) {
       setTopLevelError(
         `Request failed: ${err instanceof Error ? `${err.name}: ${err.message}` : String(err)}`,
@@ -964,6 +980,54 @@ function WhopCheckoutDiagnosticsPanel() {
           created in the other environment (sandbox vs. production); see{" "}
           <span className="font-mono">WHOP_SANDBOX</span> above.
         </p>
+      )}
+
+      {accountCheck && (
+        <GlassCard
+          deep
+          className={clsx(
+            "mt-2 p-3 text-xs",
+            accountCheck.ok ? "border border-lime-neon/25" : "border border-red-500/30",
+          )}
+        >
+          <div className="flex items-center gap-2 font-bold text-ink">
+            {accountCheck.ok ? (
+              <CheckCircle2 className="size-3.5 text-lime-neon" />
+            ) : (
+              <XCircle className="size-3.5 text-red-400" />
+            )}
+            Key validity check (GET /accounts/me — no special permissions needed)
+          </div>
+          {accountCheck.ok ? (
+            <p className="mt-1 text-mist">
+              The key itself is valid — Whop accepted it. If every tier below still
+              401s, the key is missing one of the specific permissions
+              checkout_configurations needs (checkout_configuration:create,
+              plan:create, access_pass:create, access_pass:update,
+              checkout_configuration:basic:read) — add those in the Whop
+              dashboard rather than regenerating the key blind.
+              {accountCheck.companyId && (
+                <>
+                  {" "}
+                  Its company id is{" "}
+                  <span className="font-mono text-ink-soft">{accountCheck.companyId}</span> —
+                  set <span className="font-mono">WHOP_COMPANY_ID</span> to this if the
+                  pill above still shows missing.
+                </>
+              )}
+            </p>
+          ) : (
+            <p className="mt-1 text-red-300">
+              {accountCheck.statusCode && (
+                <span className="mr-1 font-mono font-black">{accountCheck.statusCode}</span>
+              )}
+              {renderSafe(accountCheck.error)} — this fails before checkout_configurations-specific
+              permissions even come into play, so the key itself is wrong,
+              revoked, or from the other environment. Regenerate it in the
+              Whop dashboard.
+            </p>
+          )}
+        </GlassCard>
       )}
 
       {results && (
