@@ -743,15 +743,30 @@ function CheckoutDiagnosticsPanel() {
     setTopLevelError(null);
     try {
       const res = await fetch("/api/admin/checkout-diagnostics");
-      const body = await res.json().catch(() => null);
+      // Read as text first, not res.json() directly — a non-JSON response
+      // (an HTML error page from an uncaught server exception, a gateway
+      // error, etc.) would otherwise make .json() throw/reject and the
+      // catch block below would show a flat generic message instead of
+      // whatever the server actually sent back.
+      const rawText = await res.text();
+      let body: { results?: unknown; error?: string } | null = null;
+      try {
+        body = JSON.parse(rawText);
+      } catch {
+        // Not JSON — rawText itself is surfaced below.
+      }
       if (!res.ok || !body?.results) {
-        setTopLevelError(body?.error ?? "Diagnostic request failed.");
+        setTopLevelError(
+          `HTTP ${res.status}: ${body?.error ?? (rawText.slice(0, 1000) || "(empty response)")}`,
+        );
         setResults(null);
         return;
       }
-      setResults(body.results);
-    } catch {
-      setTopLevelError("Diagnostic request failed.");
+      setResults(body.results as DiagnosticResult[]);
+    } catch (err) {
+      setTopLevelError(
+        `Request failed: ${err instanceof Error ? `${err.name}: ${err.message}` : String(err)}`,
+      );
       setResults(null);
     } finally {
       setLoading(false);
@@ -771,7 +786,9 @@ function CheckoutDiagnosticsPanel() {
       </button>
 
       {topLevelError && (
-        <p className="mt-2 text-xs font-semibold text-red-400">{topLevelError}</p>
+        <pre className="mt-2 max-h-48 overflow-auto rounded-lg bg-red-500/10 p-2 text-[11px] font-semibold whitespace-pre-wrap break-all text-red-400">
+          {topLevelError}
+        </pre>
       )}
 
       {results && (
@@ -840,15 +857,30 @@ function WhopCheckoutDiagnosticsPanel() {
     setTopLevelError(null);
     try {
       const res = await fetch("/api/admin/whop-checkout-diagnostics");
-      const body = await res.json().catch(() => null);
+      // Read as text first, not res.json() directly — a non-JSON response
+      // (an HTML error page from an uncaught server exception, a gateway
+      // error, etc.) would otherwise make .json() throw/reject and the
+      // catch block below would show a flat generic message instead of
+      // whatever the server actually sent back.
+      const rawText = await res.text();
+      let body: { results?: unknown; error?: string } | null = null;
+      try {
+        body = JSON.parse(rawText);
+      } catch {
+        // Not JSON — rawText itself is surfaced below.
+      }
       if (!res.ok || !body?.results) {
-        setTopLevelError(body?.error ?? "Diagnostic request failed.");
+        setTopLevelError(
+          `HTTP ${res.status}: ${body?.error ?? (rawText.slice(0, 1000) || "(empty response)")}`,
+        );
         setResults(null);
         return;
       }
-      setResults(body.results);
-    } catch {
-      setTopLevelError("Diagnostic request failed.");
+      setResults(body.results as WhopDiagnosticResult[]);
+    } catch (err) {
+      setTopLevelError(
+        `Request failed: ${err instanceof Error ? `${err.name}: ${err.message}` : String(err)}`,
+      );
       setResults(null);
     } finally {
       setLoading(false);
@@ -868,7 +900,9 @@ function WhopCheckoutDiagnosticsPanel() {
       </button>
 
       {topLevelError && (
-        <p className="mt-2 text-xs font-semibold text-red-400">{topLevelError}</p>
+        <pre className="mt-2 max-h-48 overflow-auto rounded-lg bg-red-500/10 p-2 text-[11px] font-semibold whitespace-pre-wrap break-all text-red-400">
+          {topLevelError}
+        </pre>
       )}
 
       {results && (

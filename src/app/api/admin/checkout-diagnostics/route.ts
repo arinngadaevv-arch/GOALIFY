@@ -24,51 +24,87 @@ export async function GET() {
 
   configureLemonSqueezy();
 
-  const results = await Promise.all(
-    CHECKOUT_TIERS.map(async (tier) => {
-      const label = getPricingTier(tier).label;
-      const expectedCents = getPricingTier(tier).priceCents;
-      const variantId = getVariantId(tier);
-      if (!variantId) {
-        return {
-          tier,
-          label,
-          variantId: null,
-          ok: false,
-          expectedCents,
-          error: "No variant id env var set for this tier.",
-        };
-      }
+  // createCheckout() normally returns { error } rather than throwing for
+  // ordinary API failures (bad variant, auth, etc. — handled per-tier
+  // below), but this whole handler has no guarantee against something
+  // throwing for real (a network-level failure, or the SDK itself hitting
+  // an unexpected condition). Without this, an uncaught exception here
+  // means Next.js serves its own generic error response instead of JSON —
+  // the client's res.json() then fails to parse it, and the diagnostic
+  // panel shows a flat "Diagnostic request failed." with none of the
+  // actual detail this endpoint exists to surface.
+  try {
+    const results = await Promise.all(
+      CHECKOUT_TIERS.map(async (tier) => {
+        const label = getPricingTier(tier).label;
+        const expectedCents = getPricingTier(tier).priceCents;
+        const variantId = getVariantId(tier);
+        if (!variantId) {
+          return {
+            tier,
+            label,
+            variantId: null,
+            ok: false,
+            expectedCents,
+            error: "No variant id env var set for this tier.",
+          };
+        }
 
-      const result = await createCheckout(storeId, variantId, {
-        checkoutData: { email },
-        preview: true,
-      });
+        try {
+          const result = await createCheckout(storeId, variantId, {
+            checkoutData: { email },
+            preview: true,
+          });
 
-      if (result.error || !result.data) {
-        return {
-          tier,
-          label,
-          variantId,
-          ok: false,
-          expectedCents,
-          statusCode: result.statusCode,
-          error: result.error?.message || "Unknown error.",
-          cause: result.error?.cause ? JSON.stringify(result.error.cause) : undefined,
-        };
-      }
+          if (result.error || !result.data) {
+            return {
+              tier,
+              label,
+              variantId,
+              ok: false,
+              expectedCents,
+              statusCode: result.statusCode,
+              error: result.error?.message || "Unknown error.",
+              cause: result.error?.cause ? JSON.stringify(result.error.cause) : undefined,
+            };
+          }
 
-      const actualCents = result.data.data.attributes.preview?.subtotal ?? null;
-      return {
-        tier,
-        label,
-        variantId,
-        ok: actualCents === expectedCents,
-        expectedCents,
-        actualCents,
-      };
-    }),
-  );
+          const actualCents = result.data.data.attributes.preview?.subtotal ?? null;
+          return {
+            tier,
+            label,
+            variantId,
+            ok: actualCents === expectedCents,
+            expectedCents,
+            actualCents,
+          };
+        } catch (err) {
+          // A per-tier throw (rather than an SDK-returned error) — caught
+          // here so one bad tier doesn't take down the whole Promise.all
+          // and hide the other two tiers' results.
+          return {
+            tier,
+            label,
+            variantId,
+            ok: false,
+            expectedCents,
+            error: err instanceof Error ? `${err.name}: ${err.message}` : String(err),
+          };
+        }
+      }),
+    );
 
-  return NextResponse.json({ results });
+    return NextResponse.json({ results });
+  } catch (err) {
+    console.error("[checkout-diagnostics] Unexpected failure:", err);
+    return NextResponse.json(
+      {
+        error:
+          err instanceof Error
+            ? `${err.name}: ${err.message}`
+            : "Unexpected error running diagnostics.",
+      },
+      { status: 500 },
+    );
+  }
 }

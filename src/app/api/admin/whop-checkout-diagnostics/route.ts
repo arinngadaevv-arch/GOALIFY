@@ -26,7 +26,32 @@ export async function GET() {
     return NextResponse.json({ error: "WHOP_API_KEY is not set." }, { status: 200 });
   }
 
-  const results = await Promise.all(
+  try {
+    const results = await runDiagnostics(apiKey);
+    return NextResponse.json({ results });
+  } catch (err) {
+    // Every per-tier failure is already caught inside runDiagnostics — this
+    // is the outer safety net for anything else (a throw from
+    // getPricingTier/getWhopPlanId, Promise.all itself, etc.). Without it,
+    // an uncaught exception here means Next.js serves its own generic error
+    // response instead of JSON, the client's res.json() fails to parse it,
+    // and the diagnostic panel shows a flat "Diagnostic request failed."
+    // with none of the actual detail this endpoint exists to surface.
+    console.error("[whop-checkout-diagnostics] Unexpected failure:", err);
+    return NextResponse.json(
+      {
+        error:
+          err instanceof Error
+            ? `${err.name}: ${err.message}`
+            : "Unexpected error running diagnostics.",
+      },
+      { status: 500 },
+    );
+  }
+}
+
+async function runDiagnostics(apiKey: string) {
+  return Promise.all(
     CHECKOUT_TIERS.map(async (tier) => {
       const label = getPricingTier(tier).label;
       const planId = getWhopPlanId(tier);
@@ -52,7 +77,17 @@ export async function GET() {
             metadata: { diagnostic: true },
           }),
         });
-        const body = await res.json().catch(() => null);
+        // Read as text first, not res.json() directly — Whop returning a
+        // non-JSON error page (an HTML gateway error, a plain-text 401,
+        // etc.) would otherwise make .json() throw/reject and lose the
+        // body entirely instead of showing it.
+        const rawText = await res.text();
+        let body: Record<string, unknown> | null = null;
+        try {
+          body = JSON.parse(rawText);
+        } catch {
+          // rawText itself is still surfaced below via `raw`.
+        }
 
         if (!res.ok || !body?.purchase_url) {
           return {
@@ -62,8 +97,10 @@ export async function GET() {
             ok: false,
             statusCode: res.status,
             error:
-              body?.error ?? body?.message ?? `Whop returned ${res.status} with no purchase_url.`,
-            raw: body ? JSON.stringify(body) : undefined,
+              (body?.error as string | undefined) ??
+              (body?.message as string | undefined) ??
+              `Whop returned ${res.status} with no purchase_url.`,
+            raw: rawText ? rawText.slice(0, 2000) : undefined,
           };
         }
 
@@ -79,6 +116,4 @@ export async function GET() {
       }
     }),
   );
-
-  return NextResponse.json({ results });
 }
