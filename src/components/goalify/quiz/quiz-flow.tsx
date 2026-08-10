@@ -519,7 +519,19 @@ export function QuizFlow() {
             )}
           </div>
 
-          <div className="relative flex flex-1 flex-col pt-2">
+          <div
+            className={clsx(
+              "relative flex flex-1 flex-col pt-2",
+              // The 2x2 photo-tile layout is only 4 short cards — on most
+              // screens that leaves a lot of dead space below it if just
+              // left top-aligned in this flex-1 area, unlike the longer
+              // list/radio layouts that already reach near the bottom on
+              // their own. `justify-center` is a no-op once content is
+              // already tall enough to fill the space, so this only ever
+              // affects the layout it's meant to.
+              step.kind === "choice" && step.layout === "tile" && "justify-center",
+            )}
+          >
             <div className={step.kind === "commit" ? "flex flex-1 flex-col" : undefined}>
               {step.kind === "choice" ? (
                 <ChoiceStep
