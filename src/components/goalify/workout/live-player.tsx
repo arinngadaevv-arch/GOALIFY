@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import clsx from "clsx";
 import {
   ArrowRight,
   Calendar,
@@ -43,9 +44,6 @@ import { FloatingStreakBadge } from "@/components/goalify/ui/floating-streak-bad
 
 type Phase = "watch" | "work" | "rest" | "done";
 
-/** How long the "watch the trainer" preview holds before each set. */
-const WATCH_SECONDS = 5;
-
 /** Obsidian-scope ring colors — literal hex since RING_ELECTRIC/RING_LIME
  * are shared constants tuned for the light theme elsewhere in the app. */
 const RING_GOLD = "#e8b32c";
@@ -67,7 +65,7 @@ export function LivePlayer() {
   const [index, setIndex] = useState(0);
   const [phase, setPhase] = useState<Phase>("watch");
   const [paused, setPaused] = useState(false);
-  const [secondsLeft, setSecondsLeft] = useState(WATCH_SECONDS);
+  const [secondsLeft, setSecondsLeft] = useState(0);
   const [reps, setReps] = useState(0);
   /** Briefly true right as "watch" flips to "work" — drives the flash cue. */
   const [flash, setFlash] = useState(false);
@@ -115,8 +113,10 @@ export function LivePlayer() {
   } | null>(null);
 
   /* ----------------------------------------------------------- transitions */
-  // Every set opens on a WATCH_SECONDS preview of the trainer demonstration
-  // before work starts — see the tick effect below for the watch -> work flip.
+  // Every set opens on a "watch" preview of the trainer demonstration and
+  // waits there — no auto-countdown — until the user taps Start (see
+  // startExercise below), so nothing ever begins without the user
+  // deliberately choosing to begin it.
   const goToExercise = useCallback(
     (nextIndex: number) => {
       const target = workout.exercises[nextIndex];
@@ -127,11 +127,20 @@ export function LivePlayer() {
       setIndex(nextIndex);
       setPhase("watch");
       setReps(0);
-      setSeconds(WATCH_SECONDS);
       exerciseChime();
     },
-    [workout.exercises, setSeconds, exerciseChime],
+    [workout.exercises, exerciseChime],
   );
+
+  /** The explosive hand-off from "watch" to "work" — triggered only by the
+   * user tapping Start, never automatically. */
+  const startExercise = useCallback(() => {
+    setPhase("work");
+    setSeconds(isTimed ? exercise.amount : 0);
+    goCue();
+    setFlash(true);
+    window.setTimeout(() => setFlash(false), 700);
+  }, [isTimed, exercise, setSeconds, goCue]);
 
   const finishCurrent = useCallback(() => {
     const isLast = index === workout.exercises.length - 1;
@@ -153,20 +162,16 @@ export function LivePlayer() {
   // response to the timer firing rather than a synchronous effect cascade.
   useEffect(() => {
     if (phase === "done" || paused) return;
-    // Rep-based work has no clock — it advances when the user taps through.
+    // "watch" now waits on a Start tap (see startExercise) instead of
+    // auto-counting down, and rep-based work has no clock at all — it
+    // advances when the user taps through.
+    if (phase === "watch") return;
     if (phase === "work" && !isTimed) return;
 
     const timer = setInterval(() => {
       if (secondsRef.current <= 1) {
         clearInterval(timer);
-        if (phase === "watch") {
-          // The explosive hand-off — flash + "GO!" cue, then the real set begins.
-          setPhase("work");
-          setSeconds(isTimed ? exercise.amount : 0);
-          goCue();
-          setFlash(true);
-          window.setTimeout(() => setFlash(false), 700);
-        } else if (phase === "work" && isTimed) {
+        if (phase === "work" && isTimed) {
           finishCurrent();
         } else if (phase === "rest") {
           goToExercise(index + 1);
@@ -183,12 +188,10 @@ export function LivePlayer() {
     paused,
     isTimed,
     index,
-    exercise,
     finishCurrent,
     goToExercise,
     setSeconds,
     countdownBeep,
-    goCue,
   ]);
 
   /* ------------------------------------------------------------ completion */
@@ -247,10 +250,13 @@ export function LivePlayer() {
       : phase === "watch" && index === 0
         ? introVideoUrl()
         : exerciseVideoUrl(exercise.name, exercise.focus);
+  // "watch" has no clock anymore (waits on the Start tap below) — the ring
+  // just sits fully charged, reading as "ready to go" rather than counting
+  // down to nothing.
   const ringValue = phase === "rest"
     ? (secondsLeft / Math.max(1, exercise.restSeconds)) * 100
     : phase === "watch"
-      ? (secondsLeft / WATCH_SECONDS) * 100
+      ? 100
       : isTimed
         ? (secondsLeft / Math.max(1, exercise.amount)) * 100
         : (reps / Math.max(1, exercise.amount)) * 100;
@@ -309,7 +315,7 @@ export function LivePlayer() {
               phase === "rest"
                 ? "Coach idle / breathing loop"
                 : phase === "watch"
-                  ? "Study the form — you're up in a few seconds"
+                  ? "Study the form, then tap Start below when you're ready"
                   : `${exercise.name} demonstration loop`
             }
             videoSrc={videoSrc}
@@ -367,48 +373,76 @@ export function LivePlayer() {
           {phase === "rest"
             ? "Breathe. Shake it out. Stay standing."
             : phase === "watch"
-              ? "Watch the form, then it's your turn."
+              ? "Watch the form, then tap Start when you're ready."
               : exercise.cue}
         </p>
 
-        <ProgressRing
-          className="mt-7"
-          size={216}
-          thickness={16}
-          // A real per-second countdown (watch / rest / timed work) gets a
-          // linear, tick-synced sweep so the ring visibly closes in step
-          // with the clock; rep-based work has no clock, so each tap just
-          // pops to its new value with the default snappy easing instead.
-          {...(isRepCounting ? {} : { transitionMs: 1000, easing: "linear" })}
-          rings={[
-            {
-              value: ringValue,
-              color: phase === "rest" ? RING_CRIMSON : RING_GOLD,
-              label: "Current",
-            },
-          ]}
-        >
-          {phase === "rest" || phase === "watch" || isTimed ? (
-            <div>
-              <p className="gf-numeric text-6xl font-black text-ink">
-                {secondsLeft}
-              </p>
-              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-mist">
-                {phase === "watch" ? "get ready" : "seconds"}
-              </p>
-            </div>
-          ) : (
-            <div>
-              <p className="gf-numeric text-6xl font-black text-ink">
-                {reps}
-                <span className="text-2xl text-mist">/{exercise.amount}</span>
-              </p>
-              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-mist">
-                reps
-              </p>
-            </div>
-          )}
-        </ProgressRing>
+        {/* Soft ambient halo behind the ring, colored to match its phase —
+            makes the ring itself read as the dominant, spotlit element on
+            the screen instead of just another UI control, without adding
+            any extra shapes/icons that would clutter it. */}
+        <div className="relative mt-7 grid place-items-center">
+          <div
+            className={clsx(
+              "absolute inset-0 -m-6 rounded-full blur-3xl",
+              phase === "rest" ? "bg-[#ff3b3b]/25" : "bg-[#e8b32c]/25",
+            )}
+            aria-hidden
+          />
+          <ProgressRing
+            className="relative"
+            size={248}
+            thickness={20}
+            // A real per-second countdown (rest / timed work) gets a linear,
+            // tick-synced sweep so the ring visibly closes in step with the
+            // clock; "watch" is static (waiting on the Start tap) and
+            // rep-based work has no clock, so both just pop with the
+            // default snappy easing instead.
+            {...(isRepCounting || phase === "watch"
+              ? {}
+              : { transitionMs: 1000, easing: "linear" })}
+            rings={[
+              {
+                value: ringValue,
+                color: phase === "rest" ? RING_CRIMSON : RING_GOLD,
+                label: "Current",
+              },
+            ]}
+          >
+            {phase === "watch" ? (
+              <button
+                type="button"
+                onClick={startExercise}
+                aria-label="Start this exercise"
+                className="gf-press gf-glow-electric flex flex-col items-center gap-1.5 rounded-full bg-electric px-8 py-7 text-white [.gf-cyber-scope_&]:text-[#1a1100]"
+              >
+                <Play className="size-9 fill-current" />
+                <span className="text-sm font-black tracking-[0.08em] uppercase">
+                  Start
+                </span>
+              </button>
+            ) : phase === "rest" || isTimed ? (
+              <div>
+                <p className="gf-numeric text-6xl font-black text-ink">
+                  {secondsLeft}
+                </p>
+                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-mist">
+                  seconds
+                </p>
+              </div>
+            ) : (
+              <div>
+                <p className="gf-numeric text-6xl font-black text-ink">
+                  {reps}
+                  <span className="text-2xl text-mist">/{exercise.amount}</span>
+                </p>
+                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-mist">
+                  reps
+                </p>
+              </div>
+            )}
+          </ProgressRing>
+        </div>
 
         {/* Live calorie / exercise tracking — each value pops on change (the
             `key` remount replays `gf-anim-pop`) so ticking up reads as a
