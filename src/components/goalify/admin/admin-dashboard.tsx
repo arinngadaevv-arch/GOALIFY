@@ -10,8 +10,11 @@ import {
   ClipboardCheck,
   CreditCard,
   Crown,
+  Eye,
+  Laptop,
   Loader2,
   Search,
+  Smartphone,
   ShieldCheck,
   UserPlus,
   Users,
@@ -51,6 +54,28 @@ export type FunnelStats = {
   completedQuiz: number;
   reachedPaywall: number;
   activeSubscribers: number;
+};
+
+export type VisitorStats = {
+  /** Distinct anonymous visitors who ever reached the landing page. */
+  allTime: number;
+  /** Same, restricted to the last 30 days. */
+  last30d: number;
+  /** Distinct visitors who finished the quiz — includes people who never
+   * created an account, unlike FunnelStats.completedQuiz. */
+  quizCompleters: number;
+};
+
+export type DeviceSplit = {
+  mobile: number;
+  desktop: number;
+};
+
+export type QuizStepFunnelEntry = {
+  id: string;
+  title: string;
+  /** Distinct visitors who reached this question or any later one. */
+  reached: number;
 };
 
 export type CheckoutConfig = {
@@ -136,12 +161,18 @@ function renderSafe(value: unknown): string | null {
 export function AdminDashboard({
   stats,
   funnel,
+  visitors,
+  deviceSplit,
+  quizStepFunnel,
   users,
   checkoutConfig,
   whopCheckoutConfig,
 }: {
   stats: AdminStats;
   funnel: FunnelStats;
+  visitors: VisitorStats;
+  deviceSplit: DeviceSplit;
+  quizStepFunnel: QuizStepFunnelEntry[];
   users: AdminUserRow[];
   checkoutConfig: CheckoutConfig;
   whopCheckoutConfig: WhopCheckoutConfig;
@@ -209,6 +240,59 @@ export function AdminDashboard({
           settled — nothing here reflects a checkout that was started but not
           completed.
         </p>
+
+        {/* ----------------------------------------------- Visitor analytics */}
+        <section className="mt-10">
+          <h2 className="gf-display text-xl font-extrabold text-ink">
+            Visitor analytics
+          </h2>
+          <p className="mt-1 text-[11px] leading-relaxed text-haze">
+            Everyone who ever loaded the landing page, tracked anonymously
+            (see <code>analytics_event</code>) — no account required. This is
+            the real top of the funnel: most people never sign up at all, so
+            &ldquo;Total users&rdquo; above only shows the ones who made it
+            all the way through the quiz.
+          </p>
+
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <StatCard
+              icon={Eye}
+              label="Visitors (all-time)"
+              value={visitors.allTime.toLocaleString("en-US")}
+            />
+            <StatCard
+              icon={Eye}
+              label="Visitors (30d)"
+              value={visitors.last30d.toLocaleString("en-US")}
+            />
+            <StatCard
+              icon={Smartphone}
+              label="Mobile visitors"
+              value={visitors.allTime > 0 ? `${Math.round((deviceSplit.mobile / (deviceSplit.mobile + deviceSplit.desktop || 1)) * 100)}%` : "—"}
+            />
+            <StatCard
+              icon={Laptop}
+              label="Desktop visitors"
+              value={visitors.allTime > 0 ? `${Math.round((deviceSplit.desktop / (deviceSplit.mobile + deviceSplit.desktop || 1)) * 100)}%` : "—"}
+            />
+          </div>
+
+          <div className="mt-3">
+            <h3 className="text-sm font-extrabold text-ink">
+              How far people get through the quiz
+            </h3>
+            <p className="mt-1 text-[11px] leading-relaxed text-haze">
+              Each bar is the number of distinct visitors who reached that
+              question or any later one — the drop between two bars is
+              exactly how many people quit on that specific question.
+            </p>
+            <QuizStepFunnelChart
+              landingVisitors={visitors.allTime}
+              steps={quizStepFunnel}
+              completed={visitors.quizCompleters}
+            />
+          </div>
+        </section>
 
         {/* --------------------------------------------------------- Funnel */}
         <section className="mt-10">
@@ -465,6 +549,64 @@ function FunnelChart({ funnel }: { funnel: FunnelStats }) {
           </div>
         );
       })}
+    </GlassCard>
+  );
+}
+
+/**
+ * Landing page → each quiz question in order → quiz completed. Same visual
+ * language as FunnelChart above, but every stage is a real distinct-visitor
+ * count instead of an account-based one, so this is the only place that
+ * shows exactly which question loses the most people.
+ */
+function QuizStepFunnelChart({
+  landingVisitors,
+  steps,
+  completed,
+}: {
+  landingVisitors: number;
+  steps: QuizStepFunnelEntry[];
+  completed: number;
+}) {
+  const base = landingVisitors || 1;
+  const stages = [
+    { key: "landing", label: "Landing page", value: landingVisitors },
+    ...steps.map((step, index) => ({
+      key: step.id,
+      label: `Q${index + 1}. ${step.title}`,
+      value: step.reached,
+    })),
+    { key: "completed", label: "Quiz completed", value: completed },
+  ];
+
+  return (
+    <GlassCard deep className="mt-3 flex flex-col gap-3 p-4">
+      {stages.map((stage) => {
+        const pct = Math.round((stage.value / base) * 100);
+        return (
+          <div key={stage.key}>
+            <div className="flex items-center justify-between gap-3 text-xs">
+              <span className="font-bold text-ink">{stage.label}</span>
+              <span className="gf-numeric font-extrabold text-ink">
+                {stage.value.toLocaleString("en-US")}
+                <span className="ml-1.5 font-semibold text-mist">{pct}%</span>
+              </span>
+            </div>
+            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-ink/8">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-electric to-lime-neon"
+                style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
+              />
+            </div>
+          </div>
+        );
+      })}
+      {landingVisitors === 0 && (
+        <p className="text-center text-xs text-mist">
+          No visitor data yet — this fills in as people load the landing
+          page and go through the quiz.
+        </p>
+      )}
     </GlassCard>
   );
 }

@@ -23,6 +23,7 @@ export const RATE_LIMITS = {
   forgotPassword: { limit: 5, windowMs: 15 * 60_000 }, // 5 / 15 min
   resetPassword: { limit: 8, windowMs: 15 * 60_000 }, // 8 / 15 min
   generate: { limit: 20, windowMs: 60_000 }, // 20 / min
+  analyticsTrack: { limit: 60, windowMs: 60_000 }, // 60 / min
 } satisfies Record<string, Rule>;
 
 export type RateLimitName = keyof typeof RATE_LIMITS;

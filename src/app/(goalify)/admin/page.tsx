@@ -1,14 +1,15 @@
 import type { Metadata, Viewport } from "next";
 import { redirect } from "next/navigation";
-import { desc, sql } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { getAdminSession } from "@/lib/admin";
 import { db } from "@/lib/db";
-import { checkoutEvents, users } from "@/lib/db/schema";
+import { analyticsEvents, checkoutEvents, users } from "@/lib/db/schema";
 import { AdminDashboard } from "@/components/goalify/admin/admin-dashboard";
 import type { Goal, Level } from "@/lib/goalify/types";
 import { CHECKOUT_TIERS, getVariantId } from "@/lib/lemonsqueezy";
 import { getWhopApiKey, getWhopCompanyId, getWhopPlanId } from "@/lib/whop";
 import { getPricingTier } from "@/lib/goalify/pricing";
+import { QUIZ_STEPS } from "@/lib/goalify/quiz";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -21,12 +22,17 @@ export const viewport: Viewport = {
 };
 
 const ACTIVE_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+const VISITOR_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
 
 /** Kept outside the page component — a server component still counts as a
  * "render" to the purity lint rule, which flags `Date.now()` called
  * directly in one (see react-hooks/purity). */
 function activeSinceDate() {
   return new Date(Date.now() - ACTIVE_WINDOW_MS);
+}
+
+function visitorSinceDate() {
+  return new Date(Date.now() - VISITOR_WINDOW_MS);
 }
 
 export default async function AdminPage() {
@@ -36,9 +42,17 @@ export default async function AdminPage() {
   }
 
   const activeSince = activeSinceDate();
+  const visitorSince = visitorSinceDate();
 
-  const [[userTotals], [checkoutTotals], userRows, latestCheckouts] =
-    await Promise.all([
+  const [
+    [userTotals],
+    [checkoutTotals],
+    userRows,
+    latestCheckouts,
+    [visitorTotals],
+    deviceRows,
+    stepReachRows,
+  ] = await Promise.all([
       db
         .select({
           totalUsers: sql<number>`count(*)`.mapWith(Number),
@@ -99,7 +113,58 @@ export default async function AdminPage() {
         })
         .from(checkoutEvents)
         .orderBy(desc(checkoutEvents.createdAt)),
+      // Pre-signup visitor counts — see db/schema.ts's analyticsEvents.
+      // "Visitors" here means distinct anonymous cookies, not raw pageview
+      // events (someone refreshing the landing page ten times is one
+      // visitor, not ten).
+      db
+        .select({
+          allTime: sql<number>`count(distinct ${analyticsEvents.visitorId}) filter (where ${analyticsEvents.kind} = 'LANDING_VIEW')`.mapWith(
+            Number,
+          ),
+          last30d: sql<number>`count(distinct ${analyticsEvents.visitorId}) filter (where ${analyticsEvents.kind} = 'LANDING_VIEW' and ${analyticsEvents.createdAt} >= ${visitorSince.toISOString()})`.mapWith(
+            Number,
+          ),
+          quizCompleters: sql<number>`count(distinct ${analyticsEvents.visitorId}) filter (where ${analyticsEvents.kind} = 'QUIZ_COMPLETE')`.mapWith(
+            Number,
+          ),
+        })
+        .from(analyticsEvents),
+      db
+        .select({
+          device: analyticsEvents.device,
+          visitors: sql<number>`count(distinct ${analyticsEvents.visitorId})`.mapWith(Number),
+        })
+        .from(analyticsEvents)
+        .where(sql`${analyticsEvents.device} is not null`)
+        .groupBy(analyticsEvents.device),
+      // One row per visitor who reached at least one quiz question, with
+      // the furthest step they got to — the funnel below turns this into
+      // "N distinct people reached question K" per question by counting,
+      // for each K, how many of these rows have maxStep >= K. Computed in
+      // JS rather than a SQL window function since the row count here
+      // (one per visitor, not per event) stays small at any realistic
+      // scale and this is far easier to read and verify.
+      db
+        .select({
+          visitorId: analyticsEvents.visitorId,
+          maxStep: sql<number>`max(${analyticsEvents.stepIndex})`.mapWith(Number),
+        })
+        .from(analyticsEvents)
+        .where(eq(analyticsEvents.kind, "QUIZ_STEP"))
+        .groupBy(analyticsEvents.visitorId),
     ]);
+
+  const quizStepFunnel = QUIZ_STEPS.map((quizStep, index) => ({
+    id: quizStep.id,
+    title: quizStep.title,
+    reached: stepReachRows.filter((row) => row.maxStep >= index).length,
+  }));
+
+  const deviceSplit = {
+    mobile: deviceRows.find((row) => row.device === "MOBILE")?.visitors ?? 0,
+    desktop: deviceRows.find((row) => row.device === "DESKTOP")?.visitors ?? 0,
+  };
 
   // One pass to keep only the most recent checkout per user — rows arrive
   // newest-first, so the first hit for a given userId wins.
@@ -188,6 +253,13 @@ export default async function AdminPage() {
         reachedPaywall: userTotals?.reachedPaywall ?? 0,
         activeSubscribers: userTotals?.activeSubscribers ?? 0,
       }}
+      visitors={{
+        allTime: visitorTotals?.allTime ?? 0,
+        last30d: visitorTotals?.last30d ?? 0,
+        quizCompleters: visitorTotals?.quizCompleters ?? 0,
+      }}
+      deviceSplit={deviceSplit}
+      quizStepFunnel={quizStepFunnel}
       users={tableUsers}
       checkoutConfig={checkoutConfig}
       whopCheckoutConfig={whopCheckoutConfig}

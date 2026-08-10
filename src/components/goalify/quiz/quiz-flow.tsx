@@ -15,6 +15,7 @@ import {
 import { DEFAULT_ANSWERS } from "@/lib/goalify/plan";
 import type { QuizAnswers } from "@/lib/goalify/types";
 import { useGoalify } from "@/lib/goalify/store";
+import { trackVisit } from "@/lib/goalify/track-visit";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
 import { useUiSounds } from "@/components/goalify/use-ui-sounds";
 import { hasRealPhoto, OptionPhoto } from "./option-photo";
@@ -185,6 +186,25 @@ export function QuizFlow() {
     window.scrollTo({ top: 0, behavior: "auto" });
   }, [index]);
 
+  // Fired once per mount — this component renders for both `/` and `/quiz`,
+  // so it's the one reliable "someone landed on the front door" signal,
+  // independent of whether they ever tap the CTA. See admin's Visitor
+  // Analytics section (db/schema.ts's analyticsEvents) for why this exists
+  // separately from anything account-based: most drop-off happens before
+  // an account ever gets created.
+  useEffect(() => {
+    trackVisit("LANDING_VIEW");
+  }, []);
+
+  // Every real question reached, not just "quiz completed" — the whole
+  // point of a granular funnel is seeing exactly which question people
+  // bail on, which a single completedQuiz boolean can't show.
+  useEffect(() => {
+    if (!quizStarted) return;
+    trackVisit("QUIZ_STEP", { stepId: step.id, stepIndex: index });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quizStarted, index]);
+
   // Warms the browser's image cache for the next couple of steps (runs even
   // before the quiz starts, since `index` is already 0 while the welcome
   // screen shows) — by the time the user actually advances, the photos for
@@ -213,6 +233,7 @@ export function QuizFlow() {
     (patch: Partial<QuizAnswers>) => {
       const answers = { ...DEFAULT_ANSWERS, ...draft, ...patch } as QuizAnswers;
       completeQuiz(answers);
+      trackVisit("QUIZ_COMPLETE");
       setAnalyzing(true);
     },
     [draft, completeQuiz],

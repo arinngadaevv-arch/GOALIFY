@@ -24,6 +24,15 @@ export const planDayContentTypeEnum = pgEnum("plan_day_content_type", [
   "IMAGE",
   "REEL",
 ]);
+export const analyticsEventKindEnum = pgEnum("analytics_event_kind", [
+  "LANDING_VIEW",
+  "QUIZ_STEP",
+  "QUIZ_COMPLETE",
+]);
+export const analyticsDeviceEnum = pgEnum("analytics_device", [
+  "MOBILE",
+  "DESKTOP",
+]);
 export const planDayGoalEnum = pgEnum("plan_day_goal", [
   "REACH",
   "SALES",
@@ -254,6 +263,32 @@ export const checkoutEvents = pgTable("checkout_event", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// Pre-signup visitor funnel — landing page views and per-quiz-step
+// progress, keyed by an anonymous first-party cookie (see
+// lib/analytics-visitor.ts), not a user account. Most drop-off happens
+// before an account ever exists (quiz completion is the account-creation
+// gate — see quiz-flow.tsx), so this is the only source that can show real
+// "how many people reached question N" numbers instead of just the
+// coarse signed-up/completed-quiz counts users.quizCompletedAt gives.
+// userId is filled in opportunistically when the event fires on an
+// authenticated request, purely so an admin can later cross-reference —
+// nothing in the funnel math depends on it being set.
+export const analyticsEvents = pgTable("analytics_event", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  visitorId: text("visitor_id").notNull(),
+  userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+  kind: analyticsEventKindEnum("kind").notNull(),
+  // Only set for kind = QUIZ_STEP — the step's stable id (e.g. "goal") and
+  // its 0-based position in QUIZ_STEPS at the time it was recorded.
+  stepId: text("step_id"),
+  stepIndex: integer("step_index"),
+  device: analyticsDeviceEnum("device"),
+  path: text("path"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const usageLogs = pgTable("usage_log", {
   id: text("id")
     .primaryKey()
@@ -421,6 +456,11 @@ export const usersRelations = relations(users, ({ many }) => ({
   usageLogs: many(usageLogs),
   teamMembers: many(teamMembers),
   checkoutEvents: many(checkoutEvents),
+  analyticsEvents: many(analyticsEvents),
+}));
+
+export const analyticsEventsRelations = relations(analyticsEvents, ({ one }) => ({
+  user: one(users, { fields: [analyticsEvents.userId], references: [users.id] }),
 }));
 
 export const projectsRelations = relations(projects, ({ one }) => ({
