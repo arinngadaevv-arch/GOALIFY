@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
-import { CHECKOUT_TIERS, getWhopApiKey, getWhopCompanyId, getWhopPlanId } from "@/lib/whop";
+import {
+  CHECKOUT_TIERS,
+  getWhopApiBaseUrl,
+  getWhopApiKey,
+  getWhopCompanyId,
+  getWhopPlanId,
+} from "@/lib/whop";
 
 /**
  * Creates a real, hosted Whop checkout for the signed-in user and hands the
@@ -55,10 +61,11 @@ export async function POST(req: Request) {
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || new URL(req.url).origin;
   const companyId = getWhopCompanyId();
+  const apiBaseUrl = getWhopApiBaseUrl();
 
   let res: Response;
   try {
-    res = await fetch("https://api.whop.com/api/v1/checkout_configurations", {
+    res = await fetch(`${apiBaseUrl}/checkout_configurations`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -97,7 +104,7 @@ export async function POST(req: Request) {
   if (!res.ok || typeof purchaseUrl !== "string" || !purchaseUrl) {
     console.error(
       `[whop checkout] Whop API error for tier "${parsed.data.tier}" (plan ${planId}` +
-        `${companyId ? `, company ${companyId}` : ", no company_id set"}):`,
+        `${companyId ? `, company ${companyId}` : ", no company_id set"}, host ${apiBaseUrl}):`,
       res.status,
       responseBody ?? rawText.slice(0, 2000),
     );

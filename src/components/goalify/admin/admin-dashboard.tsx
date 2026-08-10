@@ -262,14 +262,24 @@ export function AdminDashboard({
             (below, optional) or the request shape itself — see the raw error
             from the test below for which. A{" "}
             <span className="font-mono">401 &ldquo;Authentication failed&rdquo;</span>{" "}
-            specifically means Whop is rejecting the API key itself — the
-            single most common cause is a stray trailing newline or space
-            picked up when the key was copied from the Whop dashboard,
-            invisible in Vercel&apos;s env var UI. Re-copy just the key
-            itself (no surrounding whitespace) into{" "}
-            <span className="font-mono">WHOP_API_KEY</span> and redeploy; if
-            it still 401s, the key was likely revoked/regenerated in the Whop
-            dashboard since it was copied. The webhook secret pill is
+            specifically means Whop is rejecting the API key itself — check,
+            in order: a stray trailing newline or space picked up when the
+            key was copied (invisible in Vercel&apos;s env var UI — re-copy
+            just the key itself into{" "}
+            <span className="font-mono">WHOP_API_KEY</span> and redeploy);
+            then, if that 401 persists with a freshly re-copied key, whether
+            the key was created in Whop&apos;s <em>sandbox</em> environment
+            rather than production — sandbox keys are only valid against{" "}
+            <span className="font-mono">sandbox-api.whop.com</span>, a
+            completely separate host from the production{" "}
+            <span className="font-mono">api.whop.com</span> this app talks to
+            by default, and a key from one is simply invalid on the other.
+            Set <span className="font-mono">WHOP_SANDBOX=true</span> if{" "}
+            <span className="font-mono">WHOP_API_KEY</span> is a sandbox key;
+            leave it unset for a production key. The test below shows exactly
+            which host it tested against. If it still 401s against the
+            correct host, the key needs to be regenerated in the Whop
+            dashboard. The webhook secret pill is
             separate: it&apos;s read by api/webhooks/whop, not
             api/checkout/whop, so it has no effect on whether checkout starts
             — it only controls whether a completed payment can be
@@ -889,6 +899,7 @@ function CheckoutDiagnosticsPanel() {
 function WhopCheckoutDiagnosticsPanel() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<WhopDiagnosticResult[] | null>(null);
+  const [apiBaseUrl, setApiBaseUrl] = useState<string | null>(null);
   const [topLevelError, setTopLevelError] = useState<string | null>(null);
 
   async function run() {
@@ -902,7 +913,7 @@ function WhopCheckoutDiagnosticsPanel() {
       // catch block below would show a flat generic message instead of
       // whatever the server actually sent back.
       const rawText = await res.text();
-      let body: { results?: unknown; error?: string } | null = null;
+      let body: { results?: unknown; error?: string; apiBaseUrl?: string } | null = null;
       try {
         body = JSON.parse(rawText);
       } catch {
@@ -913,9 +924,11 @@ function WhopCheckoutDiagnosticsPanel() {
           `HTTP ${res.status}: ${body?.error ?? (rawText.slice(0, 1000) || "(empty response)")}`,
         );
         setResults(null);
+        setApiBaseUrl(null);
         return;
       }
       setResults(body.results as WhopDiagnosticResult[]);
+      setApiBaseUrl(body.apiBaseUrl ?? null);
     } catch (err) {
       setTopLevelError(
         `Request failed: ${err instanceof Error ? `${err.name}: ${err.message}` : String(err)}`,
@@ -942,6 +955,15 @@ function WhopCheckoutDiagnosticsPanel() {
         <pre className="mt-2 max-h-48 overflow-auto rounded-lg bg-red-500/10 p-2 text-[11px] font-semibold whitespace-pre-wrap break-all text-red-400">
           {renderSafe(topLevelError)}
         </pre>
+      )}
+
+      {apiBaseUrl && (
+        <p className="mt-2 text-[10px] font-semibold text-haze">
+          Tested against: <span className="font-mono text-ink-soft">{apiBaseUrl}</span> — a 401
+          here with an otherwise-correct key usually means the key was
+          created in the other environment (sandbox vs. production); see{" "}
+          <span className="font-mono">WHOP_SANDBOX</span> above.
+        </p>
       )}
 
       {results && (

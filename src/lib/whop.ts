@@ -61,3 +61,25 @@ export function getWhopApiKey(): string | undefined {
 export function getWhopCompanyId(): string | undefined {
   return process.env.WHOP_COMPANY_ID?.trim() || undefined;
 }
+
+/**
+ * Whop runs entirely separate hosts and credentials for sandbox vs.
+ * production (per Whop's own docs, referenced from multiple independent
+ * sources — this sandbox's network can't reach docs.whop.com to confirm
+ * byte-for-byte): `api.whop.com` for live "Company API keys", a distinct
+ * `sandbox-api.whop.com` for keys created in Whop's test/sandbox
+ * environment. A key from one host is simply invalid on the other — that
+ * failure looks identical to a bad/revoked key (401 "Authentication
+ * failed") from the caller's side, and unlike a whitespace or header-format
+ * bug, it fails every single tier identically, since the host mismatch
+ * has nothing to do with which plan is being requested.
+ *
+ * Defaults to the production host, matching this route's behavior before
+ * this existed. Set WHOP_SANDBOX=true only if WHOP_API_KEY was actually
+ * created in Whop's sandbox environment.
+ */
+export function getWhopApiBaseUrl(): string {
+  return process.env.WHOP_SANDBOX?.trim().toLowerCase() === "true"
+    ? "https://sandbox-api.whop.com/api/v1"
+    : "https://api.whop.com/api/v1";
+}

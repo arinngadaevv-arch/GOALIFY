@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/admin";
-import { CHECKOUT_TIERS, getWhopApiKey, getWhopCompanyId, getWhopPlanId } from "@/lib/whop";
+import {
+  CHECKOUT_TIERS,
+  getWhopApiBaseUrl,
+  getWhopApiKey,
+  getWhopCompanyId,
+  getWhopPlanId,
+} from "@/lib/whop";
 import { getPricingTier } from "@/lib/goalify/pricing";
 
 /**
@@ -58,7 +64,7 @@ export async function GET() {
 
   try {
     const results = await runDiagnostics(apiKey);
-    return NextResponse.json({ results });
+    return NextResponse.json({ results, apiBaseUrl: getWhopApiBaseUrl() });
   } catch (err) {
     // Every per-tier failure is already caught inside runDiagnostics — this
     // is the outer safety net for anything else (a throw from
@@ -82,6 +88,7 @@ export async function GET() {
 
 async function runDiagnostics(apiKey: string) {
   const companyId = getWhopCompanyId();
+  const apiBaseUrl = getWhopApiBaseUrl();
 
   return Promise.all(
     CHECKOUT_TIERS.map(async (tier) => {
@@ -98,7 +105,7 @@ async function runDiagnostics(apiKey: string) {
       }
 
       try {
-        const res = await fetch("https://api.whop.com/api/v1/checkout_configurations", {
+        const res = await fetch(`${apiBaseUrl}/checkout_configurations`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${apiKey}`,
