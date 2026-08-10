@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
-import { CHECKOUT_TIERS, getWhopPlanId } from "@/lib/whop";
+import { CHECKOUT_TIERS, getWhopCompanyId, getWhopPlanId } from "@/lib/whop";
 
 /**
  * Creates a real, hosted Whop checkout for the signed-in user and hands the
@@ -54,6 +54,7 @@ export async function POST(req: Request) {
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || new URL(req.url).origin;
+  const companyId = getWhopCompanyId();
 
   let res: Response;
   try {
@@ -65,6 +66,11 @@ export async function POST(req: Request) {
       },
       body: JSON.stringify({
         plan_id: planId,
+        // Optional — see getWhopCompanyId's doc comment. Omitted entirely
+        // (not sent as null/empty) when WHOP_COMPANY_ID isn't set, since an
+        // empty string is more likely to itself fail validation than a
+        // field Whop just doesn't see.
+        ...(companyId ? { company_id: companyId } : {}),
         redirect_url: `${appUrl}/success`,
         // Payments/memberships created from this checkout inherit this
         // metadata — the webhook reads metadata.userId back out of them.
@@ -76,12 +82,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Could not start checkout." }, { status: 502 });
   }
 
-  const responseBody = await res.json().catch(() => null);
+  // Read as text first, not res.json() directly — a non-JSON error response
+  // from Whop would otherwise make .json() throw/reject and lose the body
+  // entirely from the server log instead of showing what Whop actually said.
+  const rawText = await res.text();
+  let responseBody: Record<string, unknown> | null = null;
+  try {
+    responseBody = JSON.parse(rawText);
+  } catch {
+    // rawText itself is still logged below.
+  }
+
   if (!res.ok || !responseBody?.purchase_url) {
     console.error(
-      `[whop checkout] Whop API error for tier "${parsed.data.tier}" (plan ${planId}):`,
+      `[whop checkout] Whop API error for tier "${parsed.data.tier}" (plan ${planId}` +
+        `${companyId ? `, company ${companyId}` : ", no company_id set"}):`,
       res.status,
-      responseBody,
+      responseBody ?? rawText.slice(0, 2000),
     );
     return NextResponse.json({ error: "Could not start checkout." }, { status: 502 });
   }

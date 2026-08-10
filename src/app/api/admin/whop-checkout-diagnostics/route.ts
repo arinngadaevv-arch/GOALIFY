@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/admin";
-import { CHECKOUT_TIERS, getWhopPlanId } from "@/lib/whop";
+import { CHECKOUT_TIERS, getWhopCompanyId, getWhopPlanId } from "@/lib/whop";
 import { getPricingTier } from "@/lib/goalify/pricing";
 
 /**
@@ -51,6 +51,8 @@ export async function GET() {
 }
 
 async function runDiagnostics(apiKey: string) {
+  const companyId = getWhopCompanyId();
+
   return Promise.all(
     CHECKOUT_TIERS.map(async (tier) => {
       const label = getPricingTier(tier).label;
@@ -74,6 +76,9 @@ async function runDiagnostics(apiKey: string) {
           },
           body: JSON.stringify({
             plan_id: planId,
+            // See getWhopCompanyId's doc comment — omitted entirely (not
+            // sent as null/empty) when WHOP_COMPANY_ID isn't set.
+            ...(companyId ? { company_id: companyId } : {}),
             metadata: { diagnostic: true },
           }),
         });

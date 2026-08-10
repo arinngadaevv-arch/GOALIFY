@@ -30,3 +30,18 @@ const PLAN_ENV_KEYS: Record<CheckoutTier, string> = {
 export function getWhopPlanId(tier: CheckoutTier): string | undefined {
   return process.env[PLAN_ENV_KEYS[tier]] || process.env.WHOP_PLAN_ID;
 }
+
+/**
+ * Optional — multiple independent sources on Whop's checkout_configurations
+ * endpoint describe `company_id` as required, even when reusing an existing
+ * plan via `plan_id` rather than creating one inline, but this couldn't be
+ * confirmed against Whop's own docs (blocked from this sandbox's network).
+ * Included in the request body when set (see api/checkout/whop/route.ts)
+ * without being required to start checkout — a 422 naming a missing
+ * company_id despite everything else being configured is the signal this
+ * needs to actually be set. Whop dashboard: the "biz_..." segment of your
+ * dashboard URL.
+ */
+export function getWhopCompanyId(): string | undefined {
+  return process.env.WHOP_COMPANY_ID || undefined;
+}

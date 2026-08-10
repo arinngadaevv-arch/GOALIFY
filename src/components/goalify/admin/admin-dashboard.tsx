@@ -63,6 +63,7 @@ export type CheckoutConfig = {
 export type WhopCheckoutConfig = {
   apiKey: boolean;
   webhookSecret: boolean;
+  companyId: boolean;
   plans: { tier: string; label: string; configured: boolean }[];
 };
 
@@ -235,13 +236,17 @@ export function AdminDashboard({
             API key and plan pills are the exact same check api/checkout/whop
             runs before it will start a checkout — a red &ldquo;Missing&rdquo;
             on any of those is why the paywall shows &ldquo;Could not start
-            checkout&rdquo;. The webhook secret pill is separate: it&apos;s
-            read by api/webhooks/whop, not api/checkout/whop, so it has no
-            effect on whether checkout starts — it only controls whether a
-            completed payment can be auto-credited (see the note under Users
-            &amp; plans below). If you just added a var in Vercel, it still
-            needs a fresh redeploy to actually reach this already-running
-            server — saving the value alone doesn&apos;t do it.
+            checkout&rdquo;. All of those green with checkout still failing
+            points at <span className="font-mono">WHOP_COMPANY_ID</span>{" "}
+            (below, optional) or the request shape itself — see the raw error
+            from the test below for which. The webhook secret pill is
+            separate: it&apos;s read by api/webhooks/whop, not
+            api/checkout/whop, so it has no effect on whether checkout starts
+            — it only controls whether a completed payment can be
+            auto-credited (see the note under Users &amp; plans below). If
+            you just added a var in Vercel, it still needs a fresh redeploy
+            to actually reach this already-running server — saving the value
+            alone doesn&apos;t do it.
           </p>
           <GlassCard deep className="mt-3 flex flex-wrap gap-2 p-4">
             <ConfigPill label="API key" ok={whopCheckoutConfig.apiKey} />
@@ -252,6 +257,10 @@ export function AdminDashboard({
                 ok={plan.configured}
               />
             ))}
+            <ConfigPill
+              label="Company ID (optional — see WHOP_COMPANY_ID)"
+              ok={whopCheckoutConfig.companyId}
+            />
           </GlassCard>
           <WhopCheckoutDiagnosticsPanel />
 
