@@ -104,6 +104,27 @@ function formatDate(iso: string) {
   });
 }
 
+/**
+ * React throws a hard render-phase error — caught only by the top-level
+ * error boundary, invisible to any fetch-level try/catch — if handed a
+ * plain object/array as a JSX child instead of a string. The diagnostics
+ * panels below render fields (error, cause, raw, topLevelError) sourced
+ * from external APIs whose exact response shape isn't fully confirmed, so
+ * every one of those is passed through this instead of rendered directly,
+ * as a second line of defense on top of the server-side normalization in
+ * the diagnostics routes.
+ */
+function renderSafe(value: unknown): string | null {
+  if (value === null || value === undefined || value === "") return null;
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+}
+
 export function AdminDashboard({
   stats,
   funnel,
@@ -651,8 +672,8 @@ function LemonSqueezyVariantsPanel() {
         Fetch live variants from Lemon Squeezy
       </button>
 
-      {topLevelError && (
-        <p className="mt-2 text-xs font-semibold text-red-400">{topLevelError}</p>
+      {renderSafe(topLevelError) && (
+        <p className="mt-2 text-xs font-semibold text-red-400">{renderSafe(topLevelError)}</p>
       )}
 
       {tierChecks && (
@@ -794,9 +815,9 @@ function CheckoutDiagnosticsPanel() {
         Run live checkout test
       </button>
 
-      {topLevelError && (
+      {renderSafe(topLevelError) && (
         <pre className="mt-2 max-h-48 overflow-auto rounded-lg bg-red-500/10 p-2 text-[11px] font-semibold whitespace-pre-wrap break-all text-red-400">
-          {topLevelError}
+          {renderSafe(topLevelError)}
         </pre>
       )}
 
@@ -822,16 +843,16 @@ function CheckoutDiagnosticsPanel() {
                   <span className="font-normal text-haze">· variant {result.variantId}</span>
                 )}
               </div>
-              {!result.ok && result.error && (
+              {!result.ok && renderSafe(result.error) && (
                 <p className="mt-1 text-red-300">
                   {result.statusCode && (
                     <span className="mr-1 font-mono font-black">{result.statusCode}</span>
                   )}
-                  {result.error}
+                  {renderSafe(result.error)}
                 </p>
               )}
-              {!result.ok && result.cause && (
-                <p className="mt-1 break-all text-haze">{result.cause}</p>
+              {!result.ok && renderSafe(result.cause) && (
+                <p className="mt-1 break-all text-haze">{renderSafe(result.cause)}</p>
               )}
               {result.actualCents !== undefined && result.actualCents !== null && (
                 <p className="mt-1 text-mist">
@@ -908,9 +929,9 @@ function WhopCheckoutDiagnosticsPanel() {
         Run live Whop checkout test
       </button>
 
-      {topLevelError && (
+      {renderSafe(topLevelError) && (
         <pre className="mt-2 max-h-48 overflow-auto rounded-lg bg-red-500/10 p-2 text-[11px] font-semibold whitespace-pre-wrap break-all text-red-400">
-          {topLevelError}
+          {renderSafe(topLevelError)}
         </pre>
       )}
 
@@ -936,16 +957,16 @@ function WhopCheckoutDiagnosticsPanel() {
                   <span className="font-normal text-haze">· plan {result.planId}</span>
                 )}
               </div>
-              {!result.ok && result.error && (
+              {!result.ok && renderSafe(result.error) && (
                 <p className="mt-1 text-red-300">
                   {result.statusCode && (
                     <span className="mr-1 font-mono font-black">{result.statusCode}</span>
                   )}
-                  {result.error}
+                  {renderSafe(result.error)}
                 </p>
               )}
-              {!result.ok && result.raw && (
-                <p className="mt-1 break-all text-haze">{result.raw}</p>
+              {!result.ok && renderSafe(result.raw) && (
+                <p className="mt-1 break-all text-haze">{renderSafe(result.raw)}</p>
               )}
               {result.ok && (
                 <p className="mt-1 text-mist">Whop accepted this plan and returned a checkout URL.</p>

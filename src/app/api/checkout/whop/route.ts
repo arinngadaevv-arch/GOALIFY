@@ -93,7 +93,8 @@ export async function POST(req: Request) {
     // rawText itself is still logged below.
   }
 
-  if (!res.ok || !responseBody?.purchase_url) {
+  const purchaseUrl = responseBody?.purchase_url;
+  if (!res.ok || typeof purchaseUrl !== "string" || !purchaseUrl) {
     console.error(
       `[whop checkout] Whop API error for tier "${parsed.data.tier}" (plan ${planId}` +
         `${companyId ? `, company ${companyId}` : ", no company_id set"}):`,
@@ -103,5 +104,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Could not start checkout." }, { status: 502 });
   }
 
-  return NextResponse.json({ url: responseBody.purchase_url });
+  return NextResponse.json({ url: purchaseUrl });
 }

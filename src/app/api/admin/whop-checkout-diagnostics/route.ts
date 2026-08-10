@@ -4,6 +4,36 @@ import { CHECKOUT_TIERS, getWhopCompanyId, getWhopPlanId } from "@/lib/whop";
 import { getPricingTier } from "@/lib/goalify/pricing";
 
 /**
+ * Coerces an unknown value (Whop's real error field shape is unconfirmed —
+ * could be a plain string, a Stripe-style `{message, code}` object, an
+ * array of field validation errors, or something else entirely) into a
+ * plain string. This matters beyond just log readability: the client
+ * renders this value directly as a React child, and React throws a hard
+ * render-phase error — invisible to any fetch-level try/catch, caught only
+ * by Next's top-level error boundary — if it's ever handed something that
+ * isn't a string/number/element (a plain object, for instance).
+ */
+function stringifyUnknown(value: unknown): string | undefined {
+  if (value === null || value === undefined) return undefined;
+  if (typeof value === "string") return value || undefined;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (Array.isArray(value)) {
+    const parts = value.map((v) => stringifyUnknown(v)).filter((v): v is string => Boolean(v));
+    return parts.length ? parts.join("; ") : undefined;
+  }
+  if (typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    if (typeof obj.message === "string") return obj.message;
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return String(value);
+    }
+  }
+  return String(value);
+}
+
+/**
  * Owner-only: runs the exact same checkout_configurations call
  * api/checkout/whop/route.ts makes on a real purchase, for every tier, and
  * returns Whop's raw response/error instead of the generic message the
@@ -102,21 +132,39 @@ async function runDiagnostics(apiKey: string) {
             ok: false,
             statusCode: res.status,
             error:
-              (body?.error as string | undefined) ??
-              (body?.message as string | undefined) ??
+              stringifyUnknown(body?.error) ??
+              stringifyUnknown(body?.message) ??
+              stringifyUnknown(body?.errors) ??
               `Whop returned ${res.status} with no purchase_url.`,
             raw: rawText ? rawText.slice(0, 2000) : undefined,
           };
         }
 
-        return { tier, label, planId, ok: true, purchaseUrl: body.purchase_url as string };
+        const purchaseUrl = body.purchase_url;
+        if (typeof purchaseUrl !== "string") {
+          // Whop returned 2xx with a purchase_url field present but not a
+          // string — treat as a failure with the raw body shown rather
+          // than pass a non-string through to the client, or worse,
+          // redirect a real paying customer to String(purchaseUrl).
+          return {
+            tier,
+            label,
+            planId,
+            ok: false,
+            statusCode: res.status,
+            error: "Whop returned a purchase_url that wasn't a string.",
+            raw: rawText.slice(0, 2000),
+          };
+        }
+
+        return { tier, label, planId, ok: true, purchaseUrl };
       } catch (err) {
         return {
           tier,
           label,
           planId,
           ok: false,
-          error: err instanceof Error ? err.message : "Request to Whop failed.",
+          error: err instanceof Error ? `${err.name}: ${err.message}` : stringifyUnknown(err) ?? "Request to Whop failed.",
         };
       }
     }),
