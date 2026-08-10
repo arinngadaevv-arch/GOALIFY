@@ -669,7 +669,7 @@ function ChoiceStep({
       <div
         className={clsx(
           "grid",
-          layout === "radio" ? "gap-1" : layout === "wide" ? "gap-1.5" : "grid-cols-2 gap-3",
+          layout === "radio" ? "gap-2.5" : layout === "wide" ? "gap-1.5" : "grid-cols-2 gap-3",
           layout === "portrait" && "mt-14",
         )}
       >
@@ -832,11 +832,11 @@ function PhotoOptionCard({
     );
     const labelBlock = (
       <span className="min-w-0 flex-1">
-        <span className="gf-display block text-base leading-tight font-extrabold text-ink">
+        <span className="gf-display block text-lg leading-tight font-extrabold text-ink">
           {option.label}
         </span>
         {option.description && (
-          <span className="mt-0.5 block text-xs leading-snug text-ink-soft">
+          <span className="mt-0.5 block text-sm leading-snug text-ink-soft">
             {option.description}
           </span>
         )}
@@ -851,13 +851,13 @@ function PhotoOptionCard({
           disabled={disabled}
           aria-pressed={selected}
           className={clsx(
-            "gf-card gf-card-hover gf-press relative flex items-center gap-3 overflow-hidden p-2.5 pr-3 text-left transition-all duration-300 ease-out",
+            "gf-card gf-card-hover gf-press relative flex items-center gap-3.5 overflow-hidden p-3.5 text-left transition-all duration-300 ease-out",
             selected && "gf-card-active",
             disabled && !selected && "opacity-50",
           )}
         >
           <QuizIconBadge icon={option.icon} size="sm" active={selected} className="shrink-0" />
-          <div className="relative h-14 w-11 shrink-0 overflow-hidden rounded-lg">
+          <div className="relative h-18 w-14 shrink-0 overflow-hidden rounded-lg">
             <OptionPhoto
               src={option.image}
               alt={option.label}
