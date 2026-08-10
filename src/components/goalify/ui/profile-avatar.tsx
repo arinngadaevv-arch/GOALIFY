@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import clsx from "clsx";
 import { Camera, Pencil, SmilePlus, UserRound, X } from "lucide-react";
 import type { UserAvatar } from "@/lib/goalify/types";
@@ -9,6 +10,11 @@ const SIZE_CLASSES = {
   sm: "size-11",
   lg: "size-24",
 } as const;
+
+/** One-tap fitness-flavored picks — muscle leads since that fits GOALIFY
+ * better than fire as the default suggestion; the keyboard's own emoji
+ * picker below still covers anything not in this row. */
+const EMOJI_PRESETS = ["💪", "🔥", "⚡", "🏆", "😎"];
 
 const ICON_SIZE_CLASSES = {
   sm: "size-5",
@@ -159,99 +165,121 @@ export function ProfileAvatarPicker({
         className="hidden"
       />
 
-      {open && (
-        <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center sm:p-4">
-          <div
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-            aria-hidden
-            onClick={closeSheet}
-          />
-
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="avatar-sheet-heading"
-            className="gf-anim-rise relative w-full max-w-md rounded-t-3xl border border-white/10 bg-[#12151d] p-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] shadow-[0_-20px_60px_-20px_rgba(0,0,0,0.8)] sm:rounded-3xl sm:pb-6 sm:shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8)]"
-          >
-            <button
-              type="button"
-              aria-label="Close"
+      {open &&
+        createPortal(
+          <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center sm:p-4">
+            <div
+              className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+              aria-hidden
               onClick={closeSheet}
-              className="gf-press absolute top-4 right-4 grid size-8 place-items-center rounded-full bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+            />
+
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="avatar-sheet-heading"
+              className="gf-anim-rise relative w-full max-w-md rounded-t-3xl border border-white/10 bg-[#12151d] p-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] shadow-[0_-20px_60px_-20px_rgba(0,0,0,0.8)] sm:rounded-3xl sm:pb-6 sm:shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8)]"
             >
-              <X className="size-4.5" strokeWidth={2.5} />
-            </button>
+              <button
+                type="button"
+                aria-label="Close"
+                onClick={closeSheet}
+                className="gf-press absolute top-4 right-4 grid size-8 place-items-center rounded-full bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+              >
+                <X className="size-4.5" strokeWidth={2.5} />
+              </button>
 
-            <h2 id="avatar-sheet-heading" className="gf-display text-lg font-extrabold text-white">
-              Profile photo
-            </h2>
+              <h2 id="avatar-sheet-heading" className="gf-display text-lg font-extrabold text-white">
+                Profile photo
+              </h2>
 
-            {!emojiMode ? (
-              <div className="mt-5 flex flex-col gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="gf-press flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-left text-white hover:bg-white/8"
-                >
-                  <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-electric/15 text-electric">
-                    <Camera className="size-5" strokeWidth={2.2} />
-                  </span>
-                  <span className="text-sm font-bold">Upload a photo</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setEmojiMode(true)}
-                  className="gf-press flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-left text-white hover:bg-white/8"
-                >
-                  <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-electric/15 text-electric">
-                    <SmilePlus className="size-5" strokeWidth={2.2} />
-                  </span>
-                  <span className="text-sm font-bold">Choose an emoji</span>
-                </button>
-
-                {avatar && (
+              {!emojiMode ? (
+                <div className="mt-5 flex flex-col gap-2.5">
                   <button
                     type="button"
-                    onClick={() => {
-                      onChange(null);
-                      closeSheet();
-                    }}
-                    className="gf-press mt-1 rounded-2xl p-3 text-center text-xs font-bold text-white/50 hover:text-white/80"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="gf-press flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-left text-white hover:bg-white/8"
                   >
-                    Remove current photo
+                    <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-electric/15 text-electric">
+                      <Camera className="size-5" strokeWidth={2.2} />
+                    </span>
+                    <span className="text-sm font-bold">Upload a photo</span>
                   </button>
-                )}
-              </div>
-            ) : (
-              <div className="mt-5 flex flex-col gap-3">
-                <p className="text-xs leading-relaxed text-white/60">
-                  Tap the field and use your keyboard&apos;s emoji picker
-                  (the smiley/globe key) to pick one.
-                </p>
-                <input
-                  type="text"
-                  inputMode="text"
-                  autoFocus
-                  maxLength={8}
-                  value={emojiDraft}
-                  onChange={(event) => setEmojiDraft(event.target.value)}
-                  placeholder="😀"
-                  className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-center text-3xl text-white outline-none focus:border-electric/60"
-                />
-                <button
-                  type="button"
-                  onClick={saveEmoji}
-                  disabled={!emojiDraft.trim()}
-                  className="gf-press rounded-2xl bg-electric px-4 py-3 text-sm font-extrabold text-white disabled:opacity-40"
-                >
-                  Use this emoji
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+
+                  <button
+                    type="button"
+                    onClick={() => setEmojiMode(true)}
+                    className="gf-press flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-left text-white hover:bg-white/8"
+                  >
+                    <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-electric/15 text-electric">
+                      <SmilePlus className="size-5" strokeWidth={2.2} />
+                    </span>
+                    <span className="text-sm font-bold">Choose an emoji</span>
+                  </button>
+
+                  {avatar && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onChange(null);
+                        closeSheet();
+                      }}
+                      className="gf-press mt-1 rounded-2xl p-3 text-center text-xs font-bold text-white/50 hover:text-white/80"
+                    >
+                      Remove current photo
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="mt-5 flex flex-col gap-4">
+                  <div>
+                    <p className="text-xs font-bold text-white/70">Quick picks</p>
+                    <div className="mt-2 grid grid-cols-5 gap-2">
+                      {EMOJI_PRESETS.map((preset) => (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() => {
+                            onChange({ kind: "emoji", value: preset });
+                            closeSheet();
+                          }}
+                          aria-label={`Use ${preset} as your profile emoji`}
+                          className="gf-press flex aspect-square items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-2xl hover:bg-white/10"
+                        >
+                          {preset}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <p className="text-xs leading-relaxed text-white/60">
+                    Or tap the field below and use your keyboard&apos;s emoji
+                    picker (the smiley/globe key) to choose any other one.
+                  </p>
+                  <input
+                    type="text"
+                    inputMode="text"
+                    autoFocus
+                    maxLength={8}
+                    value={emojiDraft}
+                    onChange={(event) => setEmojiDraft(event.target.value)}
+                    placeholder="😀"
+                    className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-center text-3xl text-white outline-none focus:border-electric/60"
+                  />
+                  <button
+                    type="button"
+                    onClick={saveEmoji}
+                    disabled={!emojiDraft.trim()}
+                    className="gf-press rounded-2xl bg-electric px-4 py-3 text-sm font-extrabold text-white disabled:opacity-40"
+                  >
+                    Use this emoji
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>,
+          document.body,
+        )}
     </>
   );
 }

@@ -131,7 +131,7 @@ export function Dashboard() {
       <ParticleBurstLayer />
 
       {/* ------------------------------------------------------- Streak badge */}
-      <StreakBadge day={state.programDay} streak={streak} pulse={streakJustPopped} />
+      <StreakBadge streak={streak} pulse={streakJustPopped} />
 
       {/* --------------------------------------------------- Motivation ticker */}
       <MotivationTicker />
@@ -416,34 +416,31 @@ export function Dashboard() {
 }
 
 /** Prominent top-of-dashboard streak callout — pulsing flame glow. Pops with
- * a brief scale animation the moment today's workout is freshly completed. */
-function StreakBadge({
-  day,
-  streak,
-  pulse = false,
-}: {
-  day: number;
-  streak: number;
-  pulse?: boolean;
-}) {
+ * a brief scale animation the moment today's workout is freshly completed.
+ * Shows only the streak itself — the program day ("Day N" of the plan) is a
+ * different, unrelated counter already shown as its own eyebrow on the
+ * Today's Workout card below, so pairing the two numbers in one pill read
+ * as one broken stat instead of two separate ones. */
+function StreakBadge({ streak, pulse = false }: { streak: number; pulse?: boolean }) {
   return (
     <div
       className={clsx(
-        "gf-anim-rise gf-streak-badge mb-5 flex items-center justify-center gap-3 rounded-full border border-lime-deep/30 bg-linear-to-r from-lime-neon/10 via-electric/8 to-lime-neon/10 px-5 py-3",
+        "gf-anim-rise gf-streak-badge mb-5 flex items-center justify-center gap-2.5 rounded-full border border-lime-deep/30 bg-linear-to-r from-lime-neon/10 via-electric/8 to-lime-neon/10 px-5 py-3",
         pulse && "gf-anim-pop",
       )}
     >
       <span className="gf-anim-flicker-flame text-2xl" aria-hidden>
-        🔥🔥
+        🔥
       </span>
-      <div className="text-center leading-tight">
+      {streak > 0 ? (
         <p className="gf-display text-sm font-black tracking-tight text-ink">
-          DAY {day}
+          <span className="gf-numeric text-lime-deep">{streak}</span>-day streak
         </p>
-        <p className="text-[10px] font-black tracking-[0.16em] text-lime-deep uppercase">
-          Streak: {streak} day{streak === 1 ? "" : "s"}
+      ) : (
+        <p className="text-[11px] font-black tracking-[0.1em] text-lime-deep uppercase">
+          Start your streak today
         </p>
-      </div>
+      )}
     </div>
   );
 }

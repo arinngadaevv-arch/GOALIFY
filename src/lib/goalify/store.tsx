@@ -33,8 +33,21 @@ export const CALORIE_BURN_GOAL = 500;
 /** Daily active-minutes target — one completed session covers most days. */
 export const ACTIVE_MINUTES_GOAL = 30;
 
+/**
+ * Local calendar date as `yyyy-mm-dd` — deliberately NOT `date.toISOString()`
+ * (always UTC), which silently mislabels "today" for any user east of UTC
+ * (e.g. Israel, UTC+2/+3): a workout finished at, say, 00:30 local time
+ * gets stamped with the *previous* UTC day, so a few hours later that same
+ * local day, `todayKey()` (now correctly on the real local day) no longer
+ * matches what was just stored — the workout silently stops counting as
+ * "today," breaking the streak and both trackers keyed off this function
+ * (water, steps) exactly when it should show the day as done.
+ */
 export function todayKey(date = new Date()): string {
-  return date.toISOString().slice(0, 10);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 const INITIAL_STATE: GoalifyState = {
