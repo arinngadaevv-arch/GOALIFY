@@ -260,7 +260,16 @@ export function AdminDashboard({
             checkout&rdquo;. All of those green with checkout still failing
             points at <span className="font-mono">WHOP_COMPANY_ID</span>{" "}
             (below, optional) or the request shape itself — see the raw error
-            from the test below for which. The webhook secret pill is
+            from the test below for which. A{" "}
+            <span className="font-mono">401 &ldquo;Authentication failed&rdquo;</span>{" "}
+            specifically means Whop is rejecting the API key itself — the
+            single most common cause is a stray trailing newline or space
+            picked up when the key was copied from the Whop dashboard,
+            invisible in Vercel&apos;s env var UI. Re-copy just the key
+            itself (no surrounding whitespace) into{" "}
+            <span className="font-mono">WHOP_API_KEY</span> and redeploy; if
+            it still 401s, the key was likely revoked/regenerated in the Whop
+            dashboard since it was copied. The webhook secret pill is
             separate: it&apos;s read by api/webhooks/whop, not
             api/checkout/whop, so it has no effect on whether checkout starts
             — it only controls whether a completed payment can be

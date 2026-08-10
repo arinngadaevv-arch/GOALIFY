@@ -28,7 +28,23 @@ const PLAN_ENV_KEYS: Record<CheckoutTier, string> = {
  * first, the same way it does for Lemon Squeezy.
  */
 export function getWhopPlanId(tier: CheckoutTier): string | undefined {
-  return process.env[PLAN_ENV_KEYS[tier]] || process.env.WHOP_PLAN_ID;
+  return (process.env[PLAN_ENV_KEYS[tier]] || process.env.WHOP_PLAN_ID)?.trim() || undefined;
+}
+
+/**
+ * Trimmed for the same reason getWhopCompanyId is — a copy-paste from the
+ * Whop dashboard picking up a trailing newline or leading space is
+ * invisible in Vercel's env var UI but makes the literal header value
+ * "Bearer sk_abc123\n", which Whop's API correctly rejects with 401
+ * unauthorized ("Authentication failed") even though the key looks
+ * completely correct on screen. If /admin's diagnostic ever shows exactly
+ * that 401 with all pills green, re-copying the key fresh — select-and-copy
+ * only the key itself, no surrounding whitespace or the newline a
+ * triple-click sometimes grabs — is the fix; this trim only guards against
+ * the whitespace half of that, not a genuinely wrong or revoked key.
+ */
+export function getWhopApiKey(): string | undefined {
+  return process.env.WHOP_API_KEY?.trim() || undefined;
 }
 
 /**
@@ -43,5 +59,5 @@ export function getWhopPlanId(tier: CheckoutTier): string | undefined {
  * dashboard URL.
  */
 export function getWhopCompanyId(): string | undefined {
-  return process.env.WHOP_COMPANY_ID || undefined;
+  return process.env.WHOP_COMPANY_ID?.trim() || undefined;
 }

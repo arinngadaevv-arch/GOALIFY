@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/admin";
-import { CHECKOUT_TIERS, getWhopCompanyId, getWhopPlanId } from "@/lib/whop";
+import { CHECKOUT_TIERS, getWhopApiKey, getWhopCompanyId, getWhopPlanId } from "@/lib/whop";
 import { getPricingTier } from "@/lib/goalify/pricing";
 
 /**
@@ -51,7 +51,7 @@ export async function GET() {
     return NextResponse.json({ error: "Forbidden." }, { status: 403 });
   }
 
-  const apiKey = process.env.WHOP_API_KEY;
+  const apiKey = getWhopApiKey();
   if (!apiKey) {
     return NextResponse.json({ error: "WHOP_API_KEY is not set." }, { status: 200 });
   }

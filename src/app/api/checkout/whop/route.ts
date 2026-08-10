@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
-import { CHECKOUT_TIERS, getWhopCompanyId, getWhopPlanId } from "@/lib/whop";
+import { CHECKOUT_TIERS, getWhopApiKey, getWhopCompanyId, getWhopPlanId } from "@/lib/whop";
 
 /**
  * Creates a real, hosted Whop checkout for the signed-in user and hands the
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid payload." }, { status: 400 });
   }
 
-  const apiKey = process.env.WHOP_API_KEY;
+  const apiKey = getWhopApiKey();
   const planId = getWhopPlanId(parsed.data.tier);
   if (!apiKey || !planId) {
     console.error(

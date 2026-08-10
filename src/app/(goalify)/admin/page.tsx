@@ -7,7 +7,7 @@ import { checkoutEvents, users } from "@/lib/db/schema";
 import { AdminDashboard } from "@/components/goalify/admin/admin-dashboard";
 import type { Goal, Level } from "@/lib/goalify/types";
 import { CHECKOUT_TIERS, getVariantId } from "@/lib/lemonsqueezy";
-import { getWhopCompanyId, getWhopPlanId } from "@/lib/whop";
+import { getWhopApiKey, getWhopCompanyId, getWhopPlanId } from "@/lib/whop";
 import { getPricingTier } from "@/lib/goalify/pricing";
 
 export const metadata: Metadata = {
@@ -164,7 +164,7 @@ export default async function AdminPage() {
   // Same pattern as checkoutConfig above, read through the exact same
   // helper (getWhopPlanId) api/checkout/whop/route.ts uses on every request.
   const whopCheckoutConfig = {
-    apiKey: Boolean(process.env.WHOP_API_KEY),
+    apiKey: Boolean(getWhopApiKey()),
     webhookSecret: Boolean(process.env.WHOP_WEBHOOK_SECRET),
     companyId: Boolean(getWhopCompanyId()),
     plans: CHECKOUT_TIERS.map((tier) => ({
