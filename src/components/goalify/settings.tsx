@@ -19,7 +19,6 @@ import {
   Ruler,
   ShieldCheck,
   Sparkles,
-  UserRound,
   Vibrate,
   Zap,
 } from "lucide-react";
@@ -29,13 +28,13 @@ import { AppShell } from "./app-shell";
 import { GlassCard } from "./ui/glass-card";
 import { GlowButton, GlowLink } from "./ui/glow-button";
 import { Toggle } from "./ui/toggle";
-import { VisualSlot } from "./ui/visual-slot";
+import { ProfileAvatarPicker } from "./ui/profile-avatar";
 import { Pill, SectionHeading } from "./ui/stat";
 import { ParticleBurstLayer } from "./quiz/particle-burst";
 
 export function SettingsScreen() {
   const router = useRouter();
-  const { state, answers, updateSettings, reset } = useGoalify();
+  const { state, answers, updateSettings, setAvatar, reset } = useGoalify();
   const { settings } = state;
   const [googleLinked, setGoogleLinked] = useState<boolean | null>(null);
   const [linking, setLinking] = useState(false);
@@ -86,13 +85,7 @@ export function SettingsScreen() {
 
       {/* ------------------------------------------------------------ Profile */}
       <GlassCard deep className="gf-anim-rise flex items-center gap-4 p-6">
-        <VisualSlot
-          label="Avatar"
-          icon={UserRound}
-          rounded="rounded-3xl"
-          showChrome={false}
-          className="size-20 shrink-0 border-electric/30"
-        />
+        <ProfileAvatarPicker avatar={state.avatar} onChange={setAvatar} size="lg" />
         <div className="min-w-0 flex-1">
           <p className="gf-display truncate text-xl font-extrabold text-ink">
             {state.profile?.name ?? "Athlete"}

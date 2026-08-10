@@ -51,6 +51,16 @@ export type Profile = QuizAnswers & {
   completedAt: string;
 };
 
+/** What renders in place of the generic person icon everywhere the user's
+ * own avatar shows up (top bar, settings) — either a photo picked from the
+ * device or a single emoji typed via the OS keyboard. Lives outside
+ * `Profile` deliberately: `Profile` is fully replaced by `toProfile` every
+ * time the quiz is retaken (see plan.ts), which would silently wipe an
+ * avatar field stored there. */
+export type UserAvatar =
+  | { kind: "photo"; dataUrl: string }
+  | { kind: "emoji"; value: string };
+
 /** Everything the app persists between sessions. */
 export type GoalifyState = {
   profile: Profile | null;
@@ -76,6 +86,9 @@ export type GoalifyState = {
    * the whole storage layer. Null until the user actually picks a photo. */
   beforePhotoUrl: string | null;
   afterPhotoUrl: string | null;
+  /** Null until the user picks a photo or emoji in Settings — falls back to
+   * the generic person-icon placeholder everywhere it's rendered. */
+  avatar: UserAvatar | null;
 };
 
 export type Settings = {

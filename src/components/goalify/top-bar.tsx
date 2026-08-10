@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, Flame, UserRound } from "lucide-react";
+import { Bell, Flame } from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
-import { VisualSlot } from "./ui/visual-slot";
+import { AvatarDisplay } from "./ui/profile-avatar";
 
 export function TopBar({ title, subtitle }: { title?: string; subtitle?: string }) {
   const { answers, streak, state } = useGoalify();
@@ -16,13 +16,7 @@ export function TopBar({ title, subtitle }: { title?: string; subtitle?: string 
         aria-label="Your profile"
         className="gf-press shrink-0"
       >
-        <VisualSlot
-          label="Avatar"
-          icon={UserRound}
-          rounded="rounded-2xl"
-          showChrome={false}
-          className="size-11 border-electric/30"
-        />
+        <AvatarDisplay avatar={state.avatar} size="sm" />
       </Link>
 
       <div className="min-w-0 flex-1">

@@ -3,14 +3,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
-import { Apple, House, Settings, TrendingUp } from "lucide-react";
+import { Apple, House, TrendingUp } from "lucide-react";
 
+// Settings uses the literal ⚙️ emoji glyph instead of a Lucide icon, on
+// request — the other three tabs stay vector icons.
 const NAV = [
   { href: "/home", label: "Home", Icon: House },
   { href: "/nutrition", label: "Nutrition", Icon: Apple },
   { href: "/progress", label: "Progress", Icon: TrendingUp },
-  { href: "/settings", label: "Settings", Icon: Settings },
-];
+  { href: "/settings", label: "Settings", Icon: null },
+] as const;
 
 export function BottomDock() {
   const pathname = usePathname();
@@ -47,13 +49,25 @@ export function BottomDock() {
                 active ? "text-electric" : "text-mist hover:text-ink-soft",
               )}
             >
-              <Icon
-                className={clsx(
-                  "size-5 transition-transform duration-300",
-                  active && "-translate-y-0.5 scale-110",
-                )}
-                strokeWidth={active ? 2.6 : 2}
-              />
+              {Icon ? (
+                <Icon
+                  className={clsx(
+                    "size-5 transition-transform duration-300",
+                    active && "-translate-y-0.5 scale-110",
+                  )}
+                  strokeWidth={active ? 2.6 : 2}
+                />
+              ) : (
+                <span
+                  className={clsx(
+                    "text-lg leading-none transition-transform duration-300",
+                    active && "-translate-y-0.5 scale-110",
+                  )}
+                  aria-hidden
+                >
+                  ⚙️
+                </span>
+              )}
               <span className="text-[10px] font-bold tracking-tight">
                 {label}
               </span>

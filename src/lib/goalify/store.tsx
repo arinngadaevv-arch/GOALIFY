@@ -7,6 +7,7 @@ import type {
   ProgressPhoto,
   QuizAnswers,
   Settings,
+  UserAvatar,
 } from "./types";
 import { DEFAULT_ANSWERS, nutritionTargets, toProfile } from "./plan";
 import { workoutForDay } from "./workouts";
@@ -59,6 +60,7 @@ const INITIAL_STATE: GoalifyState = {
   photos: [],
   beforePhotoUrl: null,
   afterPhotoUrl: null,
+  avatar: null,
 };
 
 /* -------------------------------------------------------------------------
@@ -286,6 +288,12 @@ export function useGoalify() {
     );
   }, []);
 
+  /** Sets or clears (pass `null`) the user's own avatar — see UserAvatar's
+   * doc comment for why this lives outside `profile`. */
+  const setAvatar = useCallback((avatar: UserAvatar | null) => {
+    update((s) => ({ ...s, avatar }));
+  }, []);
+
   const reset = useCallback(() => {
     update(() => INITIAL_STATE);
   }, []);
@@ -327,6 +335,7 @@ export function useGoalify() {
     updateSettings,
     addPhoto,
     setVaultPhoto,
+    setAvatar,
     reset,
     markQuizSynced,
   };
