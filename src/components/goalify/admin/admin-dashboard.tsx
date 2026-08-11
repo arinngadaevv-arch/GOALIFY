@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { GlassCard } from "@/components/goalify/ui/glass-card";
 import { Pill } from "@/components/goalify/ui/stat";
+import { VisitorTrendChart, type VisitorTrend } from "./visitor-trend-chart";
 import { goalLabel, levelLabel } from "@/lib/goalify/plan";
 import type { Goal, Level } from "@/lib/goalify/types";
 import { allKnownClips, diagnoseSupabaseUrl } from "@/lib/goalify/video";
@@ -164,6 +165,7 @@ export function AdminDashboard({
   visitors,
   deviceSplit,
   quizStepFunnel,
+  visitorTrend,
   users,
   checkoutConfig,
   whopCheckoutConfig,
@@ -173,6 +175,7 @@ export function AdminDashboard({
   visitors: VisitorStats;
   deviceSplit: DeviceSplit;
   quizStepFunnel: QuizStepFunnelEntry[];
+  visitorTrend: VisitorTrend;
   users: AdminUserRow[];
   checkoutConfig: CheckoutConfig;
   whopCheckoutConfig: WhopCheckoutConfig;
@@ -278,6 +281,17 @@ export function AdminDashboard({
           </div>
 
           <div className="mt-3">
+            <h3 className="text-sm font-extrabold text-ink">
+              Landing page visitors over time
+            </h3>
+            <p className="mt-1 text-[11px] leading-relaxed text-haze">
+              Distinct visitors per bucket — hover (or tab to) any bar for the
+              exact count.
+            </p>
+            <VisitorTrendChart trend={visitorTrend} />
+          </div>
+
+          <div className="mt-6">
             <h3 className="text-sm font-extrabold text-ink">
               How far people get through the quiz
             </h3>

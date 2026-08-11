@@ -35,6 +35,44 @@ function visitorSinceDate() {
   return new Date(Date.now() - VISITOR_WINDOW_MS);
 }
 
+function hoursAgo(hours: number) {
+  return new Date(Date.now() - hours * 60 * 60 * 1000);
+}
+
+function daysAgo(days: number) {
+  return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+}
+
+/** One row per bucket with at least one visitor — VisitorTrendChart fills
+ * in the zero-visitor buckets client-side, since a `GROUP BY` naturally
+ * omits empty groups. `unit` is interpolated directly into `date_trunc(...)`,
+ * never from request input — always one of the four literal strings this
+ * file calls it with below, so there's no injection surface. */
+function visitTrendQuery(unit: "hour" | "day" | "week" | "month", since: Date) {
+  // `unit` is inlined as a raw SQL literal, not a bound parameter — passing
+  // it as `${unit}` instead left Postgres unable to resolve date_trunc's
+  // overload at prepare time ("could not determine polymorphic type") since
+  // a bound parameter carries no type info there. Safe here regardless:
+  // this function is only ever called from the four hardcoded call sites
+  // below, never with request input.
+  const truncated = sql.raw(`date_trunc('${unit}', "analytics_event"."created_at")`);
+  return db
+    .select({
+      // postgres.js parses a `timestamp`-typed result (which date_trunc
+      // returns here) into a JS Date regardless of this query's declared
+      // TS type, so mapWith normalizes it to a real ISO string either way
+      // rather than trusting the type annotation alone.
+      bucket: sql<string>`${truncated}`.mapWith((value) => new Date(value as string | Date).toISOString()),
+      visitors: sql<number>`count(distinct ${analyticsEvents.visitorId})`.mapWith(Number),
+    })
+    .from(analyticsEvents)
+    .where(
+      sql`${analyticsEvents.kind} = 'LANDING_VIEW' and ${analyticsEvents.createdAt} >= ${since.toISOString()}`,
+    )
+    .groupBy(truncated)
+    .orderBy(truncated);
+}
+
 export default async function AdminPage() {
   const session = await getAdminSession();
   if (!session) {
@@ -52,6 +90,10 @@ export default async function AdminPage() {
     [visitorTotals],
     deviceRows,
     stepReachRows,
+    hourlyVisitorRows,
+    dailyVisitorRows,
+    weeklyVisitorRows,
+    monthlyVisitorRows,
   ] = await Promise.all([
       db
         .select({
@@ -153,6 +195,17 @@ export default async function AdminPage() {
         .from(analyticsEvents)
         .where(eq(analyticsEvents.kind, "QUIZ_STEP"))
         .groupBy(analyticsEvents.visitorId),
+      // Visitor trend chart — see VisitorTrendChart. Four separate
+      // date_trunc granularities rather than one fine-grained query
+      // resummed client-side, because summing daily unique-visitor counts
+      // into a week double-counts anyone who visited on more than one day
+      // that week. date_trunc('week'/'month', ...) gives the *true*
+      // distinct count for that bucket straight from Postgres, no
+      // approximation.
+      visitTrendQuery("hour", hoursAgo(48)),
+      visitTrendQuery("day", daysAgo(30)),
+      visitTrendQuery("week", daysAgo(91)),
+      visitTrendQuery("month", daysAgo(365)),
     ]);
 
   const quizStepFunnel = QUIZ_STEPS.map((quizStep, index) => ({
@@ -164,6 +217,13 @@ export default async function AdminPage() {
   const deviceSplit = {
     mobile: deviceRows.find((row) => row.device === "MOBILE")?.visitors ?? 0,
     desktop: deviceRows.find((row) => row.device === "DESKTOP")?.visitors ?? 0,
+  };
+
+  const visitorTrend = {
+    hourly: hourlyVisitorRows,
+    daily: dailyVisitorRows,
+    weekly: weeklyVisitorRows,
+    monthly: monthlyVisitorRows,
   };
 
   // One pass to keep only the most recent checkout per user — rows arrive
@@ -260,6 +320,7 @@ export default async function AdminPage() {
       }}
       deviceSplit={deviceSplit}
       quizStepFunnel={quizStepFunnel}
+      visitorTrend={visitorTrend}
       users={tableUsers}
       checkoutConfig={checkoutConfig}
       whopCheckoutConfig={whopCheckoutConfig}
