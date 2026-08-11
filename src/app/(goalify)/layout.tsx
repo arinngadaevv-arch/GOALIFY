@@ -41,10 +41,10 @@ export const metadata: Metadata = {
     description,
     images: [
       {
-        url: "/quiz/workout-preview-pushup-closeup.png",
-        width: 1105,
-        height: 663,
-        alt: "Coach Atlas mid-rep — GOALIFY's home bodyweight coaching",
+        url: "/quiz/image-1786441857395.webp",
+        width: 797,
+        height: 442,
+        alt: "A woman holding a plank at home — GOALIFY's bodyweight home coaching",
       },
     ],
   },
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title,
     description,
-    images: ["/quiz/workout-preview-pushup-closeup.png"],
+    images: ["/quiz/image-1786441857395.webp"],
   },
   robots: { index: true, follow: true },
 };

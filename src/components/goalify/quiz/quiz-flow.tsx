@@ -392,7 +392,14 @@ export function QuizFlow() {
 
   if (!quizStarted) {
     return (
-      <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5">
+      // Wider than the other two `<main>`s below on purpose: those hold a
+      // single-column question/form flow that stays readable at any width,
+      // but WelcomeCtaStep's desktop hero is a purpose-built wide image
+      // (1672px native) that reads as cramped and causes its overlay CTA
+      // text to wrap if squeezed into the same max-w-2xl column. Capped
+      // near the image's own native width rather than full-bleed, so it
+      // doesn't upscale/blur on ultra-wide monitors.
+      <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 lg:max-w-[1680px]">
         <WelcomeCtaStep
           onStart={() => {
             // Every fresh attempt starts blank — otherwise a step like the

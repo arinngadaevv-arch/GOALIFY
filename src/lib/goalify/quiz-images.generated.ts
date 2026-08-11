@@ -33,6 +33,8 @@ export const AVAILABLE_QUIZ_IMAGES: ReadonlySet<string> = new Set([
   "/quiz/goal-build.png",
   "/quiz/goal-burn.png",
   "/quiz/goal-tone.png",
+  "/quiz/image-1786441857395.webp",
+  "/quiz/image-1786441870848.webp",
   "/quiz/injury.png",
   "/quiz/motivation.jpg",
   "/quiz/no-plan.png",
