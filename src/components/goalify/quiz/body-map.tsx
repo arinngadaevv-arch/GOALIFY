@@ -21,16 +21,19 @@ import { fireBurst } from "./particle-burst";
 // min/max x per body part across its full y-range (not eyeballed), so
 // these track the new photo's actual proportions rather than reused
 // coordinates from the old asset. A hairline 1–2pt overlap at a couple of
-// seams (e.g. chest/arms, arms/legs) is intentional and harmless —
-// later-in-DOM zones win those pixels, and the seam itself falls on a
-// curved, un-rectangular body contour anyway.
+// seams (e.g. chest/arms, arms/legs) is intentional and harmless for the
+// outline border — but abs originally ran to 83, a genuine 7pt overlap
+// into the right arms zone (76–98) wide enough for the selected-state
+// check badge (top-right corner of the tapped zone) to land on top of
+// that zone's "ARMS" label and render as "A[✓]RMS". Trimmed to a true
+// hairline overlap so the badge clears the neighboring label.
 const ZONE_SHAPES: Record<string, { left: number; top: number; width: number; height: number }[]> = {
   chest: [{ left: 23, top: 21, width: 54, height: 13 }],
   arms: [
     { left: 2, top: 17, width: 22, height: 42 },
     { left: 76, top: 17, width: 22, height: 42 },
   ],
-  abs: [{ left: 18, top: 34, width: 65, height: 15 }],
+  abs: [{ left: 18, top: 34, width: 55, height: 15 }],
   glutes: [{ left: 22, top: 48, width: 53, height: 6 }],
   legs: [
     { left: 21, top: 70, width: 22, height: 20 },
