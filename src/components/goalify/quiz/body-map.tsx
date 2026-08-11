@@ -106,6 +106,21 @@ export function BodyMapStep({
             className="object-contain object-top"
           />
 
+          {/* The photo's own studio backdrop is a flat navy, close to but
+              not quite the page's own canvas color (#0b0e14) — close
+              enough on skin tones but the mismatch reads clearly in the
+              rounded corners, where the backdrop alone is visible against
+              the page background, making the whole photo look like a
+              pasted-on rectangle instead of blending into the page. A
+              soft inset vignette fades those corners to the exact canvas
+              color so the edge disappears instead of just relying on the
+              two tones being "close enough". */}
+          <div
+            className="pointer-events-none absolute inset-0 rounded-[28px]"
+            style={{ boxShadow: "inset 0 0 46px 22px #0b0e14" }}
+            aria-hidden
+          />
+
           {step.zones.map((zone) => {
             const active = selected.includes(zone.value);
             const rects = ZONE_SHAPES[zone.value] ?? [];
