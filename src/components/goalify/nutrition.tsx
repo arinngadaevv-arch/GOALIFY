@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
   Apple,
+  ArrowRight,
   Beef,
   Droplets,
   Egg,
@@ -17,7 +18,6 @@ import { useGoalify } from "@/lib/goalify/store";
 import { goalLabel } from "@/lib/goalify/plan";
 import { AppShell } from "./app-shell";
 import { GlassCard } from "./ui/glass-card";
-import { VisualSlot } from "./ui/visual-slot";
 import { IconBadge } from "./ui/icon-badge";
 import { WaterTracker } from "./water-tracker";
 import { Pill, SectionHeading } from "./ui/stat";
@@ -49,9 +49,24 @@ export function Nutrition() {
   const isDeficit = targets.deficitOrSurplus < 0;
 
   const meals = [
-    { name: "Breakfast", kcal: Math.round(targets.calories * 0.28), icon: Egg },
-    { name: "Lunch", kcal: Math.round(targets.calories * 0.36), icon: Salad },
-    { name: "Dinner", kcal: Math.round(targets.calories * 0.36), icon: UtensilsCrossed },
+    {
+      name: "Breakfast",
+      kcal: Math.round(targets.calories * 0.28),
+      icon: Egg,
+      tone: "electric" as const,
+    },
+    {
+      name: "Lunch",
+      kcal: Math.round(targets.calories * 0.36),
+      icon: Salad,
+      tone: "lime" as const,
+    },
+    {
+      name: "Dinner",
+      kcal: Math.round(targets.calories * 0.36),
+      icon: UtensilsCrossed,
+      tone: "electric" as const,
+    },
   ];
 
   const [selectedMeal, setSelectedMeal] = useState<(typeof meals)[number] | null>(null);
@@ -133,27 +148,38 @@ export function Nutrition() {
               onClick={() => setSelectedMeal(meal)}
               className="gf-press text-left"
             >
-              <GlassCard deep interactive className="overflow-hidden p-0">
-                <VisualSlot
-                  label="Meal"
-                  icon={meal.icon}
-                  rounded="rounded-none"
-                  showChrome={false}
-                  className="h-24 w-full"
-                />
-                <div className="p-3 text-center">
-                  <p className="text-xs font-extrabold text-ink">{meal.name}</p>
-                  <p className="gf-numeric mt-0.5 text-sm font-bold text-electric">
-                    {meal.kcal} kcal
-                  </p>
-                  <p className="mt-0.5 text-[10px] font-semibold text-mist">
-                    {perMeal}g protein
-                  </p>
-                </div>
+              <GlassCard
+                tone={meal.tone}
+                deep
+                interactive
+                className="gf-lift flex flex-col items-center gap-1 p-4 text-center"
+              >
+                <IconBadge icon={meal.icon} size="lg" />
+                <p className="mt-1.5 text-xs font-extrabold text-ink">
+                  {meal.name}
+                </p>
+                <p className="gf-numeric text-sm font-bold text-electric">
+                  {meal.kcal} kcal
+                </p>
+                <p className="text-[10px] font-semibold text-mist">
+                  {perMeal}g protein
+                </p>
+                <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-electric/10 px-2.5 py-1 text-[10px] font-bold text-electric">
+                  Ideas
+                  <ArrowRight className="size-3" />
+                </span>
               </GlassCard>
             </button>
           ))}
         </div>
+
+        <GlassCard className="mt-3 flex items-start gap-3 p-4">
+          <Info className="mt-0.5 size-4 shrink-0 text-electric" />
+          <p className="text-xs leading-relaxed text-mist">
+            Rough splits, not rules — eat on your own schedule. Tap any meal
+            for real food ideas that hit the target.
+          </p>
+        </GlassCard>
       </section>
 
       {selectedMeal && (
