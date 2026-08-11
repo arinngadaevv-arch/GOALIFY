@@ -96,6 +96,27 @@ export function WelcomeCtaStep({
           className="block h-auto w-full"
         />
 
+        {/* Real before/after gallery, swapped in over the flat image's own
+            baked-in one. Bounding box (top 55.8%–79.36% of the 852x1846
+            source, full width) measured the same way as the CTA button —
+            the black canvas on both sides of that seam is uniform, so a
+            same-toned real photo dropped on top reads as native rather
+            than pasted on. The new source (1774x887, ~2:1) is close enough
+            to this box's own ~1.96:1 aspect that `object-cover` barely
+            crops anything. */}
+        <div
+          className="absolute overflow-hidden"
+          style={{ left: 0, width: "100%", top: "55.8%", height: "23.56%" }}
+        >
+          <Image
+            src="/e1207d57-c321-4f42-a43c-c8ee3a83a8ab.png"
+            alt="Real GOALIFY member transformations — 40 to 60 lbs lost in 4 to 6 months"
+            fill
+            sizes="100vw"
+            className="object-cover"
+          />
+        </div>
+
         <button
           type="button"
           onClick={(event) => {
@@ -131,6 +152,27 @@ export function WelcomeCtaStep({
           sizes="100vw"
           className="block h-auto w-full"
         />
+
+        {/* Real before/after gallery, swapped in over the "Real People. Real
+            Transformations." card baked into the flat image. Unlike the
+            mobile version this box (x 100-1120px, y 650-925px of the
+            1672x941 source, ~3.7:1) is much wider/shorter than the new
+            source's own ~2:1 aspect, so `object-cover` would crop off the
+            captions — `object-contain` on a matching dark backdrop shows
+            the whole image letterboxed instead, which reads as intentional
+            since the surrounding canvas is already near-black. */}
+        <div
+          className="absolute overflow-hidden bg-black"
+          style={{ left: "5.98%", width: "61%", top: "69.08%", height: "29.22%" }}
+        >
+          <Image
+            src="/e1207d57-c321-4f42-a43c-c8ee3a83a8ab.png"
+            alt="Real GOALIFY member transformations — 40 to 60 lbs lost in 4 to 6 months"
+            fill
+            sizes="60vw"
+            className="object-contain"
+          />
+        </div>
 
         <button
           type="button"
