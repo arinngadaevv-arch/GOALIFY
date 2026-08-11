@@ -1,12 +1,13 @@
+import { ChevronDown } from "lucide-react";
+
 /**
- * Real, crawlable body text for the marketing front door. The hero above
- * (see WelcomeCtaStep) is a single flattened image with a transparent CTA
- * button on top of it — great for conversion, but it leaves search engines
- * almost nothing to index or match against actual search queries. This
- * section sits below it (never seen by anyone who taps "Start" right
- * away) and exists purely so the page has genuine text content targeting
- * what people actually search for around home workouts, plus FAQPage
- * structured data so answers can surface directly in Google results.
+ * Real, crawlable body text for the marketing front door — targets what
+ * people actually search for around home workouts, plus FAQPage structured
+ * data so answers can surface directly in Google results. Sits behind a
+ * single collapsed disclosure (native <details>, not JS-gated) so it
+ * doesn't compete visually with the hero above it: search engines still
+ * read the full content regardless of the collapsed state, but a visitor
+ * sees just one quiet "Frequently asked questions" line unless they tap it.
  *
  * Copy stays honest to what the product actually does — no claims beyond
  * what the rest of the app already makes (bodyweight-only, ~24 min
@@ -47,7 +48,7 @@ const FAQS = [
 
 export function SeoContent() {
   return (
-    <section className="relative mx-auto mt-10 mb-16 max-w-lg space-y-8 text-white/80 lg:max-w-3xl lg:px-12">
+    <section className="relative mx-auto mt-6 mb-10 max-w-lg text-white/80 lg:max-w-3xl lg:px-12">
       <script
         type="application/ld+json"
         // Static, hand-written content — no user input ever flows into
@@ -68,44 +69,44 @@ export function SeoContent() {
         }}
       />
 
-      <div>
-        <h2 className="gf-display text-2xl leading-tight font-black text-white">
-          A home workout plan built for guys who skip the gym
-        </h2>
-        <p className="mt-3 text-sm leading-relaxed">
-          Most home workout routines are generic — the same PDF everyone
-          downloads. GOALIFY builds yours from a two-minute quiz: your
-          current weight, fitness level, any joint pain, and your goal. No
-          equipment, no gym, no judgment — just a bodyweight workout plan
-          that actually fits where you&apos;re starting from.
-        </p>
-        <p className="mt-3 text-sm leading-relaxed">
-          Whether you&apos;re looking for a beginner home workout, a
-          no-equipment fat-loss routine, or just a plan you&apos;ll actually
-          stick with — this is built to be the one you don&apos;t quit on.
-        </p>
-      </div>
-
-      <div>
-        <h2 className="gf-display text-2xl leading-tight font-black text-white">
+      <details className="group">
+        <summary className="flex cursor-pointer list-none items-center justify-center gap-1.5 text-center text-xs font-bold text-white/50 marker:content-none hover:text-white/80">
           Frequently asked questions
-        </h2>
-        <div className="mt-4 space-y-3 lg:columns-2 lg:gap-4 lg:space-y-0 [&>*]:lg:mb-4 [&>*]:lg:break-inside-avoid">
-          {FAQS.map((faq) => (
-            <details
-              key={faq.question}
-              className="gf-glass group rounded-2xl px-4 py-3 open:pb-4"
-            >
-              <summary className="cursor-pointer list-none text-sm font-bold text-white marker:content-none">
-                {faq.question}
-              </summary>
-              <p className="mt-2 text-sm leading-relaxed text-white/70">
-                {faq.answer}
-              </p>
-            </details>
-          ))}
+          <ChevronDown className="size-3.5 transition-transform group-open:rotate-180" />
+        </summary>
+
+        <div className="mt-6 space-y-8">
+          <div>
+            <h2 className="gf-display text-2xl leading-tight font-black text-white">
+              A home workout plan built for guys who skip the gym
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed">
+              Most home workout routines are generic — the same PDF everyone
+              downloads. GOALIFY builds yours from a two-minute quiz: your
+              current weight, fitness level, any joint pain, and your goal.
+              No equipment, no gym, no judgment — just a bodyweight workout
+              plan that actually fits where you&apos;re starting from.
+            </p>
+            <p className="mt-3 text-sm leading-relaxed">
+              Whether you&apos;re looking for a beginner home workout, a
+              no-equipment fat-loss routine, or just a plan you&apos;ll
+              actually stick with — this is built to be the one you
+              don&apos;t quit on.
+            </p>
+          </div>
+
+          <div className="space-y-4 lg:columns-2 lg:gap-8 lg:space-y-0 [&>*]:lg:mb-4 [&>*]:lg:break-inside-avoid">
+            {FAQS.map((faq) => (
+              <div key={faq.question}>
+                <p className="text-sm font-bold text-white">{faq.question}</p>
+                <p className="mt-1 text-sm leading-relaxed text-white/70">
+                  {faq.answer}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      </details>
     </section>
   );
 }
