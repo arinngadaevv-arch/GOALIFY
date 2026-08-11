@@ -97,6 +97,7 @@ export type Settings = {
   /** Web Vibration API buzz on milestones — step goal, workout finish, streak day. */
   haptics: boolean;
   pushMotivation: boolean;
+  pushNutrition: boolean;
   pushWater: boolean;
   pushWorkout: boolean;
   units: "metric" | "imperial";

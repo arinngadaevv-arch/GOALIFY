@@ -404,7 +404,7 @@ export function Dashboard() {
               Your daily reminders
             </p>
             <p className="mt-0.5 text-xs text-ink-soft">
-              3 nudges a day — motivation, water, workout.
+              4 nudges a day — motivation, food, water, workout.
             </p>
           </div>
           <ArrowRight className="size-4 shrink-0 text-electric" />

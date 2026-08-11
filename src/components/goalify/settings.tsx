@@ -19,6 +19,7 @@ import {
   Ruler,
   ShieldCheck,
   Sparkles,
+  UtensilsCrossed,
   Vibrate,
   Zap,
 } from "lucide-react";
@@ -174,7 +175,7 @@ export function SettingsScreen() {
       {/* ----------------------------------------------------- Notifications */}
       <section className="gf-anim-rise gf-delay-4 mt-8 lg:break-inside-avoid">
         <SectionHeading
-          eyebrow="Three a day, max"
+          eyebrow="Four a day, max"
           title="Notifications"
           action={
             <Link
@@ -189,19 +190,25 @@ export function SettingsScreen() {
           <Toggle
             checked={settings.pushMotivation}
             onChange={(next) => updateSettings({ pushMotivation: next })}
-            label="08:00 · Morning motivation"
+            label="07:30 · Morning motivation"
             icon={<Flame className="size-4" />}
+          />
+          <Toggle
+            checked={settings.pushNutrition}
+            onChange={(next) => updateSettings({ pushNutrition: next })}
+            label="12:00 · Fuel check"
+            icon={<UtensilsCrossed className="size-4" />}
           />
           <Toggle
             checked={settings.pushWater}
             onChange={(next) => updateSettings({ pushWater: next })}
-            label="13:00 · Water check"
+            label="15:30 · Water check"
             icon={<Droplets className="size-4" />}
           />
           <Toggle
             checked={settings.pushWorkout}
             onChange={(next) => updateSettings({ pushWorkout: next })}
-            label="18:30 · Workout alert"
+            label="19:00 · Workout alert"
             icon={<Zap className="size-4" />}
           />
         </GlassCard>

@@ -1,7 +1,16 @@
 "use client";
 
 import clsx from "clsx";
-import { BatteryFull, Bell, Droplets, Flame, Signal, Wifi, Zap } from "lucide-react";
+import {
+  BatteryFull,
+  Bell,
+  Droplets,
+  Flame,
+  Signal,
+  UtensilsCrossed,
+  Wifi,
+  Zap,
+} from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
 import { AppShell } from "./app-shell";
 import { GlassCard } from "./ui/glass-card";
@@ -9,7 +18,7 @@ import { Toggle } from "./ui/toggle";
 import { Pill, SectionHeading } from "./ui/stat";
 
 type Slot = {
-  key: "pushMotivation" | "pushWater" | "pushWorkout";
+  key: "pushMotivation" | "pushNutrition" | "pushWater" | "pushWorkout";
   time: string;
   label: string;
   title: string;
@@ -21,28 +30,37 @@ type Slot = {
 const SLOTS: Slot[] = [
   {
     key: "pushMotivation",
-    time: "08:00",
+    time: "07:30",
     label: "Morning motivation",
-    title: "Today is a training day 🔥",
+    title: "Nobody's doing this for you 🔥",
     body: "Full Body Ignition is loaded and waiting. 24 minutes. That's it.",
     Icon: Flame,
-    description: "A push to set the tone before the day gets loud.",
+    description: "A push to set the tone before excuses show up.",
+  },
+  {
+    key: "pushNutrition",
+    time: "12:00",
+    label: "Fuel check",
+    title: "It's not just the workout 🍳",
+    body: "You can't out-train what's on your plate. What are you actually eating today?",
+    Icon: UtensilsCrossed,
+    description: "The reminder that results are made in the kitchen too.",
   },
   {
     key: "pushWater",
-    time: "13:00",
+    time: "15:30",
     label: "Water check",
-    title: "Halfway on water? 💧",
-    body: "You're 3 of 9 glasses in. Grab one now and you're back on pace.",
+    title: "Still on pace? 💧",
+    body: "You're behind on water. Grab a glass — now, not in an hour.",
     Icon: Droplets,
     description: "A midday nudge so hydration never gets away from you.",
   },
   {
     key: "pushWorkout",
-    time: "18:30",
+    time: "19:00",
     label: "Workout alert",
-    title: "Your session starts now ⚡",
-    body: "You vs. you. Press start — your coach is already warmed up.",
+    title: "Did you think it'd do itself? ⚡",
+    body: "Your session's been sitting there all day. Press start — you vs. you.",
     Icon: Zap,
     description: "The one that turns intention into a finished workout.",
   },
@@ -58,7 +76,7 @@ export function NotificationsPreview() {
         <Bell className="size-4 shrink-0 text-electric" />
         <p className="text-xs leading-relaxed text-ink-soft">
           This is exactly how GOALIFY appears on your phone. Toggle any of the
-          three off and it disappears from the preview.
+          four off and it disappears from the preview.
         </p>
       </GlassCard>
 
@@ -148,7 +166,7 @@ export function NotificationsPreview() {
       {/* ------------------------------------------------------------ Toggles */}
       <section className="gf-anim-rise gf-delay-2 mt-8">
         <SectionHeading
-          eyebrow="Three a day, no more"
+          eyebrow="Four a day, no more"
           title="Reminder schedule"
           action={<Pill tone="lime">{active.length} on</Pill>}
         />
@@ -165,7 +183,7 @@ export function NotificationsPreview() {
           ))}
         </GlassCard>
         <p className="mt-4 px-1 text-xs leading-relaxed text-haze">
-          GOALIFY never sends more than three notifications a day. No streak
+          GOALIFY never sends more than four notifications a day. No streak
           guilt-trips, no random re-engagement spam.
         </p>
       </section>

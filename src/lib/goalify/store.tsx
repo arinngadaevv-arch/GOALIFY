@@ -66,6 +66,7 @@ const INITIAL_STATE: GoalifyState = {
     soundEffects: true,
     haptics: true,
     pushMotivation: true,
+    pushNutrition: true,
     pushWater: true,
     pushWorkout: true,
     units: "metric",
