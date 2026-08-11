@@ -426,28 +426,42 @@ export function Dashboard() {
  * Shows only the streak itself — the program day ("Day N" of the plan) is a
  * different, unrelated counter already shown as its own eyebrow on the
  * Today's Workout card below, so pairing the two numbers in one pill read
- * as one broken stat instead of two separate ones. */
+ * as one broken stat instead of two separate ones.
+ *
+ * At streak 0 the copy is a direct imperative ("Start your streak today"),
+ * which reads as a tappable CTA — so it genuinely is one, linking straight
+ * into today's workout. Once a streak exists it's a status readout instead
+ * (nothing to "start"), so it stays a plain, non-interactive div. */
 function StreakBadge({ streak, pulse = false }: { streak: number; pulse?: boolean }) {
-  return (
-    <div
-      className={clsx(
-        "gf-anim-rise gf-streak-badge mb-5 flex items-center justify-center gap-2.5 rounded-full border border-lime-deep/30 bg-linear-to-r from-lime-neon/10 via-electric/8 to-lime-neon/10 px-5 py-3",
-        pulse && "gf-anim-pop",
-      )}
-    >
-      <span className="gf-anim-flicker-flame text-2xl" aria-hidden>
-        🔥
-      </span>
-      {streak > 0 ? (
+  const badgeClassName = clsx(
+    "gf-anim-rise gf-streak-badge mb-5 flex items-center justify-center gap-2.5 rounded-full border border-lime-deep/30 bg-linear-to-r from-lime-neon/10 via-electric/8 to-lime-neon/10 px-5 py-3",
+    pulse && "gf-anim-pop",
+  );
+
+  const flame = (
+    <span className="gf-anim-flicker-flame text-2xl" aria-hidden>
+      🔥
+    </span>
+  );
+
+  if (streak > 0) {
+    return (
+      <div className={badgeClassName}>
+        {flame}
         <p className="gf-display text-sm font-black tracking-tight text-ink">
           <span className="gf-numeric text-lime-deep">{streak}</span>-day streak
         </p>
-      ) : (
-        <p className="text-[11px] font-black tracking-[0.1em] text-lime-deep uppercase">
-          Start your streak today
-        </p>
-      )}
-    </div>
+      </div>
+    );
+  }
+
+  return (
+    <Link href="/workout/launch" className={clsx(badgeClassName, "gf-press")}>
+      {flame}
+      <p className="text-[11px] font-black tracking-[0.1em] text-lime-deep uppercase">
+        Start your streak today
+      </p>
+    </Link>
   );
 }
 
