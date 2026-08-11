@@ -27,8 +27,7 @@ import { findWorkout, resolveWorkout } from "@/lib/goalify/workouts";
 import type { Exercise } from "@/lib/goalify/types";
 import { GlassCard } from "@/components/goalify/ui/glass-card";
 import { GlowLink } from "@/components/goalify/ui/glow-button";
-import { VisualSlot } from "@/components/goalify/ui/visual-slot";
-import { poseForExercise } from "@/components/goalify/ui/pose-icon";
+import { PoseIcon, poseForExercise } from "@/components/goalify/ui/pose-icon";
 import { AIFormGuide } from "@/components/goalify/workout/ai-form-guide";
 import { useWorkoutSounds } from "@/components/goalify/workout/use-workout-sounds";
 import { useHaptics } from "@/lib/goalify/use-haptics";
@@ -492,13 +491,15 @@ export function LivePlayer() {
       {/* ------------------------------------------------------- Up next card */}
       {nextExercise && (
         <GlassCard className="mt-7 flex items-center gap-4 p-4">
-          <VisualSlot
-            label="Next"
-            emoji="⏭️"
-            rounded="rounded-2xl"
-            showChrome={false}
-            className="size-14 shrink-0"
-          />
+          {/* Same pose-icon language as the big AIFormGuide preview above,
+              just smaller — a real preview of the next movement instead of
+              a generic "next" glyph. */}
+          <div className="relative grid size-14 shrink-0 place-items-center overflow-hidden rounded-2xl bg-electric/10">
+            <PoseIcon
+              pose={poseForExercise(nextExercise.name, nextExercise.focus)}
+              className="size-10"
+            />
+          </div>
           <div className="min-w-0 flex-1">
             <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-electric">
               Up next
