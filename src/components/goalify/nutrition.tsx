@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Apple,
   Beef,
@@ -21,6 +22,7 @@ import { IconBadge } from "./ui/icon-badge";
 import { WaterTracker } from "./water-tracker";
 import { Pill, SectionHeading } from "./ui/stat";
 import { ParticleBurstLayer } from "./quiz/particle-burst";
+import { MealIdeasSheet } from "./meal-ideas-sheet";
 
 const RULES = [
   {
@@ -51,6 +53,8 @@ export function Nutrition() {
     { name: "Lunch", kcal: Math.round(targets.calories * 0.36), icon: Salad },
     { name: "Dinner", kcal: Math.round(targets.calories * 0.36), icon: UtensilsCrossed },
   ];
+
+  const [selectedMeal, setSelectedMeal] = useState<(typeof meals)[number] | null>(null);
 
   return (
     <AppShell dark title="Nutrition & Daily Fuel" subtitle="Targets, not diaries">
@@ -120,30 +124,46 @@ export function Nutrition() {
 
       {/* ------------------------------------------------------ Meal templates */}
       <section className="gf-anim-rise gf-delay-3 mt-8 lg:break-inside-avoid">
-        <SectionHeading eyebrow="Rough shape of the day" title="Your plate" />
+        <SectionHeading eyebrow="Tap for meal ideas" title="Your plate" />
         <div className="grid grid-cols-3 gap-3">
           {meals.map((meal) => (
-            <GlassCard key={meal.name} deep className="gf-lift overflow-hidden p-0">
-              <VisualSlot
-                label="Meal"
-                icon={meal.icon}
-                rounded="rounded-none"
-                showChrome={false}
-                className="h-24 w-full"
-              />
-              <div className="p-3 text-center">
-                <p className="text-xs font-extrabold text-ink">{meal.name}</p>
-                <p className="gf-numeric mt-0.5 text-sm font-bold text-electric">
-                  {meal.kcal} kcal
-                </p>
-                <p className="mt-0.5 text-[10px] font-semibold text-mist">
-                  {perMeal}g protein
-                </p>
-              </div>
-            </GlassCard>
+            <button
+              key={meal.name}
+              type="button"
+              onClick={() => setSelectedMeal(meal)}
+              className="gf-press text-left"
+            >
+              <GlassCard deep interactive className="overflow-hidden p-0">
+                <VisualSlot
+                  label="Meal"
+                  icon={meal.icon}
+                  rounded="rounded-none"
+                  showChrome={false}
+                  className="h-24 w-full"
+                />
+                <div className="p-3 text-center">
+                  <p className="text-xs font-extrabold text-ink">{meal.name}</p>
+                  <p className="gf-numeric mt-0.5 text-sm font-bold text-electric">
+                    {meal.kcal} kcal
+                  </p>
+                  <p className="mt-0.5 text-[10px] font-semibold text-mist">
+                    {perMeal}g protein
+                  </p>
+                </div>
+              </GlassCard>
+            </button>
           ))}
         </div>
       </section>
+
+      {selectedMeal && (
+        <MealIdeasSheet
+          mealName={selectedMeal.name}
+          kcal={selectedMeal.kcal}
+          icon={selectedMeal.icon}
+          onClose={() => setSelectedMeal(null)}
+        />
+      )}
 
       {/* ------------------------------------------------- Pre / post workout */}
       <section className="gf-anim-rise gf-delay-4 mt-8 lg:break-inside-avoid">
