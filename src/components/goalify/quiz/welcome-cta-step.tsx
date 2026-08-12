@@ -77,7 +77,7 @@ export function WelcomeCtaStep({
           isn't clickable, so instead of cutting the image apart, a real
           button is absolutely-positioned directly on top of it, sized and
           placed to the flat button's own pixel bounding box, measured
-          directly against the 852x1846 source (x 32-819px, y 1488-1577px,
+          directly against the 853x1844 source (x 51-800px, y 953-1038px,
           found via color-mask detection, not eyeballed) and expressed as a
           % so it tracks the image at any viewport width. That math only
           works if this relative wrapper's height equals the image's own
@@ -87,26 +87,24 @@ export function WelcomeCtaStep({
           touched. */}
       <div className="relative lg:hidden">
         <Image
-          src="/quiz/66a025e8-c605-48e2-9d8f-ac2a5848fd0a.png"
-          alt="Meet your personal AI coach. GOALIFY — 4.9/5 from 3,290+ reviews, 30,000+ happy members. AI-powered plans, real-time adaptation, expert support, real before/after transformations."
-          width={852}
-          height={1846}
+          src="/quiz/b8f019ca-c14e-4114-9e64-b8befc2e1b2f.png"
+          alt="Meet your personal AI coach. GOALIFY — 4.9/5 from 1,250+ reviews. AI-powered plans, real-time adjustments, expert guidance, real before/after transformations."
+          width={853}
+          height={1844}
           priority
           sizes="100vw"
           className="block h-auto w-full"
         />
 
         {/* Real before/after gallery, swapped in over the flat image's own
-            baked-in one. Bounding box (top 55.8%–79.36% of the 852x1846
+            baked-in one. Bounding box (top 78.09%–98.15% of the 853x1844
             source, full width) measured the same way as the CTA button —
             the black canvas on both sides of that seam is uniform, so a
             same-toned real photo dropped on top reads as native rather
-            than pasted on. The new source (1774x887, ~2:1) is close enough
-            to this box's own ~1.96:1 aspect that `object-cover` barely
-            crops anything. */}
+            than pasted on. */}
         <div
           className="absolute overflow-hidden"
-          style={{ left: 0, width: "100%", top: "55.8%", height: "23.56%" }}
+          style={{ left: 0, width: "100%", top: "78.09%", height: "20.06%" }}
         >
           <Image
             src="/e1207d57-c321-4f42-a43c-c8ee3a83a8ab.png"
@@ -125,10 +123,10 @@ export function WelcomeCtaStep({
           }}
           className="gf-press gf-anim-pulse absolute inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-[#f0c14b] to-[#c8890f] font-bold tracking-tight text-[#1a1100] shadow-[0_0_0_1px_rgba(232,179,44,0.6),0_18px_44px_-10px_rgba(232,179,44,0.8)] transition-all duration-200 select-none hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_rgba(232,179,44,0.85),0_24px_54px_-8px_rgba(232,179,44,1)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#e8b32c]"
           style={{
-            left: "3.76%",
-            width: "92.37%",
-            top: "80.6%",
-            height: "4.82%",
+            left: "5.98%",
+            width: "87.81%",
+            top: "51.68%",
+            height: "4.61%",
             fontSize: "clamp(0.65rem, 3.1vw, 1.05rem)",
           }}
         >
