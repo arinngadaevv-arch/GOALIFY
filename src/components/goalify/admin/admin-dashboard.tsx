@@ -72,6 +72,15 @@ export type DeviceSplit = {
   desktop: number;
 };
 
+/** One row per country with at least one visitor — see
+ * analyticsEvents.country. `country` is an ISO 3166-1 alpha-2 code (e.g.
+ * "US"); null only ever shows up here defensively (the query already
+ * filters nulls out), never in practice. */
+export type CountrySplitEntry = {
+  country: string | null;
+  visitors: number;
+};
+
 export type QuizStepFunnelEntry = {
   id: string;
   title: string;
@@ -164,6 +173,7 @@ export function AdminDashboard({
   funnel,
   visitors,
   deviceSplit,
+  countrySplit,
   quizStepFunnel,
   visitorTrend,
   users,
@@ -174,6 +184,7 @@ export function AdminDashboard({
   funnel: FunnelStats;
   visitors: VisitorStats;
   deviceSplit: DeviceSplit;
+  countrySplit: CountrySplitEntry[];
   quizStepFunnel: QuizStepFunnelEntry[];
   visitorTrend: VisitorTrend;
   users: AdminUserRow[];
@@ -305,6 +316,17 @@ export function AdminDashboard({
               steps={quizStepFunnel}
               completed={visitors.quizCompleters}
             />
+          </div>
+
+          <div className="mt-6">
+            <h3 className="text-sm font-extrabold text-ink">
+              Where visitors come from
+            </h3>
+            <p className="mt-1 text-[11px] leading-relaxed text-haze">
+              Distinct visitors by country, top 8 — from Vercel&apos;s edge
+              network, no IP lookup or third-party service involved.
+            </p>
+            <CountrySplitChart countries={countrySplit} />
           </div>
         </section>
 
@@ -621,6 +643,72 @@ function QuizStepFunnelChart({
           page and go through the quiz.
         </p>
       )}
+    </GlassCard>
+  );
+}
+
+// `Intl.DisplayNames` is built into every modern JS runtime — no country
+// name list to maintain. `flagEmoji` turns "US" into 🇺🇸 by mapping each
+// letter to its Unicode regional-indicator symbol (A → 🇦, offset
+// 127397 = 0x1F1E6 - 'A'.charCodeAt(0)); no image assets involved.
+const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
+
+function countryName(code: string) {
+  try {
+    return regionNames.of(code) ?? code;
+  } catch {
+    return code;
+  }
+}
+
+function flagEmoji(code: string) {
+  return code
+    .toUpperCase()
+    .replace(/./g, (char) => String.fromCodePoint(127397 + char.charCodeAt(0)));
+}
+
+function CountrySplitChart({ countries }: { countries: CountrySplitEntry[] }) {
+  const rows = countries.filter(
+    (row): row is { country: string; visitors: number } => Boolean(row.country),
+  );
+  const total = rows.reduce((sum, row) => sum + row.visitors, 0) || 1;
+  const top = rows.slice(0, 8);
+
+  if (rows.length === 0) {
+    return (
+      <GlassCard deep className="mt-3 p-4">
+        <p className="text-center text-xs text-mist">
+          No country data yet — only available for visits served through
+          Vercel&apos;s production network, not local dev.
+        </p>
+      </GlassCard>
+    );
+  }
+
+  return (
+    <GlassCard deep className="mt-3 flex flex-col gap-3 p-4">
+      {top.map((row) => {
+        const pct = Math.round((row.visitors / total) * 100);
+        return (
+          <div key={row.country}>
+            <div className="flex items-center justify-between gap-3 text-xs">
+              <span className="font-bold text-ink">
+                {flagEmoji(row.country)} {countryName(row.country)}
+              </span>
+              <span className="gf-numeric font-extrabold text-ink">
+                {row.visitors.toLocaleString("en-US")}
+                <span className="ml-1.5 font-semibold text-mist">{pct}%</span>
+              </span>
+            </div>
+            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-ink/8">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-electric to-lime-neon"
+                style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
+              />
+            </div>
+          </div>
+        );
+      })}
     </GlassCard>
   );
 }

@@ -43,6 +43,11 @@ export async function POST(request: NextRequest) {
     ? "MOBILE"
     : "DESKTOP";
 
+  // Vercel's edge network sets this on every production request — no geo-IP
+  // lookup needed, and nothing to fall back to when it's absent (local dev,
+  // other hosts), so it just stays null there.
+  const country = request.headers.get("x-vercel-ip-country");
+
   // Best-effort — a signed-in visitor's events get tagged with their
   // userId purely so an admin can cross-reference later; nothing in the
   // funnel math (all of it keyed on visitorId) depends on this being set.
@@ -58,6 +63,7 @@ export async function POST(request: NextRequest) {
       stepIndex,
       device,
       path,
+      country,
     });
   } catch {
     // Never let a tracking failure surface to the caller.

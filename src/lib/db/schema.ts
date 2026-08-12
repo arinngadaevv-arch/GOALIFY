@@ -286,6 +286,10 @@ export const analyticsEvents = pgTable("analytics_event", {
   stepIndex: integer("step_index"),
   device: analyticsDeviceEnum("device"),
   path: text("path"),
+  // ISO 3166-1 alpha-2 (e.g. "US", "IL") from Vercel's `x-vercel-ip-country`
+  // edge header — only present in production (Vercel's network adds it;
+  // local dev and other hosts never see it), so this stays null there.
+  country: text("country"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

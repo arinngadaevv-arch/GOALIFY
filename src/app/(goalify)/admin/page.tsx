@@ -89,6 +89,7 @@ export default async function AdminPage() {
     latestCheckouts,
     [visitorTotals],
     deviceRows,
+    countryRows,
     stepReachRows,
     hourlyVisitorRows,
     dailyVisitorRows,
@@ -180,6 +181,18 @@ export default async function AdminPage() {
         .from(analyticsEvents)
         .where(sql`${analyticsEvents.device} is not null`)
         .groupBy(analyticsEvents.device),
+      // Distinct visitors per country — see analyticsEvents.country. Only
+      // populated on Vercel (local dev/other hosts never send the header),
+      // so this stays empty outside production.
+      db
+        .select({
+          country: analyticsEvents.country,
+          visitors: sql<number>`count(distinct ${analyticsEvents.visitorId})`.mapWith(Number),
+        })
+        .from(analyticsEvents)
+        .where(sql`${analyticsEvents.country} is not null`)
+        .groupBy(analyticsEvents.country)
+        .orderBy(desc(sql`count(distinct ${analyticsEvents.visitorId})`)),
       // One row per visitor who reached at least one quiz question, with
       // the furthest step they got to — the funnel below turns this into
       // "N distinct people reached question K" per question by counting,
@@ -319,6 +332,7 @@ export default async function AdminPage() {
         quizCompleters: visitorTotals?.quizCompleters ?? 0,
       }}
       deviceSplit={deviceSplit}
+      countrySplit={countryRows}
       quizStepFunnel={quizStepFunnel}
       visitorTrend={visitorTrend}
       users={tableUsers}
