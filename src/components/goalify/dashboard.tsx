@@ -14,6 +14,7 @@ import {
   Library,
   Play,
   ShieldCheck,
+  Target,
   Timer,
   Zap,
 } from "lucide-react";
@@ -24,6 +25,7 @@ import {
   useGoalify,
 } from "@/lib/goalify/store";
 import { resolveWorkout } from "@/lib/goalify/workouts";
+import { goalLabel, weeksToTarget } from "@/lib/goalify/plan";
 import { useStepTracker } from "@/lib/goalify/use-step-tracker";
 import { useHaptics } from "@/lib/goalify/use-haptics";
 import { playCompletionCelebration } from "@/lib/goalify/sound";
@@ -71,6 +73,8 @@ export function Dashboard() {
 
   const workout = resolveWorkout(todaysWorkout, state.settings.kneeSafe);
   const workoutPercent = workoutDoneToday ? 100 : 0;
+  const weeksToGoal = weeksToTarget(answers);
+  const losingWeight = answers.targetWeightKg < answers.weightKg;
   const nutritionPercent = Math.min(
     100,
     Math.round((waterGlasses / targets.waterGlasses) * 100),
@@ -141,6 +145,54 @@ export function Dashboard() {
           each top-level block just gets `lg:break-inside-avoid` so it never
           splits mid-card across the column break. */}
       <div className="lg:columns-2 lg:gap-6">
+      {/* ---------------------------------------------------------- Your goal
+          A brand-new account's Live Activity section right below this is
+          all zeroes until a first session/step is logged — the one thing
+          that's never zero, even on day one, is the actual number the quiz
+          was built around. Leading with it here (it otherwise only lived on
+          the Progress screen's trendline) gives the top of the dashboard
+          real, personal content instead of only empty-state rings. */}
+      <section className="gf-anim-rise mb-6 lg:break-inside-avoid">
+        <SectionHeading
+          eyebrow="Your goal"
+          title={goalLabel(answers.goal)}
+          action={
+            <Pill tone={losingWeight ? "lime" : "electric"}>
+              <Target className="size-3" strokeWidth={3} />
+              {weeksToGoal > 0 ? `~${weeksToGoal} wks` : "At target"}
+            </Pill>
+          }
+        />
+        <Link href="/progress" className="block">
+          <GlassCard deep interactive className="p-6">
+            <div className="flex items-baseline justify-between">
+              <div>
+                <p className="gf-numeric text-3xl font-black text-ink">
+                  {answers.weightKg}
+                  <span className="text-base font-bold text-mist"> kg</span>
+                </p>
+                <p className="text-[11px] font-bold tracking-[0.12em] text-mist uppercase">
+                  Today
+                </p>
+              </div>
+              <ArrowRight className="size-4 shrink-0 text-haze" />
+              <div className="text-right">
+                <p className="gf-numeric text-3xl font-black text-lime-deep">
+                  {answers.targetWeightKg}
+                  <span className="text-base font-bold text-mist"> kg</span>
+                </p>
+                <p className="text-[11px] font-bold tracking-[0.12em] text-mist uppercase">
+                  Target
+                </p>
+              </div>
+            </div>
+            <p className="mt-4 text-center text-xs text-haze">
+              See your full trendline & trophy shelf on Progress →
+            </p>
+          </GlassCard>
+        </Link>
+      </section>
+
       {/* ------------------------------------------------- Live Activity rings */}
       <section className="gf-anim-rise mb-6 lg:break-inside-avoid">
         <SectionHeading
