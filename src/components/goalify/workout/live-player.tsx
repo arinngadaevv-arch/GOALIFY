@@ -24,9 +24,11 @@ import {
 } from "lucide-react";
 import { useGoalify, todayKey } from "@/lib/goalify/store";
 import { findWorkout, resolveWorkout } from "@/lib/goalify/workouts";
+import { BADGES } from "@/lib/goalify/badges";
 import type { Exercise } from "@/lib/goalify/types";
 import { GlassCard } from "@/components/goalify/ui/glass-card";
 import { GlowLink } from "@/components/goalify/ui/glow-button";
+import { IconBadge } from "@/components/goalify/ui/icon-badge";
 import { PoseIcon, poseForExercise } from "@/components/goalify/ui/pose-icon";
 import { AIFormGuide } from "@/components/goalify/workout/ai-form-guide";
 import { useWorkoutSounds } from "@/components/goalify/workout/use-workout-sounds";
@@ -109,6 +111,7 @@ export function LivePlayer() {
     calories: number;
     exerciseCount: number;
     elapsedSeconds: number;
+    sessionsBefore: number;
   } | null>(null);
 
   /* ----------------------------------------------------------- transitions */
@@ -198,17 +201,22 @@ export function LivePlayer() {
   useEffect(() => {
     if (phase === "done" && !savedRef.current) {
       savedRef.current = true;
+      // Read before completeWorkout() writes today's date in, so
+      // CompletionScreen can tell a badge threshold was *just* crossed
+      // (state.completedDays.length going e.g. 6 -> 7) apart from one
+      // that was already earned on an earlier day this streak.
       setCompletion({
         title: workout.title,
         calories: workout.calories,
         exerciseCount: workout.exercises.length,
         elapsedSeconds: Math.round((Date.now() - sessionStartRef.current) / 1000),
+        sessionsBefore: state.completedDays.length,
       });
       completeWorkout();
       completionCelebration();
       haptics.milestone();
     }
-  }, [phase, workout, completeWorkout, completionCelebration, haptics]);
+  }, [phase, workout, state.completedDays.length, completeWorkout, completionCelebration, haptics]);
 
   if (phase === "done") {
     // Falls back to the live `workout` only for the single render before
@@ -219,6 +227,7 @@ export function LivePlayer() {
       calories: workout.calories,
       exerciseCount: workout.exercises.length,
       elapsedSeconds: 0,
+      sessionsBefore: state.completedDays.length,
     };
     return (
       <CompletionScreen
@@ -226,6 +235,7 @@ export function LivePlayer() {
         calories={snapshot.calories}
         exercisesCompleted={snapshot.exerciseCount}
         elapsedSeconds={snapshot.elapsedSeconds}
+        sessionsBefore={snapshot.sessionsBefore}
       />
     );
   }
@@ -653,13 +663,23 @@ function CompletionScreen({
   calories,
   exercisesCompleted,
   elapsedSeconds,
+  sessionsBefore,
 }: {
   workoutTitle: string;
   calories: number;
   exercisesCompleted: number;
   elapsedSeconds: number;
+  sessionsBefore: number;
 }) {
   const { streak, state, answers } = useGoalify();
+
+  // completedDays only ever grows by one entry per calendar day, so at
+  // most a single threshold in BADGES can sit in the (sessionsBefore,
+  // completedSessions] range this session just crossed.
+  const completedSessions = state.completedDays.length;
+  const newBadge = BADGES.find(
+    (badge) => badge.requirement > sessionsBefore && badge.requirement <= completedSessions,
+  );
 
   const weekDays = useMemo(() => currentWeekDays(), []);
   const weekCompletedCount = weekDays.filter((d) =>
@@ -717,6 +737,32 @@ function CompletionScreen({
           You showed up. You pushed. You&apos;re stronger.
         </p>
       </div>
+
+      {/* ------------------------------------------------ New badge unlock
+          The trophy shelf on the Progress screen already shows every badge
+          earned, but nothing ever told the user *when* they crossed one —
+          the reward landed silently on a screen they might not open for
+          days. Surfacing it here, at the exact moment of the dopamine hit
+          the workout just gave them, is what actually reinforces the habit
+          (only ever renders for the single session that crossed a new
+          threshold, never retroactively on a later one). */}
+      {newBadge && (
+        <GlassCard
+          tone="electric"
+          className="gf-anim-rise gf-anim-pulse gf-delay-4 flex items-center gap-3 p-4 text-left"
+        >
+          <IconBadge icon={newBadge.icon} size="md" active />
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-black tracking-[0.14em] text-electric uppercase">
+              New badge unlocked
+            </p>
+            <p className="text-sm leading-snug font-bold text-ink">
+              {newBadge.name} — {newBadge.requirement} session
+              {newBadge.requirement === 1 ? "" : "s"} logged.
+            </p>
+          </div>
+        </GlassCard>
+      )}
 
       {/* ----------------------------------------------------- Badge card */}
       <GlassCard

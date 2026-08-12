@@ -4,21 +4,18 @@ import { useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import {
   Camera,
-  Crown,
   Flame,
-  Gem,
   Image as ImageIcon,
   Lock,
-  Medal,
   Plus,
   Sparkles,
-  Star,
   TrendingDown,
   Trophy,
   type LucideIcon,
 } from "lucide-react";
 import { useGoalify, todayKey } from "@/lib/goalify/store";
 import { projectWeight, weeksToTarget } from "@/lib/goalify/plan";
+import { BADGES } from "@/lib/goalify/badges";
 import { AppShell } from "./app-shell";
 import { GlassCard } from "./ui/glass-card";
 import { VisualSlot } from "./ui/visual-slot";
@@ -32,15 +29,6 @@ import { ParticleBurstLayer } from "./quiz/particle-burst";
  * always renders in (same reasoning as dashboard.tsx's RING_GOLD/RING_CRIMSON). */
 const CHART_GOLD = "#e8b32c";
 const CHART_CRIMSON = "#ff3b3b";
-
-const BADGES = [
-  { id: "first", name: "First Rep", icon: Medal, requirement: 1 },
-  { id: "three", name: "Hat-Trick", icon: Flame, requirement: 3 },
-  { id: "week", name: "Week One", icon: Star, requirement: 7 },
-  { id: "fortnight", name: "Fortnight", icon: Gem, requirement: 14 },
-  { id: "month", name: "Month Strong", icon: Trophy, requirement: 30 },
-  { id: "legend", name: "Legend", icon: Crown, requirement: 60 },
-];
 
 export function Progress() {
   const { state, answers, streak, addPhoto, setVaultPhoto } = useGoalify();
