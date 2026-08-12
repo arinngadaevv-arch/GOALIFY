@@ -65,12 +65,47 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+// Site-wide entity data — the one JSON-LD graph every page shares, so
+// Google can resolve "GOALIFY" as a real Organization/WebSite (brand
+// knowledge panel, sitelinks search box eligibility) instead of just a
+// bag of unconnected pages. Deliberately does NOT include AggregateRating —
+// the "4.9 stars" copy elsewhere in the app is disclosed in-code as
+// illustrative placeholder, not real collected reviews, and marking that up
+// as structured data would be exactly the kind of review-schema spam
+// Google's guidelines explicitly penalize. Swap this in once real reviews
+// exist.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${siteUrl}/#organization`,
+      name: "GOALIFY",
+      url: siteUrl,
+      logo: `${siteUrl}/icon.jpg`,
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      name: "GOALIFY",
+      url: siteUrl,
+      publisher: { "@id": `${siteUrl}/#organization` },
+    },
+  ],
+};
+
 export default function GoalifyLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" dir="ltr" className="goalify h-full antialiased">
       <body className="goalify-body min-h-full">
+        <script
+          type="application/ld+json"
+          // Static, hand-written content — no user input ever flows into
+          // this object, so no escaping/sanitization concerns.
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <div className="gf-ambience" aria-hidden />
         <div className="gf-content min-h-dvh">
           <SessionProvider>

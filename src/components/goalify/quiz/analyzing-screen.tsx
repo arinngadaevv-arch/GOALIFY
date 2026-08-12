@@ -48,7 +48,7 @@ function TrustCard() {
         </div>
         <span className="gf-numeric text-sm font-black text-ink">4.9</span>
         <span className="text-[9px] font-bold tracking-[0.06em] text-mist uppercase">
-          · 12,000+ reviews
+          · 1,250+ reviews
         </span>
       </div>
       <div className="relative mt-2 overflow-hidden">
