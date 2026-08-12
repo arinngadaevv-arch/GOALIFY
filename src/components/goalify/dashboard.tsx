@@ -435,12 +435,16 @@ export function Dashboard() {
         <GlassCard
           tone="lime"
           interactive
-          className="gf-anim-rise gf-delay-3 flex items-center gap-4 p-5"
+          className="gf-anim-rise gf-delay-3 relative flex items-center gap-4 overflow-hidden p-5"
         >
-          <span className="gf-glow-lime grid size-11 shrink-0 place-items-center rounded-2xl bg-lime-neon">
+          <div
+            className="pointer-events-none absolute -top-8 -right-8 size-28 rounded-full bg-lime-neon/20 blur-3xl"
+            aria-hidden
+          />
+          <span className="gf-glow-lime relative grid size-11 shrink-0 place-items-center rounded-2xl bg-lime-neon">
             <Library className="size-5 text-ink" />
           </span>
-          <div className="min-w-0 flex-1">
+          <div className="relative min-w-0 flex-1">
             <p className="text-sm font-extrabold text-ink">
               Explore more workouts
             </p>
@@ -448,7 +452,7 @@ export function Dashboard() {
               Full Body Burn, Core Crusher, Lower Body &amp; Joints Safe.
             </p>
           </div>
-          <ArrowRight className="size-4 shrink-0 text-lime-deep" />
+          <ArrowRight className="relative size-4 shrink-0 text-lime-deep" />
         </GlassCard>
       </Link>
 
@@ -527,12 +531,16 @@ export function Dashboard() {
         <GlassCard
           tone="electric"
           interactive
-          className="gf-anim-rise gf-delay-5 flex items-center gap-4 p-5"
+          className="gf-anim-rise gf-delay-5 relative flex items-center gap-4 overflow-hidden p-5"
         >
-          <span className="gf-glow-electric grid size-11 shrink-0 place-items-center rounded-2xl bg-electric">
+          <div
+            className="pointer-events-none absolute -top-8 -right-8 size-28 rounded-full bg-electric/25 blur-3xl"
+            aria-hidden
+          />
+          <span className="gf-glow-electric relative grid size-11 shrink-0 place-items-center rounded-2xl bg-electric">
             <Bell className="size-5 text-white" />
           </span>
-          <div className="min-w-0 flex-1">
+          <div className="relative min-w-0 flex-1">
             <p className="text-sm font-extrabold text-ink">
               Your daily reminders
             </p>
@@ -540,7 +548,7 @@ export function Dashboard() {
               4 nudges a day — motivation, food, water, workout.
             </p>
           </div>
-          <ArrowRight className="size-4 shrink-0 text-electric" />
+          <ArrowRight className="relative size-4 shrink-0 text-electric" />
         </GlassCard>
       </Link>
       </div>
@@ -610,10 +618,14 @@ function MotivationTicker() {
   }, []);
 
   return (
-    <div className="gf-glass gf-anim-rise gf-delay-1 mb-6 overflow-hidden rounded-full px-5 py-2.5 text-center">
+    <div className="gf-anim-rise gf-delay-1 relative mb-6 overflow-hidden rounded-full border border-electric/25 bg-linear-to-r from-electric/12 via-lime-neon/8 to-electric/12 px-5 py-2.5 text-center">
+      <div
+        className="gf-anim-pulse pointer-events-none absolute inset-y-0 left-1/2 w-24 -translate-x-1/2 bg-electric/20 blur-2xl"
+        aria-hidden
+      />
       <p
         key={index}
-        className="gf-anim-materialize gf-display text-xs font-black tracking-[0.14em] text-electric uppercase"
+        className="gf-anim-materialize gf-display relative text-xs font-black tracking-[0.14em] text-electric uppercase"
       >
         ⚡ {MOTIVATION_QUOTES[index]} ⚡
       </p>
