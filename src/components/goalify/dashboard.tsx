@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
 import {
@@ -26,6 +26,7 @@ import {
 } from "@/lib/goalify/store";
 import { resolveWorkout } from "@/lib/goalify/workouts";
 import { goalLabel, weeksToTarget } from "@/lib/goalify/plan";
+import { currentWeekDays } from "@/lib/goalify/dates";
 import { useStepTracker } from "@/lib/goalify/use-step-tracker";
 import { useHaptics } from "@/lib/goalify/use-haptics";
 import { playCompletionCelebration } from "@/lib/goalify/sound";
@@ -75,6 +76,15 @@ export function Dashboard() {
   const workoutPercent = workoutDoneToday ? 100 : 0;
   const weeksToGoal = weeksToTarget(answers);
   const losingWeight = answers.targetWeightKg < answers.weightKg;
+
+  const weekDays = useMemo(() => currentWeekDays(), []);
+  const weekCompletedCount = weekDays.filter((d) =>
+    state.completedDays.includes(d.key),
+  ).length;
+  const weeklyGoalPercent = Math.min(
+    100,
+    Math.round((weekCompletedCount / Math.max(1, answers.daysPerWeek)) * 100),
+  );
   const nutritionPercent = Math.min(
     100,
     Math.round((waterGlasses / targets.waterGlasses) * 100),
@@ -345,6 +355,77 @@ export function Dashboard() {
                 </>
               )}
             </GlowLink>
+          </div>
+        </GlassCard>
+      </section>
+
+      {/* ---------------------------------------------------------- This week
+          Today's Workout above only ever answers "what now" — nothing on
+          the dashboard showed the plan's actual shape (which days this
+          week, how many logged so far), which is genuinely useful context
+          that previously only existed buried in the post-workout
+          CompletionScreen. Same day-strip pattern as that screen's own
+          "Your progress" card, so it reads as familiar rather than new UI
+          to learn. */}
+      <section className="mt-8 lg:break-inside-avoid">
+        <SectionHeading
+          eyebrow={`${answers.daysPerWeek}-day plan`}
+          title="This week"
+          action={
+            <Pill tone={weekCompletedCount > 0 ? "lime" : "electric"}>
+              {weekCompletedCount}/{answers.daysPerWeek} sessions
+            </Pill>
+          }
+        />
+        <GlassCard deep className="flex items-center gap-5 p-6">
+          <ProgressRing
+            size={88}
+            thickness={9}
+            rings={[{ value: weeklyGoalPercent, color: RING_GOLD, label: "Week" }]}
+          >
+            <div>
+              <p className="gf-numeric text-lg font-black text-ink">
+                {weeklyGoalPercent}%
+              </p>
+              <p className="text-[8px] font-bold tracking-[0.06em] text-mist uppercase">
+                Weekly goal
+              </p>
+            </div>
+          </ProgressRing>
+
+          <div className="min-w-0 flex-1">
+            <div className="flex justify-between gap-1">
+              {weekDays.map((day) => {
+                const done = state.completedDays.includes(day.key);
+                return (
+                  <div key={day.key} className="flex flex-col items-center gap-1">
+                    <span
+                      className={clsx(
+                        "grid size-7 place-items-center rounded-full",
+                        done
+                          ? "gf-glow-electric bg-electric text-white"
+                          : day.isToday
+                            ? "border-2 border-electric/60 text-electric"
+                            : "bg-ink/6 text-haze",
+                      )}
+                    >
+                      {done ? (
+                        <Check className="size-3.5" strokeWidth={3.5} />
+                      ) : (
+                        <span className="text-[10px] font-bold">{day.label}</span>
+                      )}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="mt-3 text-xs font-semibold text-ink-soft">
+              {weekCompletedCount === 0
+                ? "No sessions logged yet this week."
+                : weekCompletedCount >= answers.daysPerWeek
+                  ? "Weekly goal hit — anything extra is a bonus."
+                  : `${answers.daysPerWeek - weekCompletedCount} to go to hit this week's goal.`}
+            </p>
           </div>
         </GlassCard>
       </section>

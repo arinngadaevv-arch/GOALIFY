@@ -22,9 +22,10 @@ import {
   Trophy,
   X,
 } from "lucide-react";
-import { useGoalify, todayKey } from "@/lib/goalify/store";
+import { useGoalify } from "@/lib/goalify/store";
 import { findWorkout, resolveWorkout } from "@/lib/goalify/workouts";
 import { BADGES } from "@/lib/goalify/badges";
+import { currentWeekDays } from "@/lib/goalify/dates";
 import type { Exercise } from "@/lib/goalify/types";
 import { GlassCard } from "@/components/goalify/ui/glass-card";
 import { GlowLink } from "@/components/goalify/ui/glow-button";
@@ -603,24 +604,6 @@ function describeAmount(exercise: Exercise): string {
     : `${exercise.amount} reps · ${exercise.focus}`;
 }
 
-/** Monday-first week strip so "3/7 done" reads left-to-right like a
- * calendar, independent of the JS Date week (which starts on Sunday). */
-function currentWeekDays(): { key: string; label: string; isToday: boolean; isFuture: boolean }[] {
-  const now = new Date();
-  const jsDay = now.getDay(); // 0 = Sunday
-  const mondayOffset = jsDay === 0 ? -6 : 1 - jsDay;
-  const monday = new Date(now);
-  monday.setDate(now.getDate() + mondayOffset);
-  const labels = ["M", "T", "W", "T", "F", "S", "S"];
-  const todayStr = todayKey(now);
-
-  return labels.map((label, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    const key = todayKey(d);
-    return { key, label, isToday: key === todayStr, isFuture: key > todayStr };
-  });
-}
 
 function formatElapsed(totalSeconds: number): string {
   const minutes = Math.floor(totalSeconds / 60);
