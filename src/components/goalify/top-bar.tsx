@@ -36,15 +36,17 @@ export function TopBar({ title, subtitle }: { title?: string; subtitle?: string 
         <Bell className="size-4.5" />
       </Link>
 
-      <div
-        className="gf-glass gf-glass-lime gf-press flex shrink-0 items-center gap-1 rounded-2xl px-2.5 py-2.5"
+      <Link
+        href="/progress"
+        aria-label={`${streak} day streak — view your progress`}
         title={`${streak} day streak`}
+        className="gf-glass gf-glass-lime gf-press flex shrink-0 items-center gap-1 rounded-2xl px-2.5 py-2.5"
       >
         <Flame className="size-4 text-lime-deep" strokeWidth={2.6} />
         <span className="gf-numeric text-sm font-extrabold text-ink">
           {streak}
         </span>
-      </div>
+      </Link>
     </header>
   );
 }
