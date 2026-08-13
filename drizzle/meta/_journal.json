@@ -92,6 +92,13 @@
       "when": 1786528207677,
       "tag": "0012_faithful_namor",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1786641343756,
+      "tag": "0013_loving_celestials",
+      "breakpoints": true
     }
   ]
 }

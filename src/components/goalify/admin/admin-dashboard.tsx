@@ -16,6 +16,8 @@ import {
   Search,
   Smartphone,
   ShieldCheck,
+  Star,
+  Trash2,
   UserPlus,
   Users,
   XCircle,
@@ -86,6 +88,19 @@ export type QuizStepFunnelEntry = {
   title: string;
   /** Distinct visitors who reached this question or any later one. */
   reached: number;
+};
+
+/** One row per submitted review — see reviews in db/schema.ts. `approved`
+ * false means it's still sitting in the moderation queue; only approved
+ * rows count toward the public average shown on the marketing funnel. */
+export type AdminReviewRow = {
+  id: string;
+  rating: number;
+  quote: string | null;
+  approved: boolean;
+  createdAt: string;
+  userName: string | null;
+  userEmail: string | null;
 };
 
 export type CheckoutConfig = {
@@ -177,6 +192,7 @@ export function AdminDashboard({
   quizStepFunnel,
   visitorTrend,
   users,
+  reviews,
   checkoutConfig,
   whopCheckoutConfig,
 }: {
@@ -188,6 +204,7 @@ export function AdminDashboard({
   quizStepFunnel: QuizStepFunnelEntry[];
   visitorTrend: VisitorTrend;
   users: AdminUserRow[];
+  reviews: AdminReviewRow[];
   checkoutConfig: CheckoutConfig;
   whopCheckoutConfig: WhopCheckoutConfig;
 }) {
@@ -203,6 +220,13 @@ export function AdminDashboard({
       (user.name ?? "").toLowerCase().includes(needle)
     );
   });
+
+  const approvedReviews = reviews.filter((r) => r.approved);
+  const pendingReviews = reviews.filter((r) => !r.approved);
+  const averageRating =
+    approvedReviews.length > 0
+      ? approvedReviews.reduce((sum, r) => sum + r.rating, 0) / approvedReviews.length
+      : null;
 
   return (
     <div className="gf-cyber-scope min-h-dvh">
@@ -545,6 +569,45 @@ export function AdminDashboard({
               </tbody>
             </table>
           </GlassCard>
+        </section>
+
+        {/* -------------------------------------------------------- Reviews */}
+        <section className="mt-10">
+          <h2 className="gf-display text-xl font-extrabold text-ink">
+            Reviews
+          </h2>
+          <p className="mt-1 text-[11px] leading-relaxed text-haze">
+            Real, member-submitted ratings — this replaces the fabricated
+            &ldquo;4.9 · 1,250+ reviews&rdquo; stat that used to be hardcoded
+            in the funnel. A submission only counts toward the public
+            average below once you approve it here; nothing shows on the
+            live site until then.
+          </p>
+
+          <GlassCard deep className="mt-3 flex items-center gap-4 p-4">
+            <Star className="size-5 shrink-0 text-electric" />
+            <p className="text-xs leading-relaxed text-ink-soft">
+              <span className="font-bold text-ink">
+                {averageRating === null
+                  ? "No approved reviews yet"
+                  : `${averageRating.toFixed(1)} ⭐ · ${approvedReviews.length} review${approvedReviews.length === 1 ? "" : "s"}`}
+              </span>{" "}
+              — this is what the site will show publicly once wired up.{" "}
+              {pendingReviews.length > 0 &&
+                `${pendingReviews.length} pending your review below.`}
+            </p>
+          </GlassCard>
+
+          <div className="mt-3 space-y-2">
+            {reviews.length === 0 && (
+              <GlassCard className="p-6 text-center text-xs text-haze">
+                No reviews submitted yet.
+              </GlassCard>
+            )}
+            {reviews.map((review) => (
+              <ReviewRow key={review.id} review={review} />
+            ))}
+          </div>
         </section>
       </div>
     </div>
@@ -1347,6 +1410,96 @@ function StatCard({
       <p className="text-[11px] font-semibold tracking-[0.08em] text-mist uppercase">
         {label}
       </p>
+    </GlassCard>
+  );
+}
+
+function ReviewRow({ review }: { review: AdminReviewRow }) {
+  const [approved, setApproved] = useState(review.approved);
+  const [removed, setRemoved] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  async function setApproval(next: boolean) {
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/admin/reviews/${review.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ approved: next }),
+      });
+      if (res.ok) setApproved(next);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function reject() {
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/admin/reviews/${review.id}`, { method: "DELETE" });
+      if (res.ok) setRemoved(true);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (removed) return null;
+
+  return (
+    <GlassCard deep className="flex items-start gap-4 p-4">
+      <div className="flex shrink-0 items-center gap-0.5 text-electric">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Star
+            key={i}
+            className={clsx("size-3.5", i < review.rating ? "fill-current" : "opacity-25")}
+          />
+        ))}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-bold text-ink">
+          {review.userName || "Unnamed"}{" "}
+          <span className="font-normal text-mist">{review.userEmail}</span>
+        </p>
+        {review.quote && (
+          <p className="mt-1 text-sm leading-relaxed text-ink-soft">
+            &ldquo;{review.quote}&rdquo;
+          </p>
+        )}
+        <p className="mt-1 text-[10px] font-semibold text-haze">
+          {formatDate(review.createdAt)} ·{" "}
+          {approved ? "Live on site" : "Pending review"}
+        </p>
+      </div>
+      <div className="flex shrink-0 items-center gap-2">
+        {approved ? (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => setApproval(false)}
+            className="gf-press flex items-center gap-1 rounded-full border border-ink/10 px-3 py-1.5 text-[11px] font-bold text-mist disabled:opacity-50"
+          >
+            Unpublish
+          </button>
+        ) : (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => setApproval(true)}
+            className="gf-press flex items-center gap-1 rounded-full bg-lime-neon px-3 py-1.5 text-[11px] font-bold text-ink disabled:opacity-50"
+          >
+            <CheckCircle2 className="size-3.5" /> Approve
+          </button>
+        )}
+        <button
+          type="button"
+          disabled={busy}
+          aria-label="Delete review"
+          onClick={reject}
+          className="gf-press grid size-8 place-items-center rounded-full border border-ink/10 text-mist disabled:opacity-50"
+        >
+          <Trash2 className="size-3.5" />
+        </button>
+      </div>
     </GlassCard>
   );
 }

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { desc, eq, sql } from "drizzle-orm";
 import { getAdminSession } from "@/lib/admin";
 import { db } from "@/lib/db";
-import { analyticsEvents, checkoutEvents, users } from "@/lib/db/schema";
+import { analyticsEvents, checkoutEvents, reviews, users } from "@/lib/db/schema";
 import { AdminDashboard } from "@/components/goalify/admin/admin-dashboard";
 import type { Goal, Level } from "@/lib/goalify/types";
 import { CHECKOUT_TIERS, getVariantId } from "@/lib/lemonsqueezy";
@@ -95,6 +95,7 @@ export default async function AdminPage() {
     dailyVisitorRows,
     weeklyVisitorRows,
     monthlyVisitorRows,
+    reviewRows,
   ] = await Promise.all([
       db
         .select({
@@ -219,6 +220,23 @@ export default async function AdminPage() {
       visitTrendQuery("day", daysAgo(30)),
       visitTrendQuery("week", daysAgo(91)),
       visitTrendQuery("month", daysAgo(365)),
+      // Every submitted review, newest first — the moderation queue and the
+      // public average both derive from this same list (approved-only for
+      // the average, all of it for the admin queue). See api/reviews and
+      // api/admin/reviews/[id].
+      db
+        .select({
+          id: reviews.id,
+          rating: reviews.rating,
+          quote: reviews.quote,
+          approved: reviews.approved,
+          createdAt: reviews.createdAt,
+          userName: users.name,
+          userEmail: users.email,
+        })
+        .from(reviews)
+        .leftJoin(users, eq(reviews.userId, users.id))
+        .orderBy(desc(reviews.createdAt)),
     ]);
 
   const quizStepFunnel = QUIZ_STEPS.map((quizStep, index) => ({
@@ -336,6 +354,15 @@ export default async function AdminPage() {
       quizStepFunnel={quizStepFunnel}
       visitorTrend={visitorTrend}
       users={tableUsers}
+      reviews={reviewRows.map((row) => ({
+        id: row.id,
+        rating: row.rating,
+        quote: row.quote,
+        approved: row.approved,
+        createdAt: row.createdAt.toISOString(),
+        userName: row.userName,
+        userEmail: row.userEmail,
+      }))}
       checkoutConfig={checkoutConfig}
       whopCheckoutConfig={whopCheckoutConfig}
     />

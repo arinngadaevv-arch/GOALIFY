@@ -75,6 +75,7 @@ const INITIAL_STATE: GoalifyState = {
   beforePhotoUrl: null,
   afterPhotoUrl: null,
   avatar: null,
+  reviewPromptDismissed: false,
 };
 
 /* -------------------------------------------------------------------------
@@ -319,6 +320,13 @@ export function useGoalify() {
     update((s) => (s.quizSyncedAt ? s : { ...s, quizSyncedAt: new Date().toISOString() }));
   }, []);
 
+  /** Called once ReviewPrompt has either submitted a rating or been
+   * dismissed with "Maybe later" — either way it never shows again for
+   * this account (see live-player.tsx's CompletionScreen). */
+  const dismissReviewPrompt = useCallback(() => {
+    update((s) => ({ ...s, reviewPromptDismissed: true }));
+  }, []);
+
   const answers = useMemo<QuizAnswers>(
     () => ({ ...DEFAULT_ANSWERS, ...state.draft, ...(state.profile ?? {}) }),
     [state.draft, state.profile],
@@ -352,6 +360,7 @@ export function useGoalify() {
     setAvatar,
     reset,
     markQuizSynced,
+    dismissReviewPrompt,
   };
 }
 

@@ -293,6 +293,24 @@ export const analyticsEvents = pgTable("analytics_event", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// Real, user-submitted reviews — built to replace the fabricated "4.9 · 1,250+
+// reviews" stat that used to be hardcoded in analyzing-screen.tsx (see git
+// history). `approved` is a manual admin gate (see /admin) so a rating with
+// abusive/spam free text never goes live unreviewed; the average/count shown
+// to visitors is computed only over approved rows.
+export const reviews = pgTable("review", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  rating: integer("rating").notNull(),
+  quote: text("quote"),
+  approved: boolean("approved").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const usageLogs = pgTable("usage_log", {
   id: text("id")
     .primaryKey()
@@ -461,6 +479,11 @@ export const usersRelations = relations(users, ({ many }) => ({
   teamMembers: many(teamMembers),
   checkoutEvents: many(checkoutEvents),
   analyticsEvents: many(analyticsEvents),
+  reviews: many(reviews),
+}));
+
+export const reviewsRelations = relations(reviews, ({ one }) => ({
+  user: one(users, { fields: [reviews.userId], references: [users.id] }),
 }));
 
 export const analyticsEventsRelations = relations(analyticsEvents, ({ one }) => ({

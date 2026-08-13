@@ -24,9 +24,14 @@ const TRUST_QUOTE_MS = 2600;
 
 /** Compact rating + rotating-quote card — the "someone already trusts this"
  * beat, shown while the analysis itself is still running rather than only
- * after, on the separate full-screen carousel (SocialProofScreen). */
+ * after, on the separate full-screen carousel (SocialProofScreen). The
+ * rating readout used to be a hardcoded "4.9 · 1,250+ reviews" — now pulled
+ * from api/reviews/summary (real, admin-approved submissions only, see
+ * review-prompt.tsx). Before any review exists, it shows an honest
+ * "AI-Personalized Plan" badge instead of an invented number. */
 function TrustCard() {
   const [quoteIndex, setQuoteIndex] = useState(0);
+  const [summary, setSummary] = useState<{ count: number; average: number | null } | null>(null);
 
   useEffect(() => {
     const timer = setInterval(
@@ -36,21 +41,46 @@ function TrustCard() {
     return () => clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/reviews/summary")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data) setSummary(data);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const current = TRUST_QUOTES[quoteIndex];
+  const hasReviews = summary && summary.count > 0 && summary.average !== null;
 
   return (
     <div className="gf-glass relative mt-2.5 w-full rounded-2xl px-4 py-2 text-left">
-      <div className="flex items-center gap-1.5">
-        <div className="flex items-center gap-0.5 text-electric">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Star key={i} className="gf-glow-electric size-3 fill-current" />
-          ))}
+      {hasReviews ? (
+        <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-0.5 text-electric">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star key={i} className="gf-glow-electric size-3 fill-current" />
+            ))}
+          </div>
+          <span className="gf-numeric text-sm font-black text-ink">
+            {summary!.average!.toFixed(1)}
+          </span>
+          <span className="text-[9px] font-bold tracking-[0.06em] text-mist uppercase">
+            · {summary!.count}+ review{summary!.count === 1 ? "" : "s"}
+          </span>
         </div>
-        <span className="gf-numeric text-sm font-black text-ink">4.9</span>
-        <span className="text-[9px] font-bold tracking-[0.06em] text-mist uppercase">
-          · 1,250+ reviews
-        </span>
-      </div>
+      ) : (
+        <div className="flex items-center gap-1.5">
+          <Cpu className="size-3.5 text-electric" />
+          <span className="text-[10px] font-bold tracking-[0.06em] text-mist uppercase">
+            AI-Personalized Plan
+          </span>
+        </div>
+      )}
       <div className="relative mt-2 overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.p

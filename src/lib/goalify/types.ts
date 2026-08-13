@@ -89,6 +89,10 @@ export type GoalifyState = {
   /** Null until the user picks a photo or emoji in Settings — falls back to
    * the generic person-icon placeholder everywhere it's rendered. */
   avatar: UserAvatar | null;
+  /** True once the user has submitted a review (see api/reviews) or
+   * explicitly dismissed the prompt — either way, ReviewPrompt on the
+   * post-workout CompletionScreen never asks again. */
+  reviewPromptDismissed: boolean;
 };
 
 export type Settings = {

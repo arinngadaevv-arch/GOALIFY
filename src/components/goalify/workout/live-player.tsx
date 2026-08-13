@@ -30,6 +30,7 @@ import type { Exercise } from "@/lib/goalify/types";
 import { GlassCard } from "@/components/goalify/ui/glass-card";
 import { GlowLink } from "@/components/goalify/ui/glow-button";
 import { IconBadge } from "@/components/goalify/ui/icon-badge";
+import { ReviewPrompt } from "@/components/goalify/review-prompt";
 import { PoseIcon, poseForExercise } from "@/components/goalify/ui/pose-icon";
 import { AIFormGuide } from "@/components/goalify/workout/ai-form-guide";
 import { useWorkoutSounds } from "@/components/goalify/workout/use-workout-sounds";
@@ -664,6 +665,15 @@ function CompletionScreen({
     (badge) => badge.requirement > sessionsBefore && badge.requirement <= completedSessions,
   );
 
+  // Decided once, on mount, rather than read live off `state` on every
+  // render — ReviewPrompt's own submit handler flips
+  // state.reviewPromptDismissed the instant it succeeds, which would
+  // otherwise unmount this the same instant and skip straight past its
+  // "Thanks" confirmation before the user ever sees it.
+  const [showReviewPrompt] = useState(
+    () => completedSessions >= 3 && !state.reviewPromptDismissed,
+  );
+
   const weekDays = useMemo(() => currentWeekDays(), []);
   const weekCompletedCount = weekDays.filter((d) =>
     state.completedDays.includes(d.key),
@@ -840,6 +850,8 @@ function CompletionScreen({
           </div>
         </GlassCard>
       </section>
+
+      {showReviewPrompt && <ReviewPrompt />}
 
       {/* --------------------------------------------------------- CTAs */}
       <GlowLink
