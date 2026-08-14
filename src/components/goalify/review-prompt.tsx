@@ -10,14 +10,23 @@ const MAX_QUOTE_LENGTH = 300;
 
 /**
  * The real replacement for the fabricated "4.9 · 1,250+ reviews" stat that
- * used to be hardcoded in analyzing-screen.tsx. Shows once someone has
- * stuck with three sessions — long enough for the opinion to mean
- * something — and never again after they submit or dismiss it (see
- * store.tsx's reviewPromptDismissed). Submissions land in the `reviews`
- * table as unapproved; an admin has to explicitly publish one (see
- * /admin's Reviews section) before it counts toward anything public.
+ * used to be hardcoded in analyzing-screen.tsx. The primary entry point is
+ * the one-time nudge on the post-workout CompletionScreen after three
+ * sessions (see live-player.tsx) — but that's a single automatic moment,
+ * not a standing way to leave or update a review whenever someone actually
+ * wants to, so this also renders unconditionally in Settings (see
+ * settings.tsx) with its own copy, no three-session gate. Either way,
+ * submissions land in the `reviews` table as unapproved; an admin has to
+ * explicitly publish one (see /admin's Reviews section) before it counts
+ * toward anything public.
  */
-export function ReviewPrompt() {
+export function ReviewPrompt({
+  title = "Three sessions in — how's it going?",
+  className = "gf-anim-rise gf-delay-6 mt-7",
+}: {
+  title?: string;
+  className?: string;
+}) {
   const { dismissReviewPrompt } = useGoalify();
   const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
@@ -50,7 +59,7 @@ export function ReviewPrompt() {
     return (
       <GlassCard
         deep
-        className="gf-anim-rise gf-delay-6 mt-7 p-5 text-center text-sm font-bold text-lime-deep"
+        className={clsx(className, "p-5 text-center text-sm font-bold text-lime-deep")}
       >
         Thanks — that actually means a lot. 🙏
       </GlassCard>
@@ -58,10 +67,8 @@ export function ReviewPrompt() {
   }
 
   return (
-    <GlassCard deep className="gf-anim-rise gf-delay-6 mt-7 p-5 text-left">
-      <p className="text-sm font-black text-ink">
-        Three sessions in — how&apos;s it going?
-      </p>
+    <GlassCard deep className={clsx(className, "p-5 text-left")}>
+      <p className="text-sm font-black text-ink">{title}</p>
       <p className="mt-1 text-xs text-mist">
         A real rating from you, nothing invented — this is what other people
         considering GOALIFY will actually see.

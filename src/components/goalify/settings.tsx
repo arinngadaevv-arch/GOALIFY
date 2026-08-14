@@ -32,6 +32,7 @@ import { Toggle } from "./ui/toggle";
 import { ProfileAvatarPicker } from "./ui/profile-avatar";
 import { Pill, SectionHeading } from "./ui/stat";
 import { ParticleBurstLayer } from "./quiz/particle-burst";
+import { ReviewPrompt } from "./review-prompt";
 
 export function SettingsScreen() {
   const router = useRouter();
@@ -260,6 +261,19 @@ export function SettingsScreen() {
             </GlowLink>
           )}
         </GlassCard>
+      </section>
+
+      {/* ------------------------------------------------------------ Review
+          The only other place a review can start (live-player.tsx's
+          post-workout prompt) is a one-time automatic nudge after three
+          sessions — there was no standing way to leave or update one
+          whenever someone actually wanted to, until now. */}
+      <section className="gf-anim-rise gf-delay-6 mt-8 lg:break-inside-avoid">
+        <SectionHeading eyebrow="Your opinion" title="Rate GOALIFY" />
+        <ReviewPrompt
+          title="How's GOALIFY working for you?"
+          className="mt-0"
+        />
       </section>
 
       {/* ------------------------------------------------------ Connected accounts */}
