@@ -11,12 +11,12 @@ import { useUiSounds } from "@/components/goalify/use-ui-sounds";
 
 /**
  * PLACEHOLDER MARKETING COPY — fictional success stories, same convention as
- * buyer-ticker.tsx's rotating "just joined" strip. David M.'s before/after
- * pair is a real cropped photo asset (public/quiz/social-proof-before-1.png
- * / -after-1.png); Marcus T. reuses an existing in-app athletic photo with
- * no fabricated "before" pairing, since no second real transformation photo
- * exists. Wire to verified, consented real testimonials before this ever
- * reaches real users — presenting invented reviews as genuine is deceptive.
+ * buyer-ticker.tsx's rotating "just joined" strip. Both before/after pairs
+ * are real cropped photo assets now (public/quiz/social-proof-before-1.png
+ * / -after-1.png for David M., -before-2.png / -after-2.png for Marcus T.).
+ * The names/handles/quotes attached to them are still invented, though —
+ * wire to verified, consented real testimonials before this ever reaches
+ * real users, since presenting invented reviews as genuine is deceptive.
  */
 type ProofStory = {
   name: string;
@@ -40,7 +40,8 @@ const STORIES: ProofStory[] = [
     handle: "@MarcusT, lost 19 kg",
     quote:
       "I finally stuck with a program past week two. Down 19 kg and I actually look forward to training now.",
-    after: "/quiz/goal-build.png",
+    before: "/quiz/social-proof-before-2.png",
+    after: "/quiz/social-proof-after-2.png",
   },
 ];
 
