@@ -27,7 +27,6 @@ import {
 import { resolveWorkout } from "@/lib/goalify/workouts";
 import { goalLabel, weeksToTarget } from "@/lib/goalify/plan";
 import { currentWeekDays } from "@/lib/goalify/dates";
-import { useStepTracker } from "@/lib/goalify/use-step-tracker";
 import { useHaptics } from "@/lib/goalify/use-haptics";
 import { playCompletionCelebration } from "@/lib/goalify/sound";
 import { AppShell } from "./app-shell";
@@ -73,6 +72,7 @@ export function Dashboard() {
     waterGlasses,
     streak,
     steps,
+    setSteps,
   } = useGoalify();
 
   const workout = resolveWorkout(todaysWorkout, state.settings.kneeSafe);
@@ -93,7 +93,7 @@ export function Dashboard() {
     Math.round((waterGlasses / targets.waterGlasses) * 100),
   );
 
-  const stepTracker = useStepTracker();
+  const [stepInput, setStepInput] = useState("");
   const haptics = useHaptics();
   const soundsEnabled = state.settings.soundEffects;
 
@@ -206,44 +206,46 @@ export function Dashboard() {
         </Link>
       </section>
 
-      {/* ------------------------------------------------- Live Activity rings */}
+      {/* ----------------------------------------------------- Today's Activity
+          Used to auto-track steps live via the phone's motion sensor, but
+          iOS Safari makes you re-grant that permission on every single
+          visit (no persisted per-site grant the way camera/mic get) — that
+          read as "broken," not "needs a tap," so this is a quick manual
+          update instead: copy the number your phone already has. */}
       <section className="gf-anim-rise mb-6 lg:break-inside-avoid">
-        <SectionHeading
-          eyebrow="Real-time · on-device"
-          title="Live Activity"
-          action={
-            stepTracker.isTracking ? (
-              <Pill tone="lime">
-                <span className="gf-anim-pulse size-1.5 rounded-full bg-lime-neon" />
-                Live
-              </Pill>
-            ) : null
-          }
-        />
+        <SectionHeading eyebrow="From your phone" title="Today's Activity" />
         <GlassCard deep className="p-6">
           <ActivityRings metrics={activityMetrics} />
 
-          {!stepTracker.isTracking && (
+          <div className="mt-5 flex items-center gap-2">
+            <input
+              type="number"
+              inputMode="numeric"
+              min={0}
+              value={stepInput}
+              onChange={(event) => setStepInput(event.target.value)}
+              placeholder={steps > 0 ? steps.toLocaleString() : "e.g. 6,234"}
+              className="gf-glass min-w-0 flex-1 rounded-2xl px-4 py-3 text-sm font-bold text-ink placeholder:text-haze focus:outline-none"
+            />
             <button
               type="button"
-              onClick={() => void stepTracker.start()}
-              className="gf-glass gf-press mt-5 flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-xs font-bold text-electric"
+              onClick={() => {
+                const parsed = Number(stepInput);
+                if (Number.isFinite(parsed) && parsed >= 0) {
+                  setSteps(parsed);
+                  setStepInput("");
+                }
+              }}
+              className="gf-press gf-glow-electric flex shrink-0 items-center gap-1.5 rounded-2xl bg-electric px-4 py-3 text-xs font-bold text-white"
             >
               <Footprints className="size-4" />
-              {stepTracker.permission === "denied"
-                ? "Motion access denied — enable it in your browser/OS settings"
-                : stepTracker.permission === "unsupported"
-                  ? "No motion sensor on this device"
-                  : "Enable step tracking"}
+              Update
             </button>
-          )}
-          {stepTracker.permission === "unsupported" && (
-            <p className="mt-2 text-center text-[11px] text-haze">
-              Steps track live from your phone&apos;s own motion sensor — no
-              Apple Health or Google Fit account needed, and the readings
-              never leave this device.
-            </p>
-          )}
+          </div>
+          <p className="mt-2 text-center text-[11px] text-haze">
+            Copy today&apos;s step count from your phone&apos;s Health app —
+            nothing ever leaves this device.
+          </p>
         </GlassCard>
       </section>
 

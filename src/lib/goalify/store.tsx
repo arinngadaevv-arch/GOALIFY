@@ -272,16 +272,19 @@ export function useGoalify() {
     }));
   }, []);
 
-  /** Called once per detected footfall by use-step-tracker.ts — accumulates
-   * onto today's count, resetting first if the last write was a prior day. */
-  const addSteps = useCallback((delta: number) => {
-    update((s) => {
-      const today = todayKey();
-      const base = s.stepsUpdatedOn === today ? s.steps : 0;
-      const next = Math.max(0, base + delta);
-      if (next === s.steps && s.stepsUpdatedOn === today) return s;
-      return { ...s, steps: next, stepsUpdatedOn: today };
-    });
+  /** Manual entry (dashboard.tsx) — the browser's on-device motion sensor
+   * turned out to need re-granting every single visit on iOS Safari (no
+   * persisted per-site permission the way camera/mic get, an Apple
+   * platform limitation, not something fixable from here) and read as
+   * "broken" rather than "needs a tap," so live auto-tracking was dropped
+   * in favor of just typing in whatever the phone's own step count already
+   * says. Sets the exact count rather than accumulating. */
+  const setSteps = useCallback((count: number) => {
+    update((s) => ({
+      ...s,
+      steps: Math.max(0, Math.round(count)),
+      stepsUpdatedOn: todayKey(),
+    }));
   }, []);
 
   const updateSettings = useCallback((patch: Partial<Settings>) => {
@@ -353,7 +356,7 @@ export function useGoalify() {
     purchase,
     completeWorkout,
     setWater,
-    addSteps,
+    setSteps,
     updateSettings,
     addPhoto,
     setVaultPhoto,
