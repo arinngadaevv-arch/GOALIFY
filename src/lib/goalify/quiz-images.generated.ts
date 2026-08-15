@@ -11,6 +11,7 @@ export const AVAILABLE_QUIZ_IMAGES: ReadonlySet<string> = new Set([
   "/quiz/66a025e8-c605-48e2-9d8f-ac2a5848fd0a.png",
   "/quiz/69f89e00-e3b4-45e8-bc05-6d6e77897ca2.png",
   "/quiz/Screenshot 2026-08-09 3.41.36 PM.png",
+  "/quiz/Screenshot 2026-08-15 12.37.27 PM.png",
   "/quiz/a2e13dee-4c65-4976-89fa-cce9ba635fdb.png",
   "/quiz/b8f019ca-c14e-4114-9e64-b8befc2e1b2f.png",
   "/quiz/bodyfat-daniel.png",
