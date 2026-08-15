@@ -14,6 +14,7 @@ import {
   Library,
   Play,
   ShieldCheck,
+  Sparkles,
   Target,
   Timer,
   Zap,
@@ -362,6 +363,37 @@ export function Dashboard() {
             </GlowLink>
           </div>
         </GlassCard>
+      </section>
+
+      {/* ------------------------------------------------------ Smart Coach
+          A free, rule-based alternative to "just do today's workout" —
+          picks from the same real workout data via smart-coach.ts, no AI
+          API involved. Kept to one teaser card here; the actual 4-step
+          flow lives at /coach. */}
+      <section className="mt-8 lg:break-inside-avoid">
+        <Link href="/coach" className="block">
+          <GlassCard
+            deep
+            tone="electric"
+            interactive
+            className="gf-anim-rise flex items-center gap-4 overflow-hidden p-6"
+          >
+            <span className="gf-glow-electric grid size-12 shrink-0 place-items-center rounded-2xl bg-electric text-white">
+              <Sparkles className="size-6" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-base font-extrabold text-ink">
+                Not sure what to train today?
+              </p>
+              <p className="mt-0.5 text-xs leading-relaxed text-mist">
+                Let Goalify Smart Coach choose for you — four quick questions.
+              </p>
+            </div>
+            <span className="flex shrink-0 items-center gap-1 text-xs font-bold text-electric">
+              Ask <ArrowRight className="size-3.5" />
+            </span>
+          </GlassCard>
+        </Link>
       </section>
 
       {/* ---------------------------------------------------------- This week
