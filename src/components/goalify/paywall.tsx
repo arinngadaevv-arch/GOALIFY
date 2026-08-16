@@ -3,9 +3,18 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import clsx from "clsx";
-import { Check, ChevronDown, Loader2, Lock, ShieldCheck } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Cpu,
+  Loader2,
+  Lock,
+  ShieldCheck,
+  Star,
+} from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
 import { goalLabel } from "@/lib/goalify/plan";
+import type { NutritionTargets, QuizAnswers, Workout } from "@/lib/goalify/types";
 import { Brand } from "@/components/goalify/brand";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
 import { fireBurst, ParticleBurstLayer } from "@/components/goalify/quiz/particle-burst";
@@ -19,7 +28,7 @@ import { centsToDollars, PRICING_TIERS } from "@/lib/goalify/pricing";
  * the plan/CTA for attention instead of leading to it.
  */
 export function Paywall() {
-  const { answers, hydrated } = useGoalify();
+  const { answers, targets, todaysWorkout, hydrated } = useGoalify();
   const [tier, setTier] = useState("quarterly");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,11 +87,11 @@ export function Paywall() {
           <Check className="size-3" strokeWidth={3} /> Analysis complete
         </span>
         <h1 className="gf-display mt-3 text-4xl leading-[1.05] font-black text-ink sm:text-5xl">
-          YOUR <span className="gf-text-hype">TRANSFORMATION</span> IS READY 🔥
+          YOUR <span className="gf-text-hype">PLAN</span> IS READY
         </h1>
         <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-ink-soft">
-          Your personalised {goalLabel(answers.goal).toLowerCase()} blueprint is
-          built and waiting — zero equipment, zero excuses.
+          A {goalLabel(answers.goal).toLowerCase()} program built around your
+          goal, schedule, and starting point — no equipment required.
         </p>
       </section>
 
@@ -92,6 +101,9 @@ export function Paywall() {
         targetWeightKg={answers.targetWeightKg}
         goal={goalLabel(answers.goal)}
       />
+
+      {/* ------------------------------------------- The "why": what's inside */}
+      <PlanSummaryCard answers={answers} targets={targets} todaysWorkout={todaysWorkout} />
 
       {/* The plan cards sit below the fold on most phones, and the sticky
           CTA at the bottom is tappable without ever scrolling to see them
@@ -220,12 +232,14 @@ export function Paywall() {
             </p>
           )}
 
+          <CheckoutTrustBadge />
+
           <GlowButton
             variant="cyber"
             size="lg"
             fullWidth
             pulse
-            className="text-base tracking-tight shadow-[0_0_44px_-8px_rgba(255,199,0,0.8)]"
+            className="mt-2 text-base tracking-tight shadow-[0_0_44px_-8px_rgba(255,199,0,0.8)]"
             disabled={!hydrated || loading}
             onClick={checkout}
           >
@@ -234,7 +248,7 @@ export function Paywall() {
             ) : (
               <Lock className="size-4.5" />
             )}
-            CLAIM MY DISCOUNT &amp; START PLAN ⚡
+            START MY PLAN
           </GlowButton>
 
           <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
@@ -315,6 +329,120 @@ function TransformationCard({
         AI-generated illustrative example, not an actual member — real
         results depend on consistency.
       </p>
+    </div>
+  );
+}
+
+/**
+ * The "why" bridge between the quiz and the offer — every tag and number
+ * here is read straight off the user's real answers/computed targets, not
+ * invented copy, so it reads as an actual plan rather than a sales page.
+ */
+function PlanSummaryCard({
+  answers,
+  targets,
+  todaysWorkout,
+}: {
+  answers: QuizAnswers;
+  targets: NutritionTargets;
+  todaysWorkout: Workout;
+}) {
+  const highlights = [goalLabel(answers.goal)];
+  if (answers.joints.some((joint) => joint !== "none")) {
+    highlights.push("Joint-friendly approach");
+  }
+  highlights.push(`${answers.sessionLength}-min sessions`);
+  highlights.push(`${answers.daysPerWeek} days/week`);
+
+  return (
+    <div className="gf-glass gf-anim-rise relative mt-3 rounded-3xl p-5">
+      <p className="text-center text-[11px] font-black tracking-[0.16em] text-electric uppercase">
+        Your custom plan
+      </p>
+
+      <div className="mt-3 flex flex-wrap justify-center gap-1.5">
+        {highlights.map((tag) => (
+          <span
+            key={tag}
+            className="rounded-full bg-electric/10 px-3 py-1 text-[11px] font-bold text-electric"
+          >
+            {tag}
+          </span>
+        ))}
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-3 border-t border-ink/8 pt-4">
+        <div className="text-center">
+          <p className="gf-numeric text-xl font-black text-ink">
+            {targets.calories.toLocaleString()}
+          </p>
+          <p className="text-[10px] font-bold tracking-[0.1em] text-mist uppercase">
+            Daily target
+          </p>
+        </div>
+        <div className="text-center">
+          <p className="gf-numeric text-xl font-black text-ink">
+            {todaysWorkout.durationMinutes} min
+          </p>
+          <p className="text-[10px] font-bold tracking-[0.1em] text-mist uppercase">
+            First session
+          </p>
+        </div>
+      </div>
+
+      <p className="mt-3 text-center text-xs leading-relaxed text-ink-soft">
+        First up: <span className="font-bold text-ink">{todaysWorkout.title}</span> —{" "}
+        {todaysWorkout.exercises.length} exercises, zero equipment.
+      </p>
+    </div>
+  );
+}
+
+/** The same honest real-review pattern used on the analyzing screen's
+ * TrustCard — never a fabricated "1,250+ members" number. Before any
+ * review exists, it shows an honest fallback instead of an invented one. */
+function CheckoutTrustBadge() {
+  const [summary, setSummary] = useState<{ count: number; average: number | null } | null>(
+    null,
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/reviews/summary")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data) setSummary(data);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const hasReviews = summary && summary.count > 0 && summary.average !== null;
+
+  return (
+    <div className="flex items-center justify-center gap-1.5">
+      {hasReviews ? (
+        <>
+          <div className="flex items-center gap-0.5 text-electric">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star key={i} className="size-3 fill-current" />
+            ))}
+          </div>
+          <span className="text-[11px] font-bold text-ink-soft">
+            {summary!.average!.toFixed(1)} · {summary!.count}+ review
+            {summary!.count === 1 ? "" : "s"}
+          </span>
+        </>
+      ) : (
+        <>
+          <Cpu className="size-3.5 text-electric" />
+          <span className="text-[11px] font-bold text-ink-soft">
+            AI-Personalized Plan
+          </span>
+        </>
+      )}
     </div>
   );
 }

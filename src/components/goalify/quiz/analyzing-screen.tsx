@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Cpu, Loader, Star } from "lucide-react";
@@ -100,33 +100,21 @@ function TrustCard() {
   );
 }
 
-const STAGES = [
-  {
-    label: "Analyzing fat-burn potential…",
-    badge: "Burn Profile Locked",
-    icon: "flame",
-  },
-  {
-    label: "Optimizing muscle tone trajectory…",
-    badge: "Tone Curve Mapped",
-    icon: "biceps",
-  },
-  {
-    label: "Calibrating metabolic engine…",
-    badge: "Metabolism Solved",
-    icon: "gauge",
-  },
-  {
-    label: "Balancing fuel to your goal…",
-    badge: "Macros Dialled In",
-    icon: "utensils",
-  },
-  {
-    label: "Unlocking your custom plan…",
-    badge: "Roadmap Unlocked",
-    icon: "rocket",
-  },
-] as const;
+/** Coach-like, specific stage copy — the duration in the last stage is the
+ * one real, computed number in the list (today's actual program workout),
+ * so it reads as a genuine calculation finishing, not a canned animation. */
+function buildStages(durationMinutes: number) {
+  return [
+    { label: "Analyzing your biomechanical goals…", badge: "Goals Mapped" },
+    { label: "Calculating metabolic intensity…", badge: "Metabolism Solved" },
+    { label: "Balancing your daily macros…", badge: "Macros Dialled In" },
+    { label: "Structuring your training split…", badge: "Split Structured" },
+    {
+      label: `Tailoring your ${durationMinutes}-minute routine…`,
+      badge: "Plan Ready",
+    },
+  ] as const;
+}
 
 /** Tuned so the full run — including the final hold below — lands at
  * exactly 5000ms, the "5-second calculating screen" the funnel promises
@@ -163,7 +151,11 @@ function SpinningMetric({
 
 /** The perceived-effort screen between the last question and the offer. */
 export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
-  const { answers, targets } = useGoalify();
+  const { answers, targets, todaysWorkout } = useGoalify();
+  const stages = useMemo(
+    () => buildStages(todaysWorkout.durationMinutes),
+    [todaysWorkout.durationMinutes],
+  );
   const [stage, setStage] = useState(0);
   // Scrambled digits until each metric "resolves".
   const [scramble, setScramble] = useState(0);
@@ -178,7 +170,7 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
   }, []);
 
   useEffect(() => {
-    if (stage >= STAGES.length) {
+    if (stage >= stages.length) {
       unlockFanfare();
       const timer = setTimeout(onDone, FINAL_HOLD_MS);
       return () => clearTimeout(timer);
@@ -188,7 +180,7 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
       setStage((s) => s + 1);
     }, STAGE_MS);
     return () => clearTimeout(timer);
-  }, [stage, onDone, glassChime, unlockFanfare]);
+  }, [stage, stages.length, onDone, glassChime, unlockFanfare]);
 
   // Drives the flicker on unresolved metrics.
   useEffect(() => {
@@ -196,7 +188,7 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
     return () => clearInterval(timer);
   }, []);
 
-  const percent = Math.min(100, Math.round((stage / STAGES.length) * 100));
+  const percent = Math.min(100, Math.round((stage / stages.length) * 100));
   const noise = () => String(Math.floor(Math.abs(Math.sin(scramble) * 9000)) + 500);
 
   return (
@@ -206,7 +198,7 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
       <div className="relative flex items-center gap-2.5">
         <CoachBadge size="sm" />
         <p className="text-[11px] font-black tracking-[0.16em] text-electric uppercase">
-          Calculating your alpha blueprint…
+          Building your personalized plan…
         </p>
       </div>
 
@@ -251,7 +243,7 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
       </div>
 
       <h1 className="gf-display relative mt-3 text-xl font-black text-ink">
-        Engineering your <span className="gf-text-hype">roadmap</span>
+        Designing your <span className="gf-text-hype">plan</span>
       </h1>
 
       {/* High-impact linear readout of the same percent the ring shows —
@@ -292,7 +284,7 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
       </div>
 
       <ul className="relative mt-2.5 w-full space-y-1 text-left">
-        {STAGES.map((item, index) => {
+        {stages.map((item, index) => {
           const done = index < stage;
           const active = index === stage;
           return (
