@@ -1,4 +1,10 @@
 import type { Metadata, Viewport } from "next";
+// Self-hosted webfonts, bundled from npm rather than fetched from Google at
+// build time — next/font/google needs network access during `next build`,
+// and a blocked fetch there fails the whole deploy. These ship the woff2
+// files inside node_modules, so the build has no external dependency.
+import "@fontsource-variable/sora";
+import "@fontsource-variable/inter";
 import "../goalify.css";
 import { GoalifyProvider } from "@/lib/goalify/store";
 import { SessionProvider } from "@/components/session-provider";

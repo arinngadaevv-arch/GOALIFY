@@ -18,15 +18,21 @@
 
   --radius-glass: 1.75rem;
 
+  /* Real web fonts, self-hosted via next/font (see src/lib/fonts.ts) —
+     everything before this was an OS-font stack, which meant the app
+     rendered in Segoe UI on Windows and Roboto on Android and only ever
+     looked "designed" on Apple hardware. Sora carries the headlines and
+     the numerals (geometric, tight, distinctly not a system UI face);
+     Inter does the body text. The system stack stays as the fallback for
+     the brief moment before the webfont swaps in. */
   --font-display:
-    "SF Pro Display", "Segoe UI Variable Display", "Segoe UI", Inter,
-    system-ui, -apple-system, "Helvetica Neue", sans-serif;
+    "Sora Variable", "SF Pro Display", "Segoe UI Variable Display",
+    "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
   --font-sans:
-    "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", Inter, system-ui,
-    -apple-system, "Helvetica Neue", sans-serif;
+    "Inter Variable", "SF Pro Text", "Segoe UI Variable Text",
+    "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
   --font-numeric:
-    ui-rounded, "SF Pro Rounded", "Segoe UI Variable Display", Inter,
-    system-ui, sans-serif;
+    "Sora Variable", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
 }
 
 :root {
