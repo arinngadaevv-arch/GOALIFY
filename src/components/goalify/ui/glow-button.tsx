@@ -6,7 +6,7 @@ type Size = "sm" | "md" | "lg" | "xl";
 
 const VARIANTS: Record<Variant, string> = {
   electric:
-    "bg-electric text-white gf-glow-electric shadow-[0_12px_32px_-8px_rgba(0,82,255,0.65)] hover:bg-[#0047db] hover:shadow-[0_22px_48px_-10px_rgba(0,82,255,0.8)] focus-visible:outline-electric",
+    "gf-gold-gradient bg-electric text-white gf-glow-electric shadow-[0_12px_32px_-8px_rgba(0,82,255,0.65)] hover:bg-[#0047db] hover:shadow-[0_22px_48px_-10px_rgba(0,82,255,0.8)] focus-visible:outline-electric",
   lime: "bg-lime-neon text-ink shadow-[0_12px_32px_-8px_rgba(57,255,20,0.55)] gf-glow-lime hover:bg-[#2ef00c] hover:shadow-[0_22px_48px_-10px_rgba(57,255,20,0.75)] focus-visible:outline-lime-deep",
   glass:
     "gf-glass text-ink border border-ink/15 shadow-[0_10px_28px_-12px_rgba(8,22,66,0.45)] hover:border-electric/50 hover:shadow-[0_20px_42px_-14px_rgba(8,22,66,0.5)] focus-visible:outline-electric",

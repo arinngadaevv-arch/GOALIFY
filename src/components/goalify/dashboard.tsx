@@ -247,7 +247,7 @@ export function Dashboard() {
               {workout.subtitle}
             </p>
 
-            <div className="mt-5 grid grid-cols-3 gap-3 border-y border-ink/8 py-4">
+            <div className="mt-5 grid grid-cols-3 divide-x divide-ink/8 rounded-3xl bg-black/20 p-4">
               <Stat
                 value={workout.durationMinutes}
                 suffix="min"

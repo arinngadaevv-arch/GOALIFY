@@ -317,7 +317,12 @@ export function SmartCoach() {
                 </p>
               </div>
 
-              <GlassCard deep tone="electric" className="p-6">
+              <div className="relative">
+                <div
+                  className="pointer-events-none absolute -inset-4 -z-10 rounded-[2.5rem] bg-electric/18 opacity-70 blur-3xl"
+                  aria-hidden
+                />
+                <GlassCard deep tone="electric" className="p-6">
                 <h2 className="gf-display text-2xl font-black text-ink">
                   {recommendation.workout.title}
                 </h2>
@@ -325,7 +330,7 @@ export function SmartCoach() {
                   {recommendation.workout.subtitle}
                 </p>
 
-                <div className="mt-5 grid grid-cols-3 gap-3 border-y border-ink/8 py-4">
+                <div className="mt-5 grid grid-cols-3 divide-x divide-ink/8 rounded-3xl bg-black/20 p-4">
                   <Stat
                     value={recommendation.workout.durationMinutes}
                     suffix="min"
@@ -360,12 +365,13 @@ export function SmartCoach() {
                   size="lg"
                   fullWidth
                   pulse
-                  variant="cyber"
+                  variant="electric"
                   className="mt-6 gap-2 tracking-tight"
                 >
                   START WORKOUT <ArrowRight className="size-5" />
                 </GlowLink>
-              </GlassCard>
+                </GlassCard>
+              </div>
 
               <button
                 type="button"

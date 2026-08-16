@@ -20,15 +20,15 @@ import { AppShell } from "./app-shell";
 import { GlassCard } from "./ui/glass-card";
 import { VisualSlot } from "./ui/visual-slot";
 import { IconBadge } from "./ui/icon-badge";
-import { Pill, SectionHeading, Stat } from "./ui/stat";
+import { Pill, SectionHeading } from "./ui/stat";
 import { ParticleBurstLayer } from "./quiz/particle-burst";
 
 /** Literal hex, not the shared electric/lime CSS tokens — this chart's SVG
  * fill/stroke attributes can't read CSS custom properties, so they need
  * their own re-tint for the obsidian/gold cyber scope this screen now
  * always renders in (same reasoning as dashboard.tsx's RING_GOLD/RING_CRIMSON). */
-const CHART_GOLD = "#e8b32c";
-const CHART_CRIMSON = "#ff3b3b";
+const CHART_GOLD = "#e3c15f";
+const CHART_DEEP = "#a9841c";
 
 export function Progress() {
   const { state, answers, streak, addPhoto, setVaultPhoto } = useGoalify();
@@ -46,58 +46,89 @@ export function Progress() {
     <AppShell dark title="Progress & Evolution" subtitle="The proof it's working">
       <ParticleBurstLayer />
 
-      {/* ------------------------------------------------------ Headline stats */}
-      <GlassCard deep className="gf-anim-rise grid grid-cols-3 gap-4 p-6">
-        <Stat value={completed} label="Sessions" tone="electric" />
-        <Stat value={streak} label="Day streak" tone="lime" />
-        <Stat value={`${doneInGrid}/30`} label="Last 30 days" tone="ink" />
-      </GlassCard>
+      {/* ---------------------------------------------------------- Hero
+          One layered surface: the trendline plus its stat context (today,
+          target, sessions, streak) all live in one card now, with an inset
+          panel giving the quick stats their own depth instead of a
+          separate headline box floating above. */}
+      <div className="relative">
+        <div
+          className="pointer-events-none absolute -inset-4 -z-10 rounded-[2.5rem] bg-electric/16 opacity-70 blur-3xl"
+          aria-hidden
+        />
+        <section className="gf-anim-rise">
+          <SectionHeading
+            eyebrow="Projection"
+            title="Weight trendline"
+            action={
+              <Pill tone={losing ? "lime" : "electric"}>
+                <TrendingDown
+                  className={clsx("size-3", !losing && "rotate-180")}
+                  strokeWidth={3}
+                />
+                {weeks > 0 ? `${weeks} wks` : "At target"}
+              </Pill>
+            }
+          />
+          <GlassCard deep className="p-6">
+            <div className="flex items-baseline justify-between">
+              <div>
+                <p className="gf-numeric text-3xl font-black text-ink">
+                  {answers.weightKg}
+                  <span className="text-base font-bold text-mist"> kg</span>
+                </p>
+                <p className="text-[11px] font-bold tracking-[0.12em] text-mist uppercase">
+                  Today
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="gf-numeric text-3xl font-black text-electric">
+                  {answers.targetWeightKg}
+                  <span className="text-base font-bold text-mist"> kg</span>
+                </p>
+                <p className="text-[11px] font-bold tracking-[0.12em] text-mist uppercase">
+                  Target
+                </p>
+              </div>
+            </div>
+            <TrendChart points={projection} />
+            <p className="mt-3 text-center text-xs text-haze">
+              Projected at a safe 0.75% of bodyweight per week
+            </p>
+
+            <div className="mt-5 grid grid-cols-3 divide-x divide-ink/8 rounded-3xl bg-black/20 p-4">
+              <div className="px-2 text-center first:pl-0 last:pr-0">
+                <p className="gf-numeric text-xl font-black text-ink">{completed}</p>
+                <p className="mt-0.5 text-[10px] font-bold tracking-[0.08em] text-mist uppercase">
+                  Sessions
+                </p>
+              </div>
+              <div className="px-2 text-center first:pl-0 last:pr-0">
+                <p className="gf-numeric text-xl font-black text-electric">{streak}</p>
+                <p className="mt-0.5 text-[10px] font-bold tracking-[0.08em] text-mist uppercase">
+                  Day streak
+                </p>
+              </div>
+              <div className="px-2 text-center first:pl-0 last:pr-0">
+                <p className="gf-numeric text-xl font-black text-ink">{doneInGrid}/30</p>
+                <p className="mt-0.5 text-[10px] font-bold tracking-[0.08em] text-mist uppercase">
+                  Last 30 days
+                </p>
+              </div>
+            </div>
+
+            <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-xs font-semibold text-electric">
+              <Flame className="size-3.5" strokeWidth={2.6} />
+              {completed === 0
+                ? "Finish your first session and this whole page comes alive."
+                : "Keep the grid green — that's the only metric that compounds."}
+            </p>
+          </GlassCard>
+        </section>
+      </div>
 
       {/* See dashboard.tsx's matching comment — CSS-multicol, no reordering. */}
       <div className="lg:columns-2 lg:gap-6">
-      {/* -------------------------------------------------------- Trendline */}
-      <section className="gf-anim-rise gf-delay-2 mt-8 lg:break-inside-avoid">
-        <SectionHeading
-          eyebrow="Projection"
-          title="Weight trendline"
-          action={
-            <Pill tone={losing ? "lime" : "electric"}>
-              <TrendingDown
-                className={clsx("size-3", !losing && "rotate-180")}
-                strokeWidth={3}
-              />
-              {weeks > 0 ? `${weeks} wks` : "At target"}
-            </Pill>
-          }
-        />
-        <GlassCard deep className="p-6">
-          <div className="flex items-baseline justify-between">
-            <div>
-              <p className="gf-numeric text-3xl font-black text-ink">
-                {answers.weightKg}
-                <span className="text-base font-bold text-mist"> kg</span>
-              </p>
-              <p className="text-[11px] font-bold tracking-[0.12em] text-mist uppercase">
-                Today
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="gf-numeric text-3xl font-black text-lime-deep">
-                {answers.targetWeightKg}
-                <span className="text-base font-bold text-mist"> kg</span>
-              </p>
-              <p className="text-[11px] font-bold tracking-[0.12em] text-mist uppercase">
-                Target
-              </p>
-            </div>
-          </div>
-          <TrendChart points={projection} />
-          <p className="mt-3 text-center text-xs text-haze">
-            Projected at a safe 0.75% of bodyweight per week
-          </p>
-        </GlassCard>
-      </section>
-
       {/* ------------------------------------------------------ Completion grid */}
       <section className="gf-anim-rise gf-delay-3 mt-8 lg:break-inside-avoid">
         <SectionHeading eyebrow="Consistency" title="30-day grid" />
@@ -276,17 +307,6 @@ export function Progress() {
         </GlassCard>
       </section>
 
-      <GlassCard
-        tone="electric"
-        className="gf-anim-rise gf-delay-6 mt-8 flex items-center gap-4 p-5 lg:break-inside-avoid"
-      >
-        <Flame className="size-5 shrink-0 text-electric" strokeWidth={2.6} />
-        <p className="text-xs leading-relaxed text-ink-soft">
-          {completed === 0
-            ? "Finish your first session and this whole page comes alive."
-            : `${completed} session${completed === 1 ? "" : "s"} logged. Keep the grid green — that's the only metric that compounds.`}
-        </p>
-      </GlassCard>
       </div>
     </AppShell>
   );
@@ -440,8 +460,8 @@ function TrendChart({ points }: { points: { week: number; weight: number }[] }) 
       >
         <defs>
           <linearGradient id="gf-trend" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={CHART_CRIMSON} stopOpacity="0.32" />
-            <stop offset="100%" stopColor={CHART_CRIMSON} stopOpacity="0" />
+            <stop offset="0%" stopColor={CHART_DEEP} stopOpacity="0.32" />
+            <stop offset="100%" stopColor={CHART_DEEP} stopOpacity="0" />
           </linearGradient>
         </defs>
 
@@ -478,7 +498,7 @@ function TrendChart({ points }: { points: { week: number; weight: number }[] }) 
           cx={coords[coords.length - 1].x}
           cy={coords[coords.length - 1].y}
           r="6"
-          fill={CHART_CRIMSON}
+          fill={CHART_DEEP}
           stroke="#0b0e14"
           strokeWidth="3"
         />

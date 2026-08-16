@@ -41,14 +41,14 @@ export function WaterTracker() {
         {/* ------------------------------------------------------ The bottle */}
         <div className="relative h-52 w-28 shrink-0">
           {/* Cap */}
-          <div className="absolute inset-x-9 top-0 h-5 rounded-t-lg bg-linear-to-b from-electric to-[#0040c8] shadow-md" />
+          <div className="absolute inset-x-9 top-0 h-5 rounded-t-lg bg-linear-to-b from-electric to-[#a9841c] shadow-md" />
 
           {/* Body */}
           <div
             className={clsx(
               "absolute inset-x-0 top-4 bottom-0 overflow-hidden rounded-t-3xl rounded-b-[2rem]",
               "border border-white/90 bg-linear-to-br from-white/80 to-white/40",
-              "shadow-[inset_0_2px_8px_rgba(255,255,255,0.9),0_18px_36px_-18px_rgba(0,82,255,0.5)]",
+              "shadow-[inset_0_2px_8px_rgba(255,255,255,0.9),0_18px_36px_-18px_rgba(201,162,39,0.5)]",
               "backdrop-blur-md",
             )}
           >
@@ -57,7 +57,7 @@ export function WaterTracker() {
               className="absolute inset-x-0 bottom-0 transition-[height] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
               style={{ height: `${percent}%` }}
             >
-              <div className="absolute inset-0 bg-linear-to-t from-electric via-[#2f7bff] to-[#7fb0ff]" />
+              <div className="absolute inset-0 bg-linear-to-t from-electric via-[#ddbe63] to-[#f0dfa8]" />
               {/* Surface wave */}
               <div
                 className="gf-anim-wave absolute -top-2 h-4 w-[150%] rounded-[50%] bg-white/45"
