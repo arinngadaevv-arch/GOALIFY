@@ -44,10 +44,21 @@ export function ActivityRings({
         }))}
       >
         <div>
-          <p className="gf-numeric text-2xl font-black text-ink">{overallPercent}%</p>
-          <p className="text-[10px] font-bold tracking-[0.1em] text-mist uppercase">
-            Today
-          </p>
+          {overallPercent > 0 ? (
+            <>
+              <p className="gf-numeric text-2xl font-black text-ink">{overallPercent}%</p>
+              <p className="text-[10px] font-bold tracking-[0.1em] text-mist uppercase">
+                Today
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="gf-display text-sm font-black text-ink">Let&apos;s go</p>
+              <p className="text-[10px] font-bold tracking-[0.1em] text-mist uppercase">
+                Ready
+              </p>
+            </>
+          )}
         </div>
       </ProgressRing>
 

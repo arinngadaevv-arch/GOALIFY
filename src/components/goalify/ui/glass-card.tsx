@@ -21,7 +21,7 @@ export function GlassCard({
         deep && "gf-glass-deep",
         tone === "electric" && "gf-glass-electric",
         tone === "lime" && "gf-glass-lime",
-        interactive && "gf-lift cursor-pointer",
+        interactive && "gf-lift gf-press cursor-pointer",
         className,
       )}
       {...rest}

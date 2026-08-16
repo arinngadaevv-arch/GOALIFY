@@ -1621,10 +1621,13 @@ html.goalify ::-webkit-scrollbar-thumb {
   box-shadow: 0 0 0 1.5px var(--color-electric);
 }
 
+/* A warm tint, not a coloured outline — the accent lives in the wash and
+   the icon/text on top of it, never in a bright border ring. That's what
+   keeps these read as glass instead of "boxes with a yellow line". */
 .gf-elite-scope .gf-glass-electric,
 .gf-elite-scope .gf-glass-lime {
-  background: rgba(201, 162, 39, 0.08);
-  border-color: rgba(201, 162, 39, 0.24);
+  background: rgba(201, 162, 39, 0.06);
+  border-color: rgba(255, 255, 255, 0.07);
 }
 
 /* --- Accents: one soft gold glow, never a neon blur ----------------------- */

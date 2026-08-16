@@ -29,6 +29,7 @@ import { goalLabel, weeksToTarget } from "@/lib/goalify/plan";
 import { currentWeekDays } from "@/lib/goalify/dates";
 import { useHaptics } from "@/lib/goalify/use-haptics";
 import { playCompletionCelebration } from "@/lib/goalify/sound";
+import { useCountUp, useRevealOnMount } from "@/lib/goalify/use-count-up";
 import { AppShell } from "./app-shell";
 import { GlassCard } from "./ui/glass-card";
 import { GlowLink } from "./ui/glow-button";
@@ -81,6 +82,14 @@ export function Dashboard() {
     100,
     Math.round((waterGlasses / targets.waterGlasses) * 100),
   );
+
+  // Arrival animation for the headline numbers — the ring value gets a
+  // one-tick-delayed commit so ProgressRing's own CSS transition actually
+  // has something to animate from, the paired text counts up independently
+  // via rAF so the digits arrive in step with it instead of snapping in.
+  const revealedWeeklyPercent = useRevealOnMount(weeklyGoalPercent);
+  const displayedWeeklyPercent = useCountUp(weeklyGoalPercent);
+  const displayedStreak = useCountUp(streak);
 
   const [stepInput, setStepInput] = useState("");
   const haptics = useHaptics();
@@ -149,7 +158,7 @@ export function Dashboard() {
             ? "Today's session is done — nice work."
             : `A ${workout.durationMinutes}-minute session is waiting for you.`}
         </p>
-        {streak > 0 && (
+        {streak > 0 ? (
           <span
             className={clsx(
               "gf-streak-badge flex shrink-0 items-center gap-1.5 rounded-full border border-electric/25 bg-electric/8 px-3 py-1.5",
@@ -160,9 +169,21 @@ export function Dashboard() {
               🔥
             </span>
             <span className="gf-numeric text-xs font-black text-ink">
-              {streak}
+              {Math.round(displayedStreak)}
             </span>
           </span>
+        ) : (
+          <Link
+            href="/workout/launch"
+            className="gf-press flex shrink-0 items-center gap-1.5 rounded-full border border-electric/25 bg-electric/8 px-3 py-1.5"
+          >
+            <span className="text-sm" aria-hidden>
+              🔥
+            </span>
+            <span className="text-[11px] font-black tracking-tight text-electric uppercase">
+              Start your streak
+            </span>
+          </Link>
         )}
       </div>
 
@@ -188,10 +209,18 @@ export function Dashboard() {
           }
         />
 
-        <GlassCard
-          deep
-          className="gf-anim-rise gf-delay-1 overflow-hidden p-0"
-        >
+        <div className="relative">
+          {/* Ambient glow — a soft bloom behind the one card the whole
+              screen is pointing at, so it reads as alive/clickable instead
+              of just another box in a list. */}
+          <div
+            className="pointer-events-none absolute -inset-4 -z-10 rounded-[2.5rem] bg-electric/18 opacity-70 blur-3xl"
+            aria-hidden
+          />
+          <GlassCard
+            deep
+            className="gf-anim-rise gf-delay-1 overflow-hidden p-0"
+          >
           <div className="relative">
             <VisualSlot
               label="Workout Preview"
@@ -249,7 +278,8 @@ export function Dashboard() {
               )}
             </GlowLink>
           </div>
-        </GlassCard>
+          </GlassCard>
+        </div>
       </section>
 
       {/* ---------------------------------------------------- Your progress
@@ -272,15 +302,28 @@ export function Dashboard() {
               <ProgressRing
                 size={88}
                 thickness={9}
-                rings={[{ value: weeklyGoalPercent, color: RING_GOLD, label: "Week" }]}
+                rings={[{ value: revealedWeeklyPercent, color: RING_GOLD, label: "Week" }]}
               >
                 <div>
-                  <p className="gf-numeric text-lg font-black text-ink">
-                    {weeklyGoalPercent}%
-                  </p>
-                  <p className="text-[8px] font-bold tracking-[0.06em] text-mist uppercase">
-                    Weekly goal
-                  </p>
+                  {weeklyGoalPercent > 0 ? (
+                    <>
+                      <p className="gf-numeric text-lg font-black text-ink">
+                        {Math.round(displayedWeeklyPercent)}%
+                      </p>
+                      <p className="text-[8px] font-bold tracking-[0.06em] text-mist uppercase">
+                        Weekly goal
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="gf-display text-xs font-black text-ink">
+                        Let&apos;s go
+                      </p>
+                      <p className="text-[8px] font-bold tracking-[0.06em] text-mist uppercase">
+                        This week
+                      </p>
+                    </>
+                  )}
                 </div>
               </ProgressRing>
 
