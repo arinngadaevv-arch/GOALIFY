@@ -1553,3 +1553,185 @@ html.goalify ::-webkit-scrollbar-thumb {
     animation: none !important;
   }
 }
+
+/* ==========================================================================
+   Elite scope — the post-login app's "high-end coaching ecosystem" skin.
+   Independent from .gf-cyber-scope (the pre-purchase funnel's gold/crimson
+   neon look, deliberately left untouched): this re-themes the very same
+   shared gf-* utility classes with its own tokens, so Dashboard/Coach/
+   Nutrition/Progress/Settings pick up the new palette automatically without
+   any component rewrite, exactly the way .gf-cyber-scope already does for
+   the quiz. Deep charcoal canvas, warm near-white text, and ONE refined
+   gold/amber accent standing in for both "electric" and "lime" tokens —
+   no second hue, no neon glow, thin low-alpha borders instead of thick
+   ones, soft neutral shadows instead of colour-blurred ones.
+   ========================================================================== */
+
+.gf-elite-scope {
+  --color-canvas: #0a0a0b;
+  --color-ink: #f3f2ee;
+  --color-ink-soft: #c8c6bf;
+  --color-mist: #8d8b84;
+  --color-haze: #56544e;
+  --color-electric: #c9a227;
+  --color-electric-soft: #ddbe63;
+  --color-lime-neon: #c9a227;
+  --color-lime-deep: #a9841c;
+
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+}
+
+/* A single, quiet bloom in the corner — depth without the funnel's
+   multi-colour radial stack or grid overlay. Generous negative space is
+   the point, so the canvas otherwise stays flat and calm. */
+.gf-elite-scope::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 32% at 18% -6%, rgba(201, 162, 39, 0.08), transparent 62%),
+    linear-gradient(180deg, #0a0a0b 0%, #101012 55%, #0a0a0b 100%);
+}
+
+/* --- Surfaces: charcoal panels, hairline borders, no glow ----------------- */
+
+.gf-elite-scope .gf-card,
+.gf-elite-scope .gf-glass {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 24px 48px -26px rgba(0, 0, 0, 0.7);
+}
+
+.gf-elite-scope .gf-card-hover:hover {
+  border-color: rgba(201, 162, 39, 0.35);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.gf-elite-scope .gf-card-active {
+  border-color: var(--color-electric);
+  background: linear-gradient(160deg, rgba(201, 162, 39, 0.14), rgba(255, 255, 255, 0.035) 70%);
+  box-shadow: 0 0 0 1.5px var(--color-electric);
+}
+
+.gf-elite-scope .gf-glass-electric,
+.gf-elite-scope .gf-glass-lime {
+  background: rgba(201, 162, 39, 0.08);
+  border-color: rgba(201, 162, 39, 0.24);
+}
+
+/* --- Accents: one soft gold glow, never a neon blur ----------------------- */
+
+.gf-elite-scope .gf-glow-electric,
+.gf-elite-scope .gf-glow-lime {
+  box-shadow:
+    0 10px 26px -12px rgba(201, 162, 39, 0.45),
+    0 0 0 1px rgba(201, 162, 39, 0.16);
+}
+
+.gf-elite-scope .gf-text-electric,
+.gf-elite-scope .gf-text-hype {
+  background: linear-gradient(120deg, #c9a227 0%, #e3c15f 55%, #c9a227 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.gf-elite-scope .gf-icon-badge {
+  background: linear-gradient(135deg, #ddbe63 0%, #c9a227 100%);
+  box-shadow:
+    0 6px 16px -6px rgba(201, 162, 39, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.gf-elite-scope .gf-icon-badge-active {
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.12),
+    0 8px 20px -6px rgba(201, 162, 39, 0.5);
+}
+
+.gf-elite-scope .gf-icon-flat {
+  background: rgba(201, 162, 39, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(201, 162, 39, 0.22);
+}
+
+.gf-elite-scope .gf-icon-flat-active {
+  background: var(--color-electric);
+  box-shadow: 0 8px 20px -8px rgba(201, 162, 39, 0.5);
+  transform: scale(1.05);
+}
+
+.gf-elite-scope .gf-slot {
+  background:
+    radial-gradient(circle at 30% 22%, rgba(201, 162, 39, 0.12) 0%, rgba(201, 162, 39, 0) 55%),
+    linear-gradient(150deg, rgba(201, 162, 39, 0.08), rgba(255, 255, 255, 0.02));
+  border: 1px dashed rgba(201, 162, 39, 0.24);
+}
+
+.gf-elite-scope .gf-slot::after {
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(201, 162, 39, 0.16) 50%,
+    transparent 80%
+  );
+}
+
+/* Recolour the shared CTA pulse ring + streak badge (both hardcoded for
+   the light/cyber themes) to this scope's single gold accent. */
+.gf-elite-scope .gf-anim-pulse {
+  animation-name: gf-elite-pulse-ring;
+}
+
+@keyframes gf-elite-pulse-ring {
+  0% {
+    box-shadow:
+      0 10px 26px -12px rgba(201, 162, 39, 0.45),
+      0 0 0 0 rgba(201, 162, 39, 0.4);
+  }
+  70% {
+    box-shadow:
+      0 10px 26px -12px rgba(201, 162, 39, 0.45),
+      0 0 0 10px rgba(201, 162, 39, 0);
+  }
+  100% {
+    box-shadow:
+      0 10px 26px -12px rgba(201, 162, 39, 0.45),
+      0 0 0 0 rgba(201, 162, 39, 0);
+  }
+}
+
+.gf-elite-scope .gf-streak-badge {
+  animation: gf-elite-flame-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes gf-elite-flame-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(201, 162, 39, 0.3),
+      0 8px 22px -8px rgba(201, 162, 39, 0.4);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(201, 162, 39, 0.55),
+      0 10px 28px -8px rgba(201, 162, 39, 0.65);
+  }
+}
+
+/* Ambient body background match — same reasoning as the cyber-scope rule
+   above: keeps light-theme gutters from showing on wide viewports. */
+body.goalify-body:has(.gf-elite-scope) {
+  background: #0a0a0b;
+}
+
+body.goalify-body:has(.gf-elite-scope) .gf-ambience {
+  display: none;
+}

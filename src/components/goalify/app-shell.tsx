@@ -7,7 +7,9 @@ import { TopBar } from "./top-bar";
  * Frame for the four core app screens: top bar, scrollable content that
  * clears the floating dock, and the dock itself.
  *
- * `dark` opts a screen into the obsidian/gold cyber scope. It wraps the
+ * `dark` opts a screen into the elite scope — the post-login app's deep
+ * charcoal, single-gold-accent skin (independent from the pre-purchase
+ * funnel's gold/crimson `.gf-cyber-scope`, see goalify.css). It wraps the
  * whole fragment (not just the scrollable content) so the fixed BottomDock
  * — a layout sibling, not a DOM descendant of the content div — still
  * inherits the scope's CSS custom properties; `position: fixed` only
@@ -37,7 +39,7 @@ export function AppShell({
   dark?: boolean;
 }) {
   return (
-    <div className={clsx(dark && "gf-cyber-scope")}>
+    <div className={clsx(dark && "gf-elite-scope")}>
       <div className="lg:flex">
         <SidebarNav />
         <div className="mx-auto w-full max-w-lg px-5 pt-6 pb-36 lg:max-w-5xl lg:px-12 lg:pt-10 lg:pb-16">

@@ -15,7 +15,6 @@ import {
   Play,
   ShieldCheck,
   Sparkles,
-  Target,
   Timer,
   Zap,
 } from "lucide-react";
@@ -39,28 +38,19 @@ import { ActivityRings, type ActivityMetric } from "./ui/activity-rings";
 import { Pill, SectionHeading, Stat } from "./ui/stat";
 import { fireBurst, ParticleBurstLayer } from "./quiz/particle-burst";
 
-/** Obsidian-scope ring colors — literal hex since RING_ELECTRIC/RING_LIME
- * are shared constants tuned for the light theme elsewhere in the app. */
-const RING_GOLD = "#e8b32c";
-const RING_CRIMSON = "#ff3b3b";
-const RING_LIME = "#39FF14";
-const RING_STEPS = "#0052FF";
-const RING_CALORIES = "#ff6a3b";
+/** Elite-scope ring colors — literal hex since the shared RING_ELECTRIC/
+ * RING_LIME constants are tuned for the light theme elsewhere in the app.
+ * All warm-gold family, matching the scope's single-accent rule; steps
+ * keeps a cooler neutral so the three activity rings stay legible next to
+ * each other. */
+const RING_GOLD = "#c9a227";
+const RING_LIME = "#ddbe63";
+const RING_STEPS = "#9aa1ae";
+const RING_CALORIES = "#e3844a";
 
 /** Rough, commonly-cited energy cost per step — enough to make the calorie
  * ring feel alive without pretending to be a calibrated metabolic measure. */
 const KCAL_PER_STEP = 0.04;
-
-const MOTIVATION_QUOTES = [
-  "NO ZERO DAYS",
-  "BUILD THE ALPHA WITHIN",
-  "DISCIPLINE OVER EXCUSES",
-  "EARN IT TODAY",
-  "OUTWORK YESTERDAY",
-  "IT'S NOT JUST THE WORKOUT — EAT LIKE IT MATTERS",
-  "DON'T FORGET THE FUEL, NOT JUST THE GRIND",
-  "YOUR PLATE COUNTS AS MUCH AS YOUR REPS",
-];
 
 export function Dashboard() {
   const {
@@ -77,9 +67,7 @@ export function Dashboard() {
   } = useGoalify();
 
   const workout = resolveWorkout(todaysWorkout, state.settings.kneeSafe);
-  const workoutPercent = workoutDoneToday ? 100 : 0;
   const weeksToGoal = weeksToTarget(answers);
-  const losingWeight = answers.targetWeightKg < answers.weightKg;
 
   const weekDays = useMemo(() => currentWeekDays(), []);
   const weekCompletedCount = weekDays.filter((d) =>
@@ -126,7 +114,7 @@ export function Dashboard() {
 
   // Sound + haptic for finishing a workout already fire once, right on the
   // live-player's own completion screen (see live-player.tsx) — this only
-  // adds a quiet visual flourish on the streak badge for landing back here
+  // adds a quiet pop to the briefing's streak chip for landing back here
   // with today's session freshly done, not a second buzz for the same event.
   const [streakJustPopped, setStreakJustPopped] = useState(false);
   useEffect(() => {
@@ -148,150 +136,48 @@ export function Dashboard() {
     <AppShell dark>
       <ParticleBurstLayer />
 
-      {/* ------------------------------------------------------- Streak badge */}
-      <StreakBadge streak={streak} pulse={streakJustPopped} />
-
-      {/* --------------------------------------------------- Motivation ticker */}
-      <MotivationTicker />
+      {/* ------------------------------------------------------- Briefing
+          One quiet line instead of a pulsing flame banner plus a scrolling
+          hype ticker — the day, the plan, and today's one job, read in a
+          glance. The streak still gets a moment (a small chip, not a
+          section) so the number isn't lost, just no longer shouting. */}
+      <div className="gf-anim-rise mb-7 flex flex-wrap items-start justify-between gap-3">
+        <p className="min-w-0 flex-1 text-sm leading-relaxed text-ink-soft">
+          Day {state.programDay} of your {goalLabel(answers.goal).toLowerCase()}{" "}
+          plan.{" "}
+          {workoutDoneToday
+            ? "Today's session is done — nice work."
+            : `A ${workout.durationMinutes}-minute session is waiting for you.`}
+        </p>
+        {streak > 0 && (
+          <span
+            className={clsx(
+              "gf-streak-badge flex shrink-0 items-center gap-1.5 rounded-full border border-electric/25 bg-electric/8 px-3 py-1.5",
+              streakJustPopped && "gf-anim-pop",
+            )}
+          >
+            <span className="gf-anim-flicker-flame text-sm" aria-hidden>
+              🔥
+            </span>
+            <span className="gf-numeric text-xs font-black text-ink">
+              {streak}
+            </span>
+          </span>
+        )}
+      </div>
 
       {/* On phones this is just a plain vertical stack. At lg+ it flows into
           two CSS-multicol columns — no DOM reordering, no JS masonry lib,
           each top-level block just gets `lg:break-inside-avoid` so it never
           splits mid-card across the column break. */}
       <div className="lg:columns-2 lg:gap-6">
-      {/* ---------------------------------------------------------- Your goal
-          A brand-new account's Live Activity section right below this is
-          all zeroes until a first session/step is logged — the one thing
-          that's never zero, even on day one, is the actual number the quiz
-          was built around. Leading with it here (it otherwise only lived on
-          the Progress screen's trendline) gives the top of the dashboard
-          real, personal content instead of only empty-state rings. */}
-      <section className="gf-anim-rise mb-6 lg:break-inside-avoid">
+      {/* ------------------------------------------------ Primary action
+          The one thing today actually asks of the user. Everything else on
+          this screen is context; this is the job. */}
+      <section className="lg:break-inside-avoid">
         <SectionHeading
-          eyebrow="Your goal"
-          title={goalLabel(answers.goal)}
-          action={
-            <Pill tone={losingWeight ? "lime" : "electric"}>
-              <Target className="size-3" strokeWidth={3} />
-              {weeksToGoal > 0 ? `~${weeksToGoal} wks` : "At target"}
-            </Pill>
-          }
-        />
-        <Link href="/progress" className="block">
-          <GlassCard deep interactive className="p-6">
-            <div className="flex items-baseline justify-between">
-              <div>
-                <p className="gf-numeric text-3xl font-black text-ink">
-                  {answers.weightKg}
-                  <span className="text-base font-bold text-mist"> kg</span>
-                </p>
-                <p className="text-[11px] font-bold tracking-[0.12em] text-mist uppercase">
-                  Today
-                </p>
-              </div>
-              <ArrowRight className="size-4 shrink-0 text-haze" />
-              <div className="text-right">
-                <p className="gf-numeric text-3xl font-black text-lime-deep">
-                  {answers.targetWeightKg}
-                  <span className="text-base font-bold text-mist"> kg</span>
-                </p>
-                <p className="text-[11px] font-bold tracking-[0.12em] text-mist uppercase">
-                  Target
-                </p>
-              </div>
-            </div>
-            <p className="mt-4 text-center text-xs text-haze">
-              See your full trendline & trophy shelf on Progress →
-            </p>
-          </GlassCard>
-        </Link>
-      </section>
-
-      {/* ----------------------------------------------------- Today's Activity
-          Used to auto-track steps live via the phone's motion sensor, but
-          iOS Safari makes you re-grant that permission on every single
-          visit (no persisted per-site grant the way camera/mic get) — that
-          read as "broken," not "needs a tap," so this is a quick manual
-          update instead: copy the number your phone already has. */}
-      <section className="gf-anim-rise mb-6 lg:break-inside-avoid">
-        <SectionHeading eyebrow="From your phone" title="Today's Activity" />
-        <GlassCard deep className="p-6">
-          <ActivityRings metrics={activityMetrics} />
-
-          <div className="mt-5 flex items-center gap-2">
-            <input
-              type="number"
-              inputMode="numeric"
-              min={0}
-              value={stepInput}
-              onChange={(event) => setStepInput(event.target.value)}
-              placeholder={steps > 0 ? steps.toLocaleString() : "e.g. 6,234"}
-              className="gf-glass min-w-0 flex-1 rounded-2xl px-4 py-3 text-sm font-bold text-ink placeholder:text-haze focus:outline-none"
-            />
-            <button
-              type="button"
-              onClick={() => {
-                const parsed = Number(stepInput);
-                if (Number.isFinite(parsed) && parsed >= 0) {
-                  setSteps(parsed);
-                  setStepInput("");
-                }
-              }}
-              className="gf-press gf-glow-electric flex shrink-0 items-center gap-1.5 rounded-2xl bg-electric px-4 py-3 text-xs font-bold text-white"
-            >
-              <Footprints className="size-4" />
-              Update
-            </button>
-          </div>
-          <p className="mt-2 text-center text-[11px] text-haze">
-            Copy today&apos;s step count from your phone&apos;s Health app —
-            nothing ever leaves this device.
-          </p>
-        </GlassCard>
-      </section>
-
-      {/* ------------------------------------------------ Dual progress rings */}
-      <GlassCard deep className="gf-anim-rise gf-delay-1 flex items-center gap-6 p-6 lg:break-inside-avoid">
-        <ProgressRing
-          size={148}
-          thickness={13}
-          gap={7}
-          rings={[
-            { value: workoutPercent, color: RING_GOLD, label: "Workout" },
-            { value: nutritionPercent, color: RING_CRIMSON, label: "Nutrition" },
-          ]}
-        >
-          <div>
-            <p className="gf-numeric text-3xl font-black text-ink">
-              {Math.round((workoutPercent + nutritionPercent) / 2)}%
-            </p>
-            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-mist">
-              Today
-            </p>
-          </div>
-        </ProgressRing>
-
-        <div className="min-w-0 flex-1 space-y-4">
-          <RingLegend
-            color={RING_GOLD}
-            label="Workout"
-            value={`${workoutPercent}%`}
-            detail={workoutDoneToday ? "Session complete" : "Not started yet"}
-          />
-          <RingLegend
-            color={RING_CRIMSON}
-            label="Nutrition"
-            value={`${nutritionPercent}%`}
-            detail={`${waterGlasses}/${targets.waterGlasses} glasses`}
-          />
-        </div>
-      </GlassCard>
-
-      {/* ------------------------------------------------ Today's workout card */}
-      <section className="mt-8 lg:break-inside-avoid">
-        <SectionHeading
-          eyebrow={`Day ${state.programDay}`}
-          title="Today's Workout"
+          eyebrow="Today"
+          title="Your Workout"
           action={
             state.settings.kneeSafe ? (
               <Pill tone="lime">
@@ -304,7 +190,7 @@ export function Dashboard() {
 
         <GlassCard
           deep
-          className="gf-anim-rise gf-delay-2 overflow-hidden p-0"
+          className="gf-anim-rise gf-delay-1 overflow-hidden p-0"
         >
           <div className="relative">
             <VisualSlot
@@ -347,7 +233,7 @@ export function Dashboard() {
               size="lg"
               fullWidth
               pulse={!workoutDoneToday}
-              variant={workoutDoneToday ? "glass" : "cyber"}
+              variant={workoutDoneToday ? "glass" : "electric"}
               className="mt-5 gap-2 tracking-tight"
             >
               {workoutDoneToday ? (
@@ -357,11 +243,132 @@ export function Dashboard() {
                 </>
               ) : (
                 <>
-                  ⚡ START {workout.durationMinutes}-MIN WORKOUT NOW ➔ ➔
+                  START {workout.durationMinutes}-MIN SESSION
+                  <ArrowRight className="size-5" />
                 </>
               )}
             </GlowLink>
           </div>
+        </GlassCard>
+      </section>
+
+      {/* ---------------------------------------------------- Your progress
+          Replaces three separate cards (goal readout, dual today-rings,
+          weekly ring) with one: streak, weight trend, and the week's shape
+          all live here, one tap through to the full history on Progress. */}
+      <section className="mt-8 lg:break-inside-avoid">
+        <SectionHeading
+          eyebrow="Your progress"
+          title="This Week"
+          action={
+            <Pill tone={weekCompletedCount > 0 ? "lime" : "electric"}>
+              {weekCompletedCount}/{answers.daysPerWeek} sessions
+            </Pill>
+          }
+        />
+        <Link href="/progress" className="block">
+          <GlassCard deep interactive className="gf-anim-rise gf-delay-2 p-6">
+            <div className="flex items-center gap-5">
+              <ProgressRing
+                size={88}
+                thickness={9}
+                rings={[{ value: weeklyGoalPercent, color: RING_GOLD, label: "Week" }]}
+              >
+                <div>
+                  <p className="gf-numeric text-lg font-black text-ink">
+                    {weeklyGoalPercent}%
+                  </p>
+                  <p className="text-[8px] font-bold tracking-[0.06em] text-mist uppercase">
+                    Weekly goal
+                  </p>
+                </div>
+              </ProgressRing>
+
+              <div className="grid min-w-0 flex-1 grid-cols-2 gap-3">
+                <Stat value={answers.weightKg} suffix="kg" label="Current" />
+                <Stat
+                  value={answers.targetWeightKg}
+                  suffix="kg"
+                  label="Target"
+                  tone="lime"
+                />
+              </div>
+            </div>
+
+            <div className="mt-5 flex items-center justify-between border-t border-ink/8 pt-4">
+              {weekDays.map((day) => {
+                const done = state.completedDays.includes(day.key);
+                return (
+                  <div key={day.key} className="flex flex-col items-center gap-1">
+                    <span
+                      className={clsx(
+                        "grid size-7 place-items-center rounded-full",
+                        done
+                          ? "gf-glow-electric bg-electric text-white"
+                          : day.isToday
+                            ? "border-2 border-electric/60 text-electric"
+                            : "bg-ink/6 text-haze",
+                      )}
+                    >
+                      {done ? (
+                        <Check className="size-3.5" strokeWidth={3.5} />
+                      ) : (
+                        <span className="text-[10px] font-bold">{day.label}</span>
+                      )}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <p className="mt-3 text-center text-xs text-haze">
+              {weeksToGoal > 0 ? `~${weeksToGoal} weeks to target` : "At target"}
+              {" · "}see your full trendline &amp; trophy shelf →
+            </p>
+          </GlassCard>
+        </Link>
+      </section>
+
+      {/* ----------------------------------------------------- Today's Activity
+          Used to auto-track steps live via the phone's motion sensor, but
+          iOS Safari makes you re-grant that permission on every single
+          visit (no persisted per-site grant the way camera/mic get) — that
+          read as "broken," not "needs a tap," so this is a quick manual
+          update instead: copy the number your phone already has. */}
+      <section className="mt-8 lg:break-inside-avoid">
+        <SectionHeading eyebrow="From your phone" title="Today's Activity" />
+        <GlassCard deep className="gf-anim-rise gf-delay-3 p-6">
+          <ActivityRings metrics={activityMetrics} />
+
+          <div className="mt-5 flex items-center gap-2">
+            <input
+              type="number"
+              inputMode="numeric"
+              min={0}
+              value={stepInput}
+              onChange={(event) => setStepInput(event.target.value)}
+              placeholder={steps > 0 ? steps.toLocaleString() : "e.g. 6,234"}
+              className="gf-glass min-w-0 flex-1 rounded-2xl px-4 py-3 text-sm font-bold text-ink placeholder:text-haze focus:outline-none"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                const parsed = Number(stepInput);
+                if (Number.isFinite(parsed) && parsed >= 0) {
+                  setSteps(parsed);
+                  setStepInput("");
+                }
+              }}
+              className="gf-press gf-glow-electric flex shrink-0 items-center gap-1.5 rounded-2xl bg-electric px-4 py-3 text-xs font-bold text-white"
+            >
+              <Footprints className="size-4" />
+              Update
+            </button>
+          </div>
+          <p className="mt-2 text-center text-[11px] text-haze">
+            Copy today&apos;s step count from your phone&apos;s Health app —
+            nothing ever leaves this device.
+          </p>
         </GlassCard>
       </section>
 
@@ -396,83 +403,12 @@ export function Dashboard() {
         </Link>
       </section>
 
-      {/* ---------------------------------------------------------- This week
-          Today's Workout above only ever answers "what now" — nothing on
-          the dashboard showed the plan's actual shape (which days this
-          week, how many logged so far), which is genuinely useful context
-          that previously only existed buried in the post-workout
-          CompletionScreen. Same day-strip pattern as that screen's own
-          "Your progress" card, so it reads as familiar rather than new UI
-          to learn. */}
-      <section className="mt-8 lg:break-inside-avoid">
-        <SectionHeading
-          eyebrow={`${answers.daysPerWeek}-day plan`}
-          title="This week"
-          action={
-            <Pill tone={weekCompletedCount > 0 ? "lime" : "electric"}>
-              {weekCompletedCount}/{answers.daysPerWeek} sessions
-            </Pill>
-          }
-        />
-        <GlassCard deep className="flex items-center gap-5 p-6">
-          <ProgressRing
-            size={88}
-            thickness={9}
-            rings={[{ value: weeklyGoalPercent, color: RING_GOLD, label: "Week" }]}
-          >
-            <div>
-              <p className="gf-numeric text-lg font-black text-ink">
-                {weeklyGoalPercent}%
-              </p>
-              <p className="text-[8px] font-bold tracking-[0.06em] text-mist uppercase">
-                Weekly goal
-              </p>
-            </div>
-          </ProgressRing>
-
-          <div className="min-w-0 flex-1">
-            <div className="flex justify-between gap-1">
-              {weekDays.map((day) => {
-                const done = state.completedDays.includes(day.key);
-                return (
-                  <div key={day.key} className="flex flex-col items-center gap-1">
-                    <span
-                      className={clsx(
-                        "grid size-7 place-items-center rounded-full",
-                        done
-                          ? "gf-glow-electric bg-electric text-white"
-                          : day.isToday
-                            ? "border-2 border-electric/60 text-electric"
-                            : "bg-ink/6 text-haze",
-                      )}
-                    >
-                      {done ? (
-                        <Check className="size-3.5" strokeWidth={3.5} />
-                      ) : (
-                        <span className="text-[10px] font-bold">{day.label}</span>
-                      )}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-            <p className="mt-3 text-xs font-semibold text-ink-soft">
-              {weekCompletedCount === 0
-                ? "No sessions logged yet this week."
-                : weekCompletedCount >= answers.daysPerWeek
-                  ? "Weekly goal hit — anything extra is a bonus."
-                  : `${answers.daysPerWeek - weekCompletedCount} to go to hit this week's goal.`}
-            </p>
-          </div>
-        </GlassCard>
-      </section>
-
       {/* ------------------------------------------------------ Library link */}
       <Link href="/workouts" className="mt-5 block lg:break-inside-avoid">
         <GlassCard
           tone="lime"
           interactive
-          className="gf-anim-rise gf-delay-3 relative flex items-center gap-4 overflow-hidden p-5"
+          className="gf-anim-rise gf-delay-4 relative flex items-center gap-4 overflow-hidden p-5"
         >
           <div
             className="pointer-events-none absolute -top-8 -right-8 size-28 rounded-full bg-lime-neon/20 blur-3xl"
@@ -508,7 +444,7 @@ export function Dashboard() {
           }
         />
 
-        <GlassCard deep className="gf-anim-rise gf-delay-4 p-6">
+        <GlassCard deep className="gf-anim-rise gf-delay-5 p-6">
           <div className="grid grid-cols-3 gap-3">
             <MacroTile
               Icon={Zap}
@@ -568,7 +504,7 @@ export function Dashboard() {
         <GlassCard
           tone="electric"
           interactive
-          className="gf-anim-rise gf-delay-5 relative flex items-center gap-4 overflow-hidden p-5"
+          className="gf-anim-rise gf-delay-6 relative flex items-center gap-4 overflow-hidden p-5"
         >
           <div
             className="pointer-events-none absolute -top-8 -right-8 size-28 rounded-full bg-electric/25 blur-3xl"
@@ -596,107 +532,6 @@ export function Dashboard() {
         week
       </p>
     </AppShell>
-  );
-}
-
-/** Prominent top-of-dashboard streak callout — pulsing flame glow. Pops with
- * a brief scale animation the moment today's workout is freshly completed.
- * Shows only the streak itself — the program day ("Day N" of the plan) is a
- * different, unrelated counter already shown as its own eyebrow on the
- * Today's Workout card below, so pairing the two numbers in one pill read
- * as one broken stat instead of two separate ones.
- *
- * At streak 0 the copy is a direct imperative ("Start your streak today"),
- * which reads as a tappable CTA — so it genuinely is one, linking straight
- * into today's workout. Once a streak exists it's a status readout instead
- * (nothing to "start"), so it stays a plain, non-interactive div. */
-function StreakBadge({ streak, pulse = false }: { streak: number; pulse?: boolean }) {
-  const badgeClassName = clsx(
-    "gf-anim-rise gf-streak-badge mb-5 flex items-center justify-center gap-2.5 rounded-full border border-lime-deep/30 bg-linear-to-r from-lime-neon/10 via-electric/8 to-lime-neon/10 px-5 py-3",
-    pulse && "gf-anim-pop",
-  );
-
-  const flame = (
-    <span className="gf-anim-flicker-flame text-2xl" aria-hidden>
-      🔥
-    </span>
-  );
-
-  if (streak > 0) {
-    return (
-      <div className={badgeClassName}>
-        {flame}
-        <p className="gf-display text-sm font-black tracking-tight text-ink">
-          <span className="gf-numeric text-lime-deep">{streak}</span>-day streak
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <Link href="/workout/launch" className={clsx(badgeClassName, "gf-press")}>
-      {flame}
-      <p className="text-[11px] font-black tracking-[0.1em] text-lime-deep uppercase">
-        Start your streak today
-      </p>
-    </Link>
-  );
-}
-
-/** Cycling high-octane motivation quote banner. */
-function MotivationTicker() {
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    const id = window.setInterval(() => {
-      setIndex((i) => (i + 1) % MOTIVATION_QUOTES.length);
-    }, 3200);
-    return () => window.clearInterval(id);
-  }, []);
-
-  return (
-    <div className="gf-anim-rise gf-delay-1 relative mb-6 overflow-hidden rounded-full border border-electric/25 bg-linear-to-r from-electric/12 via-lime-neon/8 to-electric/12 px-5 py-2.5 text-center">
-      <div
-        className="gf-anim-pulse pointer-events-none absolute inset-y-0 left-1/2 w-24 -translate-x-1/2 bg-electric/20 blur-2xl"
-        aria-hidden
-      />
-      <p
-        key={index}
-        className="gf-anim-materialize gf-display relative text-xs font-black tracking-[0.14em] text-electric uppercase"
-      >
-        ⚡ {MOTIVATION_QUOTES[index]} ⚡
-      </p>
-    </div>
-  );
-}
-
-function RingLegend({
-  color,
-  label,
-  value,
-  detail,
-}: {
-  color: string;
-  label: string;
-  value: string;
-  detail: string;
-}) {
-  return (
-    <div>
-      <div className="flex items-center gap-2">
-        <span
-          className="size-2.5 shrink-0 rounded-full"
-          style={{ background: color, boxShadow: `0 0 8px ${color}` }}
-        />
-        <span className="text-xs font-bold uppercase tracking-[0.1em] text-mist">
-          {label}
-        </span>
-        <span className="gf-numeric ml-auto text-sm font-extrabold text-ink">
-          {value}
-        </span>
-      </div>
-      <p className="mt-0.5 pl-4.5 text-xs text-haze">{detail}</p>
-    </div>
   );
 }
 
