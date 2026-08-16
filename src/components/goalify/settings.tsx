@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 import {
   ArrowRight,
   Bell,
@@ -334,10 +334,26 @@ export function SettingsScreen() {
       </section>
       </div>
 
-      <p className="mt-8 flex items-center justify-center gap-1.5 text-center text-xs text-haze">
-        <Bell className="size-3.5" />
-        GOALIFY v1.0 · Not medical advice
-      </p>
+      {/* Deliberately understated — signing out is a rare action, and on
+          mobile this is the only place it exists at all (the desktop
+          sidebar has its own). Sits with the version footer as a quiet
+          text link rather than a button, so it's findable without
+          competing with anything above it. Unlike "Reset all data" this
+          leaves the account and its data completely intact. */}
+      <div className="mt-8 flex flex-col items-center gap-2">
+        <p className="flex items-center gap-1.5 text-center text-xs text-haze">
+          <Bell className="size-3.5" />
+          GOALIFY v1.0 · Not medical advice
+        </p>
+        <button
+          type="button"
+          onClick={() => void signOut({ callbackUrl: "/" })}
+          className="gf-press flex items-center gap-1.5 text-[11px] font-semibold text-haze transition-colors hover:text-mist"
+        >
+          <LogOut className="size-3" />
+          Sign out
+        </button>
+      </div>
     </AppShell>
   );
 }
