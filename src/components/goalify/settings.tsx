@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn, signOut } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import {
   ArrowRight,
   Bell,
@@ -36,6 +36,7 @@ import { ReviewPrompt } from "./review-prompt";
 
 export function SettingsScreen() {
   const router = useRouter();
+  const { data: session } = useSession();
   const { state, answers, updateSettings, setAvatar, reset } = useGoalify();
   const { settings } = state;
   const [googleLinked, setGoogleLinked] = useState<boolean | null>(null);
@@ -92,6 +93,11 @@ export function SettingsScreen() {
           <p className="gf-display truncate text-xl font-extrabold text-ink">
             {state.profile?.name ?? "Athlete"}
           </p>
+          {session?.user?.email && (
+            <p className="mt-0.5 truncate text-[11px] text-mist">
+              {session.user.email}
+            </p>
+          )}
           <p className="mt-0.5 truncate text-xs font-semibold text-electric">
             {planName(answers)}
           </p>
