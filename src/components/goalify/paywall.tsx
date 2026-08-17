@@ -20,13 +20,15 @@ import { fireBurst, ParticleBurstLayer } from "@/components/goalify/quiz/particl
 import { centsToDollars, PRICING_TIERS } from "@/lib/goalify/pricing";
 
 /**
- * A single, tightly-scoped conversion page: headline, plan selection, then
- * supporting proof, then a sticky CTA. Pricing sits right under the
- * headline — a fresh arrival used to have to scroll past a hero image and
- * a stats card before finding a single dollar figure, which is exactly
- * the kind of friction that gives someone time to second-guess before
- * they've even seen what it costs. The trajectory visual and plan
- * breakdown are the "why", read after the "how much" already landed.
+ * A single, tightly-scoped conversion page: headline, the plan actually
+ * built for this person, pricing, then supporting proof, then a sticky
+ * CTA. Pricing sits high — right after the personalized plan summary, not
+ * buried below a big hero image — so someone doesn't have to scroll to
+ * find out what this costs. But it isn't the very first thing either: the
+ * plan summary comes first on purpose, so the page reads as "here's what
+ * we built for you" before it reads as "here's the price" — leading with
+ * three dollar amounts straight off the headline looked like a landing
+ * page for a subscription, not a coach who actually looked at your answers.
  */
 export function Paywall() {
   const { answers, targets, todaysWorkout, hydrated } = useGoalify();
@@ -101,11 +103,14 @@ export function Paywall() {
         </p>
       </section>
 
+      {/* ------------------------------------------------- The "why": what's
+          inside. Comes before pricing on purpose — see the file-level
+          comment above. */}
+      <PlanSummaryCard answers={answers} targets={targets} todaysWorkout={todaysWorkout} />
+
       {/* ------------------------------------------------------ Plan selection
-          Right under the headline, on purpose — see the file-level comment
-          above. This is the first thing a fresh arrival scrolls (or doesn't
-          even need to scroll) to reach. */}
-      <section className="gf-anim-rise relative mt-5">
+          Right after the plan summary — see the file-level comment above. */}
+      <section className="gf-anim-rise relative mt-6">
         <p className="text-center text-[11px] font-black tracking-[0.16em] text-mist uppercase">
           Choose your plan
         </p>
@@ -214,9 +219,6 @@ export function Paywall() {
         targetWeightKg={answers.targetWeightKg}
         goal={goalLabel(answers.goal)}
       />
-
-      {/* ------------------------------------------- The "why": what's inside */}
-      <PlanSummaryCard answers={answers} targets={targets} todaysWorkout={todaysWorkout} />
 
       {/* ----------------------------------------------------------- Sticky CTA */}
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-electric/20 bg-[#0b0e14]/95 backdrop-blur-md">
