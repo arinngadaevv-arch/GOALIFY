@@ -41,12 +41,13 @@ import { fireBurst, ParticleBurstLayer } from "./quiz/particle-burst";
 
 /** Elite-scope ring colors — literal hex since the shared RING_ELECTRIC/
  * RING_LIME constants are tuned for the light theme elsewhere in the app.
- * All warm-gold family, matching the scope's single-accent rule; steps
- * keeps a cooler neutral so the three activity rings stay legible next to
- * each other. */
+ * Gold stays the one hero/brand accent (the weekly goal ring); the three
+ * activity rings each get their own real hue — a cool blue, a green, a
+ * warm orange — so "steps vs. active minutes vs. calories" reads at a
+ * glance instead of three shades of the same gold. */
 const RING_GOLD = "#c9a227";
-const RING_LIME = "#ddbe63";
-const RING_STEPS = "#9aa1ae";
+const RING_LIME = "#3ecf8e";
+const RING_STEPS = "#5b9bd5";
 const RING_CALORIES = "#e3844a";
 
 /** Rough, commonly-cited energy cost per step — enough to make the calorie

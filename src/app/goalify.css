@@ -1581,8 +1581,12 @@ html.goalify ::-webkit-scrollbar-thumb {
   --color-haze: #56544e;
   --color-electric: #c9a227;
   --color-electric-soft: #ddbe63;
-  --color-lime-neon: #c9a227;
-  --color-lime-deep: #a9841c;
+  /* A real green, not a second gold — "lime" is the scope's positive/active
+     signal (knee-safe, completed, target hit) and needs its own hue to
+     read as one, distinct from the gold brand/CTA accent. Muted enough to
+     stay obsidian-premium rather than neon. */
+  --color-lime-neon: #3ecf8e;
+  --color-lime-deep: #21a873;
 
   position: relative;
   isolation: isolate;
