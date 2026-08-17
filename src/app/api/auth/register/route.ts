@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
@@ -49,6 +50,11 @@ export async function POST(req: Request) {
 
   const passwordHash = await bcrypt.hash(password, 12);
 
+  // First-touch attribution — see lib/goalify/attribution.ts / proxy.ts,
+  // which set this cookie on the visitor's first-ever request, well before
+  // they ever reached this form.
+  const signupSource = (await cookies()).get("gf_src")?.value ?? null;
+
   const [user] = await db
     .insert(users)
     .values({
@@ -56,6 +62,7 @@ export async function POST(req: Request) {
       email: normalizedEmail,
       passwordHash,
       plan: "FREE",
+      signupSource,
     })
     .returning({ id: users.id, email: users.email, name: users.name });
 

@@ -144,6 +144,7 @@ export default async function AdminPage() {
           quizLevel: users.quizLevel,
           quizDaysPerWeek: users.quizDaysPerWeek,
           quizCompletedAt: users.quizCompletedAt,
+          signupSource: users.signupSource,
         })
         .from(users)
         .orderBy(desc(users.createdAt))
@@ -280,6 +281,7 @@ export default async function AdminPage() {
       hasAcceptedTerms: user.hasAcceptedTerms,
       createdAt: user.createdAt.toISOString(),
       lastActiveAt: user.lastActiveAt ? user.lastActiveAt.toISOString() : null,
+      signupSource: user.signupSource,
       // quizGoal/quizLevel are plain `text` columns (not DB enums) — the API
       // route that writes them (api/user/quiz/route.ts) validates against
       // this same Goal/Level union before ever setting them, so the cast

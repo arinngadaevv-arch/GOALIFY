@@ -1,4 +1,5 @@
 import NextAuth from "next-auth";
+import { cookies } from "next/headers";
 import type { Provider } from "next-auth/providers";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
@@ -286,6 +287,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.hasActivePlan = Boolean(token.hasActivePlan);
       }
       return session;
+    },
+  },
+  events: {
+    // Fires once, right after the adapter inserts a brand-new user row —
+    // the OAuth-signup counterpart to the credentials register route's own
+    // `signupSource` write (that route never reaches the adapter, it
+    // inserts directly). `cookies()` reads from the same incoming request
+    // that triggered this whole sign-in, since Auth.js's route handler
+    // runs this within that request's async context.
+    async createUser({ user }) {
+      if (!user.id) return;
+      const signupSource = (await cookies()).get("gf_src")?.value ?? null;
+      if (!signupSource) return;
+      await db.update(users).set({ signupSource }).where(eq(users.id, user.id));
     },
   },
 });

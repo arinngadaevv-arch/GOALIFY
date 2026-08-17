@@ -43,7 +43,37 @@ export type AdminUserRow = {
   lastActiveAt: string | null;
   quiz: { goal: Goal | null; level: Level | null; daysPerWeek: number | null; completedAt: string } | null;
   latestOrder: { tierLabel: string; priceCents: number; createdAt: string } | null;
+  /** "instagram", "tiktok", "google_search", "direct", etc. — see
+   * lib/goalify/attribution.ts. Null for accounts created before this
+   * shipped, or if the visitor's browser stripped the referrer entirely. */
+  signupSource: string | null;
 };
+
+/** Same slugs `resolveTrafficSource` produces, mapped to a short label a
+ * non-technical reader recognizes at a glance. Anything not in this map
+ * (an unmapped referrer hostname, or a custom `utm_source` value) falls
+ * back to the raw slug — still readable, just not re-worded. */
+const SOURCE_LABELS: Record<string, string> = {
+  instagram: "Instagram",
+  tiktok: "TikTok",
+  facebook: "Facebook",
+  youtube: "YouTube",
+  twitter_x: "X / Twitter",
+  x: "X / Twitter",
+  reddit: "Reddit",
+  linkedin: "LinkedIn",
+  whatsapp: "WhatsApp",
+  google_search: "Google search",
+  bing_search: "Bing search",
+  duckduckgo_search: "DuckDuckGo search",
+  yahoo_search: "Yahoo search",
+  direct: "Direct / typed URL",
+};
+
+function sourceLabel(source: string | null): string {
+  if (!source) return "—";
+  return SOURCE_LABELS[source] ?? source;
+}
 
 export type AdminStats = {
   totalUsers: number;
@@ -549,6 +579,7 @@ export function AdminDashboard({
                   <th className="px-4 py-3">Plan status</th>
                   <th className="px-4 py-3">Terms</th>
                   <th className="px-4 py-3">Quiz</th>
+                  <th className="px-4 py-3">Found us via</th>
                   <th className="px-4 py-3">Latest order</th>
                   <th className="px-4 py-3">Joined</th>
                 </tr>
@@ -559,7 +590,7 @@ export function AdminDashboard({
                 ))}
                 {filteredUsers.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-mist">
+                    <td colSpan={8} className="px-4 py-8 text-center text-mist">
                       {users.length === 0
                         ? "No users yet."
                         : "No users match this search/filter."}
@@ -1603,6 +1634,7 @@ function UserRow({ user }: { user: AdminUserRow }) {
           ? `${user.quiz.goal ? goalLabel(user.quiz.goal) : "—"} · ${user.quiz.level ? levelLabel(user.quiz.level) : "—"}${user.quiz.daysPerWeek ? ` · ${user.quiz.daysPerWeek}d/wk` : ""}`
           : "Not taken"}
       </td>
+      <td className="px-4 py-3 text-xs text-mist">{sourceLabel(user.signupSource)}</td>
       <td className="px-4 py-3 text-xs text-mist">
         {user.latestOrder
           ? `${user.latestOrder.tierLabel} · ${formatMoney(user.latestOrder.priceCents)} · ${formatDate(user.latestOrder.createdAt)}`

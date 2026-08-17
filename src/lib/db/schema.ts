@@ -116,6 +116,13 @@ export const users = pgTable("user", {
   // client actually renders the paywall, purely so the admin funnel has a
   // real "reached paywall" stage instead of approximating it from signup.
   paywallViewedAt: timestamp("paywall_viewed_at"),
+  // First-touch attribution — "instagram", "tiktok", "google_search",
+  // "direct", etc. Set once at signup from the `gf_src` cookie proxy.ts
+  // writes on a visitor's first-ever request (see lib/goalify/attribution.ts);
+  // never touched again after that, so it reflects how the account first
+  // found the app, not whatever page it last came from. Null for any
+  // account created before this shipped.
+  signupSource: text("signup_source"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

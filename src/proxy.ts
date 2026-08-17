@@ -1,5 +1,13 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { resolveTrafficSource } from "@/lib/goalify/attribution";
+
+// First-touch attribution — set once, on whichever request is actually the
+// visitor's first (never overwritten by later internal navigation), then
+// read back at signup time (register route / auth.ts's createUser event)
+// so the admin table can show "how did this account find us" per user.
+const SOURCE_COOKIE = "gf_src";
+const SOURCE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
 
 // Routes that only require being signed in — deliberately NOT gated on
 // `hasActivePlan`, since a signed-in-but-unpaid user must still be able to
@@ -49,17 +57,34 @@ export default auth((req) => {
   const requiresPlan = matches(pathname, REQUIRES_PLAN_ROUTES);
   const skipQuizIfLoggedIn = matches(pathname, SKIP_QUIZ_IF_LOGGED_IN_ROUTES);
 
+  let response: NextResponse;
   if ((requiresLogin || requiresPlan) && !isLoggedIn) {
-    return NextResponse.redirect(new URL("/quiz", req.nextUrl.origin));
-  }
-  if (requiresPlan && !hasActivePlan) {
-    return NextResponse.redirect(new URL("/plan", req.nextUrl.origin));
-  }
-  if (skipQuizIfLoggedIn && isLoggedIn) {
-    return NextResponse.redirect(
+    response = NextResponse.redirect(new URL("/quiz", req.nextUrl.origin));
+  } else if (requiresPlan && !hasActivePlan) {
+    response = NextResponse.redirect(new URL("/plan", req.nextUrl.origin));
+  } else if (skipQuizIfLoggedIn && isLoggedIn) {
+    response = NextResponse.redirect(
       new URL(hasActivePlan ? "/home" : "/plan", req.nextUrl.origin),
     );
+  } else {
+    response = NextResponse.next();
   }
+
+  if (!req.cookies.get(SOURCE_COOKIE)) {
+    const source = resolveTrafficSource(
+      req.headers.get("referer"),
+      req.nextUrl.searchParams,
+    );
+    response.cookies.set(SOURCE_COOKIE, source, {
+      maxAge: SOURCE_COOKIE_MAX_AGE,
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+    });
+  }
+
+  return response;
 });
 
 export const config = {
