@@ -807,7 +807,17 @@ function CompletionScreen({
           <ProgressRing
             size={96}
             thickness={9}
-            rings={[{ value: weeklyGoalPercent, color: "#e8b32c", label: "Week" }]}
+            rings={[
+              {
+                value: weeklyGoalPercent,
+                color: "#e8b32c",
+                label: "Week",
+                // See activity-rings.tsx — ProgressRing's default track is
+                // a light-theme tint, nearly invisible on this obsidian
+                // scope's black canvas at 0%.
+                trackColor: "#e8b32c26",
+              },
+            ]}
           >
             <div>
               <p className="gf-numeric text-xl font-black text-ink">

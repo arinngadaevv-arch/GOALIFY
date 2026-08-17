@@ -41,6 +41,12 @@ export function ActivityRings({
           value: percents[i],
           color: m.color,
           label: m.label,
+          // ProgressRing's own default track is tuned for a light
+          // background — on this scope's near-black canvas it's nearly
+          // invisible, so an empty ring reads as a gap, not a gauge
+          // waiting to fill. A faint tint of the ring's own color instead
+          // keeps all three rings legible (and distinguishable) at 0%.
+          trackColor: `${m.color}26`,
         }))}
       >
         <div>
@@ -109,7 +115,10 @@ function RingLegendRow({
           </span>
         </span>
       </div>
-      <div className="mt-1.5 ml-7 h-1.5 overflow-hidden rounded-full bg-ink/6">
+      <div
+        className="mt-1.5 ml-7 h-1.5 overflow-hidden rounded-full"
+        style={{ background: `${metric.color}1f` }}
+      >
         <div
           className="gf-progress-fill h-full rounded-full transition-[width] duration-700"
           style={{

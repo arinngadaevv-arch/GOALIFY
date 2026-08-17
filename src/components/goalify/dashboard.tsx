@@ -308,7 +308,17 @@ export function Dashboard() {
               <ProgressRing
                 size={88}
                 thickness={9}
-                rings={[{ value: revealedWeeklyPercent, color: RING_GOLD, label: "Week" }]}
+                rings={[
+                  {
+                    value: revealedWeeklyPercent,
+                    color: RING_GOLD,
+                    label: "Week",
+                    // See activity-rings.tsx — ProgressRing's default track
+                    // is a light-theme tint, nearly invisible on this
+                    // scope's black canvas at 0%.
+                    trackColor: `${RING_GOLD}26`,
+                  },
+                ]}
               >
                 <div>
                   {weeklyGoalPercent > 0 ? (
