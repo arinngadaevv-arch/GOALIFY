@@ -5,7 +5,6 @@ import Image from "next/image";
 import clsx from "clsx";
 import {
   Check,
-  ChevronDown,
   Cpu,
   Loader2,
   Lock,
@@ -21,17 +20,24 @@ import { fireBurst, ParticleBurstLayer } from "@/components/goalify/quiz/particl
 import { centsToDollars, PRICING_TIERS } from "@/lib/goalify/pricing";
 
 /**
- * A single, tightly-scoped conversion page: headline, one high-impact
- * visual, plan selection, and a sticky CTA. Everything that used to be a
- * separate box further down the page (value props, live stats, milestone
- * timeline, coach testimonial) has been cut — each of those competed with
- * the plan/CTA for attention instead of leading to it.
+ * A single, tightly-scoped conversion page: headline, plan selection, then
+ * supporting proof, then a sticky CTA. Pricing sits right under the
+ * headline — a fresh arrival used to have to scroll past a hero image and
+ * a stats card before finding a single dollar figure, which is exactly
+ * the kind of friction that gives someone time to second-guess before
+ * they've even seen what it costs. The trajectory visual and plan
+ * breakdown are the "why", read after the "how much" already landed.
  */
 export function Paywall() {
   const { answers, targets, todaysWorkout, hydrated } = useGoalify();
   const [tier, setTier] = useState("quarterly");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Read out for the sticky footer's price line, kept in sync with
+  // whichever card the user has tapped in the "Choose your plan" section.
+  const selectedTier = PRICING_TIERS.find((option) => option.id === tier) ?? PRICING_TIERS[0];
+  const selectedPrice = centsToDollars(selectedTier.priceCents);
 
   // Fire-and-forget — records that this account actually reached the
   // paywall, purely for the admin funnel (see api/user/paywall-view).
@@ -95,32 +101,11 @@ export function Paywall() {
         </p>
       </section>
 
-      {/* ------------------------------------- The one big visual: trajectory */}
-      <TransformationCard
-        weightKg={answers.weightKg}
-        targetWeightKg={answers.targetWeightKg}
-        goal={goalLabel(answers.goal)}
-      />
-
-      {/* ------------------------------------------- The "why": what's inside */}
-      <PlanSummaryCard answers={answers} targets={targets} todaysWorkout={todaysWorkout} />
-
-      {/* The plan cards sit below the fold on most phones, and the sticky
-          CTA at the bottom is tappable without ever scrolling to see them
-          — this nudge sits right at that boundary so it's visible exactly
-          when a fresh page load runs out of viewport, then scrolls out of
-          view naturally once the user reaches the plans below (it's plain
-          inline content, not fixed/floating, so nothing needs to track
-          scroll position to hide it again). */}
-      <div className="mt-3 flex flex-col items-center gap-0.5 text-mist">
-        <p className="text-[11px] font-bold tracking-[0.08em] uppercase">
-          Scroll to choose your plan
-        </p>
-        <ChevronDown className="gf-anim-bounce-down size-5 text-electric" aria-hidden />
-      </div>
-
-      {/* ------------------------------------------------------ Plan selection */}
-      <section className="relative mt-4">
+      {/* ------------------------------------------------------ Plan selection
+          Right under the headline, on purpose — see the file-level comment
+          above. This is the first thing a fresh arrival scrolls (or doesn't
+          even need to scroll) to reach. */}
+      <section className="gf-anim-rise relative mt-5">
         <p className="text-center text-[11px] font-black tracking-[0.16em] text-mist uppercase">
           Choose your plan
         </p>
@@ -223,6 +208,16 @@ export function Paywall() {
         </div>
       </section>
 
+      {/* ------------------------------------- The one big visual: trajectory */}
+      <TransformationCard
+        weightKg={answers.weightKg}
+        targetWeightKg={answers.targetWeightKg}
+        goal={goalLabel(answers.goal)}
+      />
+
+      {/* ------------------------------------------- The "why": what's inside */}
+      <PlanSummaryCard answers={answers} targets={targets} todaysWorkout={todaysWorkout} />
+
       {/* ----------------------------------------------------------- Sticky CTA */}
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-electric/20 bg-[#0b0e14]/95 backdrop-blur-md">
         <div className="mx-auto w-full max-w-2xl px-5 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.65rem)]">
@@ -233,6 +228,18 @@ export function Paywall() {
           )}
 
           <CheckoutTrustBadge />
+
+          {/* The price, front and center in the one part of the page that's
+              visible on the very first frame — no scrolling required to
+              see what this actually costs. */}
+          <p className="mt-1 text-center">
+            <span className="gf-numeric text-lg font-black text-[#FFC700]">
+              ${selectedPrice.toFixed(2)}
+            </span>{" "}
+            <span className="text-[11px] font-bold text-ink-soft">
+              {selectedTier.billedLabel}
+            </span>
+          </p>
 
           <GlowButton
             variant="cyber"
