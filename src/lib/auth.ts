@@ -10,19 +10,13 @@ import { users, accounts, sessions, verificationTokens } from "@/lib/db/schema";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 /**
- * Owner dev bypass — same address as `OWNER_EMAILS` in `src/lib/admin.ts`
- * (kept as a separate local constant rather than imported, since admin.ts
- * imports `auth` from this file and importing back would be circular).
- * Both spellings for the same reason admin.ts lists both: it's unconfirmed
- * which one the real signed-up account actually used. This only ever
- * narrows who gets the bypass, never widens it — an attacker can't make
- * their own account's email match either literal string.
+ * Owner dev bypass — same address as `OWNER_EMAILS` in `src/lib/owner.ts`
+ * (kept as a separate local constant rather than imported, since owner.ts
+ * is imported from client components and this file is server-only). This
+ * only ever narrows who gets the bypass, never widens it — an attacker
+ * can't make their own account's email match this literal string.
  */
-const DEV_BYPASS_EMAILS = [
-  "arinngadaevv@gmal.com",
-  "arinngadaevv@gmail.com",
-  "erotican@gmail.com",
-];
+const DEV_BYPASS_EMAILS = ["arin.gadaev1@gmail.com"];
 
 const providers: Provider[] = [
   Credentials({

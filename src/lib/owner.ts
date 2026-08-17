@@ -5,11 +5,7 @@
  * bundle). Purely a UI-visibility convenience; the server-side gate in
  * admin.ts's `getAdminSession` is the one that actually enforces anything.
  */
-const OWNER_EMAILS = [
-  "arinngadaevv@gmal.com",
-  "arinngadaevv@gmail.com",
-  "erotican@gmail.com",
-];
+const OWNER_EMAILS = ["arin.gadaev1@gmail.com"];
 
 export function isOwnerEmail(email: string | null | undefined) {
   if (!email) return false;
