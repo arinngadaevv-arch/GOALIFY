@@ -154,7 +154,7 @@ export function AuthModal({
     <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center sm:p-4">
       {/* Backdrop — dim + blur, click to dismiss. */}
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/85 backdrop-blur-xl"
         aria-hidden
         onClick={onClose}
       />

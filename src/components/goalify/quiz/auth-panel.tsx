@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import Image from "next/image";
 import { signIn, useSession } from "next-auth/react";
 import { ChevronLeft, Loader2, Lock, ShieldCheck } from "lucide-react";
 import { Brand } from "@/components/goalify/brand";
@@ -96,26 +95,20 @@ export function AuthPanel({
 
   return (
     <div className="relative -mx-5 flex min-h-dvh flex-col overflow-hidden">
-      {/* `object-contain`, not `-cover` — this photo is landscape (1408x768)
-          and this container is a tall mobile portrait strip, so `cover`
-          was scaling it up ~1.17x and cropping ~75% of its width off just
-          to fill the box edge to edge. `contain` shows the whole photo;
-          the gradient wash below already darkens most of the screen
-          regardless, so the letterboxed space it leaves reads as part of
-          that wash, not as an empty gap. */}
-      <div className="absolute inset-0 bg-[#0b0e14]">
-        <Image
-          src="/quiz/goal-athletic.png"
-          alt=""
-          fill
-          priority
-          className="object-contain object-top"
-        />
+      {/* No photo backdrop. The only asset available here is 437x421 and
+          low-resolution, and this container is a tall portrait strip:
+          `cover` upscaled it into a blurry crop, `contain` letterboxed it
+          into a small picture floating above a large dead black area, and
+          the gradient needed to keep the form legible washed out whatever
+          survived either way. A composed ambient field — the same deep
+          charcoal + single warm bloom the signed-in app uses — reads far
+          more deliberate than a stretched stock photo, and costs no image
+          download on the most conversion-critical screen in the funnel. */}
+      <div className="absolute inset-0 bg-[#0a0a0b]" aria-hidden>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_45%_at_50%_0%,rgba(201,162,39,0.16),transparent_65%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_55%_35%_at_15%_100%,rgba(201,162,39,0.07),transparent_60%)]" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#c9a227]/40 to-transparent" />
       </div>
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/85 to-[#0b0e14]"
-        aria-hidden
-      />
 
       <button
         type="button"
@@ -171,7 +164,7 @@ export function AuthPanel({
                 onChange={(event) => setName(event.target.value)}
                 placeholder="Full name"
                 autoComplete="name"
-                className="w-full rounded-2xl border border-white/15 bg-black/30 px-4 py-3.5 text-sm font-semibold text-white outline-none backdrop-blur-md placeholder:text-white/50 focus:border-[#FFC700]"
+                className="w-full rounded-2xl border border-white/15 bg-black/30 px-4 py-3.5 text-sm font-semibold text-white outline-none backdrop-blur-md placeholder:text-white/50 focus:border-[#c9a227]"
               />
             )}
             <input
@@ -181,7 +174,7 @@ export function AuthPanel({
               onChange={(event) => setEmail(event.target.value)}
               placeholder="Email address"
               autoComplete="email"
-              className="w-full rounded-2xl border border-white/15 bg-black/30 px-4 py-3.5 text-sm font-semibold text-white outline-none backdrop-blur-md placeholder:text-white/50 focus:border-[#FFC700]"
+              className="w-full rounded-2xl border border-white/15 bg-black/30 px-4 py-3.5 text-sm font-semibold text-white outline-none backdrop-blur-md placeholder:text-white/50 focus:border-[#c9a227]"
             />
             <input
               required
@@ -191,7 +184,7 @@ export function AuthPanel({
               onChange={(event) => setPassword(event.target.value)}
               placeholder="Password (min. 8 characters)"
               autoComplete={mode === "signup" ? "new-password" : "current-password"}
-              className="w-full rounded-2xl border border-white/15 bg-black/30 px-4 py-3.5 text-sm font-semibold text-white outline-none backdrop-blur-md placeholder:text-white/50 focus:border-[#FFC700]"
+              className="w-full rounded-2xl border border-white/15 bg-black/30 px-4 py-3.5 text-sm font-semibold text-white outline-none backdrop-blur-md placeholder:text-white/50 focus:border-[#c9a227]"
             />
 
             {error && (

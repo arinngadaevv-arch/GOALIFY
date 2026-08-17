@@ -18,7 +18,11 @@ import { getClientIp, rateLimit } from "@/lib/rate-limit";
  * narrows who gets the bypass, never widens it — an attacker can't make
  * their own account's email match either literal string.
  */
-const DEV_BYPASS_EMAILS = ["arinngadaevv@gmal.com", "arinngadaevv@gmail.com"];
+const DEV_BYPASS_EMAILS = [
+  "arinngadaevv@gmal.com",
+  "arinngadaevv@gmail.com",
+  "erotican@gmail.com",
+];
 
 const providers: Provider[] = [
   Credentials({
