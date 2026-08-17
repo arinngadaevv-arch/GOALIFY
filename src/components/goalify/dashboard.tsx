@@ -14,7 +14,6 @@ import {
   Library,
   Play,
   ShieldCheck,
-  Sparkles,
   Timer,
   Zap,
 } from "lucide-react";
@@ -31,6 +30,7 @@ import { useHaptics } from "@/lib/goalify/use-haptics";
 import { playCompletionCelebration } from "@/lib/goalify/sound";
 import { useCountUp, useRevealOnMount } from "@/lib/goalify/use-count-up";
 import { AppShell } from "./app-shell";
+import { DailyCreed } from "./daily-creed";
 import { GlassCard } from "./ui/glass-card";
 import { GlowLink } from "./ui/glow-button";
 import { VisualSlot } from "./ui/visual-slot";
@@ -150,7 +150,7 @@ export function Dashboard() {
           hype ticker — the day, the plan, and today's one job, read in a
           glance. The streak still gets a moment (a small chip, not a
           section) so the number isn't lost, just no longer shouting. */}
-      <div className="gf-anim-rise mb-7 flex flex-wrap items-start justify-between gap-3">
+      <div className="gf-reveal mb-7 flex flex-wrap items-start justify-between gap-3">
         <p className="min-w-0 flex-1 text-sm leading-relaxed text-ink-soft">
           Day {state.programDay} of your {goalLabel(answers.goal).toLowerCase()}{" "}
           plan.{" "}
@@ -187,6 +187,11 @@ export function Dashboard() {
         )}
       </div>
 
+      {/* --------------------------------------------------- Today's creed */}
+      <div className="mb-8">
+        <DailyCreed />
+      </div>
+
       {/* On phones this is just a plain vertical stack. At lg+ it flows into
           two CSS-multicol columns — no DOM reordering, no JS masonry lib,
           each top-level block just gets `lg:break-inside-avoid` so it never
@@ -219,7 +224,7 @@ export function Dashboard() {
           />
           <GlassCard
             deep
-            className="gf-anim-rise gf-delay-1 overflow-hidden p-0"
+            className="gf-reveal overflow-hidden p-0"
           >
           <div className="relative">
             <VisualSlot
@@ -297,7 +302,7 @@ export function Dashboard() {
           }
         />
         <Link href="/progress" className="block">
-          <GlassCard deep interactive className="gf-anim-rise gf-delay-2 p-6">
+          <GlassCard deep interactive className="gf-reveal p-6">
             <div className="flex items-center gap-5">
               <ProgressRing
                 size={88}
@@ -380,7 +385,7 @@ export function Dashboard() {
           update instead: copy the number your phone already has. */}
       <section className="mt-8 lg:break-inside-avoid">
         <SectionHeading eyebrow="From your phone" title="Today's Activity" />
-        <GlassCard deep className="gf-anim-rise gf-delay-3 p-6">
+        <GlassCard deep className="gf-reveal p-6">
           <ActivityRings metrics={activityMetrics} />
 
           <div className="mt-5 flex items-center gap-2">
@@ -415,43 +420,12 @@ export function Dashboard() {
         </GlassCard>
       </section>
 
-      {/* ------------------------------------------------------ Smart Coach
-          A free, rule-based alternative to "just do today's workout" —
-          picks from the same real workout data via smart-coach.ts, no AI
-          API involved. Kept to one teaser card here; the actual 4-step
-          flow lives at /coach. */}
-      <section className="mt-8 lg:break-inside-avoid">
-        <Link href="/coach" className="block">
-          <GlassCard
-            deep
-            tone="electric"
-            interactive
-            className="gf-anim-rise flex items-center gap-4 overflow-hidden p-6"
-          >
-            <span className="gf-glow-electric grid size-12 shrink-0 place-items-center rounded-2xl bg-electric text-white">
-              <Sparkles className="size-6" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-base font-extrabold text-ink">
-                Not sure what to train today?
-              </p>
-              <p className="mt-0.5 text-xs leading-relaxed text-mist">
-                Let Goalify Smart Coach choose for you — four quick questions.
-              </p>
-            </div>
-            <span className="flex shrink-0 items-center gap-1 text-xs font-bold text-electric">
-              Ask <ArrowRight className="size-3.5" />
-            </span>
-          </GlassCard>
-        </Link>
-      </section>
-
       {/* ------------------------------------------------------ Library link */}
       <Link href="/workouts" className="mt-5 block lg:break-inside-avoid">
         <GlassCard
           tone="lime"
           interactive
-          className="gf-anim-rise gf-delay-4 relative flex items-center gap-4 overflow-hidden p-5"
+          className="gf-reveal relative flex items-center gap-4 overflow-hidden p-5"
         >
           <div
             className="pointer-events-none absolute -top-8 -right-8 size-28 rounded-full bg-lime-neon/20 blur-3xl"
@@ -487,7 +461,7 @@ export function Dashboard() {
           }
         />
 
-        <GlassCard deep className="gf-anim-rise gf-delay-5 p-6">
+        <GlassCard deep className="gf-reveal p-6">
           <div className="grid grid-cols-3 gap-3">
             <MacroTile
               Icon={Zap}
@@ -547,7 +521,7 @@ export function Dashboard() {
         <GlassCard
           tone="electric"
           interactive
-          className="gf-anim-rise gf-delay-6 relative flex items-center gap-4 overflow-hidden p-5"
+          className="gf-reveal relative flex items-center gap-4 overflow-hidden p-5"
         >
           <div
             className="pointer-events-none absolute -top-8 -right-8 size-28 rounded-full bg-electric/25 blur-3xl"

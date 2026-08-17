@@ -56,7 +56,7 @@ export function Progress() {
           className="pointer-events-none absolute -inset-4 -z-10 rounded-[2.5rem] bg-electric/16 opacity-70 blur-3xl"
           aria-hidden
         />
-        <section className="gf-anim-rise">
+        <section className="gf-reveal">
           <SectionHeading
             eyebrow="Projection"
             title="Weight trendline"
@@ -130,7 +130,7 @@ export function Progress() {
       {/* See dashboard.tsx's matching comment — CSS-multicol, no reordering. */}
       <div className="lg:columns-2 lg:gap-6">
       {/* ------------------------------------------------------ Completion grid */}
-      <section className="gf-anim-rise gf-delay-3 mt-8 lg:break-inside-avoid">
+      <section className="gf-reveal mt-8 lg:break-inside-avoid">
         <SectionHeading eyebrow="Consistency" title="30-day grid" />
         <GlassCard deep className="p-6">
           <div className="grid grid-cols-10 gap-1.5">
@@ -192,7 +192,7 @@ export function Progress() {
       </section>
 
       {/* -------------------------------------------------------- Photo vault */}
-      <section className="gf-anim-rise gf-delay-4 mt-8 lg:break-inside-avoid">
+      <section className="gf-reveal mt-8 lg:break-inside-avoid">
         <SectionHeading
           eyebrow="Private to you"
           title="Before / After vault"
@@ -256,7 +256,7 @@ export function Progress() {
       </section>
 
       {/* ------------------------------------------------------- Trophy shelf */}
-      <section className="gf-anim-rise gf-delay-5 mt-8 lg:break-inside-avoid">
+      <section className="gf-reveal mt-8 lg:break-inside-avoid">
         <SectionHeading
           eyebrow="Trophy shelf"
           title="Your badges"

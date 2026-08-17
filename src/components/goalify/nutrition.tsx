@@ -77,7 +77,7 @@ export function Nutrition() {
           className="pointer-events-none absolute -inset-4 -z-10 rounded-[2.5rem] bg-electric/16 opacity-70 blur-3xl"
           aria-hidden
         />
-        <GlassCard tone="electric" deep className="gf-anim-rise p-6 text-center">
+        <GlassCard tone="electric" deep className="gf-reveal p-6 text-center">
           <Pill tone="electric">{goalLabel(answers.goal)}</Pill>
           <p className="gf-numeric mt-4 text-6xl font-black text-ink">
             {targets.calories.toLocaleString()}
@@ -115,7 +115,7 @@ export function Nutrition() {
       {/* See dashboard.tsx's matching comment — CSS-multicol, no reordering. */}
       <div className="lg:columns-2 lg:gap-6">
       {/* ------------------------------------------------------ Meal templates */}
-      <section className="gf-anim-rise gf-delay-2 mt-8 lg:break-inside-avoid">
+      <section className="gf-reveal mt-8 lg:break-inside-avoid">
         <SectionHeading eyebrow="Tap for real food ideas" title="Your plate" />
         <div className="grid grid-cols-3 gap-3">
           {meals.map((meal) => (
@@ -162,7 +162,7 @@ export function Nutrition() {
       {/* ---------------------------------------------------- Habits, in one
           list — replaces five separate cards (two timing rules, three tip
           rows) with a single layered surface, dividers instead of borders. */}
-      <section className="gf-anim-rise gf-delay-3 mt-8 lg:break-inside-avoid">
+      <section className="gf-reveal mt-8 lg:break-inside-avoid">
         <SectionHeading eyebrow="Make it stick" title="Habits that matter" />
         <GlassCard deep className="divide-y divide-ink/8 p-0">
           {HABITS.map((habit) => (
@@ -185,7 +185,7 @@ export function Nutrition() {
       </section>
 
       {/* ------------------------------------------------------ Water tracker */}
-      <section className="gf-anim-rise gf-delay-4 mt-8 lg:break-inside-avoid">
+      <section className="gf-reveal mt-8 lg:break-inside-avoid">
         <SectionHeading eyebrow="Hydration" title="Daily water" />
         <WaterTracker />
       </section>

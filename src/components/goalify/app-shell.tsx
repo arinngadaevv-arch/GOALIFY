@@ -3,6 +3,7 @@
 import clsx from "clsx";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
+import { useRevealOnScroll } from "@/lib/goalify/use-reveal";
 import { BottomDock } from "./bottom-dock";
 import { SidebarNav } from "./sidebar-nav";
 import { TopBar } from "./top-bar";
@@ -48,6 +49,10 @@ export function AppShell({
   dark?: boolean;
 }) {
   const pathname = usePathname();
+  // Keyed by pathname so the observer re-binds after a tab change swaps
+  // the whole subtree out — otherwise the new screen's cards would stay
+  // stuck at their hidden starting state.
+  const revealRef = useRevealOnScroll<HTMLDivElement>(pathname);
 
   return (
     <div className={clsx(dark && "gf-elite-scope")}>
@@ -57,6 +62,7 @@ export function AppShell({
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={pathname}
+              ref={revealRef}
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}

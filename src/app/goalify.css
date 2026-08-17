@@ -1653,6 +1653,55 @@ html.goalify ::-webkit-scrollbar-thumb {
   color: transparent;
 }
 
+/* --- Motion: reveal-on-scroll + richer interactive feedback ------------- */
+
+/* Cards further down the page animate in as they enter the viewport
+   (see use-reveal.ts) rather than all firing on mount — scrolling then
+   feels like the page is assembling around you instead of arriving
+   pre-built. Starts hidden and is committed by the observer. */
+.gf-reveal {
+  opacity: 0;
+  transform: translateY(22px) scale(0.985);
+  transition:
+    opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.gf-reveal-in {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Interactive cards get a real lift plus a warm edge on hover, and press
+   down on tap — the elite scope's flat surfaces otherwise gave no physical
+   feedback at all beyond a colour change. */
+.gf-elite-scope .gf-lift {
+  transition:
+    transform 0.34s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.34s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.34s ease;
+}
+
+.gf-elite-scope .gf-lift:hover {
+  transform: translateY(-4px);
+  border-color: rgba(201, 162, 39, 0.34);
+  box-shadow:
+    0 30px 58px -26px rgba(0, 0, 0, 0.8),
+    0 0 30px -14px rgba(201, 162, 39, 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gf-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .gf-elite-scope .gf-lift:hover {
+    transform: none;
+  }
+}
+
 /* Reserved for primary actions only (opted in via this class, never
    applied blanket to bg-electric) — a warm gold-to-amber sweep instead of
    a flat fill, so the one button per screen that actually matters reads
