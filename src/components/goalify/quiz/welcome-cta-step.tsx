@@ -120,42 +120,27 @@ export function WelcomeCtaStep({
         </button>
       </div>
 
-      {/* Desktop hero — same technique as the mobile image above, but its
-          own purpose-designed 1672x941 flat image (a wide layout doesn't
-          work by just stretching the tall mobile one) with its own CTA
-          bounding box: x 1143-1531px, y 604-664px, again from color-mask
-          detection against the raw source, not eyeballed. */}
+      {/* Desktop hero — same technique as the mobile image above: its own
+          purpose-designed 1536x756 flat image (source cropped to just its
+          dark hero band, same reasoning as the mobile crop above — the
+          light "How It Works" section below it duplicated SeoContent).
+          This design bakes in two gold CTAs — a small one in its top nav
+          bar and the large one in the hero copy — so both get a real
+          button on top rather than leaving one dead, each measured via the
+          same color-mask technique against the 1536x756 source: nav button
+          x 1296-1472px/y 23-65px, hero button x 57-541px/y 509-571px. No
+          before/after gallery overlay here — unlike the previous desktop
+          image, this design has no baked-in photo slot to swap onto. */}
       <div className="relative hidden lg:block">
         <Image
-          src="/quiz/image-1786441870848.webp"
-          alt="Meet your personal AI coach. GOALIFY — 4.9/5 from 1,250+ reviews. AI-powered plans, real-time adjustments, expert guidance, real before/after transformations."
-          width={1672}
-          height={941}
+          src="/quiz/cf886129-3b24-4c4d-96a3-67d91a1642df.png"
+          alt="Meet your personal AI coach. GOALIFY — your body, your plan, AI-powered. Custom workouts, smart nutrition guidance, plans that adapt as you progress."
+          width={1536}
+          height={756}
           priority
           sizes="100vw"
           className="block h-auto w-full"
         />
-
-        {/* Real before/after gallery, swapped in over the "Real People. Real
-            Transformations." card baked into the flat image. Unlike the
-            mobile version this box (x 100-1120px, y 650-925px of the
-            1672x941 source, ~3.7:1) is much wider/shorter than the new
-            source's own ~2:1 aspect, so `object-cover` would crop off the
-            captions — `object-contain` on a matching dark backdrop shows
-            the whole image letterboxed instead, which reads as intentional
-            since the surrounding canvas is already near-black. */}
-        <div
-          className="absolute overflow-hidden bg-black"
-          style={{ left: "5.98%", width: "61%", top: "69.08%", height: "29.22%" }}
-        >
-          <Image
-            src="/e1207d57-c321-4f42-a43c-c8ee3a83a8ab.png"
-            alt="Real GOALIFY member transformations — 40 to 60 lbs lost in 4 to 6 months"
-            fill
-            sizes="60vw"
-            className="object-contain"
-          />
-        </div>
 
         <button
           type="button"
@@ -165,10 +150,29 @@ export function WelcomeCtaStep({
           }}
           className="gf-press gf-anim-pulse absolute inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-[#f0c14b] to-[#c8890f] font-bold tracking-tight text-[#1a1100] shadow-[0_0_0_1px_rgba(232,179,44,0.6),0_18px_44px_-10px_rgba(232,179,44,0.8)] transition-all duration-200 select-none hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_rgba(232,179,44,0.85),0_24px_54px_-8px_rgba(232,179,44,1)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#e8b32c]"
           style={{
-            left: "68.36%",
-            width: "23.21%",
-            top: "64.19%",
-            height: "6.38%",
+            left: "84.38%",
+            width: "11.46%",
+            top: "3.04%",
+            height: "5.56%",
+            fontSize: "clamp(0.6rem, 0.85vw, 0.85rem)",
+          }}
+        >
+          START MY PLAN
+          <ArrowRight className="size-[1em]" />
+        </button>
+
+        <button
+          type="button"
+          onClick={(event) => {
+            fireBurst(event.clientX, event.clientY, true);
+            onStart();
+          }}
+          className="gf-press gf-anim-pulse absolute inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-[#f0c14b] to-[#c8890f] font-bold tracking-tight text-[#1a1100] shadow-[0_0_0_1px_rgba(232,179,44,0.6),0_18px_44px_-10px_rgba(232,179,44,0.8)] transition-all duration-200 select-none hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_rgba(232,179,44,0.85),0_24px_54px_-8px_rgba(232,179,44,1)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#e8b32c]"
+          style={{
+            left: "3.71%",
+            width: "31.51%",
+            top: "67.33%",
+            height: "8.2%",
             fontSize: "clamp(0.8rem, 1.1vw, 1.1rem)",
           }}
         >
