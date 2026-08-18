@@ -32,7 +32,7 @@ import { useCountUp, useRevealOnMount } from "@/lib/goalify/use-count-up";
 import { AppShell } from "./app-shell";
 import { DailyCreed } from "./daily-creed";
 import { GlassCard } from "./ui/glass-card";
-import { GlowLink } from "./ui/glow-button";
+import { GlowButton, GlowLink } from "./ui/glow-button";
 import { VisualSlot } from "./ui/visual-slot";
 import { ProgressRing } from "./ui/progress-ring";
 import { ActivityRings, type ActivityMetric } from "./ui/activity-rings";
@@ -253,7 +253,7 @@ export function Dashboard() {
               {workout.subtitle}
             </p>
 
-            <div className="mt-5 grid grid-cols-3 divide-x divide-ink/8 rounded-3xl bg-black/20 p-4">
+            <div className="mt-5 grid grid-cols-3 divide-x divide-ink/8 rounded-3xl bg-black/20 p-5">
               <Stat
                 value={workout.durationMinutes}
                 suffix="min"
@@ -365,7 +365,7 @@ export function Dashboard() {
                         done
                           ? "gf-glow-electric bg-electric text-white"
                           : day.isToday
-                            ? "border-2 border-electric/60 text-electric"
+                            ? "gf-glow-electric border-2 border-electric text-electric"
                             : "bg-ink/6 text-haze",
                       )}
                     >
@@ -407,10 +407,12 @@ export function Dashboard() {
               value={stepInput}
               onChange={(event) => setStepInput(event.target.value)}
               placeholder={steps > 0 ? steps.toLocaleString() : "e.g. 6,234"}
-              className="gf-glass min-w-0 flex-1 rounded-2xl px-4 py-3 text-sm font-bold text-ink placeholder:text-haze focus:outline-none"
+              className="gf-glass min-w-0 flex-1 rounded-full px-5 py-3 text-sm font-bold text-ink placeholder:text-haze focus:outline-none"
             />
-            <button
-              type="button"
+            <GlowButton
+              variant="electric"
+              size="md"
+              className="shrink-0 gap-1.5 text-xs"
               onClick={() => {
                 const parsed = Number(stepInput);
                 if (Number.isFinite(parsed) && parsed >= 0) {
@@ -418,13 +420,31 @@ export function Dashboard() {
                   setStepInput("");
                 }
               }}
-              className="gf-press gf-glow-electric flex shrink-0 items-center gap-1.5 rounded-2xl bg-electric px-4 py-3 text-xs font-bold text-white"
             >
               <Footprints className="size-4" />
               Update
-            </button>
+            </GlowButton>
           </div>
-          <p className="mt-2 text-center text-[11px] text-haze">
+
+          {/* Quick taps for the common case — bumping today's count by a
+              round number — without needing to type an exact figure. */}
+          <div className="mt-2.5 flex items-center gap-2">
+            {[1000, 2500, 5000].map((amount) => (
+              <button
+                key={amount}
+                type="button"
+                onClick={() => {
+                  setSteps(steps + amount);
+                  setStepInput("");
+                }}
+                className="gf-press gf-glass rounded-full px-3.5 py-1.5 text-[11px] font-bold text-ink-soft"
+              >
+                +{amount.toLocaleString()}
+              </button>
+            ))}
+          </div>
+
+          <p className="mt-2.5 text-center text-[11px] text-haze">
             Copy today&apos;s step count from your phone&apos;s Health app —
             nothing ever leaves this device.
           </p>

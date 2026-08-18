@@ -17,7 +17,7 @@ export function Stat({
     <div className={clsx("text-center", className)}>
       <p
         className={clsx(
-          "gf-numeric text-2xl font-extrabold",
+          "gf-numeric text-3xl font-black",
           tone === "electric" && "text-electric",
           tone === "lime" && "text-lime-deep",
           tone === "ink" && "text-ink",

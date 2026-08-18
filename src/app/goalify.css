@@ -1613,7 +1613,10 @@ html.goalify ::-webkit-scrollbar-thumb {
 
 .gf-elite-scope .gf-card,
 .gf-elite-scope .gf-glass {
-  background: rgba(255, 255, 255, 0.035);
+  /* A touch lighter than before — against the canvas's near-black, the
+     old 3.5% tint read as barely-there, so a card sitting on it didn't
+     register as a distinct, elevated surface, just a faint outline. */
+  background: rgba(255, 255, 255, 0.055);
   border: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
