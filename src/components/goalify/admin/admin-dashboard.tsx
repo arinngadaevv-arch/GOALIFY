@@ -113,6 +113,19 @@ export type CountrySplitEntry = {
   visitors: number;
 };
 
+/** One row per traffic source with at least one visitor — see
+ * analyticsEvents.source / lib/goalify/attribution.ts. Unlike
+ * AdminUserRow.signupSource (only ever set for someone who finished
+ * creating an account), this covers every visitor who was ever tagged
+ * with a source, so it's the only view of "how far does this channel's
+ * traffic actually get" — most quiz drop-off happens to people who never
+ * sign up at all. */
+export type SourceSplitEntry = {
+  source: string | null;
+  visitors: number;
+  quizCompleters: number;
+};
+
 export type QuizStepFunnelEntry = {
   id: string;
   title: string;
@@ -219,6 +232,7 @@ export function AdminDashboard({
   visitors,
   deviceSplit,
   countrySplit,
+  sourceSplit,
   quizStepFunnel,
   visitorTrend,
   users,
@@ -231,6 +245,7 @@ export function AdminDashboard({
   visitors: VisitorStats;
   deviceSplit: DeviceSplit;
   countrySplit: CountrySplitEntry[];
+  sourceSplit: SourceSplitEntry[];
   quizStepFunnel: QuizStepFunnelEntry[];
   visitorTrend: VisitorTrend;
   users: AdminUserRow[];
@@ -381,6 +396,20 @@ export function AdminDashboard({
               network, no IP lookup or third-party service involved.
             </p>
             <CountrySplitChart countries={countrySplit} />
+          </div>
+
+          <div className="mt-6">
+            <h3 className="text-sm font-extrabold text-ink">
+              How each traffic source converts
+            </h3>
+            <p className="mt-1 text-[11px] leading-relaxed text-haze">
+              Every visitor tagged with a source (Instagram, TikTok, a
+              Google search, a tagged campaign link, direct) — not just
+              people who signed up. This is the one view that can actually
+              answer &ldquo;does this channel&apos;s traffic convert, or
+              drop off in the quiz.&rdquo;
+            </p>
+            <SourceSplitChart sources={sourceSplit} />
           </div>
         </section>
 
@@ -800,6 +829,57 @@ function CountrySplitChart({ countries }: { countries: CountrySplitEntry[] }) {
                 style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
               />
             </div>
+          </div>
+        );
+      })}
+    </GlassCard>
+  );
+}
+
+function SourceSplitChart({ sources }: { sources: SourceSplitEntry[] }) {
+  const rows = sources.filter(
+    (row): row is { source: string; visitors: number; quizCompleters: number } =>
+      Boolean(row.source),
+  );
+  const total = rows.reduce((sum, row) => sum + row.visitors, 0) || 1;
+  const top = [...rows].sort((a, b) => b.visitors - a.visitors).slice(0, 8);
+
+  if (rows.length === 0) {
+    return (
+      <GlassCard deep className="mt-3 p-4">
+        <p className="text-center text-xs text-mist">
+          No source data yet — this only covers visitors who arrived after
+          attribution tracking shipped; earlier visits predate it.
+        </p>
+      </GlassCard>
+    );
+  }
+
+  return (
+    <GlassCard deep className="mt-3 flex flex-col gap-4 p-4">
+      {top.map((row) => {
+        const pct = Math.round((row.visitors / total) * 100);
+        const completionPct =
+          row.visitors > 0 ? Math.round((row.quizCompleters / row.visitors) * 100) : 0;
+        return (
+          <div key={row.source}>
+            <div className="flex items-center justify-between gap-3 text-xs">
+              <span className="font-bold text-ink">{sourceLabel(row.source)}</span>
+              <span className="gf-numeric font-extrabold text-ink">
+                {row.visitors.toLocaleString("en-US")}
+                <span className="ml-1.5 font-semibold text-mist">{pct}%</span>
+              </span>
+            </div>
+            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-ink/8">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-electric to-lime-neon"
+                style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
+              />
+            </div>
+            <p className="mt-1 text-[11px] text-haze">
+              {row.quizCompleters.toLocaleString("en-US")} completed the quiz —{" "}
+              <span className="font-bold text-mist">{completionPct}% completion</span>
+            </p>
           </div>
         );
       })}

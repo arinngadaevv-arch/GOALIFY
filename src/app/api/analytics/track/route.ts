@@ -7,6 +7,10 @@ import { getClientIp, rateLimit } from "@/lib/rate-limit";
 const VISITOR_COOKIE = "gf_vid";
 const VISITOR_COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
 
+// Written by proxy.ts (lib/goalify/attribution.ts) on this visitor's very
+// first request — read-only here, never set/overwritten by this route.
+const SOURCE_COOKIE = "gf_src";
+
 const KINDS = new Set(["LANDING_VIEW", "QUIZ_STEP", "QUIZ_COMPLETE"]);
 
 /**
@@ -37,6 +41,7 @@ export async function POST(request: NextRequest) {
 
   const existingVisitorId = request.cookies.get(VISITOR_COOKIE)?.value;
   const visitorId = existingVisitorId || crypto.randomUUID();
+  const source = request.cookies.get(SOURCE_COOKIE)?.value ?? null;
 
   const userAgent = request.headers.get("user-agent") ?? "";
   const device = /mobi|android|iphone|ipad|ipod/i.test(userAgent)
@@ -64,6 +69,7 @@ export async function POST(request: NextRequest) {
       device,
       path,
       country,
+      source,
     });
   } catch {
     // Never let a tracking failure surface to the caller.

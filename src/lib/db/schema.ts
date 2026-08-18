@@ -297,6 +297,13 @@ export const analyticsEvents = pgTable("analytics_event", {
   // edge header — only present in production (Vercel's network adds it;
   // local dev and other hosts never see it), so this stays null there.
   country: text("country"),
+  // First-touch attribution — same `gf_src` cookie and values as
+  // `users.signupSource` (see lib/goalify/attribution.ts), but recorded on
+  // every event for every visitor, signed up or not. `users.signupSource`
+  // only ever covers people who finish creating an account; most of the
+  // quiz funnel's drop-off happens to people who never do, so this is the
+  // only way to see, e.g., "how far do Instagram visitors actually get."
+  source: text("source"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

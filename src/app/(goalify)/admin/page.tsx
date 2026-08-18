@@ -90,6 +90,7 @@ export default async function AdminPage() {
     [visitorTotals],
     deviceRows,
     countryRows,
+    sourceRows,
     stepReachRows,
     hourlyVisitorRows,
     dailyVisitorRows,
@@ -195,6 +196,25 @@ export default async function AdminPage() {
         .where(sql`${analyticsEvents.country} is not null`)
         .groupBy(analyticsEvents.country)
         .orderBy(desc(sql`count(distinct ${analyticsEvents.visitorId})`)),
+      // Distinct visitors per traffic source, and how many of them actually
+      // completed the quiz — see analyticsEvents.source. This is what turns
+      // "we're running Instagram ads" into an answerable question: does
+      // that specific channel's traffic convert, or drop off somewhere in
+      // the funnel — not just the overall (source-blind) numbers below.
+      db
+        .select({
+          source: analyticsEvents.source,
+          visitors: sql<number>`count(distinct ${analyticsEvents.visitorId}) filter (where ${analyticsEvents.kind} = 'LANDING_VIEW')`.mapWith(
+            Number,
+          ),
+          quizCompleters: sql<number>`count(distinct ${analyticsEvents.visitorId}) filter (where ${analyticsEvents.kind} = 'QUIZ_COMPLETE')`.mapWith(
+            Number,
+          ),
+        })
+        .from(analyticsEvents)
+        .where(sql`${analyticsEvents.source} is not null`)
+        .groupBy(analyticsEvents.source)
+        .orderBy(desc(sql`count(distinct ${analyticsEvents.visitorId}) filter (where ${analyticsEvents.kind} = 'LANDING_VIEW')`)),
       // One row per visitor who reached at least one quiz question, with
       // the furthest step they got to — the funnel below turns this into
       // "N distinct people reached question K" per question by counting,
@@ -353,6 +373,7 @@ export default async function AdminPage() {
       }}
       deviceSplit={deviceSplit}
       countrySplit={countryRows}
+      sourceSplit={sourceRows}
       quizStepFunnel={quizStepFunnel}
       visitorTrend={visitorTrend}
       users={tableUsers}
