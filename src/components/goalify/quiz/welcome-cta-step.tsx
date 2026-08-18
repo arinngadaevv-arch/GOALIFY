@@ -73,47 +73,32 @@ export function WelcomeCtaStep({
       </h1>
 
       {/* Mobile hero — a single, uncut image, the whole hero section exactly
-          as delivered. Its own flat "START MY PERSONALIZED PLAN" button
-          isn't clickable, so instead of cutting the image apart, a real
-          button is absolutely-positioned directly on top of it, sized and
-          placed to the flat button's own pixel bounding box, measured
-          directly against the 853x1844 source (x 51-800px, y 953-1038px,
-          found via color-mask detection, not eyeballed) and expressed as a
-          % so it tracks the image at any viewport width. That math only
-          works if this relative wrapper's height equals the image's own
-          rendered height — hence the dedicated div instead of sizing off
-          the outer container, which also holds the "Log in" paragraph
-          below both images. Nothing about the image's own layout is
-          touched. */}
+          as delivered (the source was cropped to just its dark hero band —
+          863x1341 — dropping its own trailing light-background marketing
+          section, which duplicated what SeoContent below already covers).
+          Its own flat "START MY PERSONALIZED PLAN" button isn't clickable,
+          so instead of cutting the image apart, a real button is
+          absolutely-positioned directly on top of it, sized and placed to
+          the flat button's own pixel bounding box, measured directly
+          against the 863x1341 source (x 36-761px, y 851-940px, found via
+          color-mask detection, not eyeballed) and expressed as a % so it
+          tracks the image at any viewport width. That math only works if
+          this relative wrapper's height equals the image's own rendered
+          height — hence the dedicated div instead of sizing off the outer
+          container, which also holds the "Log in" paragraph below both
+          images. Nothing about the image's own layout is touched. This
+          design has no baked-in before/after gallery slot (unlike the
+          previous hero), so there's no photo overlay here. */}
       <div className="relative lg:hidden">
         <Image
-          src="/quiz/b8f019ca-c14e-4114-9e64-b8befc2e1b2f.png"
-          alt="Meet your personal AI coach. GOALIFY — 4.9/5 from 1,250+ reviews. AI-powered plans, real-time adjustments, expert guidance, real before/after transformations."
-          width={853}
-          height={1844}
+          src="/quiz/1c31555e-1c18-41a2-bd3f-07c92a1de8e6.png"
+          alt="Meet your personal AI coach. GOALIFY — your body, your plan, AI-powered. Custom workouts, smart nutrition guidance, plans that adapt as you progress."
+          width={863}
+          height={1341}
           priority
           sizes="100vw"
           className="block h-auto w-full"
         />
-
-        {/* Real before/after gallery, swapped in over the flat image's own
-            baked-in one. Bounding box (top 78.09%–98.15% of the 853x1844
-            source, full width) measured the same way as the CTA button —
-            the black canvas on both sides of that seam is uniform, so a
-            same-toned real photo dropped on top reads as native rather
-            than pasted on. */}
-        <div
-          className="absolute overflow-hidden"
-          style={{ left: 0, width: "100%", top: "78.09%", height: "20.06%" }}
-        >
-          <Image
-            src="/e1207d57-c321-4f42-a43c-c8ee3a83a8ab.png"
-            alt="Real GOALIFY member transformations — 40 to 60 lbs lost in 4 to 6 months"
-            fill
-            sizes="100vw"
-            className="object-cover"
-          />
-        </div>
 
         <button
           type="button"
@@ -123,10 +108,10 @@ export function WelcomeCtaStep({
           }}
           className="gf-press gf-anim-pulse absolute inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-[#f0c14b] to-[#c8890f] font-bold tracking-tight text-[#1a1100] shadow-[0_0_0_1px_rgba(232,179,44,0.6),0_18px_44px_-10px_rgba(232,179,44,0.8)] transition-all duration-200 select-none hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_rgba(232,179,44,0.85),0_24px_54px_-8px_rgba(232,179,44,1)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#e8b32c]"
           style={{
-            left: "5.98%",
-            width: "87.81%",
-            top: "51.68%",
-            height: "4.61%",
+            left: "4.17%",
+            width: "84.01%",
+            top: "63.46%",
+            height: "6.64%",
             fontSize: "clamp(0.65rem, 3.1vw, 1.05rem)",
           }}
         >

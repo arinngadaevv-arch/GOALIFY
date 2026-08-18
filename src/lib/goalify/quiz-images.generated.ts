@@ -3,6 +3,7 @@
 
 export const AVAILABLE_QUIZ_IMAGES: ReadonlySet<string> = new Set([
   "/quiz/0b220312-6953-414b-9540-aa84abf51f22.png",
+  "/quiz/1c31555e-1c18-41a2-bd3f-07c92a1de8e6.png",
   "/quiz/2566f37b-9e44-4137-b932-87e0510a4738.png",
   "/quiz/3beb9b27-29ce-40ee-9331-66f0f79f216b.png",
   "/quiz/423031c4-8971-4618-b57c-7a9219ae9f3a.png",
