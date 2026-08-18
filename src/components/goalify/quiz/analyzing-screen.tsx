@@ -9,6 +9,7 @@ import { ProgressRing } from "@/components/goalify/ui/progress-ring";
 import { ParticleField } from "@/components/goalify/ui/particles";
 import { CoachBadge } from "@/components/goalify/coach/coach-bubble";
 import { useUiSounds } from "@/components/goalify/use-ui-sounds";
+import { DesktopAmbientBackdrop } from "./desktop-ambient-backdrop";
 
 /**
  * PLACEHOLDER MARKETING COPY — same convention as social-proof-screen.tsx's
@@ -192,7 +193,9 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
   const noise = () => String(Math.floor(Math.abs(Math.sin(scramble) * 9000)) + 500);
 
   return (
-    <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center px-5 py-4 text-center">
+    <>
+      <DesktopAmbientBackdrop />
+      <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center px-5 py-4 text-center">
       <ParticleField />
 
       <div className="relative flex items-center gap-2.5">
@@ -332,6 +335,7 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
           );
         })}
       </ul>
-    </main>
+      </main>
+    </>
   );
 }

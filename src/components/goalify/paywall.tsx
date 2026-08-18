@@ -17,6 +17,7 @@ import type { NutritionTargets, QuizAnswers, Workout } from "@/lib/goalify/types
 import { Brand } from "@/components/goalify/brand";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
 import { fireBurst, ParticleBurstLayer } from "@/components/goalify/quiz/particle-burst";
+import { DesktopAmbientBackdrop } from "@/components/goalify/quiz/desktop-ambient-backdrop";
 import { centsToDollars, PRICING_TIERS } from "@/lib/goalify/pricing";
 
 /**
@@ -82,7 +83,9 @@ export function Paywall() {
   };
 
   return (
-    <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-36">
+    <>
+      <DesktopAmbientBackdrop />
+      <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-36">
       <ParticleBurstLayer />
 
       <header className="relative flex items-center justify-center py-4">
@@ -272,7 +275,8 @@ export function Paywall() {
           </div>
         </div>
       </div>
-    </main>
+      </main>
+    </>
   );
 }
 

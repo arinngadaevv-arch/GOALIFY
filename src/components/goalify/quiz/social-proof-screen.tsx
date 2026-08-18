@@ -8,6 +8,7 @@ import { ArrowRight, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
 import { ParticleField } from "@/components/goalify/ui/particles";
 import { useUiSounds } from "@/components/goalify/use-ui-sounds";
+import { DesktopAmbientBackdrop } from "./desktop-ambient-backdrop";
 
 /**
  * PLACEHOLDER MARKETING COPY — fictional success stories, same convention as
@@ -92,7 +93,9 @@ export function SocialProofScreen({ onContinue }: { onContinue: () => void }) {
   const story = STORIES[index];
 
   return (
-    <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-5 pb-12 text-center">
+    <>
+      <DesktopAmbientBackdrop />
+      <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-5 pb-12 text-center">
       <ParticleField />
 
       <div className="relative">
@@ -219,6 +222,7 @@ export function SocialProofScreen({ onContinue }: { onContinue: () => void }) {
       >
         Continue <ArrowRight className="size-5" />
       </GlowButton>
-    </main>
+      </main>
+    </>
   );
 }
