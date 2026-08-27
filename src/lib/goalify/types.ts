@@ -143,6 +143,18 @@ export type Workout = {
   calories: number;
   intensity: "Ignite" | "Build" | "Peak" | "Restore";
   exercises: Exercise[];
+  /** Present only for a "video-led" workout — the whole session is one
+   * continuous uploaded clip instead of the app's own per-exercise timer
+   * (see VideoLedPlayer). `exercises` above still carries a few placeholder
+   * entries so shared UI reading `.exercises.length` (launchpad "Moves"
+   * stat, etc.) keeps working, but they're never actually played. */
+  video?: {
+    bucket: string;
+    fileName: string;
+    introSeconds: number;
+    outroSeconds: number;
+    loops: number;
+  };
 };
 
 export type NutritionTargets = {

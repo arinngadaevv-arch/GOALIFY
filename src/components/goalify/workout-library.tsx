@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Sparkles,
   Target,
+  Video,
   Zap,
   type LucideIcon,
 } from "lucide-react";
@@ -27,6 +28,7 @@ const TRACK_ICON: Record<string, LucideIcon> = {
   "full-body-burn": Flame,
   "core-crusher": Target,
   "lower-body-joint-safe": ShieldCheck,
+  tar2: Video,
 };
 
 export function WorkoutLibrary() {

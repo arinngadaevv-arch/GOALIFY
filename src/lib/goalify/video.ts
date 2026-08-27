@@ -107,6 +107,19 @@ export function exerciseVideoUrl(name: string, focus: string): string | null {
 }
 
 /**
+ * A one-off uploaded workout clip doesn't necessarily live in the standard
+ * "videos" bucket above — see `Workout["video"]` in lib/goalify/types.ts,
+ * which records the exact bucket each one was uploaded to. Both bucket and
+ * file name are `encodeURIComponent`-ed since bucket names can contain
+ * spaces too (e.g. an uploader creating "videos 2" instead of reusing
+ * "videos").
+ */
+export function customVideoUrl(bucket: string, fileName: string): string | null {
+  if (!SUPABASE_URL) return null;
+  return `${SUPABASE_URL}/storage/v1/object/public/${encodeURIComponent(bucket)}/${encodeURIComponent(fileName)}`;
+}
+
+/**
  * Every clip this app ever requests, labeled, for the admin video
  * diagnostics panel — lets it check each real file's actual HTTP status
  * (200 vs 404 vs 403) instead of only knowing whether the base URL is

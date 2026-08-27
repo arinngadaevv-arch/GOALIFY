@@ -642,7 +642,7 @@ function SummaryCard({
   );
 }
 
-function CompletionScreen({
+export function CompletionScreen({
   workoutTitle,
   calories,
   exercisesCompleted,

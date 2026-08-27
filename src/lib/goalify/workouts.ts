@@ -495,6 +495,57 @@ export const LIBRARY: Workout[] = [
       },
     ],
   },
+  {
+    id: "tar2",
+    day: 7,
+    title: "TAR2",
+    subtitle: "A quick follow-along circuit — just press play and move with the video.",
+    focus: "Full body · Follow-along",
+    durationMinutes: 3,
+    calories: 50,
+    intensity: "Build",
+    // Never actually played — VideoLedPlayer (see workout/video-led-player.tsx)
+    // takes over instead of the exercise-by-exercise timer whenever `video`
+    // below is set. These three placeholder rounds exist only so the
+    // shared launchpad/library UI, which reads `.exercises.length` for its
+    // "Moves" stat, still has something to count.
+    exercises: [
+      {
+        id: "tar2-r1",
+        name: "Round 1",
+        kind: "time",
+        amount: 60,
+        restSeconds: 0,
+        cue: "Follow along with the video.",
+        focus: "Full body",
+      },
+      {
+        id: "tar2-r2",
+        name: "Round 2",
+        kind: "time",
+        amount: 60,
+        restSeconds: 0,
+        cue: "Follow along with the video.",
+        focus: "Full body",
+      },
+      {
+        id: "tar2-r3",
+        name: "Round 3",
+        kind: "time",
+        amount: 60,
+        restSeconds: 0,
+        cue: "Follow along with the video.",
+        focus: "Full body",
+      },
+    ],
+    video: {
+      bucket: "videos 2",
+      fileName: "TAR2.mp4",
+      introSeconds: 10,
+      outroSeconds: 10,
+      loops: 3,
+    },
+  },
 ];
 
 /** Every workout the app knows about, keyed for fast lookup by id. */
