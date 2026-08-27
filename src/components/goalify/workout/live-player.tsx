@@ -49,8 +49,8 @@ type Phase = "watch" | "work" | "rest" | "done";
 
 /** Obsidian-scope ring colors — literal hex since RING_ELECTRIC/RING_LIME
  * are shared constants tuned for the light theme elsewhere in the app. */
-const RING_GOLD = "#e8b32c";
-const RING_CRIMSON = "#ff3b3b";
+export const RING_GOLD = "#e8b32c";
+export const RING_CRIMSON = "#ff3b3b";
 
 export function LivePlayer() {
   const { state, todaysWorkout, completeWorkout } = useGoalify();
