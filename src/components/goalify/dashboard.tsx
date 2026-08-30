@@ -172,9 +172,13 @@ export function Dashboard() {
               streakJustPopped && "gf-anim-pop",
             )}
           >
-            <span className="gf-anim-flicker-flame text-sm" aria-hidden>
-              🔥
-            </span>
+            {/* A lucide icon instead of the 🔥 emoji — the emoji renders in
+                its own native red-orange, which broke the single gold
+                accent language everywhere else on this screen. */}
+            <FlameIcon
+              className="gf-anim-flicker-flame size-3.5 fill-current text-electric"
+              aria-hidden
+            />
             <span className="gf-numeric text-xs font-black text-ink">
               {Math.round(displayedStreak)}
             </span>
@@ -184,9 +188,7 @@ export function Dashboard() {
             href="/workout/launch"
             className="gf-press flex shrink-0 items-center gap-1.5 rounded-full border border-electric/25 bg-electric/8 px-3 py-1.5"
           >
-            <span className="text-sm" aria-hidden>
-              🔥
-            </span>
+            <FlameIcon className="size-3.5 fill-current text-electric" aria-hidden />
             <span className="text-[11px] font-black tracking-tight text-electric uppercase">
               Start your streak
             </span>
@@ -199,15 +201,23 @@ export function Dashboard() {
         <DailyCreed />
       </div>
 
-      {/* On phones this is just a plain vertical stack. At lg+ it flows into
-          two CSS-multicol columns — no DOM reordering, no JS masonry lib,
-          each top-level block just gets `lg:break-inside-avoid` so it never
-          splits mid-card across the column break. */}
-      <div className="lg:columns-2 lg:gap-6">
+      {/* On phones this is just a plain vertical stack — the two column
+          wrapper divs below just stack on top of each other, in the same
+          order as their contents were always in. At lg+ it becomes two
+          real columns, each stacking its own contents top-down with one
+          consistent gap. This used to be a CSS `columns-2` masonry flow,
+          which balances *total height* across columns rather than
+          filling each one from the top — with blocks this uneven in
+          height that reliably left one column visibly shorter than the
+          other, a ragged, unbalanced-looking gap at the bottom of the
+          shorter one. Manually grouping into two explicit columns doesn't
+          have that failure mode: each one just fills from the top. */}
+      <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
+      <div className="flex flex-col gap-8">
       {/* ------------------------------------------------ Primary action
           The one thing today actually asks of the user. Everything else on
           this screen is context; this is the job. */}
-      <section className="lg:break-inside-avoid">
+      <section>
         <SectionHeading
           eyebrow="Today"
           title="Your Workout"
@@ -300,7 +310,7 @@ export function Dashboard() {
           second workout worth trying without it stealing today's single
           spotlight slot. */}
       {bonusWorkout && (
-        <section className="mt-8 lg:break-inside-avoid">
+        <section>
           <SectionHeading eyebrow="Also available" title="Day 2 Pick" />
           <Link href={`/workout/launch?workout=${bonusWorkout.id}`} className="block">
             <GlassCard deep interactive className="gf-reveal flex items-center gap-4 p-4">
@@ -326,7 +336,7 @@ export function Dashboard() {
           Replaces three separate cards (goal readout, dual today-rings,
           weekly ring) with one: streak, weight trend, and the week's shape
           all live here, one tap through to the full history on Progress. */}
-      <section className="mt-8 lg:break-inside-avoid">
+      <section>
         <SectionHeading
           eyebrow="Your progress"
           title="This Week"
@@ -421,19 +431,27 @@ export function Dashboard() {
           </GlassCard>
         </Link>
       </section>
+      </div>
 
+      <div className="flex flex-col gap-8">
       {/* ----------------------------------------------------- Today's Activity
           Used to auto-track steps live via the phone's motion sensor, but
           iOS Safari makes you re-grant that permission on every single
           visit (no persisted per-site grant the way camera/mic get) — that
           read as "broken," not "needs a tap," so this is a quick manual
           update instead: copy the number your phone already has. */}
-      <section className="mt-8 lg:break-inside-avoid">
+      <section>
         <SectionHeading eyebrow="From your phone" title="Today's Activity" />
         <GlassCard deep className="gf-reveal p-6">
           <ActivityRings metrics={activityMetrics} />
 
-          <div className="mt-5 flex items-center gap-2">
+          {/* A real label instead of leaning on the input's own placeholder
+              — a placeholder disappears the moment you start typing, so it
+              can't double as the field's only description. */}
+          <p className="mt-5 mb-2 text-[11px] font-bold tracking-[0.14em] text-mist uppercase">
+            Log today&apos;s steps
+          </p>
+          <div className="flex items-center gap-2">
             <input
               type="number"
               inputMode="numeric"
@@ -461,8 +479,10 @@ export function Dashboard() {
           </div>
 
           {/* Quick taps for the common case — bumping today's count by a
-              round number — without needing to type an exact figure. */}
-          <div className="mt-2.5 flex items-center gap-2">
+              round number — without needing to type an exact figure. Equal-
+              width grid instead of a packed inline row, so each target
+              stays comfortably tappable on a narrow screen. */}
+          <div className="mt-3 grid grid-cols-3 gap-2">
             {[1000, 2500, 5000].map((amount) => (
               <button
                 key={amount}
@@ -471,14 +491,14 @@ export function Dashboard() {
                   setSteps(steps + amount);
                   setStepInput("");
                 }}
-                className="gf-press gf-glass rounded-full px-3.5 py-1.5 text-[11px] font-bold text-ink-soft"
+                className="gf-press gf-glass rounded-full py-2 text-center text-[11px] font-bold text-ink-soft"
               >
                 +{amount.toLocaleString()}
               </button>
             ))}
           </div>
 
-          <p className="mt-2.5 text-center text-[11px] text-haze">
+          <p className="mt-3 text-center text-[11px] text-haze">
             Copy today&apos;s step count from your phone&apos;s Health app —
             nothing ever leaves this device.
           </p>
@@ -486,7 +506,7 @@ export function Dashboard() {
       </section>
 
       {/* ------------------------------------------------------ Library link */}
-      <Link href="/workouts" className="mt-5 block lg:break-inside-avoid">
+      <Link href="/workouts" className="block">
         <GlassCard
           tone="lime"
           interactive
@@ -512,7 +532,7 @@ export function Dashboard() {
       </Link>
 
       {/* ----------------------------------------------- Nutrition targets card */}
-      <section className="mt-8 lg:break-inside-avoid">
+      <section>
         <SectionHeading
           eyebrow="No food logging"
           title="Daily Fuel Targets"
@@ -582,7 +602,7 @@ export function Dashboard() {
       </section>
 
       {/* ------------------------------------------------------ Reminders link */}
-      <Link href="/notifications" className="mt-5 block lg:break-inside-avoid">
+      <Link href="/notifications" className="block">
         <GlassCard
           tone="electric"
           interactive
@@ -606,6 +626,7 @@ export function Dashboard() {
           <ArrowRight className="relative size-4 shrink-0 text-electric" />
         </GlassCard>
       </Link>
+      </div>
       </div>
 
       <p className="mt-8 flex items-center justify-center gap-1.5 text-center text-xs text-haze">

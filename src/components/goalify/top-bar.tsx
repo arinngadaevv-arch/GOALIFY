@@ -20,10 +20,10 @@ export function TopBar({ title, subtitle }: { title?: string; subtitle?: string 
       </Link>
 
       <div className="min-w-0 flex-1">
-        <p className="line-clamp-1 text-[10px] leading-tight font-bold uppercase tracking-[0.1em] text-mist sm:text-[11px] sm:tracking-[0.14em]">
+        <p className="line-clamp-1 text-xs leading-tight font-bold tracking-[0.12em] text-mist uppercase sm:text-sm sm:tracking-[0.16em]">
           {subtitle ?? greeting()}
         </p>
-        <h1 className="gf-display line-clamp-2 text-base leading-tight font-extrabold text-ink sm:text-lg">
+        <h1 className="gf-display line-clamp-2 text-lg leading-tight font-extrabold text-ink sm:text-xl">
           {title ?? `${name} · ${answers.daysPerWeek}-day plan`}
         </h1>
       </div>

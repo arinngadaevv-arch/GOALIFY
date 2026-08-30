@@ -1578,7 +1578,10 @@ html.goalify ::-webkit-scrollbar-thumb {
   --color-ink: #f3f2ee;
   --color-ink-soft: #c8c6bf;
   --color-mist: #8d8b84;
-  --color-haze: #56544e;
+  /* Was #56544e — under 3:1 against the near-black canvas, well short of
+     WCAG AA's 4.5:1 for normal text. Lightened just enough to clear that
+     bar while staying visibly the dimmest of the three text tiers. */
+  --color-haze: #7d7a72;
   --color-electric: #c9a227;
   --color-electric-soft: #ddbe63;
   /* A real green, not a second gold — "lime" is the scope's positive/active
