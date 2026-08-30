@@ -70,8 +70,8 @@ export function Nutrition() {
       {/* --------------------------------------------------------- Hero card
           One layered surface instead of a headline card + three separate
           macro boxes + an info box: the number, the "why", and the split
-          all live in one place, with an inset panel giving the macro row
-          its own depth rather than three more flat rectangles. */}
+          all live in one place, the macro row floating on the same
+          surface rather than boxed into a panel of its own. */}
       <div className="relative">
         <div
           className="pointer-events-none absolute -inset-4 -z-10 rounded-[2.5rem] bg-electric/16 opacity-70 blur-3xl"
@@ -98,9 +98,10 @@ export function Nutrition() {
             .
           </p>
 
-          {/* Inset macro panel — a visibly recessed layer inside the hero,
-              not three more cards competing for attention. */}
-          <div className="mt-5 grid grid-cols-3 divide-x divide-ink/8 rounded-3xl bg-black/20 p-4">
+          {/* The three macros float directly on the hero's own surface —
+              separated by grid gap alone, no inset panel or divider lines
+              boxing them in on top of it. */}
+          <div className="mt-6 grid grid-cols-3 gap-4">
             <MacroColumn Icon={Beef} value={targets.protein} label="Protein" />
             <MacroColumn Icon={Wheat} value={targets.carbs} label="Carbs" />
             <MacroColumn Icon={Salad} value={targets.fats} label="Fats" />
@@ -114,37 +115,35 @@ export function Nutrition() {
 
       {/* See dashboard.tsx's matching comment — CSS-multicol, no reordering. */}
       <div className="lg:columns-2 lg:gap-6">
-      {/* ------------------------------------------------------ Meal templates */}
+      {/* ------------------------------------------------------ Meal templates
+          No card background at rest — three boxed cubes in a row read as
+          heavy for what's really just a picker. A soft wash only appears
+          on hover/focus, so the row feels like one continuous, elegant
+          choice instead of three separate boxes competing for attention. */}
       <section className="gf-reveal mt-8 lg:break-inside-avoid">
         <SectionHeading eyebrow="Tap for real food ideas" title="Your plate" />
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2">
           {meals.map((meal) => (
             <button
               key={meal.name}
               type="button"
               onClick={() => setSelectedMeal(meal)}
-              className="gf-press text-left"
+              className="gf-press flex flex-col items-center gap-1 rounded-glass p-4 text-center transition-colors duration-300 hover:bg-white/6"
             >
-              <GlassCard
-                deep
-                interactive
-                className="flex flex-col items-center gap-1 p-4 text-center"
-              >
-                <IconBadge icon={meal.icon} size="lg" />
-                <p className="mt-1.5 text-xs font-extrabold text-ink">
-                  {meal.name}
-                </p>
-                <p className="gf-numeric text-sm font-bold text-electric">
-                  {meal.kcal} kcal
-                </p>
-                <p className="text-[10px] font-semibold text-mist">
-                  {perMeal}g protein
-                </p>
-                <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-electric/10 px-2.5 py-1 text-[10px] font-bold text-electric">
-                  Ideas
-                  <ArrowRight className="size-3" />
-                </span>
-              </GlassCard>
+              <IconBadge icon={meal.icon} size="lg" />
+              <p className="mt-1.5 text-xs font-extrabold text-ink">
+                {meal.name}
+              </p>
+              <p className="gf-numeric text-sm font-bold text-electric">
+                {meal.kcal} kcal
+              </p>
+              <p className="text-[10px] font-semibold text-mist">
+                {perMeal}g protein
+              </p>
+              <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-electric/10 px-2.5 py-1 text-[10px] font-bold text-electric">
+                Ideas
+                <ArrowRight className="size-3" />
+              </span>
             </button>
           ))}
         </div>
@@ -161,12 +160,15 @@ export function Nutrition() {
 
       {/* ---------------------------------------------------- Habits, in one
           list — replaces five separate cards (two timing rules, three tip
-          rows) with a single layered surface, dividers instead of borders. */}
+          rows) with clean floating rows instead of one more frame around
+          all four: real vertical gap does the separating, and each icon
+          carries its own glow instead of leaning on a boxed container to
+          read as distinct. */}
       <section className="gf-reveal mt-8 lg:break-inside-avoid">
         <SectionHeading eyebrow="Make it stick" title="Habits that matter" />
-        <GlassCard deep className="divide-y divide-ink/8 p-0">
+        <div className="flex flex-col gap-5">
           {HABITS.map((habit) => (
-            <div key={habit.title} className="flex gap-4 p-5">
+            <div key={habit.title} className="flex gap-4">
               <IconBadge icon={habit.icon} size="md" />
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
@@ -181,7 +183,7 @@ export function Nutrition() {
               </div>
             </div>
           ))}
-        </GlassCard>
+        </div>
       </section>
 
       {/* ------------------------------------------------------ Water tracker */}

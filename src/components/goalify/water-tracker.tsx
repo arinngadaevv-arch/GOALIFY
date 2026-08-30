@@ -3,11 +3,16 @@
 import clsx from "clsx";
 import { Droplets, Minus, RotateCcw } from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
-import { GlassCard } from "./ui/glass-card";
 
 /**
  * The 3D water tracker: a glossy bottle whose fill level animates as glasses
  * are added. Tapping a marker jumps straight to that amount.
+ *
+ * No enclosing card here on purpose — the bottle's own glassy render
+ * already reads as a real object, and the "Add Glass" button below gets
+ * its own ambient bloom (see the glow div behind it), so this floats
+ * directly on the page's own surface instead of sitting inside a second,
+ * heavier dark block around both.
  */
 export function WaterTracker() {
   const { waterGlasses, targets, setWater } = useGoalify();
@@ -17,7 +22,7 @@ export function WaterTracker() {
   const litres = ((glasses * 250) / 1000).toFixed(2);
 
   return (
-    <GlassCard deep className="p-6">
+    <div>
       <div className="flex items-start justify-between">
         <div>
           <h2 className="gf-display text-lg font-extrabold text-ink">
@@ -112,15 +117,25 @@ export function WaterTracker() {
             >
               <Minus className="size-5" strokeWidth={3} />
             </button>
-            <button
-              type="button"
-              onClick={() => setWater(glasses + 1)}
-              aria-label="Add a glass"
-              className="gf-press gf-glow-electric flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-electric text-sm font-black text-white"
-            >
-              <Droplets className="size-4" />
-              ADD GLASS
-            </button>
+            {/* An amorphous glow behind the pill, not just a flat filled
+                button — the blur bleeds past the button's own edges so it
+                reads as a warm light source sitting on the page, not
+                another rectangle stacked on the bottle's own block. */}
+            <div className="relative flex-1">
+              <div
+                className="pointer-events-none absolute -inset-2 -z-10 rounded-full bg-electric/40 opacity-80 blur-xl"
+                aria-hidden
+              />
+              <button
+                type="button"
+                onClick={() => setWater(glasses + 1)}
+                aria-label="Add a glass"
+                className="gf-gold-gradient gf-press flex h-11 w-full items-center justify-center gap-2 rounded-full text-sm font-black text-white"
+              >
+                <Droplets className="size-4" />
+                ADD GLASS
+              </button>
+            </div>
           </div>
 
           {percent >= 100 && (
@@ -130,6 +145,6 @@ export function WaterTracker() {
           )}
         </div>
       </div>
-    </GlassCard>
+    </div>
   );
 }
