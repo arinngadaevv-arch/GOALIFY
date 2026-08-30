@@ -498,7 +498,7 @@ export const LIBRARY: Workout[] = [
   {
     id: "tar2",
     day: 7,
-    title: "TAR2",
+    title: "Quick Video Workout",
     subtitle: "A quick follow-along circuit — just press play and move with the video.",
     focus: "Full body · Follow-along",
     durationMinutes: 3,
