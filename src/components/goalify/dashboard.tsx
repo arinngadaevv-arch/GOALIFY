@@ -8,6 +8,7 @@ import {
   Beef,
   Bell,
   Check,
+  ChevronRight,
   Droplets,
   Flame as FlameIcon,
   Footprints,
@@ -15,6 +16,7 @@ import {
   Play,
   ShieldCheck,
   Timer,
+  Video,
   Zap,
 } from "lucide-react";
 import {
@@ -23,7 +25,7 @@ import {
   STEP_GOAL,
   useGoalify,
 } from "@/lib/goalify/store";
-import { resolveWorkout } from "@/lib/goalify/workouts";
+import { findWorkout, resolveWorkout } from "@/lib/goalify/workouts";
 import { goalLabel, weeksToTarget } from "@/lib/goalify/plan";
 import { currentWeekDays } from "@/lib/goalify/dates";
 import { useHaptics } from "@/lib/goalify/use-haptics";
@@ -69,6 +71,10 @@ export function Dashboard() {
   } = useGoalify();
 
   const workout = resolveWorkout(todaysWorkout, state.settings.kneeSafe);
+  // Surfaced as a small secondary pick below today's hero card — see the
+  // "Day 2 Pick" section below — rather than folded into today's single
+  // spotlight slot, since the daily program still owns "today".
+  const bonusWorkout = findWorkout("tar2");
   const weeksToGoal = weeksToTarget(answers);
 
   const weekDays = useMemo(() => currentWeekDays(), []);
@@ -287,6 +293,34 @@ export function Dashboard() {
           </GlassCard>
         </div>
       </section>
+
+      {/* ------------------------------------------------- Bonus workout pick
+          A small, secondary card — deliberately not competing with the
+          hero above, which still owns "today". Lets someone see there's a
+          second workout worth trying without it stealing today's single
+          spotlight slot. */}
+      {bonusWorkout && (
+        <section className="mt-8 lg:break-inside-avoid">
+          <SectionHeading eyebrow="Also available" title="Day 2 Pick" />
+          <Link href={`/workout/launch?workout=${bonusWorkout.id}`} className="block">
+            <GlassCard deep interactive className="gf-reveal flex items-center gap-4 p-4">
+              <div className="grid size-14 shrink-0 place-items-center rounded-2xl bg-electric/10">
+                <Video className="size-7 text-electric" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-bold tracking-[0.16em] text-electric uppercase">
+                  Follow-along video
+                </p>
+                <p className="truncate text-base font-extrabold text-ink">
+                  {bonusWorkout.title}
+                </p>
+                <p className="truncate text-xs text-mist">{bonusWorkout.subtitle}</p>
+              </div>
+              <ChevronRight className="size-4 shrink-0 text-haze" />
+            </GlassCard>
+          </Link>
+        </section>
+      )}
 
       {/* ---------------------------------------------------- Your progress
           Replaces three separate cards (goal readout, dual today-rings,
