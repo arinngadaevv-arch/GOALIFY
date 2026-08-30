@@ -1598,9 +1598,11 @@ html.goalify ::-webkit-scrollbar-thumb {
   color: var(--color-ink);
 }
 
-/* A single, quiet bloom in the corner — depth without the funnel's
-   multi-colour radial stack or grid overlay. Generous negative space is
-   the point, so the canvas otherwise stays flat and calm. */
+/* Two quiet blooms — gold up top, a hint of the scope's own deep green
+   down low — plus a soft vignette darkening the edges, instead of the one
+   flat corner glow before. Still generous negative space, not the
+   funnel's multi-colour radial stack or grid overlay: this reads as a
+   lit room, not a light show. */
 .gf-elite-scope::before {
   content: "";
   position: absolute;
@@ -1608,22 +1610,30 @@ html.goalify ::-webkit-scrollbar-thumb {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 60% 32% at 18% -6%, rgba(201, 162, 39, 0.08), transparent 62%),
+    radial-gradient(ellipse 62% 34% at 16% -6%, rgba(201, 162, 39, 0.13), transparent 62%),
+    radial-gradient(ellipse 58% 40% at 92% 106%, rgba(33, 168, 115, 0.09), transparent 65%),
+    radial-gradient(ellipse 120% 80% at 50% 40%, transparent 45%, rgba(0, 0, 0, 0.4) 100%),
     linear-gradient(180deg, #0a0a0b 0%, #101012 55%, #0a0a0b 100%);
 }
 
-/* --- Surfaces: charcoal panels, hairline borders, no glow ----------------- */
+/* --- Surfaces: floating glass panels, no boxed-in borders ----------------- */
 
 .gf-elite-scope .gf-card,
 .gf-elite-scope .gf-glass {
-  /* A touch lighter than before — against the canvas's near-black, the
-     old 3.5% tint read as barely-there, so a card sitting on it didn't
-     register as a distinct, elevated surface, just a faint outline. */
-  background: rgba(255, 255, 255, 0.055);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  /* A graduated tint (lighter at the top edge, fading down) instead of
+     one flat opacity reads as a pane of glass catching light from above,
+     not a filled-in rectangle. Paired with a border on just that top
+     edge instead of a full outline — that's what actually separates
+     "floating panel" from "box with a line around it": the surface is
+     still legible against the canvas from the tint and shadow alone. */
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.03));
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 24px 48px -26px rgba(0, 0, 0, 0.7);
+  box-shadow:
+    0 24px 48px -26px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .gf-elite-scope .gf-card-hover:hover {
@@ -1661,6 +1671,19 @@ html.goalify ::-webkit-scrollbar-thumb {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+/* The headline stat everywhere — duration, calories, streak, reps,
+   countdowns — is always `.gf-numeric` paired with `font-black`; smaller
+   incidental numbers use a lighter weight, so this hook reaches the
+   "big number" instances without needing its own class at every call
+   site. A soft white bloom behind the glyphs is what makes them read as
+   backlit and jump off the panel, whether the number itself is ink,
+   gold, or lime. */
+.gf-elite-scope .gf-numeric.font-black {
+  text-shadow:
+    0 0 22px rgba(255, 255, 255, 0.3),
+    0 0 2px rgba(255, 255, 255, 0.2);
 }
 
 /* --- Motion: reveal-on-scroll + richer interactive feedback ------------- */
