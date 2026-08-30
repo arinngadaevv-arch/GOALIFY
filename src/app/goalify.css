@@ -1582,8 +1582,8 @@ html.goalify ::-webkit-scrollbar-thumb {
      WCAG AA's 4.5:1 for normal text. Lightened just enough to clear that
      bar while staying visibly the dimmest of the three text tiers. */
   --color-haze: #7d7a72;
-  --color-electric: #c9a227;
-  --color-electric-soft: #ddbe63;
+  --color-electric: #f5a623;
+  --color-electric-soft: #ffcf7a;
   /* A real green, not a second gold — "lime" is the scope's positive/active
      signal (knee-safe, completed, target hit) and needs its own hue to
      read as one, distinct from the gold brand/CTA accent. Muted enough to
@@ -1610,50 +1610,47 @@ html.goalify ::-webkit-scrollbar-thumb {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 62% 34% at 16% -6%, rgba(201, 162, 39, 0.13), transparent 62%),
+    radial-gradient(ellipse 62% 34% at 16% -6%, rgba(245, 166, 35, 0.13), transparent 62%),
     radial-gradient(ellipse 58% 40% at 92% 106%, rgba(33, 168, 115, 0.09), transparent 65%),
     radial-gradient(ellipse 120% 80% at 50% 40%, transparent 45%, rgba(0, 0, 0, 0.4) 100%),
     linear-gradient(180deg, #0a0a0b 0%, #101012 55%, #0a0a0b 100%);
 }
 
-/* --- Surfaces: floating glass panels, no boxed-in borders ----------------- */
+/* --- Surfaces: floating glass panels, zero borders ------------------------ */
+/* No border anywhere in this block, on any state — a surface is legible
+   purely from its background tint against the canvas plus its elevation
+   shadow. That's the actual difference between "floating panel" and "box
+   with a line around it": nothing here is ever outlined, hovered,
+   selected, or otherwise. */
 
 .gf-elite-scope .gf-card,
 .gf-elite-scope .gf-glass {
-  /* A graduated tint (lighter at the top edge, fading down) instead of
-     one flat opacity reads as a pane of glass catching light from above,
-     not a filled-in rectangle. Paired with a border on just that top
-     edge instead of a full outline — that's what actually separates
-     "floating panel" from "box with a line around it": the surface is
-     still legible against the canvas from the tint and shadow alone. */
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.03));
+  /* A graduated tint (lighter at the top edge, fading down) reads as a
+     pane of glass catching light from above, not a filled-in rectangle. */
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03));
   border: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  box-shadow:
-    0 24px 48px -26px rgba(0, 0, 0, 0.7),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: 0 24px 48px -26px rgba(0, 0, 0, 0.75);
 }
 
 .gf-elite-scope .gf-card-hover:hover {
-  border-color: rgba(201, 162, 39, 0.35);
-  background: rgba(255, 255, 255, 0.05);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
+  box-shadow:
+    0 28px 54px -24px rgba(0, 0, 0, 0.8),
+    0 0 32px -16px rgba(245, 166, 35, 0.35);
 }
 
 .gf-elite-scope .gf-card-active {
-  border-color: var(--color-electric);
-  background: linear-gradient(160deg, rgba(201, 162, 39, 0.14), rgba(255, 255, 255, 0.035) 70%);
+  background: linear-gradient(160deg, rgba(245, 166, 35, 0.16), rgba(255, 255, 255, 0.04) 70%);
   box-shadow: 0 0 0 1.5px var(--color-electric);
 }
 
 /* A warm tint, not a coloured outline — the accent lives in the wash and
-   the icon/text on top of it, never in a bright border ring. That's what
-   keeps these read as glass instead of "boxes with a yellow line". */
+   the icon/text on top of it, never in a border ring. */
 .gf-elite-scope .gf-glass-electric,
 .gf-elite-scope .gf-glass-lime {
-  background: rgba(201, 162, 39, 0.06);
-  border-color: rgba(255, 255, 255, 0.07);
+  background: rgba(245, 166, 35, 0.07);
 }
 
 /* --- Accents: one soft gold glow, never a neon blur ----------------------- */
@@ -1661,13 +1658,13 @@ html.goalify ::-webkit-scrollbar-thumb {
 .gf-elite-scope .gf-glow-electric,
 .gf-elite-scope .gf-glow-lime {
   box-shadow:
-    0 10px 26px -12px rgba(201, 162, 39, 0.45),
-    0 0 0 1px rgba(201, 162, 39, 0.16);
+    0 10px 26px -12px rgba(245, 166, 35, 0.45),
+    0 0 0 1px rgba(245, 166, 35, 0.16);
 }
 
 .gf-elite-scope .gf-text-electric,
 .gf-elite-scope .gf-text-hype {
-  background: linear-gradient(120deg, #c9a227 0%, #e3c15f 55%, #c9a227 100%);
+  background: linear-gradient(120deg, #f5a623 0%, #ffd68a 55%, #f5a623 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -1718,10 +1715,9 @@ html.goalify ::-webkit-scrollbar-thumb {
 
 .gf-elite-scope .gf-lift:hover {
   transform: translateY(-4px);
-  border-color: rgba(201, 162, 39, 0.34);
   box-shadow:
     0 30px 58px -26px rgba(0, 0, 0, 0.8),
-    0 0 30px -14px rgba(201, 162, 39, 0.4);
+    0 0 30px -14px rgba(245, 166, 35, 0.4);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1740,45 +1736,45 @@ html.goalify ::-webkit-scrollbar-thumb {
    a flat fill, so the one button per screen that actually matters reads
    as a deliberate highlight, not just another gold rectangle. */
 .gf-elite-scope .gf-gold-gradient {
-  background-image: linear-gradient(135deg, #e3c15f 0%, #c9a227 55%, #a9841c 100%);
+  background-image: linear-gradient(135deg, #ffd68a 0%, #f5a623 55%, #c9780f 100%);
 }
 
 .gf-elite-scope .gf-icon-badge {
-  background: linear-gradient(135deg, #ddbe63 0%, #c9a227 100%);
+  background: linear-gradient(135deg, #ffcf7a 0%, #f5a623 100%);
   box-shadow:
-    0 6px 16px -6px rgba(201, 162, 39, 0.4),
+    0 6px 16px -6px rgba(245, 166, 35, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
 .gf-elite-scope .gf-icon-badge-active {
   box-shadow:
     0 0 0 3px rgba(255, 255, 255, 0.12),
-    0 8px 20px -6px rgba(201, 162, 39, 0.5);
+    0 8px 20px -6px rgba(245, 166, 35, 0.5);
 }
 
 .gf-elite-scope .gf-icon-flat {
-  background: rgba(201, 162, 39, 0.1);
-  box-shadow: inset 0 0 0 1px rgba(201, 162, 39, 0.22);
+  background: rgba(245, 166, 35, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(245, 166, 35, 0.22);
 }
 
 .gf-elite-scope .gf-icon-flat-active {
   background: var(--color-electric);
-  box-shadow: 0 8px 20px -8px rgba(201, 162, 39, 0.5);
+  box-shadow: 0 8px 20px -8px rgba(245, 166, 35, 0.5);
   transform: scale(1.05);
 }
 
 .gf-elite-scope .gf-slot {
   background:
-    radial-gradient(circle at 30% 22%, rgba(201, 162, 39, 0.12) 0%, rgba(201, 162, 39, 0) 55%),
-    linear-gradient(150deg, rgba(201, 162, 39, 0.08), rgba(255, 255, 255, 0.02));
-  border: 1px dashed rgba(201, 162, 39, 0.24);
+    radial-gradient(circle at 30% 22%, rgba(245, 166, 35, 0.12) 0%, rgba(245, 166, 35, 0) 55%),
+    linear-gradient(150deg, rgba(245, 166, 35, 0.08), rgba(255, 255, 255, 0.02));
+  border: 1px dashed rgba(245, 166, 35, 0.24);
 }
 
 .gf-elite-scope .gf-slot::after {
   background: linear-gradient(
     100deg,
     transparent 20%,
-    rgba(201, 162, 39, 0.16) 50%,
+    rgba(245, 166, 35, 0.16) 50%,
     transparent 80%
   );
 }
@@ -1792,18 +1788,18 @@ html.goalify ::-webkit-scrollbar-thumb {
 @keyframes gf-elite-pulse-ring {
   0% {
     box-shadow:
-      0 10px 26px -12px rgba(201, 162, 39, 0.45),
-      0 0 0 0 rgba(201, 162, 39, 0.4);
+      0 10px 26px -12px rgba(245, 166, 35, 0.45),
+      0 0 0 0 rgba(245, 166, 35, 0.4);
   }
   70% {
     box-shadow:
-      0 10px 26px -12px rgba(201, 162, 39, 0.45),
-      0 0 0 10px rgba(201, 162, 39, 0);
+      0 10px 26px -12px rgba(245, 166, 35, 0.45),
+      0 0 0 10px rgba(245, 166, 35, 0);
   }
   100% {
     box-shadow:
-      0 10px 26px -12px rgba(201, 162, 39, 0.45),
-      0 0 0 0 rgba(201, 162, 39, 0);
+      0 10px 26px -12px rgba(245, 166, 35, 0.45),
+      0 0 0 0 rgba(245, 166, 35, 0);
   }
 }
 
@@ -1815,13 +1811,13 @@ html.goalify ::-webkit-scrollbar-thumb {
   0%,
   100% {
     box-shadow:
-      0 0 0 1px rgba(201, 162, 39, 0.3),
-      0 8px 22px -8px rgba(201, 162, 39, 0.4);
+      0 0 0 1px rgba(245, 166, 35, 0.3),
+      0 8px 22px -8px rgba(245, 166, 35, 0.4);
   }
   50% {
     box-shadow:
-      0 0 0 1px rgba(201, 162, 39, 0.55),
-      0 10px 28px -8px rgba(201, 162, 39, 0.65);
+      0 0 0 1px rgba(245, 166, 35, 0.55),
+      0 10px 28px -8px rgba(245, 166, 35, 0.65);
   }
 }
 

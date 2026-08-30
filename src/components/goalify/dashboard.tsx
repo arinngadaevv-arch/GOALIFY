@@ -201,23 +201,13 @@ export function Dashboard() {
         <DailyCreed />
       </div>
 
-      {/* On phones this is just a plain vertical stack — the two column
-          wrapper divs below just stack on top of each other, in the same
-          order as their contents were always in. At lg+ it becomes two
-          real columns, each stacking its own contents top-down with one
-          consistent gap. This used to be a CSS `columns-2` masonry flow,
-          which balances *total height* across columns rather than
-          filling each one from the top — with blocks this uneven in
-          height that reliably left one column visibly shorter than the
-          other, a ragged, unbalanced-looking gap at the bottom of the
-          shorter one. Manually grouping into two explicit columns doesn't
-          have that failure mode: each one just fills from the top. */}
-      <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
-      <div className="flex flex-col gap-8">
       {/* ------------------------------------------------ Primary action
-          The one thing today actually asks of the user. Everything else on
-          this screen is context; this is the job. */}
-      <section>
+          The one thing today actually asks of the user, spanning full
+          width — bigger, calmer presence than squeezed into a half-width
+          column, and it means nothing sits crammed directly underneath it
+          in a narrow column of its own. Everything else on this screen is
+          context; this is the job. */}
+      <section className="mb-10">
         <SectionHeading
           eyebrow="Today"
           title="Your Workout"
@@ -241,15 +231,15 @@ export function Dashboard() {
           />
           <GlassCard
             deep
-            className="gf-reveal overflow-hidden p-0"
+            className="gf-reveal overflow-hidden p-0 lg:flex lg:items-stretch"
           >
-          <div className="relative">
+          <div className="relative lg:w-2/5 lg:shrink-0">
             <VisualSlot
               label="Workout Preview"
               hint="3D coach loop for this session"
               src="/quiz/workout-preview-plank.png"
               rounded="rounded-none"
-              className="h-44 w-full"
+              className="h-44 w-full lg:h-full"
             />
             <div className="absolute top-3 left-3 flex gap-2">
               <Pill tone="electric">{workout.intensity}</Pill>
@@ -261,7 +251,7 @@ export function Dashboard() {
             </div>
           </div>
 
-          <div className="p-6">
+          <div className="p-6 lg:flex lg:flex-1 lg:flex-col lg:justify-center">
             <h3 className="gf-display text-2xl font-black text-ink">
               {workout.title}
             </h3>
@@ -304,6 +294,20 @@ export function Dashboard() {
         </div>
       </section>
 
+      {/* On phones this is just a plain vertical stack — the two column
+          wrapper divs below just stack on top of each other, in the same
+          order as their contents were always in. At lg+ it becomes two
+          real columns, each stacking its own contents top-down with one
+          consistent, generous gap. This used to be a CSS `columns-2`
+          masonry flow, which balances *total height* across columns
+          rather than filling each one from the top — with blocks this
+          uneven in height that reliably left one column visibly shorter
+          than the other, a ragged, unbalanced-looking gap at the bottom
+          of the shorter one. Manually grouping into two explicit columns
+          doesn't have that failure mode: each one just fills from the
+          top. */}
+      <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-8">
+      <div className="flex flex-col gap-10">
       {/* ------------------------------------------------- Bonus workout pick
           A small, secondary card — deliberately not competing with the
           hero above, which still owns "today". Lets someone see there's a
@@ -433,7 +437,7 @@ export function Dashboard() {
       </section>
       </div>
 
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-10">
       {/* ----------------------------------------------------- Today's Activity
           Used to auto-track steps live via the phone's motion sensor, but
           iOS Safari makes you re-grant that permission on every single
