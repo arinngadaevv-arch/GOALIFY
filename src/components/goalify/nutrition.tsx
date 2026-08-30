@@ -16,7 +16,6 @@ import {
 import { useGoalify } from "@/lib/goalify/store";
 import { goalLabel } from "@/lib/goalify/plan";
 import { AppShell } from "./app-shell";
-import { GlassCard } from "./ui/glass-card";
 import { IconBadge } from "./ui/icon-badge";
 import { WaterTracker } from "./water-tracker";
 import { Pill, SectionHeading } from "./ui/stat";
@@ -64,22 +63,40 @@ export function Nutrition() {
   const [selectedMeal, setSelectedMeal] = useState<(typeof meals)[number] | null>(null);
 
   return (
-    <AppShell dark title="Nutrition & Daily Fuel" subtitle="Targets, not diaries">
+    <AppShell dark title="Nutrition" subtitle="Targets, not diaries">
       <ParticleBurstLayer />
 
       {/* --------------------------------------------------------- Hero card
           One layered surface instead of a headline card + three separate
           macro boxes + an info box: the number, the "why", and the split
           all live in one place, the macro row floating on the same
-          surface rather than boxed into a panel of its own. */}
+          surface rather than boxed into a panel of its own.
+          Deliberately not the shared GlassCard treatment here — this is
+          the one number on the screen that matters most, so instead of
+          the usual tinted panel it's almost fully see-through, held
+          together by a thin glowing ring at the edge rather than a solid
+          surface, and the headline number gets its own warm bloom on top
+          of the shared numeric glow so it actually reads as the thing
+          lighting up the room, not boxed in and dimmed by it. */}
       <div className="relative">
         <div
           className="pointer-events-none absolute -inset-4 -z-10 rounded-[2.5rem] bg-electric/16 opacity-70 blur-3xl"
           aria-hidden
         />
-        <GlassCard tone="electric" deep className="gf-reveal p-6 text-center">
+        <div
+          className="gf-reveal rounded-glass p-6 text-center backdrop-blur-xl"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(245,166,35,0.05), rgba(255,255,255,0.02))",
+            boxShadow:
+              "0 0 0 1px rgba(245,166,35,0.4), 0 0 60px -14px rgba(245,166,35,0.55), 0 24px 48px -30px rgba(0,0,0,0.6)",
+          }}
+        >
           <Pill tone="electric">{goalLabel(answers.goal)}</Pill>
-          <p className="gf-numeric mt-4 text-6xl font-black text-ink">
+          <p
+            className="gf-numeric mt-4 text-6xl font-black text-ink"
+            style={{ textShadow: "0 0 50px rgba(245,166,35,0.55), 0 0 22px rgba(255,255,255,0.4)" }}
+          >
             {targets.calories.toLocaleString()}
           </p>
           <p className="mt-1 text-sm font-bold tracking-[0.14em] text-mist uppercase">
@@ -110,7 +127,7 @@ export function Nutrition() {
             No weighing, no logging — roughly {perMeal}g of protein at each of
             three meals, and let the rest of your appetite fill the gap.
           </p>
-        </GlassCard>
+        </div>
       </div>
 
       {/* See dashboard.tsx's matching comment — CSS-multicol, no reordering. */}

@@ -19,11 +19,18 @@ export function TopBar({ title, subtitle }: { title?: string; subtitle?: string 
         <AvatarDisplay avatar={state.avatar} size="sm" />
       </Link>
 
+      {/* Base (mobile) sizes stay conservative on purpose — a longer title
+          ("Nutrition", "Progress" screens included their subtitle inline
+          here before) at the larger size wrapped to 2 lines on ordinary
+          375–390px phones, which read as the title colliding with the
+          eyebrow line above it. The bump to a bigger, more premium size
+          only kicks in at `sm:`, where this column has real width to
+          spare rather than being the entire viewport. */}
       <div className="min-w-0 flex-1">
-        <p className="line-clamp-1 text-xs leading-tight font-bold tracking-[0.12em] text-mist uppercase sm:text-sm sm:tracking-[0.16em]">
+        <p className="line-clamp-1 text-[11px] leading-tight font-bold tracking-[0.12em] text-mist uppercase sm:text-sm sm:tracking-[0.16em]">
           {subtitle ?? greeting()}
         </p>
-        <h1 className="gf-display line-clamp-2 text-lg leading-tight font-extrabold text-ink sm:text-xl">
+        <h1 className="gf-display line-clamp-1 text-base leading-tight font-extrabold text-ink sm:text-xl">
           {title ?? `${name} · ${answers.daysPerWeek}-day plan`}
         </h1>
       </div>

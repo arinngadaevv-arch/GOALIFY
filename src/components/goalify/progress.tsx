@@ -43,7 +43,7 @@ export function Progress() {
   const selectedDay = last30.find((day) => day.key === selectedDayKey) ?? null;
 
   return (
-    <AppShell dark title="Progress & Evolution" subtitle="The proof it's working">
+    <AppShell dark title="Progress" subtitle="The proof it's working">
       <ParticleBurstLayer />
 
       {/* ---------------------------------------------------------- Hero
