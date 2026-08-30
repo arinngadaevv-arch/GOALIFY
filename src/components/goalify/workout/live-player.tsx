@@ -48,9 +48,17 @@ import { FloatingStreakBadge } from "@/components/goalify/ui/floating-streak-bad
 type Phase = "watch" | "work" | "rest" | "done";
 
 /** Obsidian-scope ring colors — literal hex since RING_ELECTRIC/RING_LIME
- * are shared constants tuned for the light theme elsewhere in the app. */
+ * are shared constants tuned for the light theme elsewhere in the app.
+ * Exported and reused by video-led-player.tsx, so these stay on the
+ * original gold/crimson pair — the industrial restyle below is local to
+ * this file's own LivePlayer() only. */
 export const RING_GOLD = "#e8b32c";
 export const RING_CRIMSON = "#ff3b3b";
+
+/** Brushed-steel ring gradient for LivePlayer's "Masculine Tech" restyle —
+ * an SVG-only id, injected via a zero-size <svg><defs> in the component
+ * (see HUB_GRADIENT_ID below), never touching the exported RING_GOLD. */
+const HUB_GRADIENT_ID = "gf-live-hub-ring";
 
 export function LivePlayer() {
   const { state, todaysWorkout, completeWorkout } = useGoalify();
@@ -273,7 +281,20 @@ export function LivePlayer() {
         : (reps / Math.max(1, exercise.amount)) * 100;
 
   return (
-    <main className="gf-cyber-scope mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pt-5 pb-48">
+    <main className="gf-cyber-scope gf-live-industrial mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pt-5 pb-48">
+      {/* Zero-size — exists only so the brushed-steel ring gradient below
+          has a <defs> to live in; ProgressRing's `color` prop passes
+          straight into an SVG `stroke`, so `url(#...)` resolves fine even
+          though the gradient itself is declared in a sibling <svg>. */}
+      <svg width="0" height="0" aria-hidden className="absolute">
+        <defs>
+          <linearGradient id={HUB_GRADIENT_ID} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#e7ebee" />
+            <stop offset="45%" stopColor="#aab2ba" />
+            <stop offset="100%" stopColor="#565b61" />
+          </linearGradient>
+        </defs>
+      </svg>
       <ParticleBurstLayer />
       <FloatingStreakBadge />
 
@@ -299,7 +320,7 @@ export function LivePlayer() {
           </div>
           <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-ink/6">
             <div
-              className="gf-progress-fill h-full rounded-full bg-linear-to-r from-electric to-lime-neon transition-[width] duration-500"
+              className="gf-progress-fill h-full rounded-full bg-linear-to-r from-[#c7ced4] to-[#6e747a] transition-[width] duration-500"
               style={{ width: `${Math.max(4, totalProgress)}%` }}
             />
           </div>
@@ -396,7 +417,7 @@ export function LivePlayer() {
           <div
             className={clsx(
               "absolute inset-0 -m-6 rounded-full blur-3xl",
-              phase === "rest" ? "bg-[#ff3b3b]/25" : "bg-[#e8b32c]/25",
+              phase === "rest" ? "bg-[#ff3b3b]/25" : "bg-[#aab2ba]/20",
             )}
             aria-hidden
           />
@@ -415,7 +436,7 @@ export function LivePlayer() {
             rings={[
               {
                 value: ringValue,
-                color: phase === "rest" ? RING_CRIMSON : RING_GOLD,
+                color: phase === "rest" ? RING_CRIMSON : `url(#${HUB_GRADIENT_ID})`,
                 label: "Current",
               },
             ]}
@@ -425,7 +446,7 @@ export function LivePlayer() {
                 type="button"
                 onClick={startExercise}
                 aria-label="Start this exercise"
-                className="gf-press gf-glow-electric flex flex-col items-center gap-1.5 rounded-full bg-electric px-8 py-7 text-white [.gf-cyber-scope_&]:text-[#1a1100]"
+                className="gf-press gf-hub-button flex flex-col items-center gap-1.5 rounded-full px-8 py-7"
               >
                 <Play className="size-9 fill-current" />
                 <span className="text-sm font-black tracking-[0.08em] uppercase">
@@ -485,7 +506,7 @@ export function LivePlayer() {
                 fireBurst(event.clientX, event.clientY);
                 setReps((r) => Math.min(exercise.amount, r + 1));
               }}
-              className="gf-glass gf-press gf-glow-electric w-full rounded-full bg-electric py-4 text-base font-black tracking-tight text-white [.gf-cyber-scope_&]:text-[#1a1100]"
+              className="gf-press gf-glow-electric w-full rounded-full bg-electric py-4 text-base font-black tracking-tight text-white [.gf-cyber-scope_&]:text-[#1a1100]"
             >
               COUNT A REP
             </button>
@@ -545,7 +566,7 @@ export function LivePlayer() {
             type="button"
             onClick={() => setPaused((p) => !p)}
             aria-label={paused ? "Resume workout" : "Pause workout"}
-            className="gf-press gf-glow-electric grid size-19 place-items-center rounded-full bg-electric text-white [.gf-cyber-scope_&]:text-[#1a1100]"
+            className="gf-press gf-hub-button grid size-19 place-items-center rounded-full"
           >
             {paused ? (
               <Play className="size-8 fill-current" />
