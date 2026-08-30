@@ -351,7 +351,17 @@ export function LivePlayer() {
                   : `${exercise.name} demonstration loop`
             }
             videoSrc={videoSrc}
-            className="h-64 w-full rounded-none sm:h-72"
+            // Scales with viewport *height*, not just width — on a short
+            // phone (or a two-line exercise name pushing everything below
+            // it down further) a flat h-64 left the ring's own countdown/
+            // Start button sitting in the same screen band as the fixed
+            // bottom transport controls, visually fusing into one
+            // confusing cluster. Shrinking this first (it's the single
+            // biggest, purely decorative block above the ring) buys back
+            // that clearance automatically, in proportion to how short the
+            // viewport actually is, instead of a fixed breakpoint that
+            // only covers the phone sizes tested against.
+            className="h-[clamp(5rem,14dvh,16rem)] w-full rounded-none sm:h-72"
           />
 
           <div className="absolute top-3 left-3">
@@ -392,16 +402,16 @@ export function LivePlayer() {
           line of coaching context, then the ring. Nothing else competes for
           attention here; the cue text that used to float on top of the
           video above now lives in exactly one place. */}
-      <section className="mt-7 flex flex-col items-center">
+      <section className="mt-4 flex flex-col items-center">
         <Pill tone={phase === "rest" ? "lime" : "electric"}>
           {phase === "rest" ? "Rest" : phase === "watch" ? "Watch & Prepare" : exercise.focus}
         </Pill>
 
-        <h1 className="gf-display mt-3 text-center text-4xl leading-tight font-black text-ink sm:text-5xl">
+        <h1 className="gf-display mt-2 text-center text-4xl leading-tight font-black text-ink sm:text-5xl">
           {phase === "rest" ? "Recover" : exercise.name}
         </h1>
 
-        <p className="mt-2 max-w-xs text-center text-sm leading-snug font-semibold text-mist">
+        <p className="mt-1 max-w-xs text-center text-sm leading-snug font-semibold text-mist">
           {phase === "rest"
             ? "Breathe. Shake it out. Stay standing."
             : phase === "watch"
@@ -413,7 +423,7 @@ export function LivePlayer() {
             makes the ring itself read as the dominant, spotlit element on
             the screen instead of just another UI control, without adding
             any extra shapes/icons that would clutter it. */}
-        <div className="relative mt-7 grid place-items-center">
+        <div className="relative mt-1 grid place-items-center">
           <div
             className={clsx(
               "absolute inset-0 -m-6 rounded-full blur-3xl",
@@ -423,8 +433,8 @@ export function LivePlayer() {
           />
           <ProgressRing
             className="relative"
-            size={248}
-            thickness={20}
+            size={180}
+            thickness={14}
             // A real per-second countdown (rest / timed work) gets a linear,
             // tick-synced sweep so the ring visibly closes in step with the
             // clock; "watch" is static (waiting on the Start tap) and
@@ -562,18 +572,28 @@ export function LivePlayer() {
             <SkipBack className="size-5.5 fill-current" />
           </ControlButton>
 
-          <button
-            type="button"
-            onClick={() => setPaused((p) => !p)}
-            aria-label={paused ? "Resume workout" : "Pause workout"}
-            className="gf-press gf-hub-button grid size-19 place-items-center rounded-full"
-          >
-            {paused ? (
-              <Play className="size-8 fill-current" />
-            ) : (
-              <Pause className="size-8 fill-current" />
-            )}
-          </button>
+          {/* Before Start is tapped there's nothing to pause yet — a Pause
+              icon here (as if a session were already running) read as a
+              second control arguing with the ring's own Start button right
+              above it. Rather than swap in a matching Play icon (still two
+              buttons claiming the same job), "watch" simply doesn't render
+              this one at all — the ring's Start button is the one action
+              on screen until there's an actual session for this control to
+              transport. */}
+          {phase !== "watch" && (
+            <button
+              type="button"
+              onClick={() => setPaused((p) => !p)}
+              aria-label={paused ? "Resume workout" : "Pause workout"}
+              className="gf-press gf-hub-button grid size-19 place-items-center rounded-full"
+            >
+              {paused ? (
+                <Play className="size-8 fill-current" />
+              ) : (
+                <Pause className="size-8 fill-current" />
+              )}
+            </button>
+          )}
 
           <ControlButton
             label="Skip exercise"
