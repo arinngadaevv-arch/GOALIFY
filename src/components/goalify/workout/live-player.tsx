@@ -289,9 +289,9 @@ export function LivePlayer() {
       <svg width="0" height="0" aria-hidden className="absolute">
         <defs>
           <linearGradient id={HUB_GRADIENT_ID} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#e7ebee" />
-            <stop offset="45%" stopColor="#aab2ba" />
-            <stop offset="100%" stopColor="#565b61" />
+            <stop offset="0%" stopColor="#f2e6d5" />
+            <stop offset="45%" stopColor="#c2ab8e" />
+            <stop offset="100%" stopColor="#5c4f42" />
           </linearGradient>
         </defs>
       </svg>
@@ -320,7 +320,7 @@ export function LivePlayer() {
           </div>
           <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-ink/6">
             <div
-              className="gf-progress-fill h-full rounded-full bg-linear-to-r from-[#c7ced4] to-[#6e747a] transition-[width] duration-500"
+              className="gf-progress-fill h-full rounded-full bg-linear-to-r from-[#e0c9a8] to-[#8a6a4d] transition-[width] duration-500"
               style={{ width: `${Math.max(4, totalProgress)}%` }}
             />
           </div>
@@ -419,15 +419,20 @@ export function LivePlayer() {
               : exercise.cue}
         </p>
 
-        {/* Soft ambient halo behind the ring, colored to match its phase —
-            makes the ring itself read as the dominant, spotlit element on
-            the screen instead of just another UI control, without adding
-            any extra shapes/icons that would clutter it. */}
+        {/* Ambient halo behind the ring, colored to match its phase — makes
+            the ring itself read as the dominant, spotlit element on the
+            screen instead of just another UI control. Warm ember (not the
+            hub's neutral steel) so it reads as heat/energy radiating off
+            an active machine, and it breathes (gf-ring-halo-active) during
+            watch/work — rest keeps its own static crimson, a held warning
+            rather than something actively running. */}
         <div className="relative mt-1 grid place-items-center">
           <div
             className={clsx(
               "absolute inset-0 -m-6 rounded-full blur-3xl",
-              phase === "rest" ? "bg-[#ff3b3b]/25" : "bg-[#aab2ba]/20",
+              phase === "rest"
+                ? "bg-[#ff3b3b]/25"
+                : "gf-ring-halo-active bg-[#ff6a3d]/25",
             )}
             aria-hidden
           />
@@ -465,7 +470,14 @@ export function LivePlayer() {
               </button>
             ) : phase === "rest" || isTimed ? (
               <div>
-                <p className="gf-numeric text-6xl font-black text-ink">
+                <p
+                  className="gf-numeric text-6xl font-black text-ink"
+                  style={
+                    phase !== "rest"
+                      ? { textShadow: "0 0 34px rgba(255,106,61,0.45)" }
+                      : undefined
+                  }
+                >
                   {secondsLeft}
                 </p>
                 <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-mist">
@@ -474,7 +486,10 @@ export function LivePlayer() {
               </div>
             ) : (
               <div>
-                <p className="gf-numeric text-6xl font-black text-ink">
+                <p
+                  className="gf-numeric text-6xl font-black text-ink"
+                  style={{ textShadow: "0 0 34px rgba(255,106,61,0.45)" }}
+                >
                   {reps}
                   <span className="text-2xl text-mist">/{exercise.amount}</span>
                 </p>
