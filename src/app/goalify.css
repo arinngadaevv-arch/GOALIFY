@@ -1909,11 +1909,11 @@ body.goalify-body:has(.gf-elite-scope) .gf-ambience {
     inset 0 2px 3px rgba(255, 240, 210, 0.7),
     inset 0 -5px 9px rgba(0, 0, 0, 0.55),
     0 0 0 4px rgba(10, 8, 6, 0.65),
-    0 0 0 6px rgba(255, 106, 61, 0.22),
-    0 0 26px -6px rgba(255, 106, 61, 0.5),
+    0 0 0 7px rgba(255, 106, 61, 0.45),
+    0 0 46px -2px rgba(255, 106, 61, 0.85),
     0 10px 26px -8px rgba(0, 0, 0, 0.75);
   color: #241205;
-  animation: gf-hub-pulse 2.6s ease-in-out infinite;
+  animation: gf-hub-pulse 2.2s ease-in-out infinite;
   transition:
     transform 0.12s ease-out,
     filter 0.12s ease-out;
@@ -1948,8 +1948,8 @@ body.goalify-body:has(.gf-elite-scope) .gf-ambience {
       inset 0 2px 3px rgba(255, 240, 210, 0.7),
       inset 0 -5px 9px rgba(0, 0, 0, 0.55),
       0 0 0 4px rgba(10, 8, 6, 0.65),
-      0 0 0 6px rgba(255, 106, 61, 0.22),
-      0 0 26px -6px rgba(255, 106, 61, 0.5),
+      0 0 0 7px rgba(255, 106, 61, 0.45),
+      0 0 46px -2px rgba(255, 106, 61, 0.85),
       0 10px 26px -8px rgba(0, 0, 0, 0.75);
   }
   50% {
@@ -1957,8 +1957,8 @@ body.goalify-body:has(.gf-elite-scope) .gf-ambience {
       inset 0 2px 3px rgba(255, 240, 210, 0.7),
       inset 0 -5px 9px rgba(0, 0, 0, 0.55),
       0 0 0 4px rgba(10, 8, 6, 0.65),
-      0 0 0 6px rgba(255, 106, 61, 0.4),
-      0 0 40px -4px rgba(255, 106, 61, 0.75),
+      0 0 0 9px rgba(255, 106, 61, 0.7),
+      0 0 70px 4px rgba(255, 106, 61, 1),
       0 10px 26px -8px rgba(0, 0, 0, 0.75);
   }
 }
@@ -1978,14 +1978,14 @@ body.goalify-body:has(.gf-elite-scope) .gf-ambience {
     transform: scale(1);
   }
   50% {
-    transform: scale(1.07);
+    transform: scale(1.12);
   }
 }
 
 .gf-live-industrial .gf-hub-button-start {
   animation:
-    gf-hub-pulse 2.6s ease-in-out infinite,
-    gf-hub-start-beckon 1.6s ease-in-out infinite;
+    gf-hub-pulse 2.2s ease-in-out infinite,
+    gf-hub-start-beckon 1.3s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2001,17 +2001,17 @@ body.goalify-body:has(.gf-elite-scope) .gf-ambience {
 @keyframes gf-ring-halo-pulse {
   0%,
   100% {
-    opacity: 0.55;
+    opacity: 0.65;
     transform: scale(1);
   }
   50% {
-    opacity: 0.9;
-    transform: scale(1.08);
+    opacity: 1;
+    transform: scale(1.18);
   }
 }
 
 .gf-live-industrial .gf-ring-halo-active {
-  animation: gf-ring-halo-pulse 2.6s ease-in-out infinite;
+  animation: gf-ring-halo-pulse 2.2s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

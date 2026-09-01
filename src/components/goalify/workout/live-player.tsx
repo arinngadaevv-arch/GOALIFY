@@ -415,7 +415,13 @@ export function LivePlayer() {
           {phase === "rest"
             ? "Breathe. Shake it out. Stay standing."
             : phase === "watch"
-              ? "Watch the form, then tap Start when you're ready."
+              ? index === 0
+                ? // Only on the very first exercise of the session — once
+                  // someone has been through the watch -> start -> auto-
+                  // advance loop once, repeating it before every single
+                  // exercise would just be noise.
+                  "Tap Start to begin. Each move runs on its own clock — follow the coach, and we'll move you to the next exercise automatically."
+                : "Watch the form, then tap Start when you're ready."
               : exercise.cue}
         </p>
 
@@ -429,10 +435,10 @@ export function LivePlayer() {
         <div className="relative mt-1 grid place-items-center">
           <div
             className={clsx(
-              "absolute inset-0 -m-6 rounded-full blur-3xl",
+              "absolute inset-0 -m-8 rounded-full blur-3xl",
               phase === "rest"
                 ? "bg-[#ff3b3b]/25"
-                : "gf-ring-halo-active bg-[#ff6a3d]/25",
+                : "gf-ring-halo-active bg-[#ff6a3d]/40",
             )}
             aria-hidden
           />
