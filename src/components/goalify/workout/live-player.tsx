@@ -41,7 +41,7 @@ import {
   restVideoUrl,
 } from "@/lib/goalify/video";
 import { ProgressRing } from "@/components/goalify/ui/progress-ring";
-import { Pill, Stat } from "@/components/goalify/ui/stat";
+import { Pill } from "@/components/goalify/ui/stat";
 import { fireBurst, ParticleBurstLayer } from "@/components/goalify/quiz/particle-burst";
 import { FloatingStreakBadge } from "@/components/goalify/ui/floating-streak-badge";
 
@@ -289,9 +289,9 @@ export function LivePlayer() {
       <svg width="0" height="0" aria-hidden className="absolute">
         <defs>
           <linearGradient id={HUB_GRADIENT_ID} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#ffedc9" />
-            <stop offset="45%" stopColor="#d69a4a" />
-            <stop offset="100%" stopColor="#6b4420" />
+            <stop offset="0%" stopColor="#eed9ab" />
+            <stop offset="45%" stopColor="#c9a961" />
+            <stop offset="100%" stopColor="#8f7238" />
           </linearGradient>
         </defs>
       </svg>
@@ -320,7 +320,7 @@ export function LivePlayer() {
           </div>
           <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-ink/6">
             <div
-              className="gf-progress-fill h-full rounded-full bg-linear-to-r from-[#e0c9a8] to-[#8a6a4d] transition-[width] duration-500"
+              className="gf-progress-fill h-full rounded-full bg-linear-to-r from-[#eed9ab] to-[#8f7238] transition-[width] duration-500"
               style={{ width: `${Math.max(4, totalProgress)}%` }}
             />
           </div>
@@ -335,20 +335,6 @@ export function LivePlayer() {
               phase === "rest"
                 ? "mobility"
                 : poseForExercise(exercise.name, exercise.focus)
-            }
-            label={
-              phase === "rest"
-                ? "Recovery"
-                : phase === "watch"
-                  ? "Watch & Prepare"
-                  : "3D Coach Demonstration"
-            }
-            hint={
-              phase === "rest"
-                ? "Coach idle / breathing loop"
-                : phase === "watch"
-                  ? "Study the form, then tap Start below when you're ready"
-                  : `${exercise.name} demonstration loop`
             }
             videoSrc={videoSrc}
             // Scales with viewport *height*, not just width — on a short
@@ -407,11 +393,11 @@ export function LivePlayer() {
           {phase === "rest" ? "Rest" : phase === "watch" ? "Watch & Prepare" : exercise.focus}
         </Pill>
 
-        <h1 className="gf-display mt-2 text-center text-4xl leading-tight font-black text-ink sm:text-5xl">
+        <h1 className="gf-display mt-3 text-center text-3xl leading-tight font-black text-ink sm:text-4xl">
           {phase === "rest" ? "Recover" : exercise.name}
         </h1>
 
-        <p className="mt-1 max-w-xs text-center text-sm leading-snug font-semibold text-mist">
+        <p className="mt-2 max-w-xs text-center text-sm leading-snug font-semibold text-mist">
           {phase === "rest"
             ? "Breathe. Shake it out. Stay standing."
             : phase === "watch"
@@ -438,7 +424,7 @@ export function LivePlayer() {
               "absolute inset-0 -m-8 rounded-full blur-3xl",
               phase === "rest"
                 ? "bg-[#ff3b3b]/25"
-                : "gf-ring-halo-active bg-[#ff6a3d]/40",
+                : "gf-ring-halo-active bg-[#c9a961]/25",
             )}
             aria-hidden
           />
@@ -467,23 +453,16 @@ export function LivePlayer() {
                 type="button"
                 onClick={startExercise}
                 aria-label="Start this exercise"
-                className="gf-press gf-hub-button gf-hub-button-start flex flex-col items-center gap-1.5 rounded-full px-8 py-7"
+                className="gf-press gf-hub-button flex flex-col items-center gap-1 rounded-full px-7 py-6"
               >
-                <Play className="size-9 fill-current" />
-                <span className="text-sm font-black tracking-[0.08em] uppercase">
+                <Play className="size-6 fill-current" />
+                <span className="text-xs font-black tracking-[0.08em] uppercase">
                   Start
                 </span>
               </button>
             ) : phase === "rest" || isTimed ? (
               <div>
-                <p
-                  className="gf-numeric text-6xl font-black text-ink"
-                  style={
-                    phase !== "rest"
-                      ? { textShadow: "0 0 34px rgba(255,106,61,0.45)" }
-                      : undefined
-                  }
-                >
+                <p className="gf-numeric text-6xl font-black text-ink">
                   {secondsLeft}
                 </p>
                 <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-mist">
@@ -492,10 +471,7 @@ export function LivePlayer() {
               </div>
             ) : (
               <div>
-                <p
-                  className="gf-numeric text-6xl font-black text-ink"
-                  style={{ textShadow: "0 0 34px rgba(255,106,61,0.45)" }}
-                >
+                <p className="gf-numeric text-6xl font-black text-ink">
                   {reps}
                   <span className="text-2xl text-mist">/{exercise.amount}</span>
                 </p>
@@ -507,26 +483,38 @@ export function LivePlayer() {
           </ProgressRing>
         </div>
 
-        {/* Live calorie / exercise tracking — each value pops on change (the
-            `key` remount replays `gf-anim-pop`) so ticking up reads as a
-            live, alive counter rather than a static number that jumps. */}
-        <div className="mt-6 grid w-full grid-cols-2 gap-3">
-          <div key={`cal-${Math.round((workout.calories * totalProgress) / 100)}`} className="gf-anim-pop">
-            <Stat
-              value={Math.round((workout.calories * totalProgress) / 100)}
-              suffix="kcal"
-              label="Burned so far"
-              tone="electric"
-            />
-          </div>
-          <div key={`done-${index + (phase === "rest" ? 1 : 0)}`} className="gf-anim-pop">
-            <Stat
-              value={index + (phase === "rest" ? 1 : 0)}
-              suffix={`/${workout.exercises.length}`}
-              label="Exercises done"
-              tone="lime"
-            />
-          </div>
+        {/* Live calorie / exercise tracking, as two minimal cards rather
+            than bare numbers floating on the page — each value still pops
+            on change (the `key` remount replays `gf-anim-pop`) so ticking
+            up reads as a live, alive counter rather than a static number
+            that jumps. */}
+        <div className="mt-5 grid w-full grid-cols-2 gap-3">
+          <GlassCard
+            key={`cal-${Math.round((workout.calories * totalProgress) / 100)}`}
+            className="gf-anim-pop px-4 py-4 text-center"
+          >
+            <p className="gf-numeric text-4xl font-black text-ink">
+              {Math.round((workout.calories * totalProgress) / 100)}
+              <span className="ml-0.5 text-sm font-bold text-mist">kcal</span>
+            </p>
+            <p className="mt-1 text-[11px] font-semibold tracking-[0.12em] text-mist uppercase">
+              Burned so far
+            </p>
+          </GlassCard>
+          <GlassCard
+            key={`done-${index + (phase === "rest" ? 1 : 0)}`}
+            className="gf-anim-pop px-4 py-4 text-center"
+          >
+            <p className="gf-numeric text-4xl font-black text-ink">
+              {index + (phase === "rest" ? 1 : 0)}
+              <span className="ml-0.5 text-sm font-bold text-mist">
+                /{workout.exercises.length}
+              </span>
+            </p>
+            <p className="mt-1 text-[11px] font-semibold tracking-[0.12em] text-mist uppercase">
+              Exercises done
+            </p>
+          </GlassCard>
         </div>
 
         {phase === "work" && !isTimed && (
@@ -554,26 +542,26 @@ export function LivePlayer() {
 
       {/* ------------------------------------------------------- Up next card */}
       {nextExercise && (
-        <GlassCard className="mt-7 flex items-center gap-4 p-4">
+        <GlassCard className="mt-5 flex items-center gap-4 p-5">
           {/* Same pose-icon language as the big AIFormGuide preview above,
               just smaller — a real preview of the next movement instead of
               a generic "next" glyph. */}
-          <div className="relative grid size-14 shrink-0 place-items-center overflow-hidden rounded-2xl bg-electric/10">
+          <div className="relative grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-electric/10">
             <PoseIcon
               pose={poseForExercise(nextExercise.name, nextExercise.focus)}
-              className="size-10"
+              className="size-11"
             />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-electric">
+            <p className="text-[11px] font-bold tracking-[0.16em] text-electric uppercase">
               Up next
             </p>
-            <p className="truncate text-sm font-extrabold text-ink">
+            <p className="truncate text-base font-black text-ink">
               {nextExercise.name}
             </p>
-            <p className="text-xs text-mist">{describeAmount(nextExercise)}</p>
+            <p className="text-sm text-mist">{describeAmount(nextExercise)}</p>
           </div>
-          <ChevronRight className="size-4 shrink-0 text-haze" />
+          <ChevronRight className="size-5 shrink-0 text-haze" />
         </GlassCard>
       )}
 
