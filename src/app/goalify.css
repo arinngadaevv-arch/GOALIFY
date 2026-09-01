@@ -1830,3 +1830,156 @@ body.goalify-body:has(.gf-elite-scope) {
 body.goalify-body:has(.gf-elite-scope) .gf-ambience {
   display: none;
 }
+
+/* ==========================================================================
+   Live Player only — "Masculine Tech / Stealth Industrial" restyle.
+   Scoped to `.gf-live-industrial`, a second class added ONLY to LivePlayer's
+   own <main> (never to CompletionScreen's, and never to the shared
+   quiz/paywall pages that also use `.gf-cyber-scope`) — so swapping the
+   scope's warm gold for brushed steel/titanium here can't leak into any
+   other screen that happens to share the same base scope. Every rule below
+   re-declares something the base `.gf-cyber-scope` rules already set, at
+   matching specificity, so it wins purely by coming later in the file —
+   nothing here is `!important`. Rest/danger stays on its existing crimson
+   red rather than getting monochromed too — a red indicator light reads as
+   more "industrial machinery," not less. ========================================================================== */
+
+.gf-cyber-scope.gf-live-industrial {
+  --color-electric: #c2ab8e;
+  --color-electric-soft: #ddc7a8;
+}
+
+/* Warm ember — a separate accent from the steel above, used only for glow/
+   energy moments (ambient bloom, active-state shadows, the countdown's own
+   glow). The first monochrome pass read as flat and lifeless rather than
+   "powerful" — steel alone has no temperature. Real machinery reads as
+   alive through heat, not hue: a forge, a running engine, a heated blade.
+   This is that warmth, kept separate from the structural steel color so
+   the hub button/frame stay metal while the *energy* around them reads hot. */
+.gf-live-industrial {
+  --gf-ember: #ff6a3d;
+}
+
+.gf-live-industrial::before {
+  background:
+    radial-gradient(ellipse 70% 40% at 12% -8%, rgba(255, 106, 61, 0.16), transparent 60%),
+    radial-gradient(ellipse 60% 38% at 105% 18%, rgba(255, 59, 59, 0.12), transparent 60%),
+    radial-gradient(ellipse 55% 42% at 50% 118%, rgba(255, 106, 61, 0.1), transparent 60%),
+    linear-gradient(180deg, #0e0d0c 0%, #15120f 55%, #0e0d0c 100%);
+}
+
+.gf-live-industrial::after {
+  background-image:
+    linear-gradient(rgba(194, 171, 142, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(194, 171, 142, 0.06) 1px, transparent 1px);
+}
+
+.gf-live-industrial .gf-card,
+.gf-live-industrial .gf-glass {
+  border-color: rgba(194, 171, 142, 0.18);
+  box-shadow:
+    0 24px 54px -22px rgba(0, 0, 0, 0.85),
+    0 0 0 1px rgba(194, 171, 142, 0.05) inset;
+}
+
+.gf-live-industrial .gf-glow-electric {
+  box-shadow:
+    0 12px 32px -10px rgba(255, 106, 61, 0.4),
+    0 0 0 1px rgba(255, 106, 61, 0.28);
+}
+
+/* The Core Hub — a machined steel disc standing in for the flat gold
+   circles (Start button, main pause/resume control): a domed brushed-metal
+   gradient, warmed a couple degrees (cream/bronze highlights instead of
+   cold chrome) so it reads as *heated* metal, a bevelled inset
+   highlight/shadow pair, and a dark bezel ring in place of a flat fill +
+   soft glow, plus a faint knurled/grooved collar (repeating-conic-gradient)
+   standing in for the hex-nut texture, plus a slow rim-light sweep for
+   motion — this is meant to feel like it's running, not sitting inert. */
+.gf-live-industrial .gf-hub-button {
+  position: relative;
+  background: radial-gradient(
+    circle at 32% 26%,
+    #f7efe4 0%,
+    #d8c6ac 24%,
+    #a3907a 56%,
+    #5c4f42 100%
+  );
+  box-shadow:
+    inset 0 2px 3px rgba(255, 245, 230, 0.65),
+    inset 0 -5px 9px rgba(0, 0, 0, 0.55),
+    0 0 0 4px rgba(10, 8, 6, 0.65),
+    0 0 0 6px rgba(255, 106, 61, 0.22),
+    0 0 26px -6px rgba(255, 106, 61, 0.5),
+    0 10px 26px -8px rgba(0, 0, 0, 0.75);
+  color: #1c1712;
+  animation: gf-hub-pulse 2.6s ease-in-out infinite;
+}
+
+.gf-live-industrial .gf-hub-button::before {
+  content: "";
+  position: absolute;
+  inset: -9px;
+  z-index: -1;
+  border-radius: 9999px;
+  opacity: 0.6;
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(255, 232, 210, 0.18) 0deg 3deg,
+    rgba(0, 0, 0, 0.4) 3deg 6deg
+  );
+}
+
+@keyframes gf-hub-pulse {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 2px 3px rgba(255, 245, 230, 0.65),
+      inset 0 -5px 9px rgba(0, 0, 0, 0.55),
+      0 0 0 4px rgba(10, 8, 6, 0.65),
+      0 0 0 6px rgba(255, 106, 61, 0.22),
+      0 0 26px -6px rgba(255, 106, 61, 0.5),
+      0 10px 26px -8px rgba(0, 0, 0, 0.75);
+  }
+  50% {
+    box-shadow:
+      inset 0 2px 3px rgba(255, 245, 230, 0.65),
+      inset 0 -5px 9px rgba(0, 0, 0, 0.55),
+      0 0 0 4px rgba(10, 8, 6, 0.65),
+      0 0 0 6px rgba(255, 106, 61, 0.4),
+      0 0 40px -4px rgba(255, 106, 61, 0.75),
+      0 10px 26px -8px rgba(0, 0, 0, 0.75);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gf-live-industrial .gf-hub-button {
+    animation: none;
+  }
+}
+
+/* Breathing ember halo behind the ring during watch/work — the one thing
+   on screen that should feel like it's actively running, not a static
+   backdrop. Rest keeps its own crimson halo (unanimated below), reading
+   as a held warning rather than an active pulse. */
+@keyframes gf-ring-halo-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.08);
+  }
+}
+
+.gf-live-industrial .gf-ring-halo-active {
+  animation: gf-ring-halo-pulse 2.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gf-live-industrial .gf-ring-halo-active {
+    animation: none;
+  }
+}
