@@ -289,9 +289,9 @@ export function LivePlayer() {
       <svg width="0" height="0" aria-hidden className="absolute">
         <defs>
           <linearGradient id={HUB_GRADIENT_ID} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#f2e6d5" />
-            <stop offset="45%" stopColor="#c2ab8e" />
-            <stop offset="100%" stopColor="#5c4f42" />
+            <stop offset="0%" stopColor="#ffedc9" />
+            <stop offset="45%" stopColor="#d69a4a" />
+            <stop offset="100%" stopColor="#6b4420" />
           </linearGradient>
         </defs>
       </svg>
@@ -461,7 +461,7 @@ export function LivePlayer() {
                 type="button"
                 onClick={startExercise}
                 aria-label="Start this exercise"
-                className="gf-press gf-hub-button flex flex-col items-center gap-1.5 rounded-full px-8 py-7"
+                className="gf-press gf-hub-button gf-hub-button-start flex flex-col items-center gap-1.5 rounded-full px-8 py-7"
               >
                 <Play className="size-9 fill-current" />
                 <span className="text-sm font-black tracking-[0.08em] uppercase">

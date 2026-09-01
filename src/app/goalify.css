@@ -1900,20 +1900,31 @@ body.goalify-body:has(.gf-elite-scope) .gf-ambience {
   position: relative;
   background: radial-gradient(
     circle at 32% 26%,
-    #f7efe4 0%,
-    #d8c6ac 24%,
-    #a3907a 56%,
-    #5c4f42 100%
+    #ffedc9 0%,
+    #f0c988 22%,
+    #d69a4a 56%,
+    #7a4f26 100%
   );
   box-shadow:
-    inset 0 2px 3px rgba(255, 245, 230, 0.65),
+    inset 0 2px 3px rgba(255, 240, 210, 0.7),
     inset 0 -5px 9px rgba(0, 0, 0, 0.55),
     0 0 0 4px rgba(10, 8, 6, 0.65),
     0 0 0 6px rgba(255, 106, 61, 0.22),
     0 0 26px -6px rgba(255, 106, 61, 0.5),
     0 10px 26px -8px rgba(0, 0, 0, 0.75);
-  color: #1c1712;
+  color: #241205;
   animation: gf-hub-pulse 2.6s ease-in-out infinite;
+  transition:
+    transform 0.12s ease-out,
+    filter 0.12s ease-out;
+}
+
+/* Instant tactile "blink" the moment a finger actually lands on it — a
+   quick brightness flash + squash, on top of whichever pulse is already
+   running, so a tap always reads as registered even mid-animation-cycle. */
+.gf-live-industrial .gf-hub-button:active {
+  filter: brightness(1.35);
+  transform: scale(0.94);
 }
 
 .gf-live-industrial .gf-hub-button::before {
@@ -1934,7 +1945,7 @@ body.goalify-body:has(.gf-elite-scope) .gf-ambience {
   0%,
   100% {
     box-shadow:
-      inset 0 2px 3px rgba(255, 245, 230, 0.65),
+      inset 0 2px 3px rgba(255, 240, 210, 0.7),
       inset 0 -5px 9px rgba(0, 0, 0, 0.55),
       0 0 0 4px rgba(10, 8, 6, 0.65),
       0 0 0 6px rgba(255, 106, 61, 0.22),
@@ -1943,7 +1954,7 @@ body.goalify-body:has(.gf-elite-scope) .gf-ambience {
   }
   50% {
     box-shadow:
-      inset 0 2px 3px rgba(255, 245, 230, 0.65),
+      inset 0 2px 3px rgba(255, 240, 210, 0.7),
       inset 0 -5px 9px rgba(0, 0, 0, 0.55),
       0 0 0 4px rgba(10, 8, 6, 0.65),
       0 0 0 6px rgba(255, 106, 61, 0.4),
@@ -1954,6 +1965,31 @@ body.goalify-body:has(.gf-elite-scope) .gf-ambience {
 
 @media (prefers-reduced-motion: reduce) {
   .gf-live-industrial .gf-hub-button {
+    animation: none;
+  }
+}
+
+/* Start-only — the button nobody was noticing they had to tap. Grows and
+   settles on a loop (on top of the glow pulse above) so it visibly beckons
+   instead of sitting there as a static disc waiting to be discovered. */
+@keyframes gf-hub-start-beckon {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.07);
+  }
+}
+
+.gf-live-industrial .gf-hub-button-start {
+  animation:
+    gf-hub-pulse 2.6s ease-in-out infinite,
+    gf-hub-start-beckon 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gf-live-industrial .gf-hub-button-start {
     animation: none;
   }
 }
