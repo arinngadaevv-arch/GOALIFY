@@ -15,7 +15,6 @@ import {
   Pause,
   Play,
   SkipBack,
-  SkipForward,
   Sparkles,
   Target,
   Timer,
@@ -40,25 +39,22 @@ import {
   introVideoUrl,
   restVideoUrl,
 } from "@/lib/goalify/video";
-import { ProgressRing } from "@/components/goalify/ui/progress-ring";
+import { ProgressRing, RING_ELECTRIC } from "@/components/goalify/ui/progress-ring";
 import { Pill, Stat } from "@/components/goalify/ui/stat";
 import { fireBurst, ParticleBurstLayer } from "@/components/goalify/quiz/particle-burst";
 import { FloatingStreakBadge } from "@/components/goalify/ui/floating-streak-badge";
+import { BottomDock } from "@/components/goalify/bottom-dock";
 
 type Phase = "watch" | "work" | "rest" | "done";
 
 /** Obsidian-scope ring colors — literal hex since RING_ELECTRIC/RING_LIME
  * are shared constants tuned for the light theme elsewhere in the app.
- * Exported and reused by video-led-player.tsx, so these stay on the
- * original gold/crimson pair — the industrial restyle below is local to
- * this file's own LivePlayer() only. */
+ * Exported and reused by video-led-player.tsx (Quick Video Workout, which
+ * keeps its own dark obsidian canvas — out of scope for this redesign), so
+ * these stay defined exactly as before even though LivePlayer() itself no
+ * longer uses them for its own ring. */
 export const RING_GOLD = "#e8b32c";
 export const RING_CRIMSON = "#ff3b3b";
-
-/** Brushed-steel ring gradient for LivePlayer's "Masculine Tech" restyle —
- * an SVG-only id, injected via a zero-size <svg><defs> in the component
- * (see HUB_GRADIENT_ID below), never touching the exported RING_GOLD. */
-const HUB_GRADIENT_ID = "gf-live-hub-ring";
 
 export function LivePlayer() {
   const { state, todaysWorkout, completeWorkout } = useGoalify();
@@ -281,27 +277,15 @@ export function LivePlayer() {
         : (reps / Math.max(1, exercise.amount)) * 100;
 
   return (
-    <main className="gf-cyber-scope gf-live-industrial mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pt-5 pb-48">
-      {/* Zero-size — exists only so the brushed-steel ring gradient below
-          has a <defs> to live in; ProgressRing's `color` prop passes
-          straight into an SVG `stroke`, so `url(#...)` resolves fine even
-          though the gradient itself is declared in a sibling <svg>. */}
-      <svg width="0" height="0" aria-hidden className="absolute">
-        <defs>
-          <linearGradient id={HUB_GRADIENT_ID} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#f2e6d5" />
-            <stop offset="45%" stopColor="#c2ab8e" />
-            <stop offset="100%" stopColor="#5c4f42" />
-          </linearGradient>
-        </defs>
-      </svg>
+    <>
+    <main className="mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pt-5 pb-36">
       <ParticleBurstLayer />
       <FloatingStreakBadge />
 
       {/* ------------------------------------------------------------ Top bar
-          Just exit + progress here — pause/resume lives in exactly one
-          place, the big control at the bottom thumb zone, so there's never
-          a moment with two different buttons claiming to do the same thing. */}
+          Just exit + progress here — pause/resume/next live down with the
+          rest of the transport controls, in the page's own flow, since the
+          global bottom nav now owns the fixed bottom-of-screen strip. */}
       <header className="flex items-center gap-3">
         <Link
           href="/home"
@@ -320,7 +304,7 @@ export function LivePlayer() {
           </div>
           <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-ink/6">
             <div
-              className="gf-progress-fill h-full rounded-full bg-linear-to-r from-[#e0c9a8] to-[#8a6a4d] transition-[width] duration-500"
+              className="gf-progress-fill h-full rounded-full bg-linear-to-r from-electric to-lime-neon transition-[width] duration-500"
               style={{ width: `${Math.max(4, totalProgress)}%` }}
             />
           </div>
@@ -388,7 +372,7 @@ export function LivePlayer() {
               className="gf-anim-rise absolute inset-0 z-20 grid place-items-center bg-electric/90 backdrop-blur-sm"
               aria-hidden
             >
-              <p className="gf-anim-pop gf-display text-4xl font-black text-white italic sm:text-5xl [.gf-cyber-scope_&]:text-[#1a1100]">
+              <p className="gf-anim-pop gf-display text-4xl font-black text-white italic sm:text-5xl">
                 YOUR TURN — GO!
               </p>
             </div>
@@ -421,18 +405,15 @@ export function LivePlayer() {
 
         {/* Ambient halo behind the ring, colored to match its phase — makes
             the ring itself read as the dominant, spotlit element on the
-            screen instead of just another UI control. Warm ember (not the
-            hub's neutral steel) so it reads as heat/energy radiating off
-            an active machine, and it breathes (gf-ring-halo-active) during
-            watch/work — rest keeps its own static crimson, a held warning
-            rather than something actively running. */}
+            screen instead of just another UI control. Rest keeps a static
+            crimson halo (a held warning); watch/work pulse gently (the
+            built-in Tailwind `animate-pulse`) so the one thing the user is
+            staring at right before moving reads as alive, not inert. */}
         <div className="relative mt-1 grid place-items-center">
           <div
             className={clsx(
               "absolute inset-0 -m-6 rounded-full blur-3xl",
-              phase === "rest"
-                ? "bg-[#ff3b3b]/25"
-                : "gf-ring-halo-active bg-[#ff6a3d]/25",
+              phase === "rest" ? "bg-[#ff3b3b]/20" : "animate-pulse bg-electric/20",
             )}
             aria-hidden
           />
@@ -451,7 +432,7 @@ export function LivePlayer() {
             rings={[
               {
                 value: ringValue,
-                color: phase === "rest" ? RING_CRIMSON : `url(#${HUB_GRADIENT_ID})`,
+                color: phase === "rest" ? RING_CRIMSON : RING_ELECTRIC,
                 label: "Current",
               },
             ]}
@@ -461,7 +442,13 @@ export function LivePlayer() {
                 type="button"
                 onClick={startExercise}
                 aria-label="Start this exercise"
-                className="gf-press gf-hub-button flex flex-col items-center gap-1.5 rounded-full px-8 py-7"
+                className="gf-press flex flex-col items-center gap-1.5 rounded-full px-8 py-7 text-[#4a3308]"
+                style={{
+                  background:
+                    "radial-gradient(circle at 32% 26%, #fff6da 0%, #ffd76b 32%, #f0ab1f 70%, #c9860f 100%)",
+                  boxShadow:
+                    "0 0 0 1px rgba(255,255,255,0.5) inset, 0 10px 28px -8px rgba(201,134,15,0.55), 0 0 36px -8px rgba(255,196,80,0.65)",
+                }}
               >
                 <Play className="size-9 fill-current" />
                 <span className="text-sm font-black tracking-[0.08em] uppercase">
@@ -470,14 +457,7 @@ export function LivePlayer() {
               </button>
             ) : phase === "rest" || isTimed ? (
               <div>
-                <p
-                  className="gf-numeric text-6xl font-black text-ink"
-                  style={
-                    phase !== "rest"
-                      ? { textShadow: "0 0 34px rgba(255,106,61,0.45)" }
-                      : undefined
-                  }
-                >
+                <p className="gf-numeric text-6xl font-black text-ink">
                   {secondsLeft}
                 </p>
                 <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-mist">
@@ -486,10 +466,7 @@ export function LivePlayer() {
               </div>
             ) : (
               <div>
-                <p
-                  className="gf-numeric text-6xl font-black text-ink"
-                  style={{ textShadow: "0 0 34px rgba(255,106,61,0.45)" }}
-                >
+                <p className="gf-numeric text-6xl font-black text-ink">
                   {reps}
                   <span className="text-2xl text-mist">/{exercise.amount}</span>
                 </p>
@@ -531,7 +508,7 @@ export function LivePlayer() {
                 fireBurst(event.clientX, event.clientY);
                 setReps((r) => Math.min(exercise.amount, r + 1));
               }}
-              className="gf-press gf-glow-electric w-full rounded-full bg-electric py-4 text-base font-black tracking-tight text-white [.gf-cyber-scope_&]:text-[#1a1100]"
+              className="gf-press gf-glow-electric w-full rounded-full bg-electric py-4 text-base font-black tracking-tight text-white"
             >
               COUNT A REP
             </button>
@@ -544,6 +521,58 @@ export function LivePlayer() {
             </button>
           </div>
         )}
+
+        {/* -------------------------------------------------- Transport row
+            The floating pill that used to live fixed at the bottom of the
+            screen now sits in the page's own flow — the global bottom nav
+            owns that fixed strip instead. Previous/pause stay as modest
+            icon buttons; "Next Exercise" (the old small SkipForward icon)
+            is now the one big, obvious, central action for moving through
+            the set — Play (the ring's own Start button above) stays the
+            one true way to *begin* a rep/timer, this is purely for moving
+            between exercises. */}
+        <div className="mt-6 flex w-full items-center gap-3">
+          <ControlButton
+            label="Previous exercise"
+            onClick={() => goToExercise(Math.max(0, index - 1))}
+            disabled={index === 0}
+          >
+            <SkipBack className="size-5 fill-current" />
+          </ControlButton>
+
+          {/* Before Start is tapped there's nothing to pause yet — "watch"
+              simply doesn't render this one at all, so the ring's own
+              Start button stays the only playback-shaped control on
+              screen until there's an actual session to transport. */}
+          {phase !== "watch" && (
+            <button
+              type="button"
+              onClick={() => setPaused((p) => !p)}
+              aria-label={paused ? "Resume workout" : "Pause workout"}
+              className="gf-glass gf-press grid size-14 shrink-0 place-items-center rounded-full text-ink-soft"
+            >
+              {paused ? (
+                <Play className="size-5 fill-current" />
+              ) : (
+                <Pause className="size-5 fill-current" />
+              )}
+            </button>
+          )}
+
+          <button
+            type="button"
+            // Always jumps straight to the next exercise, from any phase —
+            // distinct from finishCurrent() (used by "Set complete" and a
+            // timed set's own countdown), which correctly still routes
+            // through a rest period first when this exercise has
+            // restSeconds > 0.
+            onClick={() => goToExercise(index + 1)}
+            className="gf-press gf-glow-electric flex flex-1 items-center justify-center gap-2 rounded-full bg-electric py-3.5 text-sm font-black tracking-tight text-white"
+          >
+            Next Exercise
+            <ArrowRight className="size-4.5" />
+          </button>
+        </div>
       </section>
 
       {/* ------------------------------------------------------- Up next card */}
@@ -570,64 +599,9 @@ export function LivePlayer() {
           <ChevronRight className="size-4 shrink-0 text-haze" />
         </GlassCard>
       )}
-
-      {/* --------------------------------------------------- Floating controls
-          The one control surface in the whole screen — big, centered,
-          squarely in the bottom thumb zone. Play/pause is the largest and
-          most central target since it's the one you'll reach for mid-rep,
-          sweaty and not looking; prev/next flank it, still comfortably
-          above the 44px touch-target minimum. */}
-      <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
-        <div className="gf-glass gf-glass-deep flex items-center gap-3 rounded-full p-2.5">
-          <ControlButton
-            label="Previous exercise"
-            onClick={() => goToExercise(Math.max(0, index - 1))}
-            disabled={index === 0}
-          >
-            <SkipBack className="size-5.5 fill-current" />
-          </ControlButton>
-
-          {/* Before Start is tapped there's nothing to pause yet — a Pause
-              icon here (as if a session were already running) read as a
-              second control arguing with the ring's own Start button right
-              above it. Rather than swap in a matching Play icon (still two
-              buttons claiming the same job), "watch" simply doesn't render
-              this one at all — the ring's Start button is the one action
-              on screen until there's an actual session for this control to
-              transport. */}
-          {phase !== "watch" && (
-            <button
-              type="button"
-              onClick={() => setPaused((p) => !p)}
-              aria-label={paused ? "Resume workout" : "Pause workout"}
-              className="gf-press gf-hub-button grid size-19 place-items-center rounded-full"
-            >
-              {paused ? (
-                <Play className="size-8 fill-current" />
-              ) : (
-                <Pause className="size-8 fill-current" />
-              )}
-            </button>
-          )}
-
-          <ControlButton
-            label="Skip exercise"
-            // Always jumps straight to the next exercise, from any phase —
-            // distinct from finishCurrent() (used by "Set complete" and a
-            // timed set's own countdown), which correctly still routes
-            // through a rest period first. Previously this only did that
-            // for phase === "rest"; from "watch"/"work" it called
-            // finishCurrent() instead, which — whenever the exercise has
-            // restSeconds > 0 — just entered rest for the *same* exercise
-            // without changing `index`, so one tap on Skip looked like it
-            // did nothing.
-            onClick={() => goToExercise(index + 1)}
-          >
-            <SkipForward className="size-5.5 fill-current" />
-          </ControlButton>
-        </div>
-      </div>
     </main>
+    <BottomDock />
+    </>
   );
 }
 
