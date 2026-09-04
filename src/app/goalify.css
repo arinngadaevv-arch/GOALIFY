@@ -1961,3 +1961,127 @@ body.goalify-body:has(.gf-elite-scope) .gf-ambience {
     animation: none;
   }
 }
+
+/* ==========================================================================
+   Workout Launchpad only — "Dark Luxury" restyle (Apple Fitness+ x Nike
+   Training Club x premium SaaS). Scoped to `.gf-launch-scope`, applied to
+   the launchpad's own <main> — independent of `.gf-cyber-scope` and
+   `.gf-elite-scope` on purpose, even though the palette lands in a similar
+   neighborhood to Live Player's, so this screen can keep evolving on its
+   own without coupling the two. Near-black canvas, a warm-white ink, one
+   champagne-gold accent reserved for the CTA and small highlight
+   moments — never a whole scope drenched in gold. ========================================================================== */
+
+.gf-launch-scope {
+  --color-canvas: #0b0b0a;
+  --color-ink: #f4f0e8;
+  --color-ink-soft: #d9d3c5;
+  --color-mist: #9c968a;
+  --color-haze: #6e695f;
+  --color-electric: #f4f0e8;
+  --color-electric-soft: #fbf9f4;
+  --gf-champagne: #c9a961;
+  --gf-champagne-soft: #e3cd94;
+  --gf-surface: #141412;
+
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+}
+
+.gf-launch-scope::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 40% at 15% -6%, rgba(201, 169, 97, 0.07), transparent 60%),
+    radial-gradient(ellipse 55% 38% at 105% 30%, rgba(201, 169, 97, 0.05), transparent 60%);
+}
+
+body.goalify-body:has(.gf-launch-scope) {
+  background: #0b0b0a;
+}
+
+body.goalify-body:has(.gf-launch-scope) .gf-ambience {
+  display: none;
+}
+
+/* The one CTA on the whole screen — a soft champagne-gold gradient, not a
+   flat fill, with a gentle glow instead of a hard drop shadow. */
+.gf-launch-scope .gf-start-btn {
+  background: linear-gradient(135deg, #ecd9a8 0%, #c9a961 55%, #a9843f 100%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    0 18px 40px -14px rgba(201, 169, 97, 0.45);
+}
+
+.gf-launch-scope .gf-start-btn:hover {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.4) inset,
+    0 22px 48px -12px rgba(201, 169, 97, 0.6);
+}
+
+.gf-launch-scope .gf-start-btn:active {
+  transform: scale(0.98);
+}
+
+/* Sticky mobile CTA dock — a soft upward fade instead of a hard card edge,
+   so the button reads as floating above the content, not boxed off from
+   it. Only needed while the dock is actually `fixed` (below `lg`, see the
+   layout's own `lg:static`) — at `lg` it's a plain block in the two-column
+   layout, so the fade would just be a stray gradient behind it. */
+.gf-launch-scope .gf-launch-cta-dock {
+  background: linear-gradient(180deg, rgba(11, 11, 10, 0) 0%, #0b0b0a 28%, #0b0b0a 100%);
+}
+
+@media (min-width: 1024px) {
+  .gf-launch-scope .gf-launch-cta-dock {
+    background: none;
+  }
+}
+
+@keyframes gf-launch-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gf-launch-scope .gf-launch-rise {
+  animation: gf-launch-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gf-launch-scope .gf-launch-rise {
+    animation: none;
+  }
+}
+
+/* Very slow Ken-Burns drift on the hero clip — "image scale 1.02", nothing
+   more theatrical than that. */
+@keyframes gf-hero-scale {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.02);
+  }
+}
+
+.gf-hero-scale {
+  animation: gf-hero-scale 12s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gf-hero-scale {
+    animation: none;
+  }
+}
