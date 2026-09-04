@@ -1856,9 +1856,11 @@ body.goalify-body:has(.gf-elite-scope) .gf-ambience {
 
 /* The one warm-gold accent, used only by the hub button and the progress
    bar/ring below — never assigned to --color-electric, so it can't spread
-   into every pill/label/stat the way a scope-wide accent normally would. */
+   into every pill/label/stat the way a scope-wide accent normally would.
+   Richer and warmer than a flat champagne — this is the screen's one
+   pulse of energy, not just a trim color. */
 .gf-live-industrial {
-  --gf-gold: #c9a961;
+  --gf-gold: #d9a94a;
 }
 
 .gf-live-industrial::before {
@@ -1895,13 +1897,13 @@ body.goalify-body:has(.gf-elite-scope) .gf-ambience {
    screen's more restrained language. */
 .gf-live-industrial .gf-hub-button {
   position: relative;
-  background: radial-gradient(circle at 38% 32%, #221c13 0%, #15110b 65%, #0d0a07 100%);
+  background: radial-gradient(circle at 38% 32%, #241d12 0%, #16110a 65%, #0d0a07 100%);
   box-shadow:
-    inset 0 0 0 1.5px rgba(201, 169, 97, 0.8),
+    inset 0 0 0 1.5px rgba(217, 169, 74, 0.85),
     inset 0 1px 2px rgba(255, 255, 255, 0.06),
-    0 0 20px -6px rgba(201, 169, 97, 0.35),
+    0 0 20px -6px rgba(217, 169, 74, 0.4),
     0 10px 22px -10px rgba(0, 0, 0, 0.8);
-  color: #d9bd7e;
+  color: #e8bd6c;
   animation: gf-hub-glow-breathe 3.4s ease-in-out infinite;
   transition:
     transform 0.12s ease-out,
@@ -1918,18 +1920,41 @@ body.goalify-body:has(.gf-elite-scope) .gf-ambience {
   0%,
   100% {
     box-shadow:
-      inset 0 0 0 1.5px rgba(201, 169, 97, 0.8),
+      inset 0 0 0 1.5px rgba(217, 169, 74, 0.85),
       inset 0 1px 2px rgba(255, 255, 255, 0.06),
-      0 0 20px -6px rgba(201, 169, 97, 0.35),
+      0 0 20px -6px rgba(217, 169, 74, 0.4),
       0 10px 22px -10px rgba(0, 0, 0, 0.8);
   }
   50% {
     box-shadow:
-      inset 0 0 0 1.5px rgba(201, 169, 97, 0.95),
+      inset 0 0 0 1.5px rgba(217, 169, 74, 1),
       inset 0 1px 2px rgba(255, 255, 255, 0.09),
-      0 0 30px -4px rgba(201, 169, 97, 0.55),
+      0 0 30px -4px rgba(217, 169, 74, 0.65),
       0 10px 22px -10px rgba(0, 0, 0, 0.8);
   }
+}
+
+/* A quiet sonar ping — the workout's actual "pulse." Runs continuously
+   while a set is genuinely live (waiting to start, or running and not
+   paused) so the hub button reads as an alive, beating thing rather than
+   a static control. Stops the moment the user pauses — no pulse means no
+   movement, which is the correct signal at that instant. */
+@keyframes gf-hub-pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(217, 169, 74, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 20px rgba(217, 169, 74, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(217, 169, 74, 0);
+  }
+}
+
+.gf-live-industrial .gf-hub-button.gf-hub-pulse {
+  animation:
+    gf-hub-glow-breathe 3.4s ease-in-out infinite,
+    gf-hub-pulse-ring 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1956,8 +1981,28 @@ body.goalify-body:has(.gf-elite-scope) .gf-ambience {
   animation: gf-timer-urgent-pulse 1s ease-in-out infinite;
 }
 
+/* A much quieter version of the same pulse, running the whole time a set
+   is actually live (counting and not paused) — the number should feel
+   like it has a pulse of its own, not just sit there swapping digits.
+   `.gf-timer-urgent` (bigger, warmer) takes over for the last few seconds
+   and wins on specificity, so the two never fight. */
+@keyframes gf-timer-live-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  15% {
+    transform: scale(1.02);
+  }
+}
+
+.gf-live-industrial .gf-timer-live {
+  animation: gf-timer-live-pulse 1s ease-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .gf-live-industrial .gf-timer-urgent {
+  .gf-live-industrial .gf-timer-urgent,
+  .gf-live-industrial .gf-timer-live {
     animation: none;
   }
 }

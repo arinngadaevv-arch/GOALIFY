@@ -313,7 +313,7 @@ export function LivePlayer() {
       />
       <div className="mt-3 h-1 overflow-hidden rounded-full bg-ink/6">
         <div
-          className="gf-progress-fill h-full rounded-full bg-linear-to-r from-[#eed9ab] to-[#8f7238] transition-[width] duration-500"
+          className="gf-progress-fill h-full rounded-full bg-linear-to-r from-[#f0c878] to-[#9c7530] transition-[width] duration-500"
           style={{ width: `${Math.max(4, totalProgress)}%` }}
         />
       </div>
@@ -364,6 +364,7 @@ export function LivePlayer() {
             animated={phase !== "watch"}
             variant={phase === "rest" ? "crimson" : "gold"}
             hint={timerHint}
+            live={phase !== "watch" && !paused}
             urgent={urgent}
           />
 

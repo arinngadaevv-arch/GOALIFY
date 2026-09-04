@@ -35,7 +35,7 @@ export function WorkoutControls({
           type="button"
           onClick={onStart}
           aria-label="Start this exercise"
-          className="gf-press gf-hub-button grid size-16 shrink-0 place-items-center rounded-full"
+          className="gf-press gf-hub-button gf-hub-pulse grid size-16 shrink-0 place-items-center rounded-full"
         >
           <Play className="size-7 fill-current" />
         </button>
@@ -56,7 +56,10 @@ export function WorkoutControls({
         type="button"
         onClick={onTogglePause}
         aria-label={paused ? "Resume workout" : "Pause workout"}
-        className="gf-press gf-hub-button grid size-16 shrink-0 place-items-center rounded-full"
+        className={clsx(
+          "gf-press gf-hub-button grid size-16 shrink-0 place-items-center rounded-full",
+          !paused && "gf-hub-pulse",
+        )}
       >
         {paused ? (
           <Play className="size-7 fill-current" />

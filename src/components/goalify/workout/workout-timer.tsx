@@ -16,6 +16,7 @@ export function WorkoutTimer({
   animated,
   variant,
   hint,
+  live,
   urgent,
   className,
 }: {
@@ -33,7 +34,11 @@ export function WorkoutTimer({
   /** Small caption under "seconds" — e.g. an approximate rep target for a
    * reps-based set, so the estimate doesn't read as an exact clock. */
   hint?: string;
-  /** True in a countdown's last few seconds — a quiet pulse, not an alarm. */
+  /** True whenever a set is actually counting down (not paused) — a
+   * quiet per-second pulse so the number reads as alive, not just digits
+   * swapping. `urgent` (below) takes over for the last few seconds. */
+  live: boolean;
+  /** True in a countdown's last few seconds — a bigger, warmer pulse. */
   urgent: boolean;
   className?: string;
 }) {
@@ -42,9 +47,9 @@ export function WorkoutTimer({
       <svg width="0" height="0" aria-hidden className="absolute">
         <defs>
           <linearGradient id={GRADIENT_ID} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#eed9ab" />
-            <stop offset="45%" stopColor="#c9a961" />
-            <stop offset="100%" stopColor="#8f7238" />
+            <stop offset="0%" stopColor="#f0c878" />
+            <stop offset="45%" stopColor="#d9a94a" />
+            <stop offset="100%" stopColor="#9c7530" />
           </linearGradient>
         </defs>
       </svg>
@@ -63,7 +68,12 @@ export function WorkoutTimer({
           },
         ]}
       >
-        <div className={clsx("text-center", urgent && "gf-timer-urgent")}>
+        <div
+          className={clsx(
+            "text-center",
+            urgent ? "gf-timer-urgent" : live && "gf-timer-live",
+          )}
+        >
           <p
             className={clsx(
               "gf-numeric text-[3.25rem] leading-none font-black sm:text-[3.75rem]",
