@@ -39,11 +39,18 @@ import { ExerciseMedia } from "@/components/goalify/workout/exercise-media";
 import { ExerciseInfo } from "@/components/goalify/workout/exercise-info";
 import { WorkoutTimer } from "@/components/goalify/workout/workout-timer";
 import { WorkoutControls } from "@/components/goalify/workout/workout-controls";
-import { FormTip } from "@/components/goalify/workout/form-tip";
 import { WorkoutStats } from "@/components/goalify/workout/workout-stats";
 import { UpNext } from "@/components/goalify/workout/up-next";
 
 type Phase = "watch" | "work" | "rest" | "done";
+
+/** A rep-based set has no clock of its own — this is a deliberate estimate
+ * (a controlled tempo, roughly) so it can still run through the same
+ * countdown/auto-advance machinery as a timed set instead of needing a
+ * separate manual tap-per-rep interaction, which is unusable while your
+ * hands are actually busy doing the exercise. WorkoutTimer's `hint` makes
+ * clear this is an approximation, not a tracked rep count. */
+const SECONDS_PER_REP = 3;
 
 /** Obsidian-scope ring colors — literal hex since RING_ELECTRIC/RING_LIME
  * are shared constants tuned for the light theme elsewhere in the app.
@@ -70,7 +77,6 @@ export function LivePlayer() {
   const [phase, setPhase] = useState<Phase>("watch");
   const [paused, setPaused] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(0);
-  const [reps, setReps] = useState(0);
   /** Briefly true right as "watch" flips to "work" — drives the flash cue. */
   const [flash, setFlash] = useState(false);
 
@@ -91,6 +97,11 @@ export function LivePlayer() {
   const exercise = workout.exercises[index] ?? workout.exercises[0];
   const nextExercise = workout.exercises[index + 1];
   const isTimed = exercise.kind === "time";
+  // The number the "work" countdown actually runs on — a real clock for a
+  // timed set, an estimate for a rep-based one (see SECONDS_PER_REP).
+  const workSeconds = isTimed
+    ? exercise.amount
+    : Math.max(10, Math.round(exercise.amount * SECONDS_PER_REP));
   const { countdownBeep, exerciseChime, completionCelebration, goCue } =
     useWorkoutSounds();
   const haptics = useHaptics();
@@ -131,7 +142,6 @@ export function LivePlayer() {
       }
       setIndex(nextIndex);
       setPhase("watch");
-      setReps(0);
       exerciseChime();
     },
     [workout.exercises, exerciseChime],
@@ -141,11 +151,11 @@ export function LivePlayer() {
    * user tapping Start, never automatically. */
   const startExercise = useCallback(() => {
     setPhase("work");
-    setSeconds(isTimed ? exercise.amount : 0);
+    setSeconds(workSeconds);
     goCue();
     setFlash(true);
     window.setTimeout(() => setFlash(false), 700);
-  }, [isTimed, exercise, setSeconds, goCue]);
+  }, [workSeconds, setSeconds, goCue]);
 
   const finishCurrent = useCallback(() => {
     const isLast = index === workout.exercises.length - 1;
@@ -174,16 +184,15 @@ export function LivePlayer() {
   // response to the timer firing rather than a synchronous effect cascade.
   useEffect(() => {
     if (phase === "done" || paused) return;
-    // "watch" now waits on a Start tap (see startExercise) instead of
-    // auto-counting down, and rep-based work has no clock at all — it
-    // advances when the user taps through.
+    // "watch" waits on a Start tap (see startExercise) instead of
+    // auto-counting down — everything past that point (both timed and
+    // estimated-from-reps work, plus rest) runs the same real countdown.
     if (phase === "watch") return;
-    if (phase === "work" && !isTimed) return;
 
     const timer = setInterval(() => {
       if (secondsRef.current <= 1) {
         clearInterval(timer);
-        if (phase === "work" && isTimed) {
+        if (phase === "work") {
           finishCurrent();
         } else if (phase === "rest") {
           goToExercise(index + 1);
@@ -198,7 +207,6 @@ export function LivePlayer() {
   }, [
     phase,
     paused,
-    isTimed,
     index,
     finishCurrent,
     goToExercise,
@@ -251,10 +259,6 @@ export function LivePlayer() {
   }
 
   const totalProgress = ((index + (phase === "rest" ? 1 : 0)) / workout.exercises.length) * 100;
-  // The only phase with no clock behind it — reps advance on a tap, not a
-  // tick, so the ring for it should pop to its new value rather than sweep
-  // like a countdown (see the ProgressRing transitionMs/easing override below).
-  const isRepCounting = phase === "work" && !isTimed;
   // Real clips from Supabase Storage (see lib/goalify/video.ts): the
   // very first watch beat gets the workout's intro, rest breaks get the
   // water clip, and every other watch/work beat gets whichever uploaded
@@ -269,24 +273,32 @@ export function LivePlayer() {
       : phase === "watch" && index === 0
         ? introVideoUrl()
         : exerciseVideoUrl(exercise.name, exercise.focus);
-  // "watch" has no clock anymore (waits on the Start tap below) — the ring
-  // just sits fully charged, reading as "ready to go" rather than counting
-  // down to nothing.
-  const ringValue = phase === "rest"
-    ? (secondsLeft / Math.max(1, exercise.restSeconds)) * 100
-    : phase === "watch"
-      ? 100
-      : isTimed
-        ? (secondsLeft / Math.max(1, exercise.amount)) * 100
-        : (reps / Math.max(1, exercise.amount)) * 100;
-
-  // Single source of truth for "what does the ring/number show" — passed
-  // straight into WorkoutTimer, which stays a dumb rendering component.
-  const timerMode = phase === "watch" ? "start" : phase === "rest" || isTimed ? "countdown" : "reps";
+  // "watch" has no clock (waits on the Start tap below) — the ring just
+  // sits fully charged, reading as "ready to go." Work and rest are both
+  // real countdowns now (work's target is workSeconds, timed or estimated).
+  const ringValue =
+    phase === "rest"
+      ? (secondsLeft / Math.max(1, exercise.restSeconds)) * 100
+      : phase === "watch"
+        ? 100
+        : (secondsLeft / Math.max(1, workSeconds)) * 100;
+  // The number shown: a live countdown once something's running, or a
+  // static preview of the target duration while still on "watch".
+  const displaySeconds = phase === "watch" ? workSeconds : secondsLeft;
+  // A rep-based set's countdown is an estimate, not a tracked count — this
+  // keeps that honest instead of presenting it as an exact clock.
+  const timerHint =
+    phase !== "rest" && !isTimed ? `~${exercise.amount} reps` : undefined;
+  // The last few seconds of a running countdown get a quiet pulse — never
+  // during "watch" (nothing's actually counting down yet) or while paused.
+  const urgent =
+    (phase === "work" || phase === "rest") &&
+    !paused &&
+    secondsLeft > 0 &&
+    secondsLeft <= 5;
 
   return (
-    <main className="gf-cyber-scope gf-live-industrial mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pt-3 pb-10 lg:max-w-5xl lg:pb-16">
-      <ParticleBurstLayer />
+    <main className="gf-cyber-scope gf-live-industrial mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pt-2 pb-12 lg:max-w-5xl lg:pb-16">
       <FloatingStreakBadge />
 
       {/* ------------------------------------------------------------ Top bar
@@ -294,35 +306,38 @@ export function LivePlayer() {
           skip, +15s) now lives with the timer, not up here. */}
       <WorkoutHeader
         category={workout.title}
-        dayLabel={`${index + 1} / ${workout.exercises.length}`}
+        current={index + 1}
+        total={workout.exercises.length}
         backHref="/home"
         backLabel="End workout"
       />
-      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-ink/6">
+      <div className="mt-3 h-1 overflow-hidden rounded-full bg-ink/6">
         <div
           className="gf-progress-fill h-full rounded-full bg-linear-to-r from-[#eed9ab] to-[#8f7238] transition-[width] duration-500"
           style={{ width: `${Math.max(4, totalProgress)}%` }}
         />
       </div>
 
-      <div className="mt-5 lg:flex lg:items-start lg:gap-10">
-        {/* The dominant element on the screen — large, cinematic, and the
-            first thing the eye lands on, on both mobile and desktop. */}
+      <div className="mt-5 lg:flex lg:items-start lg:gap-12">
+        {/* The dominant element on the screen — bled to the screen edges
+            on mobile, cinematic and unmissable, the first thing the eye
+            lands on at every breakpoint. */}
         <ExerciseMedia
-          className="h-[clamp(8rem,28dvh,20rem)] w-full sm:h-[clamp(14rem,50dvh,26rem)] lg:h-[min(70dvh,42rem)] lg:w-[52%] lg:shrink-0"
+          className="-mx-5 h-[clamp(11rem,29dvh,18rem)] w-[calc(100%+2.5rem)] min-[390px]:h-[clamp(15rem,42dvh,27rem)] lg:mx-0 lg:h-[min(76dvh,44rem)] lg:w-[63%] lg:shrink-0"
           pose={
             phase === "rest"
               ? "mobility"
               : poseForExercise(exercise.name, exercise.focus)
           }
           videoSrc={videoSrc}
+          formTip={phase === "work" ? exercise.cue : undefined}
           paused={paused}
           flash={flash}
         />
 
         {/* Everything else — title, timer, controls, supporting info — in
             one column, mirrored to the right of the video at `lg+`. */}
-        <div className="mt-4 flex flex-col items-center lg:mt-0 lg:flex-1 lg:items-stretch lg:self-center">
+        <div className="mt-4 flex flex-col items-center lg:mt-0 lg:flex-1 lg:items-stretch lg:justify-center lg:self-stretch lg:text-left">
           <ExerciseInfo
             className="lg:text-left"
             category={phase === "rest" ? "Rest" : phase === "watch" ? "Watch & prepare" : exercise.focus}
@@ -336,62 +351,34 @@ export function LivePlayer() {
                       // once someone's been through the watch -> start ->
                       // auto-advance loop once, repeating it before every
                       // single exercise would just be noise.
-                      "Tap Start to begin. Each move runs on its own clock — follow the coach, and we'll move you to the next exercise automatically."
-                    : "Watch the form, then tap Start when you're ready."
+                      "Tap below to begin — we'll guide you through automatically."
+                    : "Watch the form, then tap below when you're ready."
                   : undefined
             }
           />
 
           <WorkoutTimer
-            mode={timerMode}
+            className="mt-3"
+            seconds={displaySeconds}
             value={ringValue}
-            animated={!(isRepCounting || phase === "watch")}
+            animated={phase !== "watch"}
             variant={phase === "rest" ? "crimson" : "gold"}
-            secondsLeft={secondsLeft}
-            reps={reps}
-            amount={exercise.amount}
-            onStart={startExercise}
+            hint={timerHint}
+            urgent={urgent}
           />
 
-          {phase !== "watch" && (
-            <WorkoutControls
-              className="mt-4"
-              paused={paused}
-              onTogglePause={() => setPaused((p) => !p)}
-              onSkip={() => goToExercise(index + 1)}
-              onAddSeconds={() => addSeconds(15)}
-              showAddSeconds={phase === "rest" || (phase === "work" && isTimed)}
-            />
-          )}
-
-          {phase === "work" && !isTimed && (
-            <div className="mt-6 flex w-full flex-col items-center gap-3">
-              <button
-                type="button"
-                onClick={(event) => {
-                  fireBurst(event.clientX, event.clientY);
-                  setReps((r) => Math.min(exercise.amount, r + 1));
-                }}
-                className="gf-press gf-glow-electric w-full rounded-full bg-electric py-4 text-base font-black tracking-tight text-white"
-              >
-                COUNT A REP
-              </button>
-              <button
-                type="button"
-                onClick={finishCurrent}
-                className="text-xs font-bold text-mist underline underline-offset-4"
-              >
-                Set complete
-              </button>
-            </div>
-          )}
-
-          {phase === "work" && (
-            <FormTip className="mt-7" tip={exercise.cue} />
-          )}
+          <WorkoutControls
+            className="mt-3"
+            phase={phase === "watch" ? "watch" : "active"}
+            paused={paused}
+            onStart={startExercise}
+            onTogglePause={() => setPaused((p) => !p)}
+            onAddSeconds={addSeconds}
+            onSkip={() => goToExercise(index + 1)}
+          />
 
           <WorkoutStats
-            className="mt-7"
+            className="mt-9"
             calories={Math.round((workout.calories * totalProgress) / 100)}
             completed={index + (phase === "rest" ? 1 : 0)}
             total={workout.exercises.length}
@@ -399,7 +386,7 @@ export function LivePlayer() {
 
           {nextExercise && (
             <UpNext
-              className="mt-6 w-full"
+              className="mt-5 w-full"
               exercise={nextExercise}
               detail={describeAmount(nextExercise)}
             />

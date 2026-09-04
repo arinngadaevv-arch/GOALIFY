@@ -1,45 +1,44 @@
 "use client";
 
 import clsx from "clsx";
-import { Play } from "lucide-react";
 import { ProgressRing } from "@/components/goalify/ui/progress-ring";
 
 const GRADIENT_ID = "gf-live-timer-ring";
 
 /**
- * The screen's primary interaction — a calm, minimal ring around a large,
- * unambiguous number (or the Start button, before a set actually begins).
- * Self-contained: owns its own gradient `<defs>`, so nothing else on the
- * page needs to know the gradient id exists.
+ * The number is the hero; the ring is just supporting context for how much
+ * of it is left. No button lives inside it anymore — Start/Pause moved to
+ * WorkoutControls, directly below, so this stays a pure readout.
  */
 export function WorkoutTimer({
-  mode,
+  seconds,
   value,
   animated,
   variant,
-  secondsLeft,
-  reps,
-  amount,
-  onStart,
+  hint,
+  urgent,
+  className,
 }: {
-  /** "start" — waiting on a tap; "countdown" — a running clock; "reps" —
-   * advances on a tap, no clock. */
-  mode: "start" | "countdown" | "reps";
+  /** The number actually shown — the live countdown once a set is running,
+   * or a static preview of the target duration during "watch". */
+  seconds: number;
   /** Ring fill, 0-100. */
   value: number;
-  /** A real per-second countdown gets a linear, tick-synced sweep; "start"
-   * and rep-based work have no clock, so both just pop instead. */
+  /** A real per-second countdown gets a linear, tick-synced sweep; the
+   * static "watch" preview just sits full. */
   animated: boolean;
   /** "gold" during watch/work; "crimson" during rest — a held warning
    * rather than the screen's usual accent. */
   variant: "gold" | "crimson";
-  secondsLeft: number;
-  reps: number;
-  amount: number;
-  onStart: () => void;
+  /** Small caption under "seconds" — e.g. an approximate rep target for a
+   * reps-based set, so the estimate doesn't read as an exact clock. */
+  hint?: string;
+  /** True in a countdown's last few seconds — a quiet pulse, not an alarm. */
+  urgent: boolean;
+  className?: string;
 }) {
   return (
-    <div className="relative grid place-items-center">
+    <div className={clsx("relative grid place-items-center", className)}>
       <svg width="0" height="0" aria-hidden className="absolute">
         <defs>
           <linearGradient id={GRADIENT_ID} x1="0%" y1="0%" x2="100%" y2="100%">
@@ -50,57 +49,33 @@ export function WorkoutTimer({
         </defs>
       </svg>
 
-      {/* Ambient halo behind the ring — breathes gently during watch/work,
-       * held static during rest. */}
-      <div
-        className={clsx(
-          "absolute inset-0 -m-8 rounded-full blur-3xl",
-          variant === "crimson" ? "bg-[#ff3b3b]/25" : "gf-ring-halo-active bg-[#c9a961]/25",
-        )}
-        aria-hidden
-      />
-
       <ProgressRing
-        className="relative"
-        size={180}
-        thickness={12}
+        size={140}
+        thickness={5}
+        gap={0}
         {...(animated ? { transitionMs: 1000, easing: "linear" } : {})}
         rings={[
           {
             value,
             color: variant === "crimson" ? "#ff3b3b" : `url(#${GRADIENT_ID})`,
             label: "Current",
+            trackColor: "rgba(236, 228, 211, 0.1)",
           },
         ]}
       >
-        {mode === "start" ? (
-          <button
-            type="button"
-            onClick={onStart}
-            aria-label="Start this exercise"
-            className="gf-press gf-hub-button flex flex-col items-center gap-1 rounded-full px-7 py-6"
+        <div className={clsx("text-center", urgent && "gf-timer-urgent")}>
+          <p
+            className={clsx(
+              "gf-numeric text-[3.25rem] leading-none font-black sm:text-[3.75rem]",
+              urgent ? "text-[#f2c879]" : "text-ink",
+            )}
           >
-            <Play className="size-6 fill-current" />
-            <span className="text-xs font-black tracking-[0.08em] uppercase">Start</span>
-          </button>
-        ) : mode === "countdown" ? (
-          <div>
-            <p className="gf-numeric text-7xl font-black text-ink">{secondsLeft}</p>
-            <p className="text-[11px] font-bold tracking-[0.16em] text-mist uppercase">
-              seconds
-            </p>
-          </div>
-        ) : (
-          <div>
-            <p className="gf-numeric text-7xl font-black text-ink">
-              {reps}
-              <span className="text-2xl text-mist">/{amount}</span>
-            </p>
-            <p className="text-[11px] font-bold tracking-[0.16em] text-mist uppercase">
-              reps
-            </p>
-          </div>
-        )}
+            {seconds}
+          </p>
+          <p className="mt-2 text-[11px] font-bold tracking-[0.16em] text-mist uppercase">
+            {hint ?? "seconds"}
+          </p>
+        </div>
       </ProgressRing>
     </div>
   );

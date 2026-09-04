@@ -15,12 +15,19 @@ import { WorkoutProgress } from "./workout-progress";
 export function WorkoutHeader({
   category,
   dayLabel,
+  current,
+  total,
   backHref = "/home",
   backLabel = "Back",
   className,
 }: {
   category: string;
-  dayLabel: string;
+  /** Plain label (e.g. "Day 1") — ignored when `current`/`total` are set. */
+  dayLabel?: string;
+  /** A real position within the workout (e.g. exercise 3 of 17) — renders
+   * as a fraction instead of `dayLabel`. */
+  current?: number;
+  total?: number;
   backHref?: string;
   backLabel?: string;
   className?: string;
@@ -37,7 +44,7 @@ export function WorkoutHeader({
       <p className="truncate px-3 text-xs font-bold tracking-[0.22em] text-mist uppercase">
         {category}
       </p>
-      <WorkoutProgress label={dayLabel} />
+      <WorkoutProgress label={dayLabel} current={current} total={total} />
     </header>
   );
 }

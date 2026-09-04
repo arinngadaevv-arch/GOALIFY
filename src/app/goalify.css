@@ -1938,26 +1938,26 @@ body.goalify-body:has(.gf-elite-scope) .gf-ambience {
   }
 }
 
-/* Ambient halo behind the ring — gold now, not ember, and considerably
-   quieter than the last pass; a soft presence rather than a glowing coal. */
-@keyframes gf-ring-halo-pulse {
+/* The timer's last few seconds — a quiet scale pulse on the number itself,
+   not an alarm. No color-only cue, so this still reads under
+   prefers-reduced-motion (the number's own color shift, set inline, still
+   applies even with the animation off). */
+@keyframes gf-timer-urgent-pulse {
   0%,
   100% {
-    opacity: 0.5;
     transform: scale(1);
   }
   50% {
-    opacity: 0.75;
-    transform: scale(1.06);
+    transform: scale(1.05);
   }
 }
 
-.gf-live-industrial .gf-ring-halo-active {
-  animation: gf-ring-halo-pulse 3.4s ease-in-out infinite;
+.gf-live-industrial .gf-timer-urgent {
+  animation: gf-timer-urgent-pulse 1s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .gf-live-industrial .gf-ring-halo-active {
+  .gf-live-industrial .gf-timer-urgent {
     animation: none;
   }
 }
