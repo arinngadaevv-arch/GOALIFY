@@ -41,6 +41,7 @@ export function Launchpad() {
         {/* --------------------------------------------------- Header + hero */}
         <div className="lg:w-[46%] lg:shrink-0">
           <WorkoutHeader
+            className="gf-launch-rise"
             category={workout.focus}
             dayLabel={
               isLibraryPick ? "Library pick" : `Day ${state.programDay}`
@@ -76,7 +77,7 @@ export function Launchpad() {
           </div>
 
           {nextExercise && (
-            <div className="mt-10 lg:mt-12">
+            <div className="gf-launch-rise gf-delay-3 mt-10 lg:mt-12">
               <UpNext exercise={nextExercise} />
             </div>
           )}

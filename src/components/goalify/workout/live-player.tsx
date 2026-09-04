@@ -2,25 +2,17 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import clsx from "clsx";
 import {
   ArrowRight,
   Calendar,
   Check,
-  ChevronRight,
   Dumbbell,
   Flame,
-  Pause,
-  Play,
-  SkipBack,
-  SkipForward,
   Sparkles,
   Target,
   Timer,
   Trophy,
-  X,
 } from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
 import { findWorkout, resolveWorkout } from "@/lib/goalify/workouts";
@@ -31,8 +23,7 @@ import { GlassCard } from "@/components/goalify/ui/glass-card";
 import { GlowLink } from "@/components/goalify/ui/glow-button";
 import { IconBadge } from "@/components/goalify/ui/icon-badge";
 import { ReviewPrompt } from "@/components/goalify/review-prompt";
-import { PoseIcon, poseForExercise } from "@/components/goalify/ui/pose-icon";
-import { AIFormGuide } from "@/components/goalify/workout/ai-form-guide";
+import { poseForExercise } from "@/components/goalify/ui/pose-icon";
 import { useWorkoutSounds } from "@/components/goalify/workout/use-workout-sounds";
 import { useHaptics } from "@/lib/goalify/use-haptics";
 import {
@@ -41,24 +32,26 @@ import {
   restVideoUrl,
 } from "@/lib/goalify/video";
 import { ProgressRing } from "@/components/goalify/ui/progress-ring";
-import { Pill } from "@/components/goalify/ui/stat";
 import { fireBurst, ParticleBurstLayer } from "@/components/goalify/quiz/particle-burst";
 import { FloatingStreakBadge } from "@/components/goalify/ui/floating-streak-badge";
+import { WorkoutHeader } from "@/components/goalify/workout/workout-header";
+import { ExerciseMedia } from "@/components/goalify/workout/exercise-media";
+import { ExerciseInfo } from "@/components/goalify/workout/exercise-info";
+import { WorkoutTimer } from "@/components/goalify/workout/workout-timer";
+import { WorkoutControls } from "@/components/goalify/workout/workout-controls";
+import { FormTip } from "@/components/goalify/workout/form-tip";
+import { WorkoutStats } from "@/components/goalify/workout/workout-stats";
+import { UpNext } from "@/components/goalify/workout/up-next";
 
 type Phase = "watch" | "work" | "rest" | "done";
 
 /** Obsidian-scope ring colors — literal hex since RING_ELECTRIC/RING_LIME
  * are shared constants tuned for the light theme elsewhere in the app.
  * Exported and reused by video-led-player.tsx, so these stay on the
- * original gold/crimson pair — the industrial restyle below is local to
- * this file's own LivePlayer() only. */
+ * original gold/crimson pair even though LivePlayer() itself now sources
+ * its own ring colors through WorkoutTimer instead of these. */
 export const RING_GOLD = "#e8b32c";
 export const RING_CRIMSON = "#ff3b3b";
-
-/** Brushed-steel ring gradient for LivePlayer's "Masculine Tech" restyle —
- * an SVG-only id, injected via a zero-size <svg><defs> in the component
- * (see HUB_GRADIENT_ID below), never touching the exported RING_GOLD. */
-const HUB_GRADIENT_ID = "gf-live-hub-ring";
 
 export function LivePlayer() {
   const { state, todaysWorkout, completeWorkout } = useGoalify();
@@ -167,6 +160,13 @@ export function LivePlayer() {
     }
     goToExercise(index + 1);
   }, [index, exercise, workout.exercises, goToExercise, setSeconds]);
+
+  /** Nudges the running clock — the interval reads `secondsRef` fresh on
+   * its next tick, so this doesn't need to touch the interval itself. */
+  const addSeconds = useCallback(
+    (delta: number) => setSeconds(Math.max(0, secondsRef.current + delta)),
+    [setSeconds],
+  );
 
   /* ------------------------------------------------------------------ tick */
   // The countdown and the phase transition it triggers both live inside the
@@ -280,372 +280,133 @@ export function LivePlayer() {
         ? (secondsLeft / Math.max(1, exercise.amount)) * 100
         : (reps / Math.max(1, exercise.amount)) * 100;
 
+  // Single source of truth for "what does the ring/number show" — passed
+  // straight into WorkoutTimer, which stays a dumb rendering component.
+  const timerMode = phase === "watch" ? "start" : phase === "rest" || isTimed ? "countdown" : "reps";
+
   return (
-    <main className="gf-cyber-scope gf-live-industrial mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pt-5 pb-48">
-      {/* Zero-size — exists only so the brushed-steel ring gradient below
-          has a <defs> to live in; ProgressRing's `color` prop passes
-          straight into an SVG `stroke`, so `url(#...)` resolves fine even
-          though the gradient itself is declared in a sibling <svg>. */}
-      <svg width="0" height="0" aria-hidden className="absolute">
-        <defs>
-          <linearGradient id={HUB_GRADIENT_ID} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#eed9ab" />
-            <stop offset="45%" stopColor="#c9a961" />
-            <stop offset="100%" stopColor="#8f7238" />
-          </linearGradient>
-        </defs>
-      </svg>
+    <main className="gf-cyber-scope gf-live-industrial mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pt-3 pb-10 lg:max-w-5xl lg:pb-16">
       <ParticleBurstLayer />
       <FloatingStreakBadge />
 
       {/* ------------------------------------------------------------ Top bar
-          Just exit + progress here — pause/resume lives in exactly one
-          place, the big control at the bottom thumb zone, so there's never
-          a moment with two different buttons claiming to do the same thing. */}
-      <header className="flex items-center gap-3">
-        <Link
-          href="/home"
-          aria-label="End workout"
-          className="gf-glass gf-press grid size-10 shrink-0 place-items-center rounded-full text-ink-soft"
-        >
-          <X className="size-5" />
-        </Link>
+          Just exit + position — everything else about transport (pause,
+          skip, +15s) now lives with the timer, not up here. */}
+      <WorkoutHeader
+        category={workout.title}
+        dayLabel={`${index + 1} / ${workout.exercises.length}`}
+        backHref="/home"
+        backLabel="End workout"
+      />
+      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-ink/6">
+        <div
+          className="gf-progress-fill h-full rounded-full bg-linear-to-r from-[#eed9ab] to-[#8f7238] transition-[width] duration-500"
+          style={{ width: `${Math.max(4, totalProgress)}%` }}
+        />
+      </div>
 
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between text-[11px] font-bold text-mist">
-            <span className="truncate">{workout.title}</span>
-            <span className="gf-numeric shrink-0">
-              {index + 1}/{workout.exercises.length}
-            </span>
-          </div>
-          <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-ink/6">
-            <div
-              className="gf-progress-fill h-full rounded-full bg-linear-to-r from-[#eed9ab] to-[#8f7238] transition-[width] duration-500"
-              style={{ width: `${Math.max(4, totalProgress)}%` }}
-            />
-          </div>
-        </div>
-      </header>
+      <div className="mt-5 lg:flex lg:items-start lg:gap-10">
+        {/* The dominant element on the screen — large, cinematic, and the
+            first thing the eye lands on, on both mobile and desktop. */}
+        <ExerciseMedia
+          className="h-[clamp(8rem,28dvh,20rem)] w-full sm:h-[clamp(14rem,50dvh,26rem)] lg:h-[min(70dvh,42rem)] lg:w-[52%] lg:shrink-0"
+          pose={
+            phase === "rest"
+              ? "mobility"
+              : poseForExercise(exercise.name, exercise.focus)
+          }
+          videoSrc={videoSrc}
+          paused={paused}
+          flash={flash}
+        />
 
-      {/* --------------------------------------------- Form guide / animation */}
-      <GlassCard deep className="mt-5 overflow-hidden p-0">
-        <div className="relative">
-          <AIFormGuide
-            pose={
+        {/* Everything else — title, timer, controls, supporting info — in
+            one column, mirrored to the right of the video at `lg+`. */}
+        <div className="mt-4 flex flex-col items-center lg:mt-0 lg:flex-1 lg:items-stretch lg:self-center">
+          <ExerciseInfo
+            className="lg:text-left"
+            category={phase === "rest" ? "Rest" : phase === "watch" ? "Watch & prepare" : exercise.focus}
+            name={phase === "rest" ? "Recover" : exercise.name}
+            cue={
               phase === "rest"
-                ? "mobility"
-                : poseForExercise(exercise.name, exercise.focus)
+                ? "Breathe. Shake it out. Stay standing."
+                : phase === "watch"
+                  ? index === 0
+                    ? // Only on the very first exercise of the session —
+                      // once someone's been through the watch -> start ->
+                      // auto-advance loop once, repeating it before every
+                      // single exercise would just be noise.
+                      "Tap Start to begin. Each move runs on its own clock — follow the coach, and we'll move you to the next exercise automatically."
+                    : "Watch the form, then tap Start when you're ready."
+                  : undefined
             }
-            videoSrc={videoSrc}
-            // Scales with viewport *height*, not just width — on a short
-            // phone (or a two-line exercise name pushing everything below
-            // it down further) a flat h-64 left the ring's own countdown/
-            // Start button sitting in the same screen band as the fixed
-            // bottom transport controls, visually fusing into one
-            // confusing cluster. Shrinking this first (it's the single
-            // biggest, purely decorative block above the ring) buys back
-            // that clearance automatically, in proportion to how short the
-            // viewport actually is, instead of a fixed breakpoint that
-            // only covers the phone sizes tested against.
-            className="h-[clamp(5rem,14dvh,16rem)] w-full rounded-none sm:h-72"
           />
 
-          <div className="absolute top-3 left-3">
-            <span className="gf-glass flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-black tracking-[0.12em] text-electric uppercase">
-              <span className="size-1.5 animate-pulse rounded-full bg-lime-neon shadow-[0_0_8px_var(--color-lime-neon)]" />
-              AI Form Guide Active
-            </span>
-          </div>
-
-          {paused && (
-            <div className="absolute inset-0 grid place-items-center bg-black/70 backdrop-blur-sm">
-              <div className="text-center">
-                <Pause className="mx-auto size-10 text-electric" />
-                <p className="gf-display mt-2 text-xl font-black text-ink">
-                  Paused
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Explosive watch -> work hand-off. */}
-          {flash && (
-            <div
-              className="gf-anim-rise absolute inset-0 z-20 grid place-items-center bg-electric/90 backdrop-blur-sm"
-              aria-hidden
-            >
-              <p className="gf-anim-pop gf-display text-4xl font-black text-white italic sm:text-5xl [.gf-cyber-scope_&]:text-[#1a1100]">
-                YOUR TURN — GO!
-              </p>
-            </div>
-          )}
-        </div>
-      </GlassCard>
-
-      {/* ------------------------------------------------------ Timer / counter
-          Single, unambiguous focal point: phase pill, then the exercise
-          name — big and centered, so it's the first thing read — then one
-          line of coaching context, then the ring. Nothing else competes for
-          attention here; the cue text that used to float on top of the
-          video above now lives in exactly one place. */}
-      <section className="mt-4 flex flex-col items-center">
-        <Pill tone={phase === "rest" ? "lime" : "electric"}>
-          {phase === "rest" ? "Rest" : phase === "watch" ? "Watch & Prepare" : exercise.focus}
-        </Pill>
-
-        <h1 className="gf-display mt-3 text-center text-3xl leading-tight font-black text-ink sm:text-4xl">
-          {phase === "rest" ? "Recover" : exercise.name}
-        </h1>
-
-        <p className="mt-2 max-w-xs text-center text-sm leading-snug font-semibold text-mist">
-          {phase === "rest"
-            ? "Breathe. Shake it out. Stay standing."
-            : phase === "watch"
-              ? index === 0
-                ? // Only on the very first exercise of the session — once
-                  // someone has been through the watch -> start -> auto-
-                  // advance loop once, repeating it before every single
-                  // exercise would just be noise.
-                  "Tap Start to begin. Each move runs on its own clock — follow the coach, and we'll move you to the next exercise automatically."
-                : "Watch the form, then tap Start when you're ready."
-              : exercise.cue}
-        </p>
-
-        {/* Ambient halo behind the ring, colored to match its phase — makes
-            the ring itself read as the dominant, spotlit element on the
-            screen instead of just another UI control. Warm ember (not the
-            hub's neutral steel) so it reads as heat/energy radiating off
-            an active machine, and it breathes (gf-ring-halo-active) during
-            watch/work — rest keeps its own static crimson, a held warning
-            rather than something actively running. */}
-        <div className="relative mt-1 grid place-items-center">
-          <div
-            className={clsx(
-              "absolute inset-0 -m-8 rounded-full blur-3xl",
-              phase === "rest"
-                ? "bg-[#ff3b3b]/25"
-                : "gf-ring-halo-active bg-[#c9a961]/25",
-            )}
-            aria-hidden
+          <WorkoutTimer
+            mode={timerMode}
+            value={ringValue}
+            animated={!(isRepCounting || phase === "watch")}
+            variant={phase === "rest" ? "crimson" : "gold"}
+            secondsLeft={secondsLeft}
+            reps={reps}
+            amount={exercise.amount}
+            onStart={startExercise}
           />
-          <ProgressRing
-            className="relative"
-            size={180}
-            thickness={14}
-            // A real per-second countdown (rest / timed work) gets a linear,
-            // tick-synced sweep so the ring visibly closes in step with the
-            // clock; "watch" is static (waiting on the Start tap) and
-            // rep-based work has no clock, so both just pop with the
-            // default snappy easing instead.
-            {...(isRepCounting || phase === "watch"
-              ? {}
-              : { transitionMs: 1000, easing: "linear" })}
-            rings={[
-              {
-                value: ringValue,
-                color: phase === "rest" ? RING_CRIMSON : `url(#${HUB_GRADIENT_ID})`,
-                label: "Current",
-              },
-            ]}
-          >
-            {phase === "watch" ? (
+
+          {phase !== "watch" && (
+            <WorkoutControls
+              className="mt-4"
+              paused={paused}
+              onTogglePause={() => setPaused((p) => !p)}
+              onSkip={() => goToExercise(index + 1)}
+              onAddSeconds={() => addSeconds(15)}
+              showAddSeconds={phase === "rest" || (phase === "work" && isTimed)}
+            />
+          )}
+
+          {phase === "work" && !isTimed && (
+            <div className="mt-6 flex w-full flex-col items-center gap-3">
               <button
                 type="button"
-                onClick={startExercise}
-                aria-label="Start this exercise"
-                className="gf-press gf-hub-button flex flex-col items-center gap-1 rounded-full px-7 py-6"
+                onClick={(event) => {
+                  fireBurst(event.clientX, event.clientY);
+                  setReps((r) => Math.min(exercise.amount, r + 1));
+                }}
+                className="gf-press gf-glow-electric w-full rounded-full bg-electric py-4 text-base font-black tracking-tight text-white"
               >
-                <Play className="size-6 fill-current" />
-                <span className="text-xs font-black tracking-[0.08em] uppercase">
-                  Start
-                </span>
+                COUNT A REP
               </button>
-            ) : phase === "rest" || isTimed ? (
-              <div>
-                <p className="gf-numeric text-6xl font-black text-ink">
-                  {secondsLeft}
-                </p>
-                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-mist">
-                  seconds
-                </p>
-              </div>
-            ) : (
-              <div>
-                <p className="gf-numeric text-6xl font-black text-ink">
-                  {reps}
-                  <span className="text-2xl text-mist">/{exercise.amount}</span>
-                </p>
-                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-mist">
-                  reps
-                </p>
-              </div>
-            )}
-          </ProgressRing>
-        </div>
-
-        {/* Live calorie / exercise tracking, as two minimal cards rather
-            than bare numbers floating on the page — each value still pops
-            on change (the `key` remount replays `gf-anim-pop`) so ticking
-            up reads as a live, alive counter rather than a static number
-            that jumps. */}
-        <div className="mt-5 grid w-full grid-cols-2 gap-3">
-          <GlassCard
-            key={`cal-${Math.round((workout.calories * totalProgress) / 100)}`}
-            className="gf-anim-pop px-4 py-4 text-center"
-          >
-            <p className="gf-numeric text-4xl font-black text-ink">
-              {Math.round((workout.calories * totalProgress) / 100)}
-              <span className="ml-0.5 text-sm font-bold text-mist">kcal</span>
-            </p>
-            <p className="mt-1 text-[11px] font-semibold tracking-[0.12em] text-mist uppercase">
-              Burned so far
-            </p>
-          </GlassCard>
-          <GlassCard
-            key={`done-${index + (phase === "rest" ? 1 : 0)}`}
-            className="gf-anim-pop px-4 py-4 text-center"
-          >
-            <p className="gf-numeric text-4xl font-black text-ink">
-              {index + (phase === "rest" ? 1 : 0)}
-              <span className="ml-0.5 text-sm font-bold text-mist">
-                /{workout.exercises.length}
-              </span>
-            </p>
-            <p className="mt-1 text-[11px] font-semibold tracking-[0.12em] text-mist uppercase">
-              Exercises done
-            </p>
-          </GlassCard>
-        </div>
-
-        {phase === "work" && !isTimed && (
-          <div className="mt-6 flex w-full flex-col items-center gap-3">
-            <button
-              type="button"
-              onClick={(event) => {
-                fireBurst(event.clientX, event.clientY);
-                setReps((r) => Math.min(exercise.amount, r + 1));
-              }}
-              className="gf-press gf-glow-electric w-full rounded-full bg-electric py-4 text-base font-black tracking-tight text-white [.gf-cyber-scope_&]:text-[#1a1100]"
-            >
-              COUNT A REP
-            </button>
-            <button
-              type="button"
-              onClick={finishCurrent}
-              className="text-xs font-bold text-mist underline underline-offset-4"
-            >
-              Set complete
-            </button>
-          </div>
-        )}
-      </section>
-
-      {/* ------------------------------------------------------- Up next card */}
-      {nextExercise && (
-        <GlassCard className="mt-5 flex items-center gap-4 p-5">
-          {/* Same pose-icon language as the big AIFormGuide preview above,
-              just smaller — a real preview of the next movement instead of
-              a generic "next" glyph. */}
-          <div className="relative grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-electric/10">
-            <PoseIcon
-              pose={poseForExercise(nextExercise.name, nextExercise.focus)}
-              className="size-11"
-            />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-bold tracking-[0.16em] text-electric uppercase">
-              Up next
-            </p>
-            <p className="truncate text-base font-black text-ink">
-              {nextExercise.name}
-            </p>
-            <p className="text-sm text-mist">{describeAmount(nextExercise)}</p>
-          </div>
-          <ChevronRight className="size-5 shrink-0 text-haze" />
-        </GlassCard>
-      )}
-
-      {/* --------------------------------------------------- Floating controls
-          The one control surface in the whole screen — big, centered,
-          squarely in the bottom thumb zone. Play/pause is the largest and
-          most central target since it's the one you'll reach for mid-rep,
-          sweaty and not looking; prev/next flank it, still comfortably
-          above the 44px touch-target minimum. */}
-      <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
-        <div className="gf-glass gf-glass-deep flex items-center gap-3 rounded-full p-2.5">
-          <ControlButton
-            label="Previous exercise"
-            onClick={() => goToExercise(Math.max(0, index - 1))}
-            disabled={index === 0}
-          >
-            <SkipBack className="size-5.5 fill-current" />
-          </ControlButton>
-
-          {/* Before Start is tapped there's nothing to pause yet — a Pause
-              icon here (as if a session were already running) read as a
-              second control arguing with the ring's own Start button right
-              above it. Rather than swap in a matching Play icon (still two
-              buttons claiming the same job), "watch" simply doesn't render
-              this one at all — the ring's Start button is the one action
-              on screen until there's an actual session for this control to
-              transport. */}
-          {phase !== "watch" && (
-            <button
-              type="button"
-              onClick={() => setPaused((p) => !p)}
-              aria-label={paused ? "Resume workout" : "Pause workout"}
-              className="gf-press gf-hub-button grid size-19 place-items-center rounded-full"
-            >
-              {paused ? (
-                <Play className="size-8 fill-current" />
-              ) : (
-                <Pause className="size-8 fill-current" />
-              )}
-            </button>
+              <button
+                type="button"
+                onClick={finishCurrent}
+                className="text-xs font-bold text-mist underline underline-offset-4"
+              >
+                Set complete
+              </button>
+            </div>
           )}
 
-          <ControlButton
-            label="Skip exercise"
-            // Always jumps straight to the next exercise, from any phase —
-            // distinct from finishCurrent() (used by "Set complete" and a
-            // timed set's own countdown), which correctly still routes
-            // through a rest period first. Previously this only did that
-            // for phase === "rest"; from "watch"/"work" it called
-            // finishCurrent() instead, which — whenever the exercise has
-            // restSeconds > 0 — just entered rest for the *same* exercise
-            // without changing `index`, so one tap on Skip looked like it
-            // did nothing.
-            onClick={() => goToExercise(index + 1)}
-          >
-            <SkipForward className="size-5.5 fill-current" />
-          </ControlButton>
+          {phase === "work" && (
+            <FormTip className="mt-7" tip={exercise.cue} />
+          )}
+
+          <WorkoutStats
+            className="mt-7"
+            calories={Math.round((workout.calories * totalProgress) / 100)}
+            completed={index + (phase === "rest" ? 1 : 0)}
+            total={workout.exercises.length}
+          />
+
+          {nextExercise && (
+            <UpNext
+              className="mt-6 w-full"
+              exercise={nextExercise}
+              detail={describeAmount(nextExercise)}
+            />
+          )}
         </div>
       </div>
     </main>
-  );
-}
-
-function ControlButton({
-  children,
-  label,
-  onClick,
-  disabled = false,
-}: {
-  children: React.ReactNode;
-  label: string;
-  onClick: () => void;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={label}
-      className="gf-press grid size-14 place-items-center rounded-full text-ink-soft transition-colors hover:text-electric disabled:opacity-30"
-    >
-      {children}
-    </button>
   );
 }
 

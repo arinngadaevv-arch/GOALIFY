@@ -1,16 +1,29 @@
+import clsx from "clsx";
 import { ChevronRight } from "lucide-react";
 import { PoseIcon, poseForExercise } from "@/components/goalify/ui/pose-icon";
 import type { Exercise } from "@/lib/goalify/types";
 
 /**
- * A single quiet row previewing the second exercise — not a card, no
- * border, no background. The launchpad already has one card-shaped thing
- * on it (none, actually): everything here is meant to read as content on
- * the page, not UI chrome boxing it in.
+ * A single quiet row previewing the next exercise — not a card, no border,
+ * no background, so it reads as supporting content rather than another
+ * major surface competing with whatever the screen's actual focus is.
+ * Shared between the launchpad and the live player; entrance animation is
+ * left to the caller rather than baked in, since the two screens use
+ * different animation scopes.
  */
-export function UpNext({ exercise }: { exercise: Exercise }) {
+export function UpNext({
+  exercise,
+  detail,
+  className,
+}: {
+  exercise: Exercise;
+  /** Optional second line — e.g. "14 reps · Quads · Glutes". Omit for a
+   * plain name-only row. */
+  detail?: string;
+  className?: string;
+}) {
   return (
-    <div className="gf-launch-rise gf-delay-3 flex items-center gap-4">
+    <div className={clsx("flex items-center gap-4", className)}>
       <div className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-2xl bg-white/[0.04]">
         <PoseIcon
           pose={poseForExercise(exercise.name, exercise.focus)}
@@ -22,6 +35,7 @@ export function UpNext({ exercise }: { exercise: Exercise }) {
           Up next
         </p>
         <p className="truncate text-base font-bold text-ink">{exercise.name}</p>
+        {detail && <p className="truncate text-sm text-mist">{detail}</p>}
       </div>
       <ChevronRight className="size-4 shrink-0 text-haze" />
     </div>
