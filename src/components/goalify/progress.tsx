@@ -127,10 +127,15 @@ export function Progress() {
         </section>
       </div>
 
-      {/* See dashboard.tsx's matching comment — CSS-multicol, no reordering. */}
-      <div className="lg:columns-2 lg:gap-6">
+      {/* Explicit two-column grouping instead of CSS multicol — see
+          dashboard.tsx's matching comment. Grouping the grid + trophy
+          shelf against the photo vault keeps both columns close in
+          height; multicol balanced by raw total height instead, which
+          reliably left one column visibly shorter than the other. */}
+      <div className="mt-8 lg:grid lg:grid-cols-2 lg:items-start lg:gap-8">
+      <div className="flex flex-col gap-8">
       {/* ------------------------------------------------------ Completion grid */}
-      <section className="gf-reveal mt-8 lg:break-inside-avoid">
+      <section className="gf-reveal">
         <SectionHeading eyebrow="Consistency" title="30-day grid" />
         <GlassCard deep className="p-6">
           <div className="grid grid-cols-10 gap-1.5">
@@ -191,8 +196,62 @@ export function Progress() {
         </GlassCard>
       </section>
 
+      {/* ------------------------------------------------------- Trophy shelf */}
+      <section className="gf-reveal">
+        <SectionHeading
+          eyebrow="Trophy shelf"
+          title="Your badges"
+          action={
+            <Pill tone="lime">
+              <Trophy className="size-3" />
+              {BADGES.filter((b) => completed >= b.requirement).length}/
+              {BADGES.length}
+            </Pill>
+          }
+        />
+        <GlassCard deep className="p-6">
+          <div className="grid grid-cols-3 gap-4">
+            {BADGES.map((badge) => {
+              const earned = completed >= badge.requirement;
+              return (
+                <div key={badge.id} className="text-center">
+                  <div
+                    className={clsx(
+                      "relative mx-auto grid size-20 place-items-center rounded-3xl transition-all duration-500",
+                      earned ? "gf-anim-float" : "bg-ink/4",
+                    )}
+                  >
+                    {earned ? (
+                      <IconBadge icon={badge.icon} size="lg" active />
+                    ) : (
+                      <badge.icon className="size-8 text-haze opacity-30" strokeWidth={2.2} />
+                    )}
+                    {!earned && (
+                      <Lock className="absolute right-2 bottom-2 size-3.5 text-haze" />
+                    )}
+                  </div>
+                  <p
+                    className={clsx(
+                      "mt-2 text-[11px] font-extrabold",
+                      earned ? "text-ink" : "text-haze",
+                    )}
+                  >
+                    {badge.name}
+                  </p>
+                  <p className="text-[10px] font-semibold text-mist">
+                    {badge.requirement} sessions
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </GlassCard>
+      </section>
+      </div>
+
       {/* -------------------------------------------------------- Photo vault */}
-      <section className="gf-reveal mt-8 lg:break-inside-avoid">
+      <div className="flex flex-col gap-8">
+      <section className="gf-reveal">
         <SectionHeading
           eyebrow="Private to you"
           title="Before / After vault"
@@ -254,58 +313,7 @@ export function Progress() {
           </p>
         </GlassCard>
       </section>
-
-      {/* ------------------------------------------------------- Trophy shelf */}
-      <section className="gf-reveal mt-8 lg:break-inside-avoid">
-        <SectionHeading
-          eyebrow="Trophy shelf"
-          title="Your badges"
-          action={
-            <Pill tone="lime">
-              <Trophy className="size-3" />
-              {BADGES.filter((b) => completed >= b.requirement).length}/
-              {BADGES.length}
-            </Pill>
-          }
-        />
-        <GlassCard deep className="p-6">
-          <div className="grid grid-cols-3 gap-4">
-            {BADGES.map((badge) => {
-              const earned = completed >= badge.requirement;
-              return (
-                <div key={badge.id} className="text-center">
-                  <div
-                    className={clsx(
-                      "relative mx-auto grid size-20 place-items-center rounded-3xl transition-all duration-500",
-                      earned ? "gf-anim-float" : "bg-ink/4",
-                    )}
-                  >
-                    {earned ? (
-                      <IconBadge icon={badge.icon} size="lg" active />
-                    ) : (
-                      <badge.icon className="size-8 text-haze opacity-30" strokeWidth={2.2} />
-                    )}
-                    {!earned && (
-                      <Lock className="absolute right-2 bottom-2 size-3.5 text-haze" />
-                    )}
-                  </div>
-                  <p
-                    className={clsx(
-                      "mt-2 text-[11px] font-extrabold",
-                      earned ? "text-ink" : "text-haze",
-                    )}
-                  >
-                    {badge.name}
-                  </p>
-                  <p className="text-[10px] font-semibold text-mist">
-                    {badge.requirement} sessions
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </GlassCard>
-      </section>
+      </div>
 
       </div>
     </AppShell>

@@ -46,7 +46,7 @@ export function WorkoutLibrary() {
 
       <section className="gf-anim-rise gf-delay-2 mt-8">
         <SectionHeading eyebrow="On schedule" title="Your Program" />
-        <div className="grid gap-3">
+        <div className="grid gap-3 lg:grid-cols-2 lg:gap-4">
           {PROGRAM.map((workout, index) => (
             <TrackCard
               key={workout.id}
@@ -61,7 +61,7 @@ export function WorkoutLibrary() {
 
       <section className="gf-anim-rise gf-delay-3 mt-8">
         <SectionHeading eyebrow="Train on demand" title="Workout Library" />
-        <div className="grid gap-3">
+        <div className="grid gap-3 lg:grid-cols-2 lg:gap-4">
           {LIBRARY.map((workout) => (
             <TrackCard
               key={workout.id}

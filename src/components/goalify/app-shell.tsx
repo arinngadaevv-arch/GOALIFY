@@ -28,7 +28,9 @@ import { TopBar } from "./top-bar";
  * and the content column widens from a phone-width card to something that
  * actually uses a desktop viewport — each screen decides for itself how to
  * spread its own content across that width (see dashboard.tsx etc.'s
- * `lg:columns-2` sections).
+ * `lg:grid lg:grid-cols-2` sections — an explicit two-column grouping, not
+ * CSS multicol, which balances by raw total height and reliably left one
+ * column visibly shorter than the other).
  *
  * The content (header + body) is keyed by pathname inside AnimatePresence
  * so switching tabs (Home/Coach/Nutrition/Progress/Settings) fades and

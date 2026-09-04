@@ -130,14 +130,20 @@ export function Nutrition() {
         </div>
       </div>
 
-      {/* See dashboard.tsx's matching comment — CSS-multicol, no reordering. */}
-      <div className="lg:columns-2 lg:gap-6">
+      {/* Explicit two-column grouping instead of CSS multicol — see
+          dashboard.tsx's matching comment. Multicol balances by raw total
+          height, not by section, so with three uneven blocks it reliably
+          left one column visibly shorter than the other; grouping "Your
+          plate" + "Daily water" against "Habits that matter" keeps both
+          columns close in height instead. */}
+      <div className="mt-8 lg:grid lg:grid-cols-2 lg:items-start lg:gap-8">
+      <div className="flex flex-col gap-8">
       {/* ------------------------------------------------------ Meal templates
           No card background at rest — three boxed cubes in a row read as
           heavy for what's really just a picker. A soft wash only appears
           on hover/focus, so the row feels like one continuous, elegant
           choice instead of three separate boxes competing for attention. */}
-      <section className="gf-reveal mt-8 lg:break-inside-avoid">
+      <section className="gf-reveal">
         <SectionHeading eyebrow="Tap for real food ideas" title="Your plate" />
         <div className="grid grid-cols-3 gap-2">
           {meals.map((meal) => (
@@ -175,13 +181,20 @@ export function Nutrition() {
         />
       )}
 
+      {/* ------------------------------------------------------ Water tracker */}
+      <section className="gf-reveal">
+        <SectionHeading eyebrow="Hydration" title="Daily water" />
+        <WaterTracker />
+      </section>
+      </div>
+
       {/* ---------------------------------------------------- Habits, in one
           list — replaces five separate cards (two timing rules, three tip
           rows) with clean floating rows instead of one more frame around
           all four: real vertical gap does the separating, and each icon
           carries its own glow instead of leaning on a boxed container to
           read as distinct. */}
-      <section className="gf-reveal mt-8 lg:break-inside-avoid">
+      <section className="gf-reveal">
         <SectionHeading eyebrow="Make it stick" title="Habits that matter" />
         <div className="flex flex-col gap-5">
           {HABITS.map((habit) => (
@@ -201,12 +214,6 @@ export function Nutrition() {
             </div>
           ))}
         </div>
-      </section>
-
-      {/* ------------------------------------------------------ Water tracker */}
-      <section className="gf-reveal mt-8 lg:break-inside-avoid">
-        <SectionHeading eyebrow="Hydration" title="Daily water" />
-        <WaterTracker />
       </section>
       </div>
     </AppShell>

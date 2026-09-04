@@ -435,6 +435,58 @@ export function Dashboard() {
           </GlassCard>
         </Link>
       </section>
+
+      {/* ------------------------------------------------------ Library link */}
+      <Link href="/workouts" className="block">
+        <GlassCard
+          tone="lime"
+          interactive
+          className="gf-reveal relative flex items-center gap-4 overflow-hidden p-5"
+        >
+          <div
+            className="pointer-events-none absolute -top-8 -right-8 size-28 rounded-full bg-lime-neon/20 blur-3xl"
+            aria-hidden
+          />
+          <span className="gf-glow-lime relative grid size-11 shrink-0 place-items-center rounded-2xl bg-lime-neon">
+            <Library className="size-5 text-ink" />
+          </span>
+          <div className="relative min-w-0 flex-1">
+            <p className="text-sm font-extrabold text-ink">
+              Explore more workouts
+            </p>
+            <p className="mt-0.5 text-xs text-ink-soft">
+              Full Body Burn, Core Crusher, Lower Body &amp; Joints Safe.
+            </p>
+          </div>
+          <ArrowRight className="relative size-4 shrink-0 text-lime-deep" />
+        </GlassCard>
+      </Link>
+
+      {/* ------------------------------------------------------ Reminders link */}
+      <Link href="/notifications" className="block">
+        <GlassCard
+          tone="electric"
+          interactive
+          className="gf-reveal relative flex items-center gap-4 overflow-hidden p-5"
+        >
+          <div
+            className="pointer-events-none absolute -top-8 -right-8 size-28 rounded-full bg-electric/25 blur-3xl"
+            aria-hidden
+          />
+          <span className="gf-glow-electric relative grid size-11 shrink-0 place-items-center rounded-2xl bg-electric">
+            <Bell className="size-5 text-white" />
+          </span>
+          <div className="relative min-w-0 flex-1">
+            <p className="text-sm font-extrabold text-ink">
+              Your daily reminders
+            </p>
+            <p className="mt-0.5 text-xs text-ink-soft">
+              4 nudges a day — motivation, food, water, workout.
+            </p>
+          </div>
+          <ArrowRight className="relative size-4 shrink-0 text-electric" />
+        </GlassCard>
+      </Link>
       </div>
 
       <div className="flex flex-col gap-10">
@@ -509,32 +561,6 @@ export function Dashboard() {
         </GlassCard>
       </section>
 
-      {/* ------------------------------------------------------ Library link */}
-      <Link href="/workouts" className="block">
-        <GlassCard
-          tone="lime"
-          interactive
-          className="gf-reveal relative flex items-center gap-4 overflow-hidden p-5"
-        >
-          <div
-            className="pointer-events-none absolute -top-8 -right-8 size-28 rounded-full bg-lime-neon/20 blur-3xl"
-            aria-hidden
-          />
-          <span className="gf-glow-lime relative grid size-11 shrink-0 place-items-center rounded-2xl bg-lime-neon">
-            <Library className="size-5 text-ink" />
-          </span>
-          <div className="relative min-w-0 flex-1">
-            <p className="text-sm font-extrabold text-ink">
-              Explore more workouts
-            </p>
-            <p className="mt-0.5 text-xs text-ink-soft">
-              Full Body Burn, Core Crusher, Lower Body &amp; Joints Safe.
-            </p>
-          </div>
-          <ArrowRight className="relative size-4 shrink-0 text-lime-deep" />
-        </GlassCard>
-      </Link>
-
       {/* ----------------------------------------------- Nutrition targets card */}
       <section>
         <SectionHeading
@@ -604,32 +630,6 @@ export function Dashboard() {
           </div>
         </GlassCard>
       </section>
-
-      {/* ------------------------------------------------------ Reminders link */}
-      <Link href="/notifications" className="block">
-        <GlassCard
-          tone="electric"
-          interactive
-          className="gf-reveal relative flex items-center gap-4 overflow-hidden p-5"
-        >
-          <div
-            className="pointer-events-none absolute -top-8 -right-8 size-28 rounded-full bg-electric/25 blur-3xl"
-            aria-hidden
-          />
-          <span className="gf-glow-electric relative grid size-11 shrink-0 place-items-center rounded-2xl bg-electric">
-            <Bell className="size-5 text-white" />
-          </span>
-          <div className="relative min-w-0 flex-1">
-            <p className="text-sm font-extrabold text-ink">
-              Your daily reminders
-            </p>
-            <p className="mt-0.5 text-xs text-ink-soft">
-              4 nudges a day — motivation, food, water, workout.
-            </p>
-          </div>
-          <ArrowRight className="relative size-4 shrink-0 text-electric" />
-        </GlassCard>
-      </Link>
       </div>
       </div>
 

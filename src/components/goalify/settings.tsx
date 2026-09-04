@@ -108,10 +108,14 @@ export function SettingsScreen() {
         </div>
       </GlassCard>
 
-      {/* See dashboard.tsx's matching comment — CSS-multicol, no reordering. */}
-      <div className="lg:columns-2 lg:gap-6">
+      {/* Explicit two-column grouping instead of CSS multicol — see
+          dashboard.tsx's matching comment. Personal/training info on the
+          left, account/billing info on the right — a grouping that also
+          happens to keep both columns close in height. */}
+      <div className="mt-8 lg:grid lg:grid-cols-2 lg:items-start lg:gap-8">
+      <div className="flex flex-col gap-8">
       {/* ------------------------------------------------------- Body details */}
-      <section className="gf-anim-rise gf-delay-2 mt-8 lg:break-inside-avoid">
+      <section className="gf-anim-rise gf-delay-2">
         <SectionHeading
           eyebrow="Your numbers"
           title="Profile details"
@@ -135,7 +139,7 @@ export function SettingsScreen() {
       </section>
 
       {/* ---------------------------------------------------------- Training */}
-      <section className="gf-anim-rise gf-delay-3 mt-8 lg:break-inside-avoid">
+      <section className="gf-anim-rise gf-delay-3">
         <SectionHeading eyebrow="Safety first" title="Training preferences" />
         <GlassCard
           tone={settings.kneeSafe ? "lime" : "plain"}
@@ -180,7 +184,7 @@ export function SettingsScreen() {
       </section>
 
       {/* ----------------------------------------------------- Notifications */}
-      <section className="gf-anim-rise gf-delay-4 mt-8 lg:break-inside-avoid">
+      <section className="gf-anim-rise gf-delay-4">
         <SectionHeading
           eyebrow="Four a day, max"
           title="Notifications"
@@ -220,9 +224,11 @@ export function SettingsScreen() {
           />
         </GlassCard>
       </section>
+      </div>
 
+      <div className="flex flex-col gap-8">
       {/* ------------------------------------------------------- Subscription */}
-      <section className="gf-anim-rise gf-delay-5 mt-8 lg:break-inside-avoid">
+      <section className="gf-anim-rise gf-delay-5">
         <SectionHeading eyebrow="Billing" title="Subscription" />
         <GlassCard tone="electric" deep className="p-6">
           <div className="flex items-center gap-3">
@@ -274,7 +280,7 @@ export function SettingsScreen() {
           post-workout prompt) is a one-time automatic nudge after three
           sessions — there was no standing way to leave or update one
           whenever someone actually wanted to, until now. */}
-      <section className="gf-anim-rise gf-delay-6 mt-8 lg:break-inside-avoid">
+      <section className="gf-anim-rise gf-delay-6">
         <SectionHeading eyebrow="Your opinion" title="Rate GOALIFY" />
         <ReviewPrompt
           title="How's GOALIFY working for you?"
@@ -283,7 +289,7 @@ export function SettingsScreen() {
       </section>
 
       {/* ------------------------------------------------------ Connected accounts */}
-      <section className="gf-anim-rise gf-delay-6 mt-8 lg:break-inside-avoid">
+      <section className="gf-anim-rise gf-delay-6">
         <SectionHeading eyebrow="Sign-in" title="Connected accounts" />
         <GlassCard deep className="flex items-center gap-4 p-5">
           <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-ink/5">
@@ -321,7 +327,7 @@ export function SettingsScreen() {
       </section>
 
       {/* -------------------------------------------------------------- Reset */}
-      <section className="gf-anim-rise gf-delay-6 mt-8 lg:break-inside-avoid">
+      <section className="gf-anim-rise gf-delay-6">
         <SectionHeading eyebrow="Danger zone" title="Device data" />
         <GlassCard className="p-5">
           <p className="text-xs leading-relaxed text-mist">
@@ -338,6 +344,7 @@ export function SettingsScreen() {
           </button>
         </GlassCard>
       </section>
+      </div>
       </div>
 
       {/* Deliberately understated — signing out is a rare action, and on
