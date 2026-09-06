@@ -37,7 +37,7 @@ export function Launchpad() {
 
   return (
     <main className="gf-launch-scope min-h-dvh w-full">
-      <div className="mx-auto flex w-full max-w-lg flex-col px-5 pt-6 pb-48 lg:max-w-6xl lg:flex-row lg:items-center lg:gap-16 lg:px-12 lg:py-16 lg:pb-16">
+      <div className="mx-auto flex w-full max-w-lg flex-col px-5 pt-6 pb-48 lg:max-w-6xl lg:flex-row lg:items-center lg:gap-16 lg:px-12 lg:py-16 lg:pb-16 2xl:max-w-7xl">
         {/* --------------------------------------------------- Header + hero */}
         <div className="lg:w-[46%] lg:shrink-0">
           <WorkoutHeader

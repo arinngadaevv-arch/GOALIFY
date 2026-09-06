@@ -298,7 +298,7 @@ export function LivePlayer() {
     secondsLeft <= 5;
 
   return (
-    <main className="gf-cyber-scope gf-live-industrial mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pt-2 pb-12 lg:max-w-5xl lg:pb-16">
+    <main className="gf-cyber-scope gf-live-industrial mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pt-2 pb-12 lg:max-w-5xl lg:pb-16 xl:max-w-6xl 2xl:max-w-7xl">
       <FloatingStreakBadge />
 
       {/* ------------------------------------------------------------ Top bar

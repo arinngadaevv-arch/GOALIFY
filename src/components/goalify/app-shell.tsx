@@ -60,7 +60,7 @@ export function AppShell({
     <div className={clsx(dark && "gf-elite-scope")}>
       <div className="lg:flex">
         <SidebarNav />
-        <div className="mx-auto w-full max-w-lg px-5 pt-6 pb-36 lg:max-w-5xl lg:px-12 lg:pt-10 lg:pb-16">
+        <div className="mx-auto w-full max-w-lg px-5 pt-6 pb-36 lg:max-w-5xl lg:px-12 lg:pt-10 lg:pb-16 xl:max-w-6xl 2xl:max-w-7xl">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={pathname}
