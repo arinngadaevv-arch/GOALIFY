@@ -184,7 +184,7 @@ export function Paywall() {
                   )}
                 >
                   <span className="gf-glow-electric absolute -top-3.5 right-5 rounded-full bg-[#FFC700] px-3 py-1 text-[10px] font-black tracking-[0.08em] whitespace-nowrap text-[#1a1100] uppercase">
-                    {option.badge}
+                    {option.trialDays ? `FREE ${option.trialDays}-DAY TRIAL` : option.badge}
                   </span>
                   <span className="flex items-center gap-3">
                     <span
@@ -205,16 +205,33 @@ export function Paywall() {
                       SAVE {saved}%
                     </span>
                     <span className="shrink-0 text-right">
-                      {/* Weekly-equivalent leads, same real total right
-                          underneath it in full — reframes the number
-                          without ever hiding what actually gets charged. */}
-                      <span className="gf-numeric block text-3xl font-black whitespace-nowrap text-[#FFC700]">
-                        ${centsToWeekly(option.priceCents, option.id).toFixed(2)}
-                        <span className="text-base font-bold">/wk</span>
-                      </span>
-                      <span className="mt-1 block text-[11px] font-semibold whitespace-nowrap text-ink-soft">
-                        ${price.toFixed(2)} {option.billedLabel}
-                      </span>
+                      {option.trialDays ? (
+                        // The trial itself leads — that's the actual point of
+                        // tapping this card — with what it becomes afterward
+                        // spelled out underneath, never hidden.
+                        <>
+                          <span className="gf-numeric block text-3xl font-black whitespace-nowrap text-[#FFC700]">
+                            FREE
+                          </span>
+                          <span className="mt-1 block text-[11px] font-semibold whitespace-nowrap text-ink-soft">
+                            then ${centsToWeekly(option.priceCents, option.id).toFixed(2)}/wk
+                            (${price.toFixed(2)} {option.billedLabel})
+                          </span>
+                        </>
+                      ) : (
+                        // Weekly-equivalent leads, same real total right
+                        // underneath it in full — reframes the number
+                        // without ever hiding what actually gets charged.
+                        <>
+                          <span className="gf-numeric block text-3xl font-black whitespace-nowrap text-[#FFC700]">
+                            ${centsToWeekly(option.priceCents, option.id).toFixed(2)}
+                            <span className="text-base font-bold">/wk</span>
+                          </span>
+                          <span className="mt-1 block text-[11px] font-semibold whitespace-nowrap text-ink-soft">
+                            ${price.toFixed(2)} {option.billedLabel}
+                          </span>
+                        </>
+                      )}
                     </span>
                   </span>
                 </button>
@@ -284,25 +301,48 @@ export function Paywall() {
 
           {/* Same reassurance-line pattern a native paywall puts right
               above its CTA — kept honest to how GOALIFY actually bills.
-              Deliberately NOT "cancel anytime from Settings": that
-              screen's cancel button isn't wired to anything yet, and
-              there's no free-trial tier on the checkout backend either,
-              so this only claims what's actually true today. */}
+              Deliberately NOT "cancel anytime from Settings": that screen's
+              cancel button isn't wired to anything yet. Whop gives every
+              buyer their own whop.com account to manage/cancel a
+              membership directly — that's what "manage at whop.com" below
+              actually points to, not an in-app flow that doesn't exist. */}
           <p className="flex items-center justify-center gap-1.5 text-center text-xs font-bold text-lime-deep">
-            <Lock className="size-3.5" strokeWidth={3} />
-            Secure checkout · Instant access
+            {selectedTier.trialDays ? (
+              <>
+                <Check className="size-3.5" strokeWidth={3} />
+                No payment now — {selectedTier.trialDays}-day free trial
+              </>
+            ) : (
+              <>
+                <Lock className="size-3.5" strokeWidth={3} />
+                Secure checkout · Instant access
+              </>
+            )}
           </p>
 
           {/* The price, front and center in the one part of the page that's
               visible on the very first frame — no scrolling required to
               see what this actually costs. */}
           <p className="mt-1 text-center">
-            <span className="gf-numeric text-lg font-black text-[#FFC700]">
-              ${selectedPrice.toFixed(2)}
-            </span>{" "}
-            <span className="text-[11px] font-bold text-ink-soft">
-              {selectedTier.billedLabel}
-            </span>
+            {selectedTier.trialDays ? (
+              <>
+                <span className="gf-numeric text-lg font-black text-[#FFC700]">
+                  Free for {selectedTier.trialDays} days
+                </span>{" "}
+                <span className="text-[11px] font-bold text-ink-soft">
+                  then ${selectedPrice.toFixed(2)} {selectedTier.billedLabel}
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="gf-numeric text-lg font-black text-[#FFC700]">
+                  ${selectedPrice.toFixed(2)}
+                </span>{" "}
+                <span className="text-[11px] font-bold text-ink-soft">
+                  {selectedTier.billedLabel}
+                </span>
+              </>
+            )}
           </p>
 
           <GlowButton
@@ -319,7 +359,7 @@ export function Paywall() {
             ) : (
               <Lock className="size-4.5" />
             )}
-            START MY PLAN
+            {selectedTier.trialDays ? "START MY FREE TRIAL" : "START MY PLAN"}
           </GlowButton>
 
           <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
@@ -338,8 +378,20 @@ export function Paywall() {
               or omitted. Only states what this checkout actually does
               today (see the comment above the reassurance line, above). */}
           <p className="mt-2 text-center text-[10px] leading-snug text-haze">
-            You&apos;ll be charged ${selectedPrice.toFixed(2)} today,{" "}
-            {selectedTier.billedLabel}.
+            {selectedTier.trialDays ? (
+              <>
+                Your {selectedTier.trialDays}-day free trial starts today —
+                you won&apos;t be charged until it ends. After that,
+                you&apos;ll be charged ${selectedPrice.toFixed(2)},{" "}
+                {selectedTier.billedLabel}, until you cancel. Manage or
+                cancel anytime at whop.com.
+              </>
+            ) : (
+              <>
+                You&apos;ll be charged ${selectedPrice.toFixed(2)} today,{" "}
+                {selectedTier.billedLabel}.
+              </>
+            )}
           </p>
         </div>
       </div>

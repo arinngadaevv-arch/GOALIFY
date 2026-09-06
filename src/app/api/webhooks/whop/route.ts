@@ -107,6 +107,46 @@ export async function POST(req: Request) {
   }
 
   const { type, data } = parsed.data;
+
+  // A trial-enabled plan (see lib/goalify/pricing.ts's `trialDays`) has no
+  // `payment.succeeded` event at all until the trial ends and the first
+  // real charge happens — Whop's own signal that a membership is actually
+  // active in the meantime is `membership.went_valid`, which per Whop's
+  // docs fires "when a membership is created or a user checks out",
+  // trial or not. Handled separately from payment.succeeded below: no
+  // checkoutEvents row (no money moved, so there's nothing to log as
+  // revenue), just the same plan grant. `membership.went_invalid` is the
+  // mirror of that — cancellation, a trial that was never converted, or a
+  // lapsed renewal — and is also the fix for a real pre-existing gap: this
+  // webhook previously had no way to ever downgrade a user off PRO at all,
+  // trial or paid.
+  //
+  // Unverified against Whop's own docs (network-blocked from this
+  // environment — see whop.ts's getWhopApiBaseUrl comment for the same
+  // limitation): whether `metadata` actually carries through from the
+  // checkout that created the membership onto these two event types the
+  // same way it does for `payment.succeeded`. Use Whop's dashboard "Test
+  // Webhook" tool to fire a real sample of both before relying on this —
+  // if `resolveUserId` logs "no resolvable userId" for a real
+  // membership.went_valid delivery, that assumption was wrong and this
+  // needs a different field.
+  if (type === "membership.went_valid" || type === "membership.went_invalid") {
+    const userId = resolveUserId(data.metadata);
+    if (!userId) {
+      console.error(
+        `[whop webhook] ${type} (${data.id}) has no resolvable userId — can't ` +
+          "update plan. Check whether Whop actually carries checkout metadata " +
+          "through onto membership events (see the comment above this block).",
+      );
+      return NextResponse.json({ ok: true, unresolved: data.id });
+    }
+    await db
+      .update(users)
+      .set({ plan: type === "membership.went_valid" ? "PRO" : "FREE" })
+      .where(eq(users.id, userId));
+    return NextResponse.json({ ok: true });
+  }
+
   if (type !== "payment.succeeded") {
     return NextResponse.json({ ok: true, skipped: type });
   }

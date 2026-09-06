@@ -20,6 +20,15 @@ export type PricingTier = {
   billedLabel: string;
   badge?: string;
   popular?: boolean;
+  /** Set ONLY once the Whop plan this tier's WHOP_PLAN_ID_* env var points
+   * to is actually configured with a matching free-trial period in the
+   * Whop dashboard — this number is display copy, it does not itself make
+   * Whop charge $0 up front. If this is set but the real Whop plan isn't
+   * trial-configured to match, the checkout will charge immediately while
+   * the page promises otherwise. See api/webhooks/whop's handling of
+   * `membership.went_valid` for how trial access actually gets granted
+   * before any payment happens. */
+  trialDays?: number;
 };
 
 export const PRICING_TIERS: PricingTier[] = [
@@ -40,6 +49,7 @@ export const PRICING_TIERS: PricingTier[] = [
     billedLabel: "billed every 3 months",
     badge: "MOST POPULAR",
     popular: true,
+    trialDays: 7,
   },
   {
     id: "annual",
