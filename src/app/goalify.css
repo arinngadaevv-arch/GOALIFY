@@ -1434,32 +1434,29 @@ html.goalify ::-webkit-scrollbar-thumb {
   }
 }
 
-/* The at-rest state for every unselected zone — a soft light that breathes
-   (fades and grows/shrinks slightly) so each tappable area reads as its own
-   distinct, alive thing without ever drawing a flat-colored panel: the
-   gradient underneath it already fades to fully transparent well inside
-   the zone's own edges, so nothing here ever shows as a rectangle or a
-   background-color seam against the photo, at any point in the loop. */
-@keyframes gf-zone-glow-breathe {
-  0%,
-  100% {
-    opacity: 0.7;
-    transform: scale(0.94);
+/* Each unselected zone's one-time entrance — a short fade/scale-in when
+   the step first mounts, not a continuous loop: a looping idle animation
+   read as distracting rather than as an affordance hint. Staggered per
+   zone via animationDelay in body-map.tsx so they arrive one after
+   another instead of all at once. */
+@keyframes gf-zone-glow-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
   }
-  50% {
+  100% {
     opacity: 1;
-    transform: scale(1.1);
+    transform: scale(1);
   }
 }
 
 .gf-zone-glow {
-  animation: gf-zone-glow-breathe 2.4s ease-in-out infinite;
+  animation: gf-zone-glow-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .gf-zone-glow {
     animation: none !important;
-    opacity: 0.85 !important;
     transform: none !important;
   }
 }

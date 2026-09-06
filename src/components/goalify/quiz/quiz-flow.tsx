@@ -478,8 +478,8 @@ export function QuizFlow() {
           />
         </div>
 
-        <span className="gf-numeric shrink-0 text-xs font-bold text-haze">
-          {index + 1}/{QUIZ_STEPS.length}
+        <span className="gf-numeric shrink-0 text-xs font-bold tracking-wide text-haze uppercase">
+          Step {index + 1} of {QUIZ_STEPS.length}
         </span>
       </header>
 

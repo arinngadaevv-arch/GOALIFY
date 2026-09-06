@@ -146,13 +146,13 @@ export function BodyMapStep({
                         itself keeps it fully over the body, never the
                         backdrop beside it. */}
                     <span
-                      className="gf-zone-glow pointer-events-none absolute inset-[12%] rounded-full border-2 border-electric/80 bg-electric/22 shadow-[0_0_18px_-2px_rgba(232,179,44,0.65)]"
+                      className="gf-zone-glow pointer-events-none absolute inset-[12%] rounded-full border-2 border-electric bg-electric/12 shadow-[0_0_18px_-2px_rgba(232,179,44,0.65)]"
                       style={{
-                        animationDelay: `${(zoneIndex * 0.35) % 2.4}s`,
+                        animationDelay: `${zoneIndex * 40}ms`,
                       }}
                       aria-hidden
                     />
-                    <span className="gf-display relative text-[10px] leading-tight font-black tracking-[0.08em] text-white uppercase [text-shadow:0_1px_4px_rgba(0,0,0,0.9)]">
+                    <span className="gf-display relative text-[10px] leading-tight font-black tracking-[0.08em] text-white uppercase [text-shadow:0_1px_4px_rgba(0,0,0,0.9),0_0_8px_rgba(232,179,44,0.7)]">
                       {zone.label}
                     </span>
                   </>
@@ -211,7 +211,7 @@ export function BodyMapStep({
         variant="cyber"
         size="lg"
         fullWidth
-        className="mt-2"
+        className="group mt-2"
         disabled={selected.length === 0 || locked}
         onClick={(event) => {
           fireBurst(event.clientX, event.clientY, true);
@@ -219,7 +219,7 @@ export function BodyMapStep({
         }}
       >
         Continue
-        <ArrowRight className="size-5" />
+        <ArrowRight className="size-5 transition-transform duration-150 group-active:translate-x-1" />
       </GlowButton>
     </div>
   );

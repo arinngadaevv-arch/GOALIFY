@@ -258,7 +258,7 @@ export const QUIZ_STEPS: QuizStep[] = [
     id: "focusZones",
     kind: "bodyMap",
     chapter: "The blueprint",
-    title: "Where do you carry the most fat?",
+    title: "Which areas would you like to focus on?",
     subtitle: "Tap every zone you want transformed.",
     hudPhrase: "PRIORITY ZONE MAPPING",
     zones: [
