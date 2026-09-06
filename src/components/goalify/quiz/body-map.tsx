@@ -136,10 +136,7 @@ export function BodyMapStep({
                   toggle(zone.value);
                 }}
                 className={clsx(
-                  "gf-press gf-glow-hover absolute grid place-items-center overflow-hidden rounded-[14px] border transition-all duration-200",
-                  active
-                    ? "border-transparent"
-                    : "gf-glow-electric border-electric/70 bg-electric/25",
+                  "gf-press gf-glow-hover absolute grid place-items-center overflow-hidden rounded-[14px] border border-transparent transition-all duration-200",
                 )}
                 style={{
                   left: `${rect.left}%`,
