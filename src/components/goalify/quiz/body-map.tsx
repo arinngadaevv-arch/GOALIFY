@@ -79,7 +79,7 @@ export function BodyMapStep({
 
   return (
     <div>
-      <div className="relative mx-auto w-full max-w-[196px]">
+      <div className="relative mx-auto w-full max-w-[196px] lg:max-w-[260px] 2xl:max-w-[320px]">
         {/* Soft ambient glow behind the silhouette. */}
         <div
           className="absolute inset-0 -z-10 rounded-full bg-electric/16 blur-3xl"
@@ -117,7 +117,7 @@ export function BodyMapStep({
               two tones being "close enough". */}
           <div
             className="pointer-events-none absolute inset-0 rounded-[28px]"
-            style={{ boxShadow: "inset 0 0 46px 22px #0b0e14" }}
+            style={{ boxShadow: "inset 0 0 58px 16px #0b0e14" }}
             aria-hidden
           />
 
@@ -147,38 +147,20 @@ export function BodyMapStep({
               >
                 {!active && (
                   <>
-                    {/* An inset ellipse, not the full rectangle — the tap
-                        target itself stays generous (finger-friendly), but
-                        the tap zones are intentionally wider than the body
-                        part they mark (see ZONE_SHAPES' own comment), so a
-                        glow that filled the whole rect spilled into the
-                        photo's plain dark backdrop at the corners and read
-                        as a floating colored box there — most visibly on
-                        the arms. Pulling well inward and rounding to an
-                        ellipse keeps the light over the limb itself. `screen`
-                        blend mode on top of that adds light in proportion to
-                        what's already under it (skin vs. shorts vs. backdrop)
-                        instead of pasting a fixed-color patch. */}
+                    {/* A clear, visible frame — brought back after the plain
+                        soft glow read as too faint to mark anything. Shaped
+                        as an inset ellipse rather than filling the whole tap
+                        target: the tap zones are intentionally wider than
+                        the body part they mark (see ZONE_SHAPES' own
+                        comment), so a frame drawn at the rect's own edges
+                        spilled onto the photo's plain dark backdrop and
+                        looked like a floating box there — most visibly on
+                        the arms. Pulling the frame inward to hug the limb
+                        itself keeps it fully over the body, never the
+                        backdrop beside it. */}
                     <span
-                      className="gf-zone-glow pointer-events-none absolute inset-[14%] rounded-full"
+                      className="gf-zone-glow pointer-events-none absolute inset-[12%] rounded-full border-2 border-electric/80 bg-electric/22 shadow-[0_0_18px_-2px_rgba(232,179,44,0.65)]"
                       style={{
-                        background:
-                          "radial-gradient(ellipse at center, rgba(255,208,110,0.95) 0%, rgba(255,190,80,0.55) 55%, rgba(255,180,60,0) 82%)",
-                        mixBlendMode: "screen",
-                        animationDelay: `${(zoneIndex * 0.35) % 2.4}s`,
-                      }}
-                      aria-hidden
-                    />
-                    {/* A defined edge on that same inset ellipse — same
-                        blend mode, so it's a bright rim of light, not a
-                        drawn border — is what makes the zone read as
-                        "marked" rather than just softly lit. */}
-                    <span
-                      className="gf-zone-glow pointer-events-none absolute inset-[14%] rounded-full"
-                      style={{
-                        boxShadow:
-                          "inset 0 0 0 1.5px rgba(255,214,130,0.85), inset 0 0 16px 2px rgba(255,190,90,0.5)",
-                        mixBlendMode: "screen",
                         animationDelay: `${(zoneIndex * 0.35) % 2.4}s`,
                       }}
                       aria-hidden
