@@ -423,7 +423,7 @@ export function QuizFlow() {
   return (
     <>
       <DesktopAmbientBackdrop />
-      <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-8">
+      <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-8 lg:max-w-3xl 2xl:max-w-4xl">
       <ParticleBurstLayer />
       <ConfettiBurstLayer />
       <ShockwaveLayer />
