@@ -121,7 +121,7 @@ export function BodyMapStep({
             aria-hidden
           />
 
-          {step.zones.map((zone) => {
+          {step.zones.map((zone, zoneIndex) => {
             const active = selected.includes(zone.value);
             const rects = ZONE_SHAPES[zone.value] ?? [];
             return rects.map((rect, index) => (
@@ -146,9 +146,25 @@ export function BodyMapStep({
                 }}
               >
                 {!active && (
-                  <span className="gf-display relative text-[10px] leading-tight font-black tracking-[0.08em] text-white uppercase [text-shadow:0_1px_4px_rgba(0,0,0,0.9)]">
-                    {zone.label}
-                  </span>
+                  <>
+                    {/* A soft light bloom instead of a flat colored panel —
+                        it fades all the way to transparent well inside the
+                        zone's own edges, so no rectangle or background-color
+                        seam is ever visible against the photo. Only a warm
+                        glow marks where each zone actually is. */}
+                    <span
+                      className="gf-zone-glow pointer-events-none absolute inset-0 rounded-[14px]"
+                      style={{
+                        background:
+                          "radial-gradient(ellipse at center, rgba(232,179,44,0.4) 0%, rgba(232,179,44,0.16) 45%, rgba(232,179,44,0) 78%)",
+                        animationDelay: `${(zoneIndex * 0.35) % 2.4}s`,
+                      }}
+                      aria-hidden
+                    />
+                    <span className="gf-display relative text-[10px] leading-tight font-black tracking-[0.08em] text-white uppercase [text-shadow:0_1px_4px_rgba(0,0,0,0.9)]">
+                      {zone.label}
+                    </span>
+                  </>
                 )}
                 {active && (
                   <>

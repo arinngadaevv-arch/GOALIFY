@@ -1434,6 +1434,36 @@ html.goalify ::-webkit-scrollbar-thumb {
   }
 }
 
+/* The at-rest state for every unselected zone — a soft light that breathes
+   (fades and grows/shrinks slightly) so each tappable area reads as its own
+   distinct, alive thing without ever drawing a flat-colored panel: the
+   gradient underneath it already fades to fully transparent well inside
+   the zone's own edges, so nothing here ever shows as a rectangle or a
+   background-color seam against the photo, at any point in the loop. */
+@keyframes gf-zone-glow-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+.gf-zone-glow {
+  animation: gf-zone-glow-breathe 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gf-zone-glow {
+    animation: none !important;
+    opacity: 0.85 !important;
+    transform: none !important;
+  }
+}
+
 /* --- Tactile arc gauge ------------------------------------------------------ */
 
 .gf-cyber-gauge-fill {
