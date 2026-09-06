@@ -1443,12 +1443,12 @@ html.goalify ::-webkit-scrollbar-thumb {
 @keyframes gf-zone-glow-breathe {
   0%,
   100% {
-    opacity: 0.55;
-    transform: scale(0.92);
+    opacity: 0.7;
+    transform: scale(0.94);
   }
   50% {
     opacity: 1;
-    transform: scale(1.06);
+    transform: scale(1.1);
   }
 }
 
