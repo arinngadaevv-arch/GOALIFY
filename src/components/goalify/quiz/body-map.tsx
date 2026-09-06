@@ -80,15 +80,9 @@ export function BodyMapStep({
   return (
     <div>
       <div className="relative mx-auto w-full max-w-[196px] lg:max-w-[260px] 2xl:max-w-[320px]">
-        {/* Soft ambient glow behind the silhouette. */}
-        <div
-          className="absolute inset-0 -z-10 rounded-full bg-electric/16 blur-3xl"
-          aria-hidden
-        />
-
         <div
           className="relative overflow-hidden rounded-[28px]"
-          style={{ aspectRatio: "410 / 842" }}
+          style={{ aspectRatio: "410 / 842", backgroundColor: "#0f131c" }}
         >
           {/* Real athletic photo, head to shoes — plain, no baked-in
               zone graphics, so `contain` (never `cover`) is what keeps the
@@ -96,7 +90,15 @@ export function BodyMapStep({
               container aspect ratio crop the head or feet off. The
               container's aspect-ratio above already matches the source
               photo exactly, so this never has to letterbox in practice —
-              it's the safety net if that ever drifts. */}
+              it's the safety net if that ever drifts, and the container's
+              own background-color above is set to the photo's own sampled
+              backdrop tone (not the page's canvas color) so a stray sliver
+              never reads as a second, different-colored background.
+              No vignette, glow, or shadow sits on top of this any more —
+              those all faded toward a color the photo's own flat backdrop
+              wasn't actually at, which is exactly what read as a halo
+              around the figure. A flat background this close to the
+              photo's real tone needs no fade to disappear into it. */}
           <Image
             src="/quiz/bodymap-character-v2.png"
             alt="Male body with target zones highlighted"
@@ -104,21 +106,6 @@ export function BodyMapStep({
             unoptimized
             priority
             className="object-contain object-top"
-          />
-
-          {/* The photo's own studio backdrop is a flat navy, close to but
-              not quite the page's own canvas color (#0b0e14) — close
-              enough on skin tones but the mismatch reads clearly in the
-              rounded corners, where the backdrop alone is visible against
-              the page background, making the whole photo look like a
-              pasted-on rectangle instead of blending into the page. A
-              soft inset vignette fades those corners to the exact canvas
-              color so the edge disappears instead of just relying on the
-              two tones being "close enough". */}
-          <div
-            className="pointer-events-none absolute inset-0 rounded-[28px]"
-            style={{ boxShadow: "inset 0 0 58px 16px #0b0e14" }}
-            aria-hidden
           />
 
           {step.zones.map((zone, zoneIndex) => {
