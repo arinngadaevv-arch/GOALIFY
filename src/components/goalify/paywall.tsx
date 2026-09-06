@@ -18,7 +18,22 @@ import { Brand } from "@/components/goalify/brand";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
 import { fireBurst, ParticleBurstLayer } from "@/components/goalify/quiz/particle-burst";
 import { DesktopAmbientBackdrop } from "@/components/goalify/quiz/desktop-ambient-backdrop";
-import { centsToDollars, PRICING_TIERS } from "@/lib/goalify/pricing";
+import { centsToDollars, PRICING_TIERS, type CheckoutTier } from "@/lib/goalify/pricing";
+
+/** Roughly how many days each billing period actually covers — used only
+ * to derive the "$X/week" framing shown on every pricing card. The exact
+ * total (and what actually gets charged) always stays visible right next
+ * to it; this never replaces that number, only sits above it. */
+const PERIOD_DAYS: Record<CheckoutTier, number> = {
+  monthly: 30,
+  quarterly: 91,
+  annual: 365,
+};
+
+function centsToWeekly(cents: number, tier: CheckoutTier): number {
+  const weeks = PERIOD_DAYS[tier] / 7;
+  return cents / 100 / weeks;
+}
 
 /**
  * A single, tightly-scoped conversion page: headline, the plan actually
@@ -88,19 +103,49 @@ export function Paywall() {
       <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-36">
       <ParticleBurstLayer />
 
-      <header className="relative flex items-center justify-center py-4">
-        <Brand />
-      </header>
+      {/* ------------------------------------------------------------ Hero
+          Edge-to-edge photo instead of a plain centered logo header — the
+          page should open on the aspiration, not a wordmark. The brand and
+          the real trust signal (never a fabricated "X just subscribed"
+          ticker — see CheckoutTrustBadge's own comment) float on top of it,
+          the same position a native paywall's logo/social-proof pill
+          usually sits, so the pattern carries over without inventing data. */}
+      <div className="gf-anim-materialize relative -mx-5 h-[46dvh] max-h-96 min-h-64 w-[calc(100%+2.5rem)] overflow-hidden">
+        <Image
+          src="/quiz/vision-hero-flex-back.png"
+          alt="Athletic build — the physique this plan is built to get you toward"
+          fill
+          priority
+          sizes="(min-width: 640px) 640px, 100vw"
+          className="object-cover object-top"
+        />
+        <div
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0b0e14] via-[#0b0e14]/10 to-transparent"
+          aria-hidden
+        />
+        <div className="absolute inset-x-5 top-4 flex items-center justify-between">
+          <Brand />
+        </div>
+        <div className="absolute inset-x-5 bottom-4">
+          <div className="gf-glass inline-flex rounded-full px-3.5 py-2">
+            <CheckoutTrustBadge />
+          </div>
+        </div>
+      </div>
 
       {/* ------------------------------------------------------- Headline */}
-      <section className="gf-anim-materialize relative text-center">
+      <section className="relative -mt-2 text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-lime-neon/18 px-3 py-1.5 text-[11px] font-bold tracking-[0.1em] text-lime-deep uppercase">
           <Check className="size-3" strokeWidth={3} /> Analysis complete
         </span>
-        <h1 className="gf-display mt-3 text-4xl leading-[1.05] font-black text-ink sm:text-5xl">
-          YOUR <span className="gf-text-hype">PLAN</span> IS READY
+        <h1 className="gf-display mt-3 text-5xl leading-[0.98] font-black tracking-tight text-ink sm:text-6xl">
+          GET YOUR <span className="gf-text-hype">PLAN</span>
         </h1>
-        <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-ink-soft">
+        <span
+          className="mx-auto mt-3 block h-1 w-14 rounded-full bg-[#FFC700]"
+          aria-hidden
+        />
+        <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-ink-soft">
           A {goalLabel(answers.goal).toLowerCase()} program built around your
           goal, schedule, and starting point — no equipment required.
         </p>
@@ -160,11 +205,15 @@ export function Paywall() {
                       SAVE {saved}%
                     </span>
                     <span className="shrink-0 text-right">
+                      {/* Weekly-equivalent leads, same real total right
+                          underneath it in full — reframes the number
+                          without ever hiding what actually gets charged. */}
                       <span className="gf-numeric block text-3xl font-black whitespace-nowrap text-[#FFC700]">
-                        ${price.toFixed(2)}
+                        ${centsToWeekly(option.priceCents, option.id).toFixed(2)}
+                        <span className="text-base font-bold">/wk</span>
                       </span>
                       <span className="mt-1 block text-[11px] font-semibold whitespace-nowrap text-ink-soft">
-                        {option.billedLabel}
+                        ${price.toFixed(2)} {option.billedLabel}
                       </span>
                     </span>
                   </span>
@@ -204,10 +253,11 @@ export function Paywall() {
                 </span>
                 <span className="shrink-0 text-right">
                   <span className="gf-numeric block text-lg font-extrabold text-ink">
-                    ${price.toFixed(2)}
+                    ${centsToWeekly(option.priceCents, option.id).toFixed(2)}
+                    <span className="text-xs font-bold text-mist">/wk</span>
                   </span>
                   <span className="mt-0.5 block text-[10px] font-semibold text-haze">
-                    {option.billedLabel}
+                    ${price.toFixed(2)} {option.billedLabel}
                   </span>
                 </span>
               </button>
@@ -232,7 +282,16 @@ export function Paywall() {
             </p>
           )}
 
-          <CheckoutTrustBadge />
+          {/* Same reassurance-line pattern a native paywall puts right
+              above its CTA — kept honest to how GOALIFY actually bills.
+              Deliberately NOT "cancel anytime from Settings": that
+              screen's cancel button isn't wired to anything yet, and
+              there's no free-trial tier on the checkout backend either,
+              so this only claims what's actually true today. */}
+          <p className="flex items-center justify-center gap-1.5 text-center text-xs font-bold text-lime-deep">
+            <Lock className="size-3.5" strokeWidth={3} />
+            Secure checkout · Instant access
+          </p>
 
           {/* The price, front and center in the one part of the page that's
               visible on the very first frame — no scrolling required to
@@ -273,6 +332,15 @@ export function Paywall() {
               Secure Checkout
             </span>
           </div>
+
+          {/* The actual billing terms, spelled out — the fine-print
+              disclosure a real subscription checkout carries, not buried
+              or omitted. Only states what this checkout actually does
+              today (see the comment above the reassurance line, above). */}
+          <p className="mt-2 text-center text-[10px] leading-snug text-haze">
+            You&apos;ll be charged ${selectedPrice.toFixed(2)} today,{" "}
+            {selectedTier.billedLabel}.
+          </p>
         </div>
       </div>
       </main>
