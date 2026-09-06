@@ -49,8 +49,20 @@ function centsToWeekly(cents: number, tier: CheckoutTier): number {
 export function Paywall() {
   const { answers, targets, todaysWorkout, hydrated } = useGoalify();
   const [tier, setTier] = useState("quarterly");
+  // Whether the separate "Free 7-Day Trial" card (not any of the 3 normal
+  // plan cards, which never change price or framing) is the active
+  // selection. Deliberately its own boolean rather than reusing a tier's
+  // `trialDays` field for this — the trial is an additional, distinct
+  // option layered on top of the plan list, not a mode one of the normal
+  // cards switches into.
+  const [trialSelected, setTrialSelected] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // The one tier actually configured with a trial in Whop (see
+  // lib/goalify/pricing.ts) — the trial card bills against this plan after
+  // it ends, so selecting it sets `tier` to this id too.
+  const trialTier = PRICING_TIERS.find((option) => option.trialDays);
 
   // Read out for the sticky footer's price line, kept in sync with
   // whichever card the user has tapped in the "Choose your plan" section.
@@ -163,8 +175,67 @@ export function Paywall() {
           Choose your plan
         </p>
         <div className="mt-4 grid gap-3">
+          {/* The free trial, as its own separate, additional card — never a
+              transformation of one of the 3 real tiers below, whose price
+              and framing always stay exactly as configured in pricing.ts.
+              Picking this still bills against trialTier's real plan once
+              the trial ends (that's the whole point), it just also flags
+              `trialSelected` so the sticky footer below switches into
+              trial-specific copy instead of the normal checkout copy. */}
+          {trialTier && (
+            <button
+              type="button"
+              onClick={() => {
+                setTier(trialTier.id);
+                setTrialSelected(true);
+              }}
+              aria-pressed={trialSelected}
+              className={clsx(
+                "gf-press relative flex flex-col gap-3 rounded-3xl border-2 border-electric/70 bg-gradient-to-br from-electric/18 via-electric/6 to-transparent p-6 text-left transition-all duration-300",
+                "shadow-[0_0_0_1px_rgba(232,179,44,0.15),0_0_48px_-14px_rgba(232,179,44,0.7)]",
+                trialSelected &&
+                  "shadow-[0_0_0_3px_#e8b32c,0_0_48px_-10px_rgba(232,179,44,0.9)]",
+              )}
+            >
+              <span className="gf-glow-electric absolute -top-3.5 right-5 rounded-full bg-electric px-3 py-1 text-[10px] font-black tracking-[0.08em] whitespace-nowrap text-[#1a1100] uppercase">
+                FREE {trialTier.trialDays}-DAY TRIAL
+              </span>
+              <span className="flex items-center gap-3">
+                <span
+                  className={clsx(
+                    "grid size-7 shrink-0 place-items-center rounded-full transition-all",
+                    trialSelected ? "bg-electric text-[#1a1100]" : "border-2 border-electric/40",
+                  )}
+                  aria-hidden
+                >
+                  {trialSelected && <Check className="size-4.5" strokeWidth={3.5} />}
+                </span>
+                <span className="text-lg font-extrabold whitespace-nowrap text-ink">
+                  Try it free for {trialTier.trialDays} days
+                </span>
+              </span>
+              <span className="flex items-end justify-between gap-3">
+                <span className="inline-flex shrink-0 items-center rounded-full bg-electric/20 px-2 py-0.5 text-[11px] font-black whitespace-nowrap text-electric">
+                  NO PAYMENT NOW
+                </span>
+                <span className="shrink-0 text-right">
+                  <span className="gf-numeric block text-3xl font-black whitespace-nowrap text-electric">
+                    FREE
+                  </span>
+                  <span className="mt-1 block text-[11px] font-semibold whitespace-nowrap text-ink-soft">
+                    then ${centsToWeekly(trialTier.priceCents, trialTier.id).toFixed(2)}/wk (
+                    ${centsToDollars(trialTier.priceCents).toFixed(2)} {trialTier.billedLabel})
+                  </span>
+                </span>
+              </span>
+            </button>
+          )}
+
           {PRICING_TIERS.map((option) => {
-            const active = option.id === tier;
+            // Never active while the separate trial card above is the
+            // active selection, even though trial picks this same tier's
+            // Whop plan under the hood — the two are visually exclusive.
+            const active = option.id === tier && !trialSelected;
             const price = centsToDollars(option.priceCents);
             const was = centsToDollars(option.wasCents);
             const saved = Math.round((1 - price / was) * 100);
@@ -174,7 +245,10 @@ export function Paywall() {
                 <button
                   key={option.id}
                   type="button"
-                  onClick={() => setTier(option.id)}
+                  onClick={() => {
+                    setTier(option.id);
+                    setTrialSelected(false);
+                  }}
                   aria-pressed={active}
                   className={clsx(
                     "gf-press relative flex flex-col gap-3 rounded-3xl border-2 border-[#FFC700]/70 bg-gradient-to-br from-[#FFC700]/18 via-[#FFC700]/6 to-transparent p-6 text-left transition-all duration-300",
@@ -184,7 +258,7 @@ export function Paywall() {
                   )}
                 >
                   <span className="gf-glow-electric absolute -top-3.5 right-5 rounded-full bg-[#FFC700] px-3 py-1 text-[10px] font-black tracking-[0.08em] whitespace-nowrap text-[#1a1100] uppercase">
-                    {option.trialDays ? `FREE ${option.trialDays}-DAY TRIAL` : option.badge}
+                    {option.badge}
                   </span>
                   <span className="flex items-center gap-3">
                     <span
@@ -205,33 +279,13 @@ export function Paywall() {
                       SAVE {saved}%
                     </span>
                     <span className="shrink-0 text-right">
-                      {option.trialDays ? (
-                        // The trial itself leads — that's the actual point of
-                        // tapping this card — with what it becomes afterward
-                        // spelled out underneath, never hidden.
-                        <>
-                          <span className="gf-numeric block text-3xl font-black whitespace-nowrap text-[#FFC700]">
-                            FREE
-                          </span>
-                          <span className="mt-1 block text-[11px] font-semibold whitespace-nowrap text-ink-soft">
-                            then ${centsToWeekly(option.priceCents, option.id).toFixed(2)}/wk
-                            (${price.toFixed(2)} {option.billedLabel})
-                          </span>
-                        </>
-                      ) : (
-                        // Weekly-equivalent leads, same real total right
-                        // underneath it in full — reframes the number
-                        // without ever hiding what actually gets charged.
-                        <>
-                          <span className="gf-numeric block text-3xl font-black whitespace-nowrap text-[#FFC700]">
-                            ${centsToWeekly(option.priceCents, option.id).toFixed(2)}
-                            <span className="text-base font-bold">/wk</span>
-                          </span>
-                          <span className="mt-1 block text-[11px] font-semibold whitespace-nowrap text-ink-soft">
-                            ${price.toFixed(2)} {option.billedLabel}
-                          </span>
-                        </>
-                      )}
+                      <span className="gf-numeric block text-3xl font-black whitespace-nowrap text-[#FFC700]">
+                        ${centsToWeekly(option.priceCents, option.id).toFixed(2)}
+                        <span className="text-base font-bold">/wk</span>
+                      </span>
+                      <span className="mt-1 block text-[11px] font-semibold whitespace-nowrap text-ink-soft">
+                        ${price.toFixed(2)} {option.billedLabel}
+                      </span>
                     </span>
                   </span>
                 </button>
@@ -242,7 +296,10 @@ export function Paywall() {
               <button
                 key={option.id}
                 type="button"
-                onClick={() => setTier(option.id)}
+                onClick={() => {
+                  setTier(option.id);
+                  setTrialSelected(false);
+                }}
                 aria-pressed={active}
                 className={clsx(
                   "gf-press flex items-center gap-4 rounded-2xl border p-4 text-left transition-all duration-300",
@@ -307,10 +364,10 @@ export function Paywall() {
               membership directly — that's what "manage at whop.com" below
               actually points to, not an in-app flow that doesn't exist. */}
           <p className="flex items-center justify-center gap-1.5 text-center text-xs font-bold text-lime-deep">
-            {selectedTier.trialDays ? (
+            {trialSelected && trialTier ? (
               <>
                 <Check className="size-3.5" strokeWidth={3} />
-                No payment now — {selectedTier.trialDays}-day free trial
+                No payment now — {trialTier.trialDays}-day free trial
               </>
             ) : (
               <>
@@ -324,10 +381,10 @@ export function Paywall() {
               visible on the very first frame — no scrolling required to
               see what this actually costs. */}
           <p className="mt-1 text-center">
-            {selectedTier.trialDays ? (
+            {trialSelected && trialTier ? (
               <>
                 <span className="gf-numeric text-lg font-black text-[#FFC700]">
-                  Free for {selectedTier.trialDays} days
+                  Free for {trialTier.trialDays} days
                 </span>{" "}
                 <span className="text-[11px] font-bold text-ink-soft">
                   then ${selectedPrice.toFixed(2)} {selectedTier.billedLabel}
@@ -359,7 +416,7 @@ export function Paywall() {
             ) : (
               <Lock className="size-4.5" />
             )}
-            {selectedTier.trialDays ? "START MY FREE TRIAL" : "START MY PLAN"}
+            {trialSelected && trialTier ? "START MY FREE TRIAL" : "START MY PLAN"}
           </GlowButton>
 
           <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
@@ -378,9 +435,9 @@ export function Paywall() {
               or omitted. Only states what this checkout actually does
               today (see the comment above the reassurance line, above). */}
           <p className="mt-2 text-center text-[10px] leading-snug text-haze">
-            {selectedTier.trialDays ? (
+            {trialSelected && trialTier ? (
               <>
-                Your {selectedTier.trialDays}-day free trial starts today —
+                Your {trialTier.trialDays}-day free trial starts today —
                 you won&apos;t be charged until it ends. After that,
                 you&apos;ll be charged ${selectedPrice.toFixed(2)},{" "}
                 {selectedTier.billedLabel}, until you cancel. Manage or
