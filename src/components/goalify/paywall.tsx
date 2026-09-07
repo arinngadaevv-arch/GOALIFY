@@ -35,6 +35,11 @@ function centsToWeekly(cents: number, tier: CheckoutTier): number {
   return cents / 100 / weeks;
 }
 
+function centsToMonthly(cents: number, tier: CheckoutTier): number {
+  const months = PERIOD_DAYS[tier] / 30;
+  return cents / 100 / months;
+}
+
 /**
  * A single, tightly-scoped conversion page: headline, the plan actually
  * built for this person, pricing, then supporting proof, then a sticky
@@ -284,6 +289,8 @@ export function Paywall() {
                         <span className="text-base font-bold">/wk</span>
                       </span>
                       <span className="mt-1 block text-[11px] font-semibold whitespace-nowrap text-ink-soft">
+                        {option.id !== "monthly" &&
+                          `$${centsToMonthly(option.priceCents, option.id).toFixed(2)}/mo · `}
                         ${price.toFixed(2)} {option.billedLabel}
                       </span>
                     </span>
@@ -331,6 +338,8 @@ export function Paywall() {
                     <span className="text-xs font-bold text-mist">/wk</span>
                   </span>
                   <span className="mt-0.5 block text-[10px] font-semibold text-haze">
+                    {option.id !== "monthly" &&
+                      `$${centsToMonthly(option.priceCents, option.id).toFixed(2)}/mo · `}
                     ${price.toFixed(2)} {option.billedLabel}
                   </span>
                 </span>
