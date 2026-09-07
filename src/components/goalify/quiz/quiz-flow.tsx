@@ -1287,19 +1287,27 @@ function PhotoOptionCard({
           aria-hidden
         />
         {checkBadge}
-        {/* A quiet corner tag, not a shouting block — one short stat, one
-            matching icon, tucked out of the title's way. The old version
-            stacked a full sentence in a solid-gold pill under the title,
-            which read as cluttered/low-end rather than premium. */}
+        <span className="gf-display relative text-xl leading-tight font-extrabold text-white">
+          {option.label}
+        </span>
+        {/* Sits in the darkened gradient strip below the title, not over
+            the photo — a top-corner placement used to land squarely on
+            top of the person's face on every one of these portraits,
+            which is exactly the kind of thing that reads as sloppy rather
+            than premium. One short stat, one matching icon, popped in
+            with its own beat right after the card lands so it still
+            catches the eye without ever covering anyone's face. */}
         {option.socialProof && (
-          <span className="absolute top-3 left-3 z-10 inline-flex items-center gap-1 rounded-full border border-electric/50 bg-black/50 px-2 py-1 text-[10px] font-black tracking-wide text-electric backdrop-blur-sm">
+          <span
+            className={clsx(
+              "gf-anim-pop relative mt-1.5 inline-flex w-fit items-center gap-1 rounded-full border border-electric/70 bg-electric/20 px-2 py-1 text-[10px] font-black tracking-wide text-electric shadow-[0_0_16px_-3px_rgba(232,179,44,0.85)] backdrop-blur-sm",
+              `gf-delay-${index + 3}`,
+            )}
+          >
             <StatIcon className="size-2.5" strokeWidth={3} />
             {option.socialProof}
           </span>
         )}
-        <span className="gf-display relative text-xl leading-tight font-extrabold text-white">
-          {option.label}
-        </span>
       </button>
     );
   }

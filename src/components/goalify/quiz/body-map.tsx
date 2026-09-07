@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import clsx from "clsx";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, Target } from "lucide-react";
 import type { QuizStep } from "@/lib/goalify/quiz";
 import type { QuizAnswers } from "@/lib/goalify/types";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
@@ -27,7 +27,10 @@ import { fireBurst } from "./particle-burst";
 // check badge (top-right corner of the tapped zone) to land on top of
 // that zone's "ARMS" label and render as "A[✓]RMS". Trimmed to a true
 // hairline overlap so the badge clears the neighboring label.
-const ZONE_SHAPES: Record<string, { left: number; top: number; width: number; height: number }[]> = {
+const ZONE_SHAPES: Record<
+  string,
+  { left: number; top: number; width: number; height: number }[]
+> = {
   chest: [{ left: 23, top: 21, width: 54, height: 13 }],
   arms: [
     { left: 2, top: 17, width: 22, height: 42 },
@@ -79,7 +82,19 @@ export function BodyMapStep({
 
   return (
     <div>
-      <div className="relative mx-auto w-full max-w-[196px] lg:max-w-[260px] 2xl:max-w-[320px]">
+      <div className="relative isolate mx-auto w-full max-w-[240px] lg:max-w-[300px] 2xl:max-w-[360px]">
+        {/* A soft bloom sitting entirely outside the card's own rounded
+            edges — not blended into the photo the way the old ambient glow
+            was (see the comment below on the card's flat background),
+            which is exactly what caused the visible color-mismatch halo
+            that got stripped out before. This one never touches a single
+            photo pixel: the card in front of it is fully opaque, so the
+            glow only ever shows as depth in the empty space around the
+            card, not on it. */}
+        <div
+          className="absolute -inset-3 -z-10 rounded-[40px] bg-electric/14 blur-2xl"
+          aria-hidden
+        />
         <div
           className="relative overflow-hidden rounded-[28px]"
           style={{ aspectRatio: "410 / 842", backgroundColor: "#0f131c" }}
@@ -183,27 +198,37 @@ export function BodyMapStep({
         </div>
       </div>
 
-      <div className="relative mt-2 grid place-items-center overflow-hidden">
+      {/* A self-contained chip instead of bare text floating in empty
+          space — gives the caption the same quiet-but-designed weight as
+          the corner tags on the goal-picker tiles, rather than reading as
+          an afterthought under a mostly-empty card. */}
+      <div className="relative mt-4 grid place-items-center overflow-hidden">
         <AnimatePresence mode="popLayout" initial={false}>
-          <motion.p
+          <motion.div
             key={selected.length}
             initial={{ opacity: 0, y: -8, scale: 0.92 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.92 }}
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-            className="col-start-1 row-start-1 text-center text-xs font-semibold text-mist"
+            className="col-start-1 row-start-1 inline-flex items-center gap-1.5 rounded-full border border-electric/30 bg-electric/10 px-3.5 py-1.5 text-xs font-bold text-mist"
           >
             {selected.length === 0 ? (
-              "Tap the areas you want to prioritize"
+              <>
+                <Target
+                  className="size-3.5 text-electric/70"
+                  strokeWidth={2.4}
+                />
+                Tap the areas you want to prioritize
+              </>
             ) : (
               <>
                 <span className="gf-numeric text-sm font-black text-electric">
                   {selected.length}
-                </span>{" "}
+                </span>
                 area{selected.length === 1 ? "" : "s"} selected
               </>
             )}
-          </motion.p>
+          </motion.div>
         </AnimatePresence>
       </div>
 
