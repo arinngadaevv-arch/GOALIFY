@@ -48,7 +48,10 @@ const FAQS = [
 
 export function SeoContent() {
   return (
-    <section className="relative mx-auto mt-6 mb-10 max-w-lg text-white/80 lg:max-w-3xl lg:px-12">
+    <section
+      id="faq"
+      className="relative mx-auto mt-6 mb-10 max-w-lg scroll-mt-20 text-white/80 lg:max-w-3xl lg:px-12"
+    >
       <script
         type="application/ld+json"
         // Static, hand-written content — no user input ever flows into
@@ -69,7 +72,7 @@ export function SeoContent() {
         }}
       />
 
-      <details className="group">
+      <details id="faq-disclosure" className="group">
         <summary className="flex cursor-pointer list-none items-center justify-center gap-1.5 text-center text-xs font-bold text-white/50 marker:content-none hover:text-white/80">
           Frequently asked questions
           <ChevronDown className="size-3.5 transition-transform group-open:rotate-180" />

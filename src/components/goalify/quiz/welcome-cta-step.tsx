@@ -7,6 +7,35 @@ import { AuthModal } from "./auth-modal";
 import { fireBurst } from "./particle-burst";
 
 /**
+ * Pixel bounding boxes of the four nav words baked into the desktop hero
+ * image (1536x756 source), found by thresholding for bright/white pixels
+ * in the nav row and padded a few px on every side for a comfortable
+ * click target — same measurement approach as the two gold CTA buttons
+ * already overlaid on this image. Expressed as a % of the image so they
+ * track it at any rendered width.
+ */
+const NAV_HOTSPOTS = [
+  { id: "how-it-works", label: "How It Works", left: 62.174, width: 6.38, top: 2.381, height: 5.82 },
+  { id: "features", label: "Features", left: 69.727, width: 4.492, top: 2.381, height: 5.82 },
+  { id: "plans", label: "Plans", left: 75.586, width: 3.125, top: 2.381, height: 5.82 },
+  { id: "faq", label: "FAQ", left: 79.818, width: 2.604, top: 2.381, height: 5.82 },
+] as const;
+
+function scrollToLandingSection(id: string) {
+  // Opened before scrolling, not after: scrollIntoView needs the final
+  // layout (disclosure content included) to land in the right place —
+  // opening it afterward grows the page underneath an already-in-flight
+  // scroll and the target ends up well past where it should be.
+  if (id === "faq") {
+    const disclosure = document.getElementById("faq-disclosure");
+    if (disclosure instanceof HTMLDetailsElement) disclosure.open = true;
+  }
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/**
  * The true front door of the funnel. The primary CTA goes straight into
  * the quiz with zero auth interaction — no account exists yet, nothing to
  * sign in to. The only mandatory account gate is later, after the quiz
@@ -179,6 +208,31 @@ export function WelcomeCtaStep({
           START MY PERSONALIZED PLAN
           <ArrowRight className="size-[1em]" />
         </button>
+
+        {/* The nav row's "How It Works" / "Features" / "Plans" / "FAQ" words
+            are flat pixels baked into the hero image above, same as
+            everything else in it — these are invisible real buttons laid
+            directly over each word's own bounding box (measured against the
+            1536x756 source the same way as the two gold CTAs above) so
+            they're actually clickable, scrolling to the matching real
+            section rendered below (see LandingSections and SeoContent).
+            No visible styling of their own on purpose: the flat image
+            already draws the text exactly as designed. */}
+        {NAV_HOTSPOTS.map((hotspot) => (
+          <button
+            key={hotspot.id}
+            type="button"
+            aria-label={hotspot.label}
+            onClick={() => scrollToLandingSection(hotspot.id)}
+            className="absolute cursor-pointer"
+            style={{
+              left: `${hotspot.left}%`,
+              width: `${hotspot.width}%`,
+              top: `${hotspot.top}%`,
+              height: `${hotspot.height}%`,
+            }}
+          />
+        ))}
       </div>
 
       <p className="relative mt-4 mb-2 text-center text-xs font-semibold text-white/60">

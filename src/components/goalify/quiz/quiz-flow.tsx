@@ -27,6 +27,7 @@ import { CommitStep } from "./commit-step";
 import { SocialProofScreen } from "./social-proof-screen";
 import { VitalsStep } from "./vitals-step";
 import { WelcomeCtaStep } from "./welcome-cta-step";
+import { LandingSections } from "./landing-sections";
 import { SeoContent } from "./seo-content";
 import { AuthPanel } from "./auth-panel";
 import { fireBurst, ParticleBurstLayer } from "./particle-burst";
@@ -126,6 +127,14 @@ export function QuizFlow() {
   const { data: session, status: authStatus } = useSession();
   const { state, setDraft, resetDraft, completeQuiz } = useGoalify();
   const [quizStarted, setQuizStarted] = useState(false);
+  // Shared by WelcomeCtaStep's own CTAs and LandingSections' "See your
+  // personalized plan" button — every fresh attempt starts blank,
+  // otherwise a step like the body-map can reopen with whatever was last
+  // selected on an earlier, abandoned attempt still checked.
+  const startQuiz = useCallback(() => {
+    resetDraft();
+    setQuizStarted(true);
+  }, [resetDraft]);
   const [showResultsGate, setShowResultsGate] = useState(false);
   /** Set once, on mount, from the `?auth=`/`?error=` NextAuth lands Google
    * round trips back on `/quiz` with (see pages.error in auth.ts). Reading
@@ -405,16 +414,11 @@ export function QuizFlow() {
       // doesn't upscale/blur on ultra-wide monitors.
       <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 lg:max-w-[1680px]">
         <WelcomeCtaStep
-          onStart={() => {
-            // Every fresh attempt starts blank — otherwise a step like the
-            // body-map can reopen with whatever was last selected on an
-            // earlier, abandoned attempt still checked (see resetDraft).
-            resetDraft();
-            setQuizStarted(true);
-          }}
+          onStart={startQuiz}
           onLogin={() => setAwaitingSigninRoute(true)}
           initialErrorCode={authReturn?.error ?? null}
         />
+        <LandingSections onStart={startQuiz} />
         <SeoContent />
       </main>
     );
