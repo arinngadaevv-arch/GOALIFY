@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 // Self-hosted webfonts, bundled from npm rather than fetched from Google at
 // build time — next/font/google needs network access during `next build`,
 // and a blocked fetch there fails the whole deploy. These ship the woff2
@@ -100,6 +101,14 @@ const jsonLd = {
   ],
 };
 
+// Deliberately absent (not empty-string) in any environment that hasn't
+// been given a real dataset ID — local dev and preview deploys included —
+// so the pixel never fires against the production ad account by accident.
+// meta-pixel.ts's trackMetaEvent is a no-op wherever this script didn't
+// render, rather than throwing, so nothing downstream needs to check this
+// separately.
+const metaPixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+
 export default function GoalifyLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -112,6 +121,41 @@ export default function GoalifyLayout({
           // this object, so no escaping/sanitization concerns.
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        {metaPixelId && (
+          <>
+            {/* afterInteractive (not beforeInteractive): PageView doesn't
+                need to beat first paint, and loading it off the critical
+                rendering path matters more for a marketing funnel's
+                load-time conversion rate than a few ms of event delay. */}
+            <Script id="meta-pixel-base" strategy="afterInteractive">
+              {`
+                !function(f,b,e,v,n,t,s)
+                {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+                n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+                if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+                n.queue=[];t=b.createElement(e);t.async=!0;
+                t.src=v;s=b.getElementsByTagName(e)[0];
+                s.parentNode.insertBefore(t,s)}(window, document,'script',
+                'https://connect.facebook.net/en_US/fbevents.js');
+                fbq('init', '${metaPixelId}');
+                fbq('track', 'PageView');
+              `}
+            </Script>
+            <noscript>
+              {/* A plain <img>, not next/image, is Meta's own spec here —
+                  next/image needs client JS to render, which would defeat
+                  the entire point of a noscript fallback. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                height="1"
+                width="1"
+                style={{ display: "none" }}
+                src={`https://www.facebook.com/tr?id=${metaPixelId}&ev=PageView&noscript=1`}
+                alt=""
+              />
+            </noscript>
+          </>
+        )}
         <div className="gf-ambience" aria-hidden />
         <div className="gf-content min-h-dvh">
           <SessionProvider>

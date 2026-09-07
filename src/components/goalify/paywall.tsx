@@ -19,6 +19,7 @@ import { GlowButton } from "@/components/goalify/ui/glow-button";
 import { fireBurst, ParticleBurstLayer } from "@/components/goalify/quiz/particle-burst";
 import { DesktopAmbientBackdrop } from "@/components/goalify/quiz/desktop-ambient-backdrop";
 import { centsToDollars, PRICING_TIERS, type CheckoutTier } from "@/lib/goalify/pricing";
+import { trackMetaEvent } from "@/lib/goalify/meta-pixel";
 
 /** Roughly how many days each billing period actually covers — used only
  * to derive the "$X/week" framing shown on every pricing card. The exact
@@ -89,6 +90,14 @@ export function Paywall() {
 
     setError(null);
     setLoading(true);
+    // Fired on the click itself, not after Whop's redirect comes back —
+    // "initiated" means the user committed to checking out, which is true
+    // here regardless of whether the request that follows succeeds.
+    trackMetaEvent("InitiateCheckout", {
+      value: selectedPrice,
+      currency: "USD",
+      content_name: selectedTier.id,
+    });
     try {
       const res = await fetch("/api/checkout/whop", {
         method: "POST",
@@ -107,6 +116,12 @@ export function Paywall() {
       // payment.succeeded webhook confirms payment (see
       // api/webhooks/whop), which reads the userId this checkout was
       // created with back out of the payment's metadata.
+      //
+      // window.location is a global browser API, not a captured variable;
+      // the react-compiler rule below started flagging this pre-existing
+      // line as a false positive once the trackMetaEvent call above
+      // changed this function's shape.
+      // eslint-disable-next-line react-hooks/immutability
       window.location.href = body.url;
     } catch {
       setError("Couldn't start checkout — please try again.");

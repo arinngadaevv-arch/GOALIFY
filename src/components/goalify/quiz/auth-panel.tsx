@@ -5,6 +5,7 @@ import { signIn, useSession } from "next-auth/react";
 import { ChevronLeft, Loader2, Lock, ShieldCheck } from "lucide-react";
 import { Brand } from "@/components/goalify/brand";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
+import { trackMetaEvent } from "@/lib/goalify/meta-pixel";
 
 /**
  * Google/email sign-up-or-in, reused in two spots with two different
@@ -85,6 +86,17 @@ export function AuthPanel({
       }
 
       await update();
+      // Only the credentials signup branch actually creates an account —
+      // this same handler also runs for signin (an existing member) and
+      // is reused by the welcome screen's "Log in" link, neither of which
+      // is a real registration. Google's signup path isn't covered here:
+      // it round-trips through accounts.google.com and never reaches this
+      // function at all (see handleGoogleSignIn's own comment), and
+      // NextAuth doesn't expose "this was a brand-new user" back to it in
+      // a way this component can read — better to under-report than to
+      // count an existing Google member signing back in as a fresh
+      // registration.
+      if (mode === "signup") trackMetaEvent("CompleteRegistration");
       onAuthenticated();
     } catch {
       setError("Something went wrong. Please try again.");
