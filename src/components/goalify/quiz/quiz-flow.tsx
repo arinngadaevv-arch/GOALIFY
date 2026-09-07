@@ -423,7 +423,7 @@ export function QuizFlow() {
   return (
     <>
       <DesktopAmbientBackdrop />
-      <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-8 lg:max-w-3xl 2xl:max-w-4xl">
+      <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-8 lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl">
       <ParticleBurstLayer />
       <ConfettiBurstLayer />
       <ShockwaveLayer />
@@ -706,7 +706,13 @@ function ChoiceStep({
       <div
         className={clsx(
           "grid",
-          layout === "radio" ? "gap-2.5" : layout === "wide" ? "gap-1.5" : "grid-cols-2 gap-3",
+          layout === "radio"
+            ? "gap-2.5"
+            : layout === "wide"
+              ? "gap-1.5"
+              : layout === "tile"
+                ? "grid-cols-2 gap-3 lg:grid-cols-4"
+                : "grid-cols-2 gap-3",
           layout === "portrait" && "mt-14",
         )}
       >
