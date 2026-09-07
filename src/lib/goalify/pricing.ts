@@ -38,6 +38,7 @@ export const PRICING_TIERS: PricingTier[] = [
     priceCents: 1999,
     wasCents: 2499,
     billedLabel: "billed monthly",
+    trialDays: 7,
   },
   {
     id: "quarterly",
@@ -49,7 +50,6 @@ export const PRICING_TIERS: PricingTier[] = [
     billedLabel: "billed every 3 months",
     badge: "MOST POPULAR",
     popular: true,
-    trialDays: 7,
   },
   {
     id: "annual",
