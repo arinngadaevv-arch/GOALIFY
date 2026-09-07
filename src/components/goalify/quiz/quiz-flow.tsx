@@ -6,7 +6,14 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { AnimatePresence, motion } from "framer-motion";
 import clsx from "clsx";
-import { ArrowRight, Check, ChevronLeft, ChevronsRight, Target, TrendingUp } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  ChevronLeft,
+  ChevronsRight,
+  Target,
+  TrendingUp,
+} from "lucide-react";
 import {
   QUIZ_STEPS,
   type ChoiceOption,
@@ -19,7 +26,7 @@ import { trackVisit } from "@/lib/goalify/track-visit";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
 import { useUiSounds } from "@/components/goalify/use-ui-sounds";
 import { hasRealPhoto, OptionPhoto } from "./option-photo";
-import { QuizIconBadge, type QuizIconKey } from "./quiz-icons";
+import { QUIZ_ICONS, QuizIconBadge, type QuizIconKey } from "./quiz-icons";
 import { AnalyzingScreen } from "./analyzing-screen";
 import { BodyMapStep } from "./body-map";
 import { HUD_STEP_META, HypeToast } from "./hype-toast";
@@ -45,10 +52,11 @@ function withBurst(handler: () => void, gold = false) {
 }
 
 /** Fixed patches for the two rhetorical "yes-set" commitment cards. */
-const COMMIT_PATCHES: Partial<Record<keyof QuizAnswers, Partial<QuizAnswers>>> = {
-  joints: { joints: ["none"] },
-  commitment: { commitment: "allin" },
-};
+const COMMIT_PATCHES: Partial<Record<keyof QuizAnswers, Partial<QuizAnswers>>> =
+  {
+    joints: { joints: ["none"] },
+    commitment: { commitment: "allin" },
+  };
 const COMMIT_VALUES: Partial<Record<keyof QuizAnswers, unknown>> = {
   joints: "ready",
   commitment: "allin",
@@ -138,7 +146,13 @@ function stepImageUrls(step: QuizStep): string[] {
 
 /** Renders `title` with its trailing `highlight` substring (if given, and
  * if it really is the tail of `title`) recolored to the accent gold. */
-function HeadlineTitle({ title, highlight }: { title: string; highlight?: string }) {
+function HeadlineTitle({
+  title,
+  highlight,
+}: {
+  title: string;
+  highlight?: string;
+}) {
   if (!highlight || !title.endsWith(highlight)) {
     return (
       <h1 className="gf-display relative mt-1 text-2xl leading-[1.08] font-black text-ink sm:text-5xl">
@@ -178,7 +192,9 @@ export function QuizFlow() {
     auth: string | null;
     error: string | null;
   } | null>(null);
-  const [[index, direction], setIndexState] = useState<[number, number]>([0, 0]);
+  const [[index, direction], setIndexState] = useState<[number, number]>([
+    0, 0,
+  ]);
   /** Set by the credentials "Log in" flow's `onAuthenticated` — deferring
    * the actual redirect to the effect below (which reacts to `session`
    * once it's actually settled) instead of reading `session` synchronously
@@ -462,11 +478,11 @@ export function QuizFlow() {
     <>
       <DesktopAmbientBackdrop />
       <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-8 lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl">
-      <ParticleBurstLayer />
-      <ConfettiBurstLayer />
-      <ShockwaveLayer />
-      <header className="relative flex items-center gap-4 py-2">
-        {/* Inline styles carry every property that makes this visible at
+        <ParticleBurstLayer />
+        <ConfettiBurstLayer />
+        <ShockwaveLayer />
+        <header className="relative flex items-center gap-4 py-2">
+          {/* Inline styles carry every property that makes this visible at
             all (size, colors, border) — deliberately not left to Tailwind
             utility classes alone, so no build-time purge/JIT gap or CSS
             specificity fight can ever cause this to silently fail to
@@ -477,118 +493,134 @@ export function QuizFlow() {
             `display: none`) on step one keeps its footprint reserved
             either way, so the centered label below doesn't shift
             horizontally the moment the button appears on step two. */}
-        <button
-          type="button"
-          aria-label="Back"
-          onClick={goBack}
-          disabled={index === 0}
-          tabIndex={index === 0 ? -1 : 0}
-          style={{
-            visibility: index === 0 ? "hidden" : "visible",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 44,
-            height: 44,
-            borderRadius: 9999,
-            background: "#161B26",
-            color: "#FFC700",
-            border: "2px solid #FFC700",
-            flexShrink: 0,
-          }}
-          className="gf-press"
-        >
-          <ChevronLeft size={22} strokeWidth={2.75} />
-        </button>
+          <button
+            type="button"
+            aria-label="Back"
+            onClick={goBack}
+            disabled={index === 0}
+            tabIndex={index === 0 ? -1 : 0}
+            style={{
+              visibility: index === 0 ? "hidden" : "visible",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 44,
+              height: 44,
+              borderRadius: 9999,
+              background: "#161B26",
+              color: "#FFC700",
+              border: "2px solid #FFC700",
+              flexShrink: 0,
+            }}
+            className="gf-press"
+          >
+            <ChevronLeft size={22} strokeWidth={2.75} />
+          </button>
 
-        <p className="flex-1 text-center text-[11px] font-black tracking-[0.2em] text-electric uppercase">
-          Building your plan
-        </p>
+          <p className="flex-1 text-center text-[11px] font-black tracking-[0.2em] text-electric uppercase">
+            Building your plan
+          </p>
 
-        {/* Balances the back button's own width so the label above stays
+          {/* Balances the back button's own width so the label above stays
             visually centered in the row rather than centered in the
             remaining space next to it. */}
-        <span className="w-11 shrink-0" aria-hidden />
-      </header>
+          <span className="w-11 shrink-0" aria-hidden />
+        </header>
 
-      {/* ------------------------------------------------- Plan milestones
+        {/* ------------------------------------------------- Plan milestones
           Replaces a literal step counter/percentage: 5 narrative
           milestones (see MILESTONES) grouping the 9 real quiz steps, so
           advancing reads as "another piece of the plan just got built"
           rather than "N questions left." */}
-      <div className="relative mt-1">
-        <div className="relative flex justify-between px-1">
-          <div
-            className="absolute top-[9px] right-[9%] left-[9%] h-[2px] bg-ink/10"
-            aria-hidden
-          >
+        <div className="relative mt-1">
+          <div className="relative flex justify-between px-1">
             <div
-              className="h-full bg-electric transition-[width] duration-500 ease-out"
-              style={{
-                width: `${(milestoneIndex / (MILESTONES.length - 1)) * 100}%`,
-              }}
-            />
+              className="absolute top-[9px] right-[9%] left-[9%] h-[2px] bg-ink/10"
+              aria-hidden
+            >
+              <div
+                className="h-full bg-electric transition-[width] duration-500 ease-out"
+                style={{
+                  width: `${(milestoneIndex / (MILESTONES.length - 1)) * 100}%`,
+                }}
+              />
+            </div>
+            {MILESTONES.map((milestone, i) => {
+              const state =
+                i < milestoneIndex
+                  ? "done"
+                  : i === milestoneIndex
+                    ? "current"
+                    : "upcoming";
+              return (
+                <div
+                  key={milestone.label}
+                  className="relative flex flex-col items-center gap-1.5"
+                >
+                  <span
+                    className={clsx(
+                      "grid size-[18px] shrink-0 place-items-center rounded-full border-2 bg-canvas transition-colors duration-300",
+                      state === "done" && "border-electric bg-electric",
+                      state === "current" &&
+                        "gf-milestone-pulse border-electric",
+                      state === "upcoming" && "border-ink/15",
+                    )}
+                  >
+                    {state === "done" && (
+                      <Check
+                        className="size-2.5 text-white"
+                        strokeWidth={3.5}
+                      />
+                    )}
+                    {state === "current" && (
+                      <span
+                        className="size-1.5 rounded-full bg-electric"
+                        aria-hidden
+                      />
+                    )}
+                  </span>
+                  <span
+                    className={clsx(
+                      "text-[9px] font-black tracking-[0.06em] whitespace-nowrap uppercase",
+                      state === "upcoming" ? "text-haze" : "text-ink-soft",
+                    )}
+                  >
+                    {milestone.label}
+                  </span>
+                </div>
+              );
+            })}
           </div>
-          {MILESTONES.map((milestone, i) => {
-            const state =
-              i < milestoneIndex ? "done" : i === milestoneIndex ? "current" : "upcoming";
-            return (
-              <div key={milestone.label} className="relative flex flex-col items-center gap-1.5">
-                <span
-                  className={clsx(
-                    "grid size-[18px] shrink-0 place-items-center rounded-full border-2 bg-canvas transition-colors duration-300",
-                    state === "done" && "border-electric bg-electric",
-                    state === "current" && "gf-milestone-pulse border-electric",
-                    state === "upcoming" && "border-ink/15",
-                  )}
-                >
-                  {state === "done" && <Check className="size-2.5 text-white" strokeWidth={3.5} />}
-                  {state === "current" && (
-                    <span className="size-1.5 rounded-full bg-electric" aria-hidden />
-                  )}
-                </span>
-                <span
-                  className={clsx(
-                    "text-[9px] font-black tracking-[0.06em] whitespace-nowrap uppercase",
-                    state === "upcoming" ? "text-haze" : "text-ink-soft",
-                  )}
-                >
-                  {milestone.label}
-                </span>
-              </div>
-            );
-          })}
+
+          {/* Screen readers still get real numeric progress — only the
+            sighted, visual framing moves away from a literal count. */}
+          <div
+            role="progressbar"
+            aria-valuenow={Math.round(progress)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label="Quiz progress"
+            className="sr-only"
+          />
         </div>
 
-        {/* Screen readers still get real numeric progress — only the
-            sighted, visual framing moves away from a literal count. */}
-        <div
-          role="progressbar"
-          aria-valuenow={Math.round(progress)}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-label="Quiz progress"
-          className="sr-only"
-        />
-      </div>
+        <div className="relative mt-3 flex items-center justify-between gap-2">
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={milestoneIndex}
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 4 }}
+              transition={{ duration: 0.22 }}
+              className="min-w-0 truncate text-xs font-semibold text-ink-soft"
+            >
+              {MILESTONE_COPY[milestoneIndex]}
+            </motion.p>
+          </AnimatePresence>
+          {hudToast && <HypeToast text={hudToast} />}
+        </div>
 
-      <div className="relative mt-3 flex items-center justify-between gap-2">
-        <AnimatePresence mode="wait">
-          <motion.p
-            key={milestoneIndex}
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 4 }}
-            transition={{ duration: 0.22 }}
-            className="min-w-0 truncate text-xs font-semibold text-ink-soft"
-          >
-            {MILESTONE_COPY[milestoneIndex]}
-          </motion.p>
-        </AnimatePresence>
-        {hudToast && <HypeToast text={hudToast} />}
-      </div>
-
-      {/* Headline + content animate together as one unit, sliding in from
+        {/* Headline + content animate together as one unit, sliding in from
           the right when advancing and from the left when stepping back —
           `custom={direction}` is how the variants below know which.
           `mode="popLayout"` matters as much as the variants themselves:
@@ -606,107 +638,118 @@ export function QuizFlow() {
           never becomes the bottleneck; the "instant/native" feel above
           that is what the image-preload effect above targets, since a
           mid-flight photo fetch was the actual stutter. */}
-      <AnimatePresence custom={direction} initial={false} mode="popLayout">
-        <motion.div
-          key={step.id}
-          custom={direction}
-          variants={useZoomTransition ? zoomVariants : stepVariants}
-          initial="enter"
-          animate="center"
-          exit="exit"
-          transition={useZoomTransition ? ZOOM_TRANSITION : SLIDE_TRANSITION}
-          style={{ willChange: "transform, opacity" }}
-          className="relative flex flex-1 flex-col"
-        >
-          {/* --------------------------------------------------- Big headline */}
-          <div className="relative pt-1">
-            <p className="text-[11px] font-black tracking-[0.16em] text-electric uppercase">
-              {step.chapter}
-            </p>
-            {step.kind === "choice" && step.heroPhoto ? (
-              <div className="flex items-start gap-3">
-                <div className="min-w-0 flex-1">
-                  <HeadlineTitle title={step.title} highlight={step.titleHighlight} />
-                  <p className="mt-2 text-sm leading-snug text-ink-soft">{step.subtitle}</p>
-                </div>
-                <div className="relative -mt-1 h-24 w-20 shrink-0 overflow-hidden rounded-2xl sm:h-40 sm:w-32">
-                  <Image
-                    src={step.heroPhoto}
-                    alt=""
-                    fill
-                    unoptimized
-                    priority
-                    sizes="140px"
-                    className="object-cover"
-                  />
-                  <div
-                    className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-canvas/80"
-                    aria-hidden
-                  />
-                </div>
-              </div>
-            ) : (
-              <h1 className="gf-display relative mt-1 text-2xl leading-[1.08] font-black text-ink sm:text-5xl">
-                {step.title}
-              </h1>
-            )}
-          </div>
-
-          <div
-            className={clsx(
-              "relative flex flex-1 flex-col pt-2",
-              // The 2x2 photo-tile layout is only 4 short cards — on most
-              // screens that leaves a lot of dead space below it if just
-              // left top-aligned in this flex-1 area, unlike the longer
-              // list/radio layouts that already reach near the bottom on
-              // their own. `justify-center` is a no-op once content is
-              // already tall enough to fill the space, so this only ever
-              // affects the layout it's meant to.
-              step.kind === "choice" && step.layout === "tile" && "justify-center",
-            )}
+        <AnimatePresence custom={direction} initial={false} mode="popLayout">
+          <motion.div
+            key={step.id}
+            custom={direction}
+            variants={useZoomTransition ? zoomVariants : stepVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={useZoomTransition ? ZOOM_TRANSITION : SLIDE_TRANSITION}
+            style={{ willChange: "transform, opacity" }}
+            className="relative flex flex-1 flex-col"
           >
-            <div className={step.kind === "commit" ? "flex flex-1 flex-col" : undefined}>
-              {step.kind === "choice" ? (
-                <ChoiceStep
-                  step={step}
-                  value={currentValue}
-                  onPick={pick}
-                  onSetDraft={setDraft}
-                  locked={pending !== null}
-                  onTap={glassChime}
-                />
-              ) : step.kind === "bodyMap" ? (
-                <BodyMapStep
-                  step={step}
-                  value={currentValue}
-                  onSetDraft={setDraft}
-                  onPick={pick}
-                  locked={pending !== null}
-                  onTap={glassChime}
-                />
-              ) : step.kind === "vitals" ? (
-                <VitalsStep
-                  key={step.id}
-                  draft={draft}
-                  locked={pending !== null}
-                  onSubmit={pick}
-                  onTick={sliderTick}
-                />
+            {/* --------------------------------------------------- Big headline */}
+            <div className="relative pt-1">
+              <p className="text-[11px] font-black tracking-[0.16em] text-electric uppercase">
+                {step.chapter}
+              </p>
+              {step.kind === "choice" && step.heroPhoto ? (
+                <div className="flex items-start gap-3">
+                  <div className="min-w-0 flex-1">
+                    <HeadlineTitle
+                      title={step.title}
+                      highlight={step.titleHighlight}
+                    />
+                    <p className="mt-2 text-sm leading-snug text-ink-soft">
+                      {step.subtitle}
+                    </p>
+                  </div>
+                  <div className="relative -mt-1 h-24 w-20 shrink-0 overflow-hidden rounded-2xl sm:h-40 sm:w-32">
+                    <Image
+                      src={step.heroPhoto}
+                      alt=""
+                      fill
+                      unoptimized
+                      priority
+                      sizes="140px"
+                      className="object-cover"
+                    />
+                    <div
+                      className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-canvas/80"
+                      aria-hidden
+                    />
+                  </div>
+                </div>
               ) : (
-                <CommitStep
-                  key={step.id}
-                  buttonLabel={step.buttonLabel}
-                  bgPhoto={step.bgPhoto}
-                  patch={COMMIT_PATCHES[step.id] ?? {}}
-                  value={COMMIT_VALUES[step.id]}
-                  locked={pending !== null}
-                  onPick={pick}
-                />
+                <h1 className="gf-display relative mt-1 text-2xl leading-[1.08] font-black text-ink sm:text-5xl">
+                  {step.title}
+                </h1>
               )}
             </div>
-          </div>
-        </motion.div>
-      </AnimatePresence>
+
+            <div
+              className={clsx(
+                "relative flex flex-1 flex-col pt-2",
+                // The 2x2 photo-tile layout is only 4 short cards — on most
+                // screens that leaves a lot of dead space below it if just
+                // left top-aligned in this flex-1 area, unlike the longer
+                // list/radio layouts that already reach near the bottom on
+                // their own. `justify-center` is a no-op once content is
+                // already tall enough to fill the space, so this only ever
+                // affects the layout it's meant to.
+                step.kind === "choice" &&
+                  step.layout === "tile" &&
+                  "justify-center",
+              )}
+            >
+              <div
+                className={
+                  step.kind === "commit" ? "flex flex-1 flex-col" : undefined
+                }
+              >
+                {step.kind === "choice" ? (
+                  <ChoiceStep
+                    step={step}
+                    value={currentValue}
+                    onPick={pick}
+                    onSetDraft={setDraft}
+                    locked={pending !== null}
+                    onTap={glassChime}
+                  />
+                ) : step.kind === "bodyMap" ? (
+                  <BodyMapStep
+                    step={step}
+                    value={currentValue}
+                    onSetDraft={setDraft}
+                    onPick={pick}
+                    locked={pending !== null}
+                    onTap={glassChime}
+                  />
+                ) : step.kind === "vitals" ? (
+                  <VitalsStep
+                    key={step.id}
+                    draft={draft}
+                    locked={pending !== null}
+                    onSubmit={pick}
+                    onTick={sliderTick}
+                  />
+                ) : (
+                  <CommitStep
+                    key={step.id}
+                    buttonLabel={step.buttonLabel}
+                    bgPhoto={step.bgPhoto}
+                    patch={COMMIT_PATCHES[step.id] ?? {}}
+                    value={COMMIT_VALUES[step.id]}
+                    locked={pending !== null}
+                    onPick={pick}
+                  />
+                )}
+              </div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
       </main>
     </>
   );
@@ -813,13 +856,14 @@ function ChoiceStep({
           layout === "portrait" && "mt-14",
         )}
       >
-        {main.map((option) => (
+        {main.map((option, index) => (
           <PhotoOptionCard
             key={option.value}
             option={option}
             layout={layout}
             hasPhoto={stepHasPhotos}
             stepId={step.id}
+            index={index}
             selected={String(value) === option.value}
             disabled={locked}
             onClick={() => choose(option)}
@@ -858,9 +902,14 @@ function ChoiceStep({
             <span className="block text-sm font-extrabold text-ink">
               {step.reassurance.title}
             </span>
-            <span className="block text-xs text-ink-soft">{step.reassurance.body}</span>
+            <span className="block text-xs text-ink-soft">
+              {step.reassurance.body}
+            </span>
           </span>
-          <ChevronsRight className="gf-glow-electric size-6 shrink-0 text-electric" aria-hidden />
+          <ChevronsRight
+            className="gf-glow-electric size-6 shrink-0 text-electric"
+            aria-hidden
+          />
         </div>
       )}
     </div>
@@ -879,8 +928,10 @@ function ChoiceStep({
 const LEVEL_CARD_BG: Record<string, string> = {
   beginner: "bg-gradient-to-br from-electric/14 via-transparent to-transparent",
   returning: "bg-gradient-to-br from-electric/24 via-electric/6 to-transparent",
-  consistent: "bg-gradient-to-br from-lime-neon/22 via-electric/12 to-transparent",
-  advanced: "bg-gradient-to-br from-lime-neon/38 via-electric/18 to-transparent",
+  consistent:
+    "bg-gradient-to-br from-lime-neon/22 via-electric/12 to-transparent",
+  advanced:
+    "bg-gradient-to-br from-lime-neon/38 via-electric/18 to-transparent",
 };
 
 function PhotoOptionCard({
@@ -888,6 +939,7 @@ function PhotoOptionCard({
   layout,
   hasPhoto,
   stepId,
+  index,
   selected,
   disabled,
   onClick,
@@ -898,6 +950,10 @@ function PhotoOptionCard({
    * has a real photo, so a card never shows a photo in isolation. */
   hasPhoto: boolean;
   stepId: string;
+  /** Position within the grid — drives the tile layout's staggered
+   * entrance so the four cards feel choreographed rather than dumped on
+   * screen at once. Unused by every other layout. */
+  index: number;
   selected: boolean;
   disabled: boolean;
   onClick: () => void;
@@ -967,7 +1023,9 @@ function PhotoOptionCard({
         )}
         aria-hidden
       >
-        {selected && <Check className="size-3.5 text-white" strokeWidth={3.5} />}
+        {selected && (
+          <Check className="size-3.5 text-white" strokeWidth={3.5} />
+        )}
       </span>
     );
     const labelBlock = (
@@ -996,7 +1054,12 @@ function PhotoOptionCard({
             disabled && !selected && "opacity-50",
           )}
         >
-          <QuizIconBadge icon={option.icon} size="sm" active={selected} className="shrink-0" />
+          <QuizIconBadge
+            icon={option.icon}
+            size="sm"
+            active={selected}
+            className="shrink-0"
+          />
           <div className="relative h-18 w-14 shrink-0 overflow-hidden rounded-lg">
             <OptionPhoto
               src={option.image}
@@ -1052,7 +1115,10 @@ function PhotoOptionCard({
           onClick={withBurst(onClick)}
           disabled={disabled}
           aria-pressed={selected}
-          style={{ borderColor: selected ? undefined : "rgba(232,179,44,0.42)", borderWidth: 1.5 }}
+          style={{
+            borderColor: selected ? undefined : "rgba(232,179,44,0.42)",
+            borderWidth: 1.5,
+          }}
           className={clsx(
             base,
             "group gf-glow-hover flex items-center gap-3.5 overflow-hidden p-2.5 pr-3.5",
@@ -1079,7 +1145,13 @@ function PhotoOptionCard({
               {option.label}
             </span>
             {option.socialProof && (
-              <SocialProofLine text={option.socialProof} badge compactBadge solid truncateBadge />
+              <SocialProofLine
+                text={option.socialProof}
+                badge
+                compactBadge
+                solid
+                truncateBadge
+              />
             )}
           </span>
           {checkBadge}
@@ -1155,6 +1227,7 @@ function PhotoOptionCard({
 
   // tile
   if (hasPhoto) {
+    const StatIcon = QUIZ_ICONS[option.icon];
     return (
       <button
         type="button"
@@ -1166,7 +1239,10 @@ function PhotoOptionCard({
         // own border-color rule, no specificity fight — a faint gold hairline
         // at rest (never the flat "dull white frame" look), brightening to
         // the full selected ring once picked.
-        style={{ borderColor: selected ? undefined : "rgba(232,179,44,0.38)", borderWidth: 1.5 }}
+        style={{
+          borderColor: selected ? undefined : "rgba(232,179,44,0.38)",
+          borderWidth: 1.5,
+        }}
         className={clsx(
           base,
           "group relative flex aspect-[10/11] flex-col justify-end overflow-hidden p-3",
@@ -1175,6 +1251,11 @@ function PhotoOptionCard({
           // pick reads as a satisfying "lock-in," not just a flat outline
           // snapping on.
           selected && "gf-tile-frame-pulse",
+          // A one-time staggered entrance (never looping — see the
+          // animation-philosophy note on gf-milestone-pulse) so the four
+          // cards arrive as a choreographed beat instead of a flat dump.
+          "gf-anim-materialize",
+          `gf-delay-${index + 1}`,
         )}
       >
         <div className="absolute inset-0">
@@ -1206,13 +1287,19 @@ function PhotoOptionCard({
           aria-hidden
         />
         {checkBadge}
-        {/* Title + stat badge only — no subtitle. Nobody reads card copy at
-            a glance, so the pitch has to land in two beats: what it is,
-            then the proof everyone else already picked it. */}
-        <span className="gf-display relative text-lg leading-tight font-extrabold text-white">
+        {/* A quiet corner tag, not a shouting block — one short stat, one
+            matching icon, tucked out of the title's way. The old version
+            stacked a full sentence in a solid-gold pill under the title,
+            which read as cluttered/low-end rather than premium. */}
+        {option.socialProof && (
+          <span className="absolute top-3 left-3 z-10 inline-flex items-center gap-1 rounded-full border border-electric/50 bg-black/50 px-2 py-1 text-[10px] font-black tracking-wide text-electric backdrop-blur-sm">
+            <StatIcon className="size-2.5" strokeWidth={3} />
+            {option.socialProof}
+          </span>
+        )}
+        <span className="gf-display relative text-xl leading-tight font-extrabold text-white">
           {option.label}
         </span>
-        {option.socialProof && <SocialProofLine text={option.socialProof} badge solid />}
       </button>
     );
   }
@@ -1222,7 +1309,10 @@ function PhotoOptionCard({
       onClick={withBurst(onClick)}
       disabled={disabled}
       aria-pressed={selected}
-      className={clsx(base, "flex flex-col items-center gap-2.5 p-5 text-center")}
+      className={clsx(
+        base,
+        "flex flex-col items-center gap-2.5 p-5 text-center",
+      )}
     >
       {checkBadge}
       <QuizIconBadge icon={option.icon} size="lg" active={selected} />
@@ -1230,7 +1320,9 @@ function PhotoOptionCard({
         {option.label}
       </span>
       {option.description && (
-        <span className="mt-0.5 text-xs leading-snug text-ink-soft">{option.description}</span>
+        <span className="mt-0.5 text-xs leading-snug text-ink-soft">
+          {option.description}
+        </span>
       )}
       {option.socialProof && <SocialProofLine text={option.socialProof} />}
     </button>
@@ -1283,10 +1375,16 @@ function SocialProofLine({
         )}
       >
         <TrendingUp
-          className={clsx("shrink-0", truncateBadge ? "size-2.5" : "mt-px size-2.5", solid ? "text-black" : "text-electric")}
+          className={clsx(
+            "shrink-0",
+            truncateBadge ? "size-2.5" : "mt-px size-2.5",
+            solid ? "text-black" : "text-electric",
+          )}
           strokeWidth={3.5}
         />
-        <span className={truncateBadge ? "min-w-0 truncate" : undefined}>{text}</span>
+        <span className={truncateBadge ? "min-w-0 truncate" : undefined}>
+          {text}
+        </span>
       </span>
     );
   }
@@ -1298,7 +1396,10 @@ function SocialProofLine({
         light ? "text-white/90" : "text-electric",
       )}
     >
-      <TrendingUp className={clsx("shrink-0", compact ? "size-2.5" : "size-3")} strokeWidth={3} />
+      <TrendingUp
+        className={clsx("shrink-0", compact ? "size-2.5" : "size-3")}
+        strokeWidth={3}
+      />
       <span className="truncate">{text}</span>
     </span>
   );
@@ -1350,4 +1451,3 @@ function OptionCard({
     </button>
   );
 }
-
