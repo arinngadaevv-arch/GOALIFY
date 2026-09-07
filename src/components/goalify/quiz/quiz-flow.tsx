@@ -82,6 +82,39 @@ const zoomVariants = {
 const ZOOM_TRANSITION = { duration: 0.38, ease: [0.16, 1, 0.3, 1] as const };
 const SLIDE_TRANSITION = { duration: 0.3, ease: [0.22, 1, 0.36, 1] as const };
 
+/**
+ * The "Building Your Plan" progress model — replaces a literal step
+ * counter with 5 narrative milestones grouping QUIZ_STEPS' 9 real steps,
+ * so the framing is "another piece of your plan just got built" rather
+ * than "6 more questions to go." `endIndex` is the last (0-based) step
+ * index that milestone covers; tied to the current 9-step questionnaire
+ * on purpose — if steps are added or removed, these boundaries need a
+ * matching update, not a formula, since the grouping is editorial
+ * (which steps feel like "the same phase"), not evenly mechanical.
+ */
+const MILESTONES = [
+  { label: "Goals", endIndex: 2 },
+  { label: "Routine", endIndex: 4 },
+  { label: "Training", endIndex: 6 },
+  { label: "Plan", endIndex: 7 },
+  { label: "Ready", endIndex: 8 },
+] as const;
+
+/** One line per milestone — never a claim about results, just where the
+ * plan-building process is at. Shown under the milestone row. */
+const MILESTONE_COPY = [
+  "Great — we're getting a clearer picture.",
+  "Your plan is starting to take shape.",
+  "Nice — dialing in your training details.",
+  "Almost there — a few final details.",
+  "Your personalized plan is coming together.",
+] as const;
+
+function getMilestoneIndex(stepIndex: number): number {
+  const found = MILESTONES.findIndex((m) => stepIndex <= m.endIndex);
+  return found === -1 ? MILESTONES.length - 1 : found;
+}
+
 /** Not part of QuizStep data — body-map.tsx hardcodes this asset, so the
  * preloader below has to know it by name to warm it ahead of that step. */
 const BODY_MAP_IMAGE = "/quiz/bodymap-character-v2.png";
@@ -175,6 +208,7 @@ export function QuizFlow() {
   const step = QUIZ_STEPS[index];
   const isLast = index === QUIZ_STEPS.length - 1;
   const progress = (index / QUIZ_STEPS.length) * 100;
+  const milestoneIndex = getMilestoneIndex(index);
 
   // The commit step's own transition zooms rather than slides — covers
   // both its entrance and, more importantly, its exit when the user taps
@@ -439,10 +473,10 @@ export function QuizFlow() {
             render. A real flex child now, not absolutely positioned: the
             previous fixed left/top offsets didn't reliably clear the
             header's actual content height, so the button could overlap
-            the progress bar and the HUD line right below it.
-            `visibility: hidden` (not `display: none`) on step one keeps
-            its footprint reserved either way, so the progress bar doesn't
-            shift horizontally the moment the button appears on step two. */}
+            the milestone row right below it. `visibility: hidden` (not
+            `display: none`) on step one keeps its footprint reserved
+            either way, so the centered label below doesn't shift
+            horizontally the moment the button appears on step two. */}
         <button
           type="button"
           aria-label="Back"
@@ -467,31 +501,90 @@ export function QuizFlow() {
           <ChevronLeft size={22} strokeWidth={2.75} />
         </button>
 
-        {/* Thin, minimalist single-line progress bar — native-app style. */}
+        <p className="flex-1 text-center text-[11px] font-black tracking-[0.2em] text-electric uppercase">
+          Building your plan
+        </p>
+
+        {/* Balances the back button's own width so the label above stays
+            visually centered in the row rather than centered in the
+            remaining space next to it. */}
+        <span className="w-11 shrink-0" aria-hidden />
+      </header>
+
+      {/* ------------------------------------------------- Plan milestones
+          Replaces a literal step counter/percentage: 5 narrative
+          milestones (see MILESTONES) grouping the 9 real quiz steps, so
+          advancing reads as "another piece of the plan just got built"
+          rather than "N questions left." */}
+      <div className="relative mt-1">
+        <div className="relative flex justify-between px-1">
+          <div
+            className="absolute top-[9px] right-[9%] left-[9%] h-[2px] bg-ink/10"
+            aria-hidden
+          >
+            <div
+              className="h-full bg-electric transition-[width] duration-500 ease-out"
+              style={{
+                width: `${(milestoneIndex / (MILESTONES.length - 1)) * 100}%`,
+              }}
+            />
+          </div>
+          {MILESTONES.map((milestone, i) => {
+            const state =
+              i < milestoneIndex ? "done" : i === milestoneIndex ? "current" : "upcoming";
+            return (
+              <div key={milestone.label} className="relative flex flex-col items-center gap-1.5">
+                <span
+                  className={clsx(
+                    "grid size-[18px] shrink-0 place-items-center rounded-full border-2 bg-canvas transition-colors duration-300",
+                    state === "done" && "border-electric bg-electric",
+                    state === "current" && "gf-milestone-pulse border-electric",
+                    state === "upcoming" && "border-ink/15",
+                  )}
+                >
+                  {state === "done" && <Check className="size-2.5 text-white" strokeWidth={3.5} />}
+                  {state === "current" && (
+                    <span className="size-1.5 rounded-full bg-electric" aria-hidden />
+                  )}
+                </span>
+                <span
+                  className={clsx(
+                    "text-[9px] font-black tracking-[0.06em] whitespace-nowrap uppercase",
+                    state === "upcoming" ? "text-haze" : "text-ink-soft",
+                  )}
+                >
+                  {milestone.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Screen readers still get real numeric progress — only the
+            sighted, visual framing moves away from a literal count. */}
         <div
-          className="h-1 flex-1 overflow-hidden rounded-full bg-ink/10"
           role="progressbar"
           aria-valuenow={Math.round(progress)}
           aria-valuemin={0}
           aria-valuemax={100}
           aria-label="Quiz progress"
-        >
-          <div
-            className="gf-progress-fill h-full rounded-full bg-electric transition-[width] duration-500 ease-out"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
+          className="sr-only"
+        />
+      </div>
 
-        <span className="gf-numeric shrink-0 text-xs font-bold tracking-wide text-haze uppercase">
-          Step {index + 1} of {QUIZ_STEPS.length}
-        </span>
-      </header>
-
-      {/* --------------------------------------------- Live diagnostic readout */}
-      <div className="relative flex items-center justify-between gap-2">
-        <p className="gf-cyber-glow-text min-w-0 truncate text-[10px] font-black tracking-[0.16em] uppercase">
-          {step.hudPhrase} · {Math.round(((index + 1) / QUIZ_STEPS.length) * 100)}%
-        </p>
+      <div className="relative mt-3 flex items-center justify-between gap-2">
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={milestoneIndex}
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            transition={{ duration: 0.22 }}
+            className="min-w-0 truncate text-xs font-semibold text-ink-soft"
+          >
+            {MILESTONE_COPY[milestoneIndex]}
+          </motion.p>
+        </AnimatePresence>
         {hudToast && <HypeToast text={hudToast} />}
       </div>
 

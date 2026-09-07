@@ -201,6 +201,29 @@ body.goalify-body:has(.gf-cyber-scope) .gf-ambience {
   box-shadow: 0 0 8px 0 var(--color-electric);
 }
 
+/* The quiz's "Building Your Plan" milestone row — a soft, continuous
+   sonar ping on whichever milestone is currently in progress, so it
+   reads as "this one's active" without needing a caption. */
+@keyframes gf-milestone-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(232, 179, 44, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(232, 179, 44, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(232, 179, 44, 0);
+  }
+}
+.gf-milestone-pulse {
+  animation: gf-milestone-pulse 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gf-milestone-pulse {
+    animation: none !important;
+  }
+}
+
 /* --- Glow accents -------------------------------------------------------- */
 
 .gf-glow-electric {
