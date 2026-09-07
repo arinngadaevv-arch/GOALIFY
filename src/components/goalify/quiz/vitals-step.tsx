@@ -3,7 +3,20 @@
 import { useState } from "react";
 import Image from "next/image";
 import clsx from "clsx";
-import { ArrowRight, HelpCircle, Mars, Venus } from "lucide-react";
+import {
+  ArrowRight,
+  Calendar,
+  HelpCircle,
+  Mars,
+  Minus,
+  Plus,
+  Ruler,
+  Scale,
+  Target,
+  TrendingDown,
+  TrendingUp,
+  Venus,
+} from "lucide-react";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
 import type { QuizAnswers, Sex } from "@/lib/goalify/types";
 import { fireBurst } from "./particle-burst";
@@ -102,6 +115,7 @@ export function VitalsStep({
         {/* -------------------------------------------------- Current weight */}
         <NumberField
           hero
+          icon={Scale}
           label="Current weight"
           value={weightKg}
           min={40}
@@ -117,6 +131,7 @@ export function VitalsStep({
         {/* --------------------------------------------- Metric input grid */}
         <div className="mt-5 grid grid-cols-2 gap-3">
           <NumberField
+            icon={Calendar}
             label="Age"
             value={age}
             min={16}
@@ -126,8 +141,10 @@ export function VitalsStep({
             onChange={setAge}
             onCommit={onTick}
             disabled={locked}
+            steppers={false}
           />
           <NumberField
+            icon={Ruler}
             label="Height"
             value={heightCm}
             min={140}
@@ -137,8 +154,10 @@ export function VitalsStep({
             onChange={setHeightCm}
             onCommit={onTick}
             disabled={locked}
+            steppers={false}
           />
           <NumberField
+            icon={Target}
             label="Target weight"
             value={targetWeightKg}
             min={40}
@@ -149,6 +168,9 @@ export function VitalsStep({
             onCommit={onTick}
             disabled={locked}
             className="col-span-2"
+            badge={
+              <WeightGoalBadge currentKg={weightKg} targetKg={targetWeightKg} />
+            }
           />
         </div>
 
@@ -173,9 +195,13 @@ export function VitalsStep({
  * label, with no slider anywhere. Typing is completely free-form (the
  * draft is kept as a raw string while focused so clamping never fights
  * the cursor); the value is only stepped, clamped and committed back up
- * on blur/Enter, exactly like a slider's onCommit would fire.
+ * on blur/Enter, exactly like a slider's onCommit would fire. The +/-
+ * steppers are the other way to change it — a quick tap for anyone who'd
+ * rather not bring up a keyboard for a one-off adjustment — and go
+ * through the exact same clamp-and-commit path as typing does.
  */
 function NumberField({
+  icon: Icon,
   label,
   value,
   min,
@@ -187,7 +213,15 @@ function NumberField({
   disabled = false,
   hero = false,
   className,
+  badge,
+  // Off by default in the half-width grid cells (Age/Height): a card that
+  // narrow can't fit icon + label + both steppers + a 3-digit number
+  // without the second button getting clipped by the card's own
+  // overflow-hidden edge — confirmed by actually rendering it, not
+  // assumed. The hero and full-width cards have the room; those two don't.
+  steppers = true,
 }: {
+  icon?: typeof Scale;
   label: string;
   value: number;
   min: number;
@@ -199,13 +233,15 @@ function NumberField({
   disabled?: boolean;
   hero?: boolean;
   className?: string;
+  badge?: React.ReactNode;
+  steppers?: boolean;
 }) {
   const [draft, setDraft] = useState(() => String(value));
   const [focused, setFocused] = useState(false);
 
   // `value` only ever changes as a direct result of this field's own
-  // commit() below (which sets `draft` itself in the same breath), so
-  // there's no external source to resync from — no effect needed.
+  // commit()/step() below (which set `draft` itself in the same breath),
+  // so there's no external source to resync from — no effect needed.
 
   const commit = () => {
     const trimmed = draft.trim();
@@ -227,6 +263,15 @@ function NumberField({
     }
   };
 
+  const stepBy = (delta: number) => {
+    const clamped = Math.min(max, Math.max(min, value + delta));
+    setDraft(String(clamped));
+    if (clamped !== value) {
+      onChange(clamped);
+      onCommit();
+    }
+  };
+
   return (
     <div
       className={clsx(
@@ -238,48 +283,123 @@ function NumberField({
         className,
       )}
     >
-      <label className="block text-[11px] font-black tracking-[0.14em] text-mist uppercase">
-        {label}
-      </label>
-      <div className={clsx("flex items-baseline gap-2", hero ? "mt-3" : "mt-2")}>
-        <input
-          type="number"
-          inputMode="numeric"
-          value={draft}
-          min={min}
-          max={max}
-          step={step}
-          disabled={disabled}
-          onChange={(event) => {
-            const next = event.target.value;
-            // Allow free typing of a plain, unsigned, up-to-3-digit whole
-            // number — blocks letters/decimals/negatives at the keystroke
-            // level without ever fighting a valid in-progress number.
-            if (next === "" || /^\d{0,3}$/.test(next)) setDraft(next);
-          }}
-          onFocus={() => setFocused(true)}
-          onBlur={() => {
-            setFocused(false);
-            commit();
-          }}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") event.currentTarget.blur();
-          }}
-          aria-label={`${label} (${unit})`}
-          className={clsx(
-            "gf-numeric gf-number-plain min-w-0 flex-1 bg-transparent font-black text-[#FFC700] outline-none",
-            hero ? "text-6xl" : "text-4xl",
+      <div className="flex items-center justify-between gap-2">
+        <label className="flex items-center gap-1.5 text-[11px] font-black tracking-[0.14em] text-mist uppercase">
+          {Icon && (
+            <Icon className="size-3.5 text-electric/70" strokeWidth={2.4} />
           )}
-        />
-        <span
+          {label}
+        </label>
+        {badge}
+      </div>
+      <div className={clsx("flex items-center gap-2", hero ? "mt-3" : "mt-2")}>
+        {steppers && (
+          <button
+            type="button"
+            disabled={disabled || value <= min}
+            onClick={(event) => {
+              fireBurst(event.clientX, event.clientY);
+              stepBy(-step);
+            }}
+            aria-label={`Decrease ${label}`}
+            className={clsx(
+              "gf-press grid shrink-0 place-items-center rounded-full border border-electric/25 text-mist transition-colors hover:border-electric/60 hover:text-electric disabled:pointer-events-none disabled:opacity-30",
+              hero ? "size-9" : "size-7",
+            )}
+          >
+            <Minus className={hero ? "size-4" : "size-3.5"} strokeWidth={2.6} />
+          </button>
+        )}
+        <div
           className={clsx(
-            "shrink-0 font-bold text-mist",
-            hero ? "text-lg" : "text-sm",
+            "flex flex-1 items-baseline gap-2",
+            steppers ? "justify-center" : "justify-start",
           )}
         >
-          {unit}
-        </span>
+          <input
+            type="number"
+            inputMode="numeric"
+            value={draft}
+            min={min}
+            max={max}
+            step={step}
+            disabled={disabled}
+            onChange={(event) => {
+              const next = event.target.value;
+              // Allow free typing of a plain, unsigned, up-to-3-digit whole
+              // number — blocks letters/decimals/negatives at the keystroke
+              // level without ever fighting a valid in-progress number.
+              if (next === "" || /^\d{0,3}$/.test(next)) setDraft(next);
+            }}
+            onFocus={() => setFocused(true)}
+            onBlur={() => {
+              setFocused(false);
+              commit();
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") event.currentTarget.blur();
+            }}
+            aria-label={`${label} (${unit})`}
+            className={clsx(
+              "gf-numeric gf-number-plain shrink-0 bg-transparent text-center font-black text-[#FFC700] outline-none",
+              hero ? "w-24 text-6xl" : "w-16 text-4xl",
+            )}
+          />
+          <span
+            className={clsx(
+              "shrink-0 font-bold text-mist",
+              hero ? "text-lg" : "text-sm",
+            )}
+          >
+            {unit}
+          </span>
+        </div>
+        {steppers && (
+          <button
+            type="button"
+            disabled={disabled || value >= max}
+            onClick={(event) => {
+              fireBurst(event.clientX, event.clientY);
+              stepBy(step);
+            }}
+            aria-label={`Increase ${label}`}
+            className={clsx(
+              "gf-press grid shrink-0 place-items-center rounded-full border border-electric/25 text-mist transition-colors hover:border-electric/60 hover:text-electric disabled:pointer-events-none disabled:opacity-30",
+              hero ? "size-9" : "size-7",
+            )}
+          >
+            <Plus className={hero ? "size-4" : "size-3.5"} strokeWidth={2.6} />
+          </button>
+        )}
       </div>
     </div>
+  );
+}
+
+/**
+ * The one piece of real insight this screen can offer beyond raw inputs —
+ * how far current weight actually is from the stated goal, updating live
+ * as either number changes. Genuine data, not decoration: it goes quiet
+ * (no badge at all) right when current equals target, since "0 kg to go"
+ * reads as a glitch rather than a milestone this early in the funnel.
+ */
+function WeightGoalBadge({
+  currentKg,
+  targetKg,
+}: {
+  currentKg: number;
+  targetKg: number;
+}) {
+  const deltaKg = currentKg - targetKg;
+  if (deltaKg === 0) return null;
+
+  const losing = deltaKg > 0;
+  const Icon = losing ? TrendingDown : TrendingUp;
+
+  return (
+    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-electric/12 px-2.5 py-1 text-[11px] font-black whitespace-nowrap text-electric">
+      <Icon className="size-3" strokeWidth={3} />
+      {Math.abs(deltaKg)} kg to {losing ? "go" : "gain"}
+    </span>
   );
 }
