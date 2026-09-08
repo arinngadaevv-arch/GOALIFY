@@ -16,12 +16,15 @@ export function WorkoutProgress({
 }) {
   if (current != null && total != null) {
     return (
-      <span className="gf-numeric flex items-baseline gap-1">
-        <span className="text-sm font-black text-ink">
-          {String(current).padStart(2, "0")}
+      <span className="gf-numeric flex flex-col items-end leading-none">
+        <span className="flex items-baseline gap-1">
+          <span className="text-lg font-black text-ink">
+            {String(current).padStart(2, "0")}
+          </span>
+          <span className="text-[10px] font-black tracking-[0.1em] text-haze uppercase">
+            of {String(total).padStart(2, "0")}
+          </span>
         </span>
-        <span className="text-xs font-bold text-haze">⁄</span>
-        <span className="text-xs font-bold text-mist">{total}</span>
       </span>
     );
   }

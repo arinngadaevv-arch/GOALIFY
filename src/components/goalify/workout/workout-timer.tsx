@@ -55,8 +55,8 @@ export function WorkoutTimer({
       </svg>
 
       <ProgressRing
-        size={140}
-        thickness={5}
+        size={168}
+        thickness={7}
         gap={0}
         {...(animated ? { transitionMs: 1000, easing: "linear" } : {})}
         rings={[
@@ -64,7 +64,7 @@ export function WorkoutTimer({
             value,
             color: variant === "crimson" ? "#ff3b3b" : `url(#${GRADIENT_ID})`,
             label: "Current",
-            trackColor: "rgba(236, 228, 211, 0.1)",
+            trackColor: "rgba(236, 228, 211, 0.08)",
           },
         ]}
       >
@@ -76,13 +76,13 @@ export function WorkoutTimer({
         >
           <p
             className={clsx(
-              "gf-numeric text-[3.25rem] leading-none font-black sm:text-[3.75rem]",
+              "gf-numeric text-[4.25rem] leading-none font-black tracking-tight sm:text-[4.75rem]",
               urgent ? "text-[#f2c879]" : "text-ink",
             )}
           >
             {seconds}
           </p>
-          <p className="mt-2 text-[11px] font-bold tracking-[0.16em] text-mist uppercase">
+          <p className="mt-2.5 text-[11px] font-black tracking-[0.2em] text-mist uppercase">
             {hint ?? "seconds"}
           </p>
         </div>

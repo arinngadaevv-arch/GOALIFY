@@ -1910,14 +1910,18 @@ body.goalify-body:has(.gf-elite-scope) .gf-ambience {
    Richer and warmer than a flat champagne — this is the screen's one
    pulse of energy, not just a trim color. */
 .gf-live-industrial {
-  --gf-gold: #d9a94a;
+  --gf-gold: #e2a930;
 }
 
+/* Deeper, more dramatic than the original — a stronger spotlight over the
+   hero video's top edge (where the trainer actually stands) plus a darker
+   floor, so the whole screen reads as one lit stage instead of a flat
+   charcoal fill. Still no color outside gold/crimson. */
 .gf-live-industrial::before {
   background:
-    radial-gradient(ellipse 70% 40% at 12% -8%, rgba(201, 169, 97, 0.08), transparent 60%),
-    radial-gradient(ellipse 60% 38% at 105% 18%, rgba(255, 59, 59, 0.06), transparent 60%),
-    linear-gradient(180deg, #0e0d0c 0%, #15130f 55%, #0e0d0c 100%);
+    radial-gradient(ellipse 75% 42% at 15% -10%, rgba(226, 169, 48, 0.13), transparent 62%),
+    radial-gradient(ellipse 65% 40% at 108% 14%, rgba(255, 59, 59, 0.07), transparent 60%),
+    linear-gradient(180deg, #08080a 0%, #100e0a 45%, #0a0908 100%);
 }
 
 .gf-live-industrial::after {
@@ -1934,6 +1938,15 @@ body.goalify-body:has(.gf-elite-scope) .gf-ambience {
     0 0 0 1px rgba(236, 228, 211, 0.04) inset;
 }
 
+/* A stronger glow than the base `.gf-progress-fill` (used everywhere else)
+   for this screen's own header bar — it's the "how far into this session"
+   readout, so it earns more visual weight than a generic progress sliver. */
+.gf-live-industrial .gf-progress-fill-bold {
+  box-shadow:
+    0 0 14px 0 rgba(226, 169, 48, 0.65),
+    0 0 3px 0 rgba(226, 169, 48, 0.9);
+}
+
 .gf-live-industrial .gf-glow-electric {
   box-shadow:
     0 12px 32px -10px rgba(201, 169, 97, 0.3),
@@ -1947,13 +1960,13 @@ body.goalify-body:has(.gf-elite-scope) .gf-ambience {
    screen's more restrained language. */
 .gf-live-industrial .gf-hub-button {
   position: relative;
-  background: radial-gradient(circle at 38% 32%, #241d12 0%, #16110a 65%, #0d0a07 100%);
+  background: radial-gradient(circle at 38% 32%, #2b2114 0%, #18120a 65%, #0d0a07 100%);
   box-shadow:
-    inset 0 0 0 1.5px rgba(217, 169, 74, 0.85),
-    inset 0 1px 2px rgba(255, 255, 255, 0.06),
-    0 0 20px -6px rgba(217, 169, 74, 0.4),
-    0 10px 22px -10px rgba(0, 0, 0, 0.8);
-  color: #e8bd6c;
+    inset 0 0 0 2px rgba(226, 169, 48, 0.95),
+    inset 0 1px 2px rgba(255, 255, 255, 0.08),
+    0 0 28px -6px rgba(226, 169, 48, 0.55),
+    0 12px 26px -10px rgba(0, 0, 0, 0.85);
+  color: #efc372;
   animation: gf-hub-glow-breathe 3.4s ease-in-out infinite;
   transition:
     transform 0.12s ease-out,
@@ -1970,18 +1983,34 @@ body.goalify-body:has(.gf-elite-scope) .gf-ambience {
   0%,
   100% {
     box-shadow:
-      inset 0 0 0 1.5px rgba(217, 169, 74, 0.85),
-      inset 0 1px 2px rgba(255, 255, 255, 0.06),
-      0 0 20px -6px rgba(217, 169, 74, 0.4),
-      0 10px 22px -10px rgba(0, 0, 0, 0.8);
+      inset 0 0 0 2px rgba(226, 169, 48, 0.95),
+      inset 0 1px 2px rgba(255, 255, 255, 0.08),
+      0 0 28px -6px rgba(226, 169, 48, 0.55),
+      0 12px 26px -10px rgba(0, 0, 0, 0.85);
   }
   50% {
     box-shadow:
-      inset 0 0 0 1.5px rgba(217, 169, 74, 1),
-      inset 0 1px 2px rgba(255, 255, 255, 0.09),
-      0 0 30px -4px rgba(217, 169, 74, 0.65),
-      0 10px 22px -10px rgba(0, 0, 0, 0.8);
+      inset 0 0 0 2px rgba(226, 169, 48, 1),
+      inset 0 1px 2px rgba(255, 255, 255, 0.12),
+      0 0 40px -4px rgba(226, 169, 48, 0.8),
+      0 12px 26px -10px rgba(0, 0, 0, 0.85);
   }
+}
+
+/* ±15s adjust pills — a filled, weighty control rather than a thin website
+   outline button, so it reads as real workout hardware next to the hub. */
+.gf-live-industrial .gf-time-adjust {
+  background: rgba(236, 228, 211, 0.06);
+  border: 1.5px solid rgba(236, 228, 211, 0.18);
+  color: var(--color-electric-soft);
+  transition:
+    background-color 0.15s ease-out,
+    border-color 0.15s ease-out;
+}
+
+.gf-live-industrial .gf-time-adjust:hover {
+  background: rgba(236, 228, 211, 0.1);
+  border-color: rgba(236, 228, 211, 0.3);
 }
 
 /* A quiet sonar ping — the workout's actual "pulse." Runs continuously
@@ -1991,13 +2020,13 @@ body.goalify-body:has(.gf-elite-scope) .gf-ambience {
    movement, which is the correct signal at that instant. */
 @keyframes gf-hub-pulse-ring {
   0% {
-    box-shadow: 0 0 0 0 rgba(217, 169, 74, 0.45);
+    box-shadow: 0 0 0 0 rgba(226, 169, 48, 0.5);
   }
   70% {
-    box-shadow: 0 0 0 20px rgba(217, 169, 74, 0);
+    box-shadow: 0 0 0 22px rgba(226, 169, 48, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(217, 169, 74, 0);
+    box-shadow: 0 0 0 0 rgba(226, 169, 48, 0);
   }
 }
 

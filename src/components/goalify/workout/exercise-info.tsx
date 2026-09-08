@@ -21,15 +21,25 @@ export function ExerciseInfo({
   return (
     <div className={clsx("text-center", className)}>
       <p
-        className="text-xs font-bold tracking-[0.14em] uppercase"
+        className="flex items-center justify-center gap-2 text-[13px] font-black tracking-[0.22em] uppercase"
         style={{ color: "var(--gf-gold)" }}
       >
+        <span
+          className="h-[2px] w-4 rounded-full"
+          style={{ backgroundColor: "var(--gf-gold)" }}
+          aria-hidden
+        />
         {category}
+        <span
+          className="h-[2px] w-4 rounded-full"
+          style={{ backgroundColor: "var(--gf-gold)" }}
+          aria-hidden
+        />
       </p>
-      <h1 className="gf-display mt-1.5 text-3xl leading-[1.05] font-black text-ink sm:text-4xl">
+      <h1 className="gf-display mt-2 text-4xl leading-[0.98] font-black tracking-tight text-ink uppercase sm:text-5xl">
         {name}
       </h1>
-      {cue && <p className="mt-2 text-sm leading-relaxed text-mist sm:text-base">{cue}</p>}
+      {cue && <p className="mt-2.5 text-sm leading-relaxed text-mist sm:text-base">{cue}</p>}
     </div>
   );
 }

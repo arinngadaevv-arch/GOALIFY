@@ -35,14 +35,14 @@ export function WorkoutControls({
           type="button"
           onClick={onStart}
           aria-label="Start this exercise"
-          className="gf-press gf-hub-button gf-hub-pulse grid size-16 shrink-0 place-items-center rounded-full"
+          className="gf-press gf-hub-button gf-hub-pulse grid size-20 shrink-0 place-items-center rounded-full"
         >
-          <Play className="size-7 fill-current" />
+          <Play className="size-8 fill-current" />
         </button>
         <button
           type="button"
           onClick={onSkip}
-          className="text-xs font-semibold text-haze underline underline-offset-4"
+          className="text-xs font-bold tracking-wide text-haze underline underline-offset-4"
         >
           Skip exercise
         </button>
@@ -51,20 +51,20 @@ export function WorkoutControls({
   }
 
   return (
-    <div className={clsx("flex flex-col items-center gap-3", className)}>
+    <div className={clsx("flex flex-col items-center gap-3.5", className)}>
       <button
         type="button"
         onClick={onTogglePause}
         aria-label={paused ? "Resume workout" : "Pause workout"}
         className={clsx(
-          "gf-press gf-hub-button grid size-16 shrink-0 place-items-center rounded-full",
+          "gf-press gf-hub-button grid size-20 shrink-0 place-items-center rounded-full",
           !paused && "gf-hub-pulse",
         )}
       >
         {paused ? (
-          <Play className="size-7 fill-current" />
+          <Play className="size-8 fill-current" />
         ) : (
-          <Pause className="size-7 fill-current" />
+          <Pause className="size-8 fill-current" />
         )}
       </button>
 
@@ -73,7 +73,7 @@ export function WorkoutControls({
           type="button"
           onClick={() => onAddSeconds(-15)}
           aria-label="Subtract 15 seconds"
-          className="gf-press flex h-12 min-w-18 items-center justify-center rounded-full border border-white/12 px-4 text-sm font-bold text-ink-soft transition-colors hover:text-ink"
+          className="gf-press gf-time-adjust flex h-13 min-w-20 items-center justify-center rounded-full text-sm font-black tracking-wide"
         >
           −15s
         </button>
@@ -81,7 +81,7 @@ export function WorkoutControls({
           type="button"
           onClick={() => onAddSeconds(15)}
           aria-label="Add 15 seconds"
-          className="gf-press flex h-12 min-w-18 items-center justify-center rounded-full border border-white/12 px-4 text-sm font-bold text-ink-soft transition-colors hover:text-ink"
+          className="gf-press gf-time-adjust flex h-13 min-w-20 items-center justify-center rounded-full text-sm font-black tracking-wide"
         >
           +15s
         </button>

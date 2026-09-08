@@ -34,8 +34,20 @@ export function ExerciseMedia({
     <div className={clsx("relative overflow-hidden rounded-[24px]", className)}>
       <AIFormGuide pose={pose} videoSrc={videoSrc} className="h-full w-full rounded-none" />
 
+      {/* Stronger, more cinematic grade than a flat wash — deeper shadow at
+          the bottom (where the form-tip pill sits), a dark top edge instead
+          of a flat mid-fade, and a soft vignette pulling the corners down so
+          the trainer reads as lit rather than the whole frame evenly bright. */}
       <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/72 via-black/0 to-black/15"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/5 to-black/35"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute inset-0 [box-shadow:inset_0_0_90px_28px_rgba(0,0,0,0.55)]"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute inset-0 rounded-[24px] ring-1 ring-white/[0.06] ring-inset"
         aria-hidden
       />
 
