@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import clsx from "clsx";
-import { ArrowRight, Check, Target } from "lucide-react";
+import { ArrowRight, Check, Plus, Target } from "lucide-react";
 import type { QuizStep } from "@/lib/goalify/quiz";
 import type { QuizAnswers } from "@/lib/goalify/types";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
@@ -13,20 +13,18 @@ import { fireBurst } from "./particle-burst";
 /**
  * Percentage-based hit-targets over the real photo background
  * (bodymap-character-v2.png) — a plain, unmarked photo (no baked-in panel
- * graphics or labels, unlike the previous asset), so every zone's outline
+ * graphics or labels, unlike the previous asset), so every zone's marker
  * and label is real DOM here, not something the image already draws.
  */
 // Measured directly against bodymap-character-v2.png at 1%-resolution:
 // scanned every row of the image for background-vs-body pixels, took the
 // min/max x per body part across its full y-range (not eyeballed), so
 // these track the new photo's actual proportions rather than reused
-// coordinates from the old asset. A hairline 1–2pt overlap at a couple of
-// seams (e.g. chest/arms, arms/legs) is intentional and harmless for the
-// outline border — but abs originally ran to 83, a genuine 7pt overlap
-// into the right arms zone (76–98) wide enough for the selected-state
-// check badge (top-right corner of the tapped zone) to land on top of
-// that zone's "ARMS" label and render as "A[✓]RMS". Trimmed to a true
-// hairline overlap so the badge clears the neighboring label.
+// coordinates from the old asset. Only each rect's own center is used now
+// (a small pin marker there, not a box drawn at its edges — see the
+// render below), so the old overlap concerns between neighboring
+// rects (e.g. abs/glutes) no longer matter: nothing is drawn at the
+// rect's actual bounds any more, just its midpoint.
 const ZONE_SHAPES: Record<
   string,
   { left: number; top: number; width: number; height: number }[]
@@ -46,10 +44,11 @@ const ZONE_SHAPES: Record<
 
 /**
  * The interactive body-target selector, laid over a real athletic photo
- * (not an illustrated silhouette). Unlike the previous photo asset, this
- * one carries no baked-in panel/label graphics, so each zone renders its
- * own outline + label as real DOM at rest, in addition to the bright
- * ring + check badge it already got once selected.
+ * (not an illustrated silhouette). Each zone is a small map-pin-style
+ * marker with its own label chip, not a big outlined box drawn on top of
+ * the skin — that read as a cluttered infographic, especially where
+ * neighboring zones (abs/glutes) sat close together. Tapping fills the
+ * pin gold with a check mark; the label chip follows the same fill.
  */
 export function BodyMapStep({
   step,
@@ -123,77 +122,75 @@ export function BodyMapStep({
             className="object-contain object-top"
           />
 
-          {step.zones.map((zone, zoneIndex) => {
+          {step.zones.map((zone) => {
             const active = selected.includes(zone.value);
             const rects = ZONE_SHAPES[zone.value] ?? [];
-            return rects.map((rect, index) => (
-              <button
-                key={`${zone.value}-${index}`}
-                type="button"
-                aria-pressed={active}
-                aria-label={zone.label}
-                disabled={locked}
-                onClick={(event) => {
-                  fireBurst(event.clientX, event.clientY, true);
-                  toggle(zone.value);
-                }}
-                className={clsx(
-                  "gf-press gf-glow-hover absolute grid place-items-center overflow-hidden rounded-[14px] border border-transparent transition-all duration-200",
-                )}
-                style={{
-                  left: `${rect.left}%`,
-                  top: `${rect.top}%`,
-                  width: `${rect.width}%`,
-                  height: `${rect.height}%`,
-                }}
-              >
-                {!active && (
-                  <>
-                    {/* A clear, visible frame — brought back after the plain
-                        soft glow read as too faint to mark anything. Shaped
-                        as an inset ellipse rather than filling the whole tap
-                        target: the tap zones are intentionally wider than
-                        the body part they mark (see ZONE_SHAPES' own
-                        comment), so a frame drawn at the rect's own edges
-                        spilled onto the photo's plain dark backdrop and
-                        looked like a floating box there — most visibly on
-                        the arms. Pulling the frame inward to hug the limb
-                        itself keeps it fully over the body, never the
-                        backdrop beside it. */}
-                    <span
-                      className="gf-zone-glow pointer-events-none absolute inset-[12%] rounded-full border-2 border-electric bg-electric/12 shadow-[0_0_18px_-2px_rgba(232,179,44,0.65)]"
-                      style={{
-                        animationDelay: `${zoneIndex * 40}ms`,
-                      }}
-                      aria-hidden
-                    />
-                    <span className="gf-display relative text-[10px] leading-tight font-black tracking-[0.08em] text-white uppercase [text-shadow:0_1px_4px_rgba(0,0,0,0.9),0_0_8px_rgba(232,179,44,0.7)]">
-                      {zone.label}
-                    </span>
-                  </>
-                )}
-                {active && (
-                  <>
-                    {/* Fresh element every false→true transition, so the
-                        flash replays on every tap rather than only once. */}
-                    <span
-                      className="gf-zone-flash absolute inset-0 rounded-[14px]"
-                      aria-hidden
-                    />
-                    <span
-                      className="gf-anim-pop absolute inset-0 rounded-[14px] ring-2 ring-electric shadow-[0_0_24px_-2px_rgba(232,179,44,0.9),inset_0_0_20px_-4px_rgba(255,255,255,0.35)]"
-                      aria-hidden
-                    />
-                    <span
-                      className="gf-anim-pop absolute top-1.5 right-1.5 grid size-5 place-items-center rounded-full bg-electric text-white shadow-md"
-                      aria-hidden
-                    >
-                      <Check className="size-3" strokeWidth={4} />
-                    </span>
-                  </>
-                )}
-              </button>
-            ));
+            return rects.map((rect, index) => {
+              // A small pin marker at the zone's center, not a big outlined
+              // box with a label baked onto the skin — the boxes read as a
+              // cluttered infographic (abs/glutes visibly touching) and
+              // never looked premium no matter how the frame itself was
+              // styled. This is the same tap area (still generously sized,
+              // see the comment on ZONE_SHAPES below), just a lighter-touch
+              // visual on top of it: a map-pin-style marker plus a small
+              // floating label, both centered in that area.
+              const cx = rect.left + rect.width / 2;
+              const cy = rect.top + rect.height / 2;
+              return (
+                <button
+                  key={`${zone.value}-${index}`}
+                  type="button"
+                  aria-pressed={active}
+                  aria-label={zone.label}
+                  disabled={locked}
+                  onClick={(event) => {
+                    fireBurst(event.clientX, event.clientY, true);
+                    toggle(zone.value);
+                  }}
+                  className="gf-press absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1.5"
+                  style={{ left: `${cx}%`, top: `${cy}%` }}
+                >
+                  <span
+                    className={clsx(
+                      "relative grid place-items-center rounded-full transition-all duration-300",
+                      active
+                        ? "size-10 bg-electric shadow-[0_0_22px_-2px_rgba(232,179,44,0.95)]"
+                        : "size-8 border-2 border-electric bg-black/45 backdrop-blur-sm",
+                    )}
+                  >
+                    {!active && (
+                      <span
+                        className="gf-anim-pulse absolute inset-0 rounded-full border-2 border-electric/70"
+                        aria-hidden
+                      />
+                    )}
+                    {active ? (
+                      <span className="gf-anim-pop absolute inset-0 grid place-items-center">
+                        <Check
+                          className="size-4.5 text-black"
+                          strokeWidth={3.5}
+                        />
+                      </span>
+                    ) : (
+                      <Plus
+                        className="relative size-3.5 text-electric"
+                        strokeWidth={3}
+                      />
+                    )}
+                  </span>
+                  <span
+                    className={clsx(
+                      "rounded-full px-2 py-0.5 text-[9.5px] leading-tight font-black tracking-[0.06em] uppercase backdrop-blur-sm transition-colors duration-200",
+                      active
+                        ? "bg-electric text-black"
+                        : "bg-black/55 text-white",
+                    )}
+                  >
+                    {zone.label}
+                  </span>
+                </button>
+              );
+            });
           })}
         </div>
       </div>
