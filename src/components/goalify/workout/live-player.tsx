@@ -316,11 +316,38 @@ export function LivePlayer() {
         backHref="/home"
         backLabel="End workout"
       />
-      <div className="mt-4 h-[5px] overflow-hidden rounded-full bg-ink/8">
-        <div
-          className="gf-progress-fill gf-progress-fill-bold h-full rounded-full bg-linear-to-r from-[#f2cd82] to-[#a97e2e] transition-[width] duration-500"
-          style={{ width: `${Math.max(4, totalProgress)}%` }}
-        />
+      {/* One segment per exercise (Instagram-story style) instead of a
+          single smooth fill — at a glance this reads as "exercise 2 of 7,"
+          not just a fraction. A segment before the current one is always
+          full (already done); one after is always empty (not reached yet);
+          the current one fills live with the actual work countdown, so it
+          visibly climbs mid-set instead of only jumping at each exercise
+          boundary. Rest keeps its exercise's segment held at full — rest
+          is a break, not a fourth phase this bar needs to track. */}
+      <div className="mt-4 flex gap-1.5">
+        {workout.exercises.map((_, exerciseIndex) => {
+          const segmentPercent =
+            exerciseIndex < index
+              ? 100
+              : exerciseIndex > index
+                ? 0
+                : phase === "work"
+                  ? Math.max(4, 100 - ringValue)
+                  : phase === "rest"
+                    ? 100
+                    : 4;
+          return (
+            <div
+              key={exerciseIndex}
+              className="h-[5px] flex-1 overflow-hidden rounded-full bg-ink/8"
+            >
+              <div
+                className="gf-progress-fill gf-progress-fill-bold h-full rounded-full bg-linear-to-r from-[#f2cd82] to-[#a97e2e] transition-[width] duration-500"
+                style={{ width: `${segmentPercent}%` }}
+              />
+            </div>
+          );
+        })}
       </div>
 
       <div className="mt-5 lg:flex lg:items-start lg:gap-12">
