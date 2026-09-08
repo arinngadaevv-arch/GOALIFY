@@ -42,6 +42,7 @@ export function UpNext({
       >
         <PoseIcon
           pose={poseForExercise(exercise.name, exercise.focus)}
+          bold={bold}
           className={clsx(bold ? "size-10 opacity-95" : "size-9 opacity-90")}
         />
       </div>

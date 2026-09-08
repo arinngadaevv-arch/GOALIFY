@@ -32,7 +32,12 @@ export function ExerciseMedia({
 }) {
   return (
     <div className={clsx("relative overflow-hidden rounded-[24px]", className)}>
-      <AIFormGuide pose={pose} videoSrc={videoSrc} className="h-full w-full rounded-none" />
+      <AIFormGuide
+        pose={pose}
+        videoSrc={videoSrc}
+        bold
+        className="h-full w-full rounded-none"
+      />
 
       {/* Stronger, more cinematic grade than a flat wash — deeper shadow at
           the bottom (where the form-tip pill sits), a dark top edge instead

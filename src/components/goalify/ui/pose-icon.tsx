@@ -391,9 +391,16 @@ export function poseForExercise(name: string, focus: string): PoseKey {
  */
 export function PoseIcon({
   pose,
+  bold,
   className,
 }: {
   pose: PoseKey;
+  /** Live player only (see ExerciseMedia) — a heavier build for a screen
+   * that's meant to read as aggressive/athletic: thicker limbs, squared
+   * rivet-style joint markers instead of soft glowing dots, no outer glow.
+   * The default thin wireframe stays exactly as it was everywhere else
+   * (the launchpad's hero, the AI guide teaser, admin diagnostics). */
+  bold?: boolean;
   className?: string;
 }) {
   const spec = POSES[pose];
@@ -402,6 +409,10 @@ export function PoseIcon({
     joints.set(a.join(","), a);
     joints.set(b.join(","), b);
   }
+
+  const strokeWidth = bold ? 10 : 6;
+  const headRadius = bold ? 9 : 7.5;
+  const jointSize = 7;
 
   return (
     <svg
@@ -413,9 +424,9 @@ export function PoseIcon({
       <g
         fill="none"
         stroke="var(--color-electric)"
-        strokeWidth="6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        strokeWidth={strokeWidth}
+        strokeLinecap={bold ? "square" : "round"}
+        strokeLinejoin={bold ? "miter" : "round"}
       >
         {spec.bones.map(([a, b], index) => (
           <line
@@ -430,21 +441,33 @@ export function PoseIcon({
       <circle
         cx={spec.head[0]}
         cy={spec.head[1]}
-        r={7.5}
+        r={headRadius}
         fill="rgba(255,255,255,0.9)"
         stroke="var(--color-electric)"
-        strokeWidth="6"
+        strokeWidth={strokeWidth}
       />
-      {Array.from(joints.values()).map(([x, y], index) => (
-        <circle
-          key={index}
-          cx={x}
-          cy={y}
-          r={3.5}
-          fill="var(--color-lime-neon)"
-          style={{ filter: "drop-shadow(0 0 3px var(--color-lime-neon))" }}
-        />
-      ))}
+      {Array.from(joints.values()).map(([x, y], index) =>
+        bold ? (
+          <rect
+            key={index}
+            x={x - jointSize / 2}
+            y={y - jointSize / 2}
+            width={jointSize}
+            height={jointSize}
+            rx={1.5}
+            fill="var(--color-lime-neon)"
+          />
+        ) : (
+          <circle
+            key={index}
+            cx={x}
+            cy={y}
+            r={3.5}
+            fill="var(--color-lime-neon)"
+            style={{ filter: "drop-shadow(0 0 3px var(--color-lime-neon))" }}
+          />
+        ),
+      )}
     </svg>
   );
 }

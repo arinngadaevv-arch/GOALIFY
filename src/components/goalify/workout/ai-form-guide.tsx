@@ -26,12 +26,16 @@ const MEDIA_ERROR_NAMES: Record<number, string> = {
 export function AIFormGuide({
   pose,
   videoSrc,
+  bold,
   className,
 }: {
   pose: PoseKey;
   /** Public Supabase Storage URL for this phase's clip, or null/undefined
    * when one couldn't be resolved (see lib/goalify/video.ts). */
   videoSrc?: string | null;
+  /** Passed straight through to the placeholder PoseIcon — see its own
+   * doc comment. Only the live player opts in. */
+  bold?: boolean;
   className?: string;
 }) {
   // Tracks the *specific URL* that failed, not a plain resettable boolean —
@@ -161,6 +165,7 @@ export function AIFormGuide({
       {!videoReady && (
         <PoseIcon
           pose={pose}
+          bold={bold}
           className="gf-anim-float relative z-10 h-28 w-28 drop-shadow-[0_6px_10px_rgba(0,82,255,0.28)] sm:h-32 sm:w-32 [.gf-cyber-scope_&]:drop-shadow-[0_6px_14px_rgba(232,179,44,0.32)]"
         />
       )}
