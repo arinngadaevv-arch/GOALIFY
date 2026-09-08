@@ -13,6 +13,7 @@ import {
   Flame as FlameIcon,
   Footprints,
   Library,
+  Lock,
   Play,
   ShieldCheck,
   Timer,
@@ -310,29 +311,63 @@ export function Dashboard() {
       <div className="flex flex-col gap-10">
       {/* ------------------------------------------------- Bonus workout pick
           A small, secondary card — deliberately not competing with the
-          hero above, which still owns "today". Lets someone see there's a
-          second workout worth trying without it stealing today's single
-          spotlight slot. */}
+          hero above, which still owns "today". Gated behind today's main
+          workout rather than always open: showing a second full workout as
+          freely available made the daily program feel like a pile of
+          options instead of a chain, and undercut the streak's own "one
+          session a day" framing. Locked state never links anywhere (no
+          `<Link>` at all) so there's nothing to navigate to by mistake. */}
       {bonusWorkout && (
         <section>
           <SectionHeading eyebrow="Also available" title="Day 2 Pick" />
-          <Link href={`/workout/launch?workout=${bonusWorkout.id}`} className="block">
-            <GlassCard deep interactive className="gf-reveal flex items-center gap-4 p-4">
-              <div className="grid size-14 shrink-0 place-items-center rounded-2xl bg-electric/10">
-                <Video className="size-7 text-electric" />
+          {workoutDoneToday ? (
+            <Link
+              href={`/workout/launch?workout=${bonusWorkout.id}`}
+              className="block"
+            >
+              <GlassCard
+                deep
+                interactive
+                className="gf-reveal flex items-center gap-4 p-4"
+              >
+                <div className="grid size-14 shrink-0 place-items-center rounded-2xl bg-electric/10">
+                  <Video className="size-7 text-electric" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold tracking-[0.16em] text-electric uppercase">
+                    Follow-along video
+                  </p>
+                  <p className="truncate text-base font-extrabold text-ink">
+                    {bonusWorkout.title}
+                  </p>
+                  <p className="truncate text-xs text-mist">
+                    {bonusWorkout.subtitle}
+                  </p>
+                </div>
+                <ChevronRight className="size-4 shrink-0 text-haze" />
+              </GlassCard>
+            </Link>
+          ) : (
+            <GlassCard
+              deep
+              className="gf-reveal flex items-center gap-4 p-4 opacity-60"
+            >
+              <div className="grid size-14 shrink-0 place-items-center rounded-2xl bg-white/5">
+                <Lock className="size-6 text-haze" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-bold tracking-[0.16em] text-electric uppercase">
-                  Follow-along video
+                <p className="text-[10px] font-bold tracking-[0.16em] text-haze uppercase">
+                  Locked
                 </p>
                 <p className="truncate text-base font-extrabold text-ink">
                   {bonusWorkout.title}
                 </p>
-                <p className="truncate text-xs text-mist">{bonusWorkout.subtitle}</p>
+                <p className="truncate text-xs text-mist">
+                  Finish today&apos;s workout to unlock
+                </p>
               </div>
-              <ChevronRight className="size-4 shrink-0 text-haze" />
             </GlassCard>
-          </Link>
+          )}
         </section>
       )}
 
