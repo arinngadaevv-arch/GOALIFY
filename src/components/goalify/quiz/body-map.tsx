@@ -94,30 +94,35 @@ export function BodyMapStep({
         />
         <div
           className="relative overflow-hidden rounded-[28px]"
-          style={{ aspectRatio: "410 / 842", backgroundColor: "#0f131c" }}
+          style={{ aspectRatio: "410 / 842", backgroundColor: "#121316" }}
         >
           {/* Real athletic photo, head to shoes — plain, no baked-in
               zone graphics, so `contain` (never `cover`) is what keeps the
               whole figure on screen instead of letting a mismatched
               container aspect ratio crop the head or feet off. The
               container's aspect-ratio above already matches the source
-              photo exactly, so this never has to letterbox in practice —
-              it's the safety net if that ever drifts, and the container's
-              own background-color above is set to the photo's own sampled
-              backdrop tone (not the page's canvas color) so a stray sliver
-              never reads as a second, different-colored background.
-              No vignette, glow, or shadow sits on top of this any more —
-              those all faded toward a color the photo's own flat backdrop
-              wasn't actually at, which is exactly what read as a halo
-              around the figure. A flat background this close to the
-              photo's real tone needs no fade to disappear into it. */}
+              photo exactly, so this never has to letterbox in practice.
+              The photo's own studio backdrop reads distinctly blue next to
+              the rest of this app's warm gold/black palette (measured —
+              its blacks run noticeably bluer than neutral), which is
+              exactly what read as an off-brand, cheap-looking mismatch:
+              a cool photo pasted into a warm app. The saturate+sepia
+              filter neutralizes that cast (confirmed by resampling the
+              same corner pixels post-filter) without meaningfully
+              touching the already-warm skin tones. The container's own
+              background-color above is resampled from those same
+              corners post-filter, so it still matches exactly and no
+              stray sliver reads as a second, different-colored
+              background. No vignette/glow/shadow on top of this either —
+              those faded toward a color the backdrop wasn't actually at,
+              which is what read as a halo around the figure before. */}
           <Image
             src="/quiz/bodymap-character-v2.png"
             alt="Male body with target zones highlighted"
             fill
             unoptimized
             priority
-            className="object-contain object-top"
+            className="object-contain object-top [filter:saturate(0.7)_sepia(0.16)]"
           />
 
           {/* A bare dot on the body — no text riding on the skin at all.
