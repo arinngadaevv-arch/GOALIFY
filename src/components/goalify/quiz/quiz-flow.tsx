@@ -1149,7 +1149,8 @@ function PhotoOptionCard({
           disabled={disabled}
           aria-pressed={selected}
           className={clsx(
-            "gf-card gf-card-hover gf-press relative flex items-center gap-3.5 overflow-hidden p-3.5 text-left transition-all duration-300 ease-out",
+            "gf-card gf-card-hover gf-press gf-anim-materialize relative flex items-center gap-3.5 overflow-hidden p-3.5 text-left transition-all duration-300 ease-out",
+            `gf-delay-${index + 1}`,
             selected && "gf-card-active",
             disabled && !selected && "opacity-50",
           )}
