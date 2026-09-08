@@ -841,6 +841,72 @@ function ChoiceStep({
     onPick({ [step.id]: option.value } as Partial<QuizAnswers>, option.value);
   };
 
+  if (layout === "timeline") {
+    // A literal vertical timeline — a connecting line with one node per
+    // option — instead of a photo grid. Built one-off for this step
+    // specifically (see the layout doc comment on QuizStep): its options
+    // are genuinely chronological, which a grid of stock photos never
+    // actually represented, and it reads as its own distinct screen
+    // rather than a repeat of the tile grid one step earlier.
+    return (
+      <div className="relative">
+        <div
+          className="absolute top-2 bottom-2 left-[23px] w-px bg-electric/25"
+          aria-hidden
+        />
+        <div className="flex flex-col gap-1">
+          {step.options.map((option) => {
+            const active = String(value) === option.value;
+            const OptionIcon = QUIZ_ICONS[option.icon];
+            return (
+              <button
+                key={option.value}
+                type="button"
+                aria-pressed={active}
+                disabled={locked}
+                onClick={withBurst(() => choose(option))}
+                className={clsx(
+                  "gf-press relative flex items-start gap-4 rounded-2xl p-3 text-left transition-colors duration-200",
+                  active ? "bg-electric/8" : "hover:bg-white/[0.03]",
+                )}
+              >
+                <span
+                  className={clsx(
+                    "relative z-10 grid size-11 shrink-0 place-items-center rounded-full border-2 transition-all duration-300",
+                    active
+                      ? "border-electric bg-electric shadow-[0_0_16px_-2px_rgba(232,179,44,0.9)]"
+                      : "border-electric/40 bg-canvas text-electric/80",
+                  )}
+                >
+                  {active ? (
+                    <Check className="size-5 text-black" strokeWidth={3.5} />
+                  ) : (
+                    <OptionIcon className="size-4.5" strokeWidth={2.4} />
+                  )}
+                </span>
+                <span className="min-w-0 flex-1 pt-2">
+                  <span
+                    className={clsx(
+                      "gf-display block text-lg leading-tight font-extrabold",
+                      active ? "text-electric" : "text-ink",
+                    )}
+                  >
+                    {option.label}
+                  </span>
+                  {option.description && (
+                    <span className="mt-0.5 block text-sm leading-snug text-ink-soft">
+                      {option.description}
+                    </span>
+                  )}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div

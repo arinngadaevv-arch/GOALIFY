@@ -57,8 +57,12 @@ export type QuizStep = {
        * - `list` (default) — compact two-column icon tiles
        * - `radio` — full-width rows, icon + label left, a radio-style
        *   selection dot on the right instead of a corner check badge
+       * - `timeline` — a vertical connected-dot line, one node per
+       *   option; for genuinely chronological options only (there's
+       *   exactly one step like this), never as a generic substitute
+       *   for `list`/`radio`
        */
-      layout?: "portrait" | "wide" | "tile" | "list" | "radio";
+      layout?: "portrait" | "wide" | "tile" | "list" | "radio" | "timeline";
       /** Portrait photo bled into the top-right of the headline, alongside
        * the title/subtitle instead of inside any option card. */
       heroPhoto?: string;
@@ -146,7 +150,7 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "lastIdealBody",
     kind: "choice",
-    layout: "tile",
+    layout: "timeline",
     chapter: "The timeline",
     title: "When was the last time you had your ideal body?",
     titleHighlight: "ideal body?",
@@ -157,41 +161,44 @@ export const QUIZ_STEPS: QuizStep[] = [
       title: "There's no wrong answer.",
       body: "We're here to help you achieve your goal.",
     },
+    // No photos on this step on purpose — the previous set (a jogger, a
+    // calendar, a gym curl, a back shot) were stand-ins with no real
+    // connection to what each option actually says, which read as
+    // arbitrary rather than premium. A literal vertical timeline fits
+    // what this step is actually asking (a point in time) far better
+    // than any stock photo could, and reusing the tile-grid look from
+    // the goal-picker step right before it made two consecutive steps
+    // feel like the same screen twice.
     options: [
       {
         value: "now",
         label: "Right now",
         description: "I'm in the best shape of my life",
         icon: "smile",
-        image: "/quiz/timeline-now-jogging.png",
       },
       {
         value: "under1",
         label: "<1 year ago",
         description: "I was in great shape not long ago",
         icon: "calendar",
-        image: "/quiz/timeline-under1-calendar.png",
       },
       {
         value: "oneToThree",
         label: "1~3 years ago",
         description: "It's been a while",
         icon: "calendar",
-        image: "/quiz/timeline-onetothree-curl.png",
       },
       {
         value: "over3",
         label: ">3 years ago",
         description: "Feels like ages ago",
         icon: "calendar",
-        image: "/quiz/timeline-over3-back.png",
       },
       {
         value: "never",
         label: "Never",
         description: "I've never had my ideal body",
         icon: "ban",
-        aside: true,
       },
     ],
   },
