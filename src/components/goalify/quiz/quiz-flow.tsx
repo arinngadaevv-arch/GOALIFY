@@ -941,8 +941,33 @@ function ChoiceStep({
     );
   }
 
+  // Same reasoning as the timeline step: a card's own frosted-glass blur
+  // only reads as premium with something worth blurring behind it. The
+  // radio+photo rows already carry real per-option photos, so they don't
+  // need this everywhere the way the photo-less timeline did — but the
+  // step as a whole still sat on flat black around/between those cards,
+  // which is what read as flatter than the fully photo-bled tile steps.
+  const showAmbientBackdrop = layout === "radio" && stepHasPhotos;
+
   return (
-    <div>
+    <div
+      className={
+        showAmbientBackdrop
+          ? "relative -mx-5 overflow-hidden px-5 py-2"
+          : undefined
+      }
+    >
+      {showAmbientBackdrop && (
+        <div className="absolute inset-0 -z-10" aria-hidden>
+          <Image
+            src="/quiz/goal-burn.png"
+            alt=""
+            fill
+            className="object-cover object-[center_20%] opacity-[0.22]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0b0e14]/30 via-[#0b0e14]/70 to-[#0b0e14]" />
+        </div>
+      )}
       <div
         className={clsx(
           "grid",
