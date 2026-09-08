@@ -260,6 +260,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             isAdmin: users.isAdmin,
             hasAcceptedTerms: users.hasAcceptedTerms,
             plan: users.plan,
+            quizCompletedAt: users.quizCompletedAt,
           })
           .from(users)
           .where(eq(users.id, token.id as string))
@@ -271,6 +272,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // off "FREE" inside the Lemon Squeezy order_created webhook, after
           // payment is actually confirmed (see api/webhooks/lemonsqueezy).
           token.hasActivePlan = dbUser.plan !== "FREE";
+          // The account exists from the quiz's very first step (see
+          // welcome-cta-step.tsx's sign-up panel), well before the quiz is
+          // actually finished — so "signed in" alone can't stand in for
+          // "done with the quiz" the way proxy.ts used to assume.
+          token.hasCompletedQuiz = Boolean(dbUser.quizCompletedAt);
         }
       }
 
@@ -294,6 +300,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.isAdmin = Boolean(token.isAdmin);
         session.user.hasAcceptedTerms = Boolean(token.hasAcceptedTerms);
         session.user.hasActivePlan = Boolean(token.hasActivePlan);
+        session.user.hasCompletedQuiz = Boolean(token.hasCompletedQuiz);
       }
       return session;
     },
