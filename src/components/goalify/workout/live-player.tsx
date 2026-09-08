@@ -97,6 +97,11 @@ export function LivePlayer() {
   const exercise = workout.exercises[index] ?? workout.exercises[0];
   const nextExercise = workout.exercises[index + 1];
   const isTimed = exercise.kind === "time";
+  // Only the session's opening move, and only when it's actually tagged as
+  // a mobility/warm-up beat (not every workout starts with one — a
+  // core-focused day can open straight on "Deep core") — so the tag never
+  // mislabels a real working set as easier than it is.
+  const isWarmup = index === 0 && /warm|mobility/i.test(exercise.focus);
   // The number the "work" countdown actually runs on — a real clock for a
   // timed set, an estimate for a rep-based one (see SECONDS_PER_REP).
   const workSeconds = isTimed
@@ -342,6 +347,7 @@ export function LivePlayer() {
             className="lg:text-left"
             category={phase === "rest" ? "Rest" : phase === "watch" ? "Watch & prepare" : exercise.focus}
             name={phase === "rest" ? "Recover" : exercise.name}
+            badge={phase !== "rest" && isWarmup ? "Warm-up" : undefined}
             cue={
               phase === "rest"
                 ? "Breathe. Shake it out. Stay standing."

@@ -9,6 +9,7 @@ export function ExerciseInfo({
   category,
   name,
   cue,
+  badge,
   className,
 }: {
   category: string;
@@ -16,6 +17,12 @@ export function ExerciseInfo({
   /** Omit once a set is actually running — the coaching cue moves onto the
    * video's own pill at that point, so this doesn't repeat the same line. */
   cue?: string;
+  /** A small, quiet note under the category row — currently only used to
+   * flag the session's opening mobility move as "Warm-up" so a beginner
+   * doesn't mistake its easier pace for the workout's real intensity. Never
+   * shown alongside `cue` real estate — deliberately tiny, not a second
+   * headline. */
+  badge?: string;
   className?: string;
 }) {
   return (
@@ -36,6 +43,11 @@ export function ExerciseInfo({
           aria-hidden
         />
       </p>
+      {badge && (
+        <p className="mt-1 text-[10px] font-semibold tracking-[0.1em] text-haze uppercase">
+          {badge}
+        </p>
+      )}
       <h1 className="gf-display mt-2 text-4xl leading-[0.98] font-black tracking-tight text-ink uppercase sm:text-5xl">
         {name}
       </h1>

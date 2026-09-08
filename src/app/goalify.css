@@ -2079,9 +2079,32 @@ body.goalify-body:has(.gf-elite-scope) .gf-ambience {
   animation: gf-timer-live-pulse 1s ease-out infinite;
 }
 
+/* A real on/off flicker (not a smooth fade) for the last few seconds — the
+ * ring and number are already fully red by this point (see WorkoutTimer's
+ * own color interpolation), so this is purely the "hurry up, it's about to
+ * end" blink on top of that held color. `steps(1, end)` snaps between the
+ * two opacities instead of easing, which reads as a warning light rather
+ * than a breathing glow. Applied to the whole ring+number wrapper so both
+ * blink together as one unit. */
+@keyframes gf-timer-blink-flash {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0.4;
+  }
+}
+
+.gf-live-industrial .gf-timer-blink {
+  animation: gf-timer-blink-flash 0.6s steps(1, end) infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .gf-live-industrial .gf-timer-urgent,
-  .gf-live-industrial .gf-timer-live {
+  .gf-live-industrial .gf-timer-live,
+  .gf-live-industrial .gf-timer-blink {
     animation: none;
   }
 }

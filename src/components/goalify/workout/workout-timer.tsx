@@ -5,6 +5,23 @@ import { ProgressRing } from "@/components/goalify/ui/progress-ring";
 
 const GRADIENT_ID = "gf-live-timer-ring";
 
+/** Gold at full time remaining, drifting toward the same red the rest
+ * countdown already warns with — so the two states read as one consistent
+ * "running out" language instead of a separate color invented just for
+ * this. */
+const GOLD_RGB: [number, number, number] = [226, 169, 48];
+const RED_RGB: [number, number, number] = [255, 59, 59];
+
+function mixRgb(
+  from: [number, number, number],
+  to: [number, number, number],
+  t: number,
+): string {
+  const clamped = Math.max(0, Math.min(1, t));
+  const [r, g, b] = from.map((c, i) => Math.round(c + (to[i] - c) * clamped));
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
 /**
  * The number is the hero; the ring is just supporting context for how much
  * of it is left. No button lives inside it anymore — Start/Pause moved to
@@ -42,8 +59,23 @@ export function WorkoutTimer({
   urgent: boolean;
   className?: string;
 }) {
+  // How far into "running out" this countdown is, 0 (just started/full) to
+  // 1 (about to hit zero) — squared so the drift stays barely noticeable
+  // early on and only really reads as red in roughly the last third,
+  // rather than tinting the whole bar evenly from the first tick.
+  const dangerT = Math.pow(Math.max(0, Math.min(1, 1 - value / 100)), 1.6);
+  // Rest already runs solid red the entire time (its own held warning) —
+  // only the work/watch ring actually drifts from gold toward it.
+  const dangerColor = mixRgb(GOLD_RGB, RED_RGB, dangerT);
+
   return (
-    <div className={clsx("relative grid place-items-center", className)}>
+    <div
+      className={clsx(
+        "relative grid place-items-center",
+        className,
+        urgent && "gf-timer-blink",
+      )}
+    >
       <svg width="0" height="0" aria-hidden className="absolute">
         <defs>
           <linearGradient id={GRADIENT_ID} x1="0%" y1="0%" x2="100%" y2="100%">
@@ -62,7 +94,12 @@ export function WorkoutTimer({
         rings={[
           {
             value,
-            color: variant === "crimson" ? "#ff3b3b" : `url(#${GRADIENT_ID})`,
+            color:
+              variant === "crimson"
+                ? "#ff3b3b"
+                : dangerT > 0
+                  ? dangerColor
+                  : `url(#${GRADIENT_ID})`,
             label: "Current",
             trackColor: "rgba(236, 228, 211, 0.08)",
           },
@@ -77,8 +114,9 @@ export function WorkoutTimer({
           <p
             className={clsx(
               "gf-numeric text-[4.25rem] leading-none font-black tracking-tight sm:text-[4.75rem]",
-              urgent ? "text-[#f2c879]" : "text-ink",
+              variant === "crimson" && (urgent ? "text-[#f2c879]" : "text-ink"),
             )}
+            style={variant === "gold" ? { color: dangerColor } : undefined}
           >
             {seconds}
           </p>
