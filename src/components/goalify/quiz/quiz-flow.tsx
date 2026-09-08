@@ -541,28 +541,65 @@ export function QuizFlow() {
           Replaces a literal step counter/percentage: 5 narrative
           milestones (see MILESTONES) grouping the 9 real quiz steps, so
           advancing reads as "another piece of the plan just got built"
-          rather than "N questions left." All 5 names sit visible across
-          the top at once (the current one picked out in gold) over a
-          single fill bar, rather than 5 separate dot markers — a plainer,
-          more direct "here's the whole arc, here's where you are" read. */}
+          rather than "N questions left." */}
         <div className="relative mt-1">
-          <div className="flex justify-between text-[10px] font-black tracking-[0.14em] uppercase">
-            {MILESTONES.map((milestone, i) => (
-              <span
-                key={milestone.label}
-                className={i === milestoneIndex ? "text-electric" : "text-haze"}
-              >
-                {milestone.label}
-              </span>
-            ))}
-          </div>
-          <div className="mt-2 h-1 overflow-hidden rounded-full bg-ink/10">
+          <div className="relative flex justify-between px-1">
             <div
-              className="h-full rounded-full bg-electric transition-[width] duration-500 ease-out"
-              style={{
-                width: `${((milestoneIndex + 1) / MILESTONES.length) * 100}%`,
-              }}
-            />
+              className="absolute top-[9px] right-[9%] left-[9%] h-[2px] bg-ink/10"
+              aria-hidden
+            >
+              <div
+                className="h-full bg-electric transition-[width] duration-500 ease-out"
+                style={{
+                  width: `${(milestoneIndex / (MILESTONES.length - 1)) * 100}%`,
+                }}
+              />
+            </div>
+            {MILESTONES.map((milestone, i) => {
+              const state =
+                i < milestoneIndex
+                  ? "done"
+                  : i === milestoneIndex
+                    ? "current"
+                    : "upcoming";
+              return (
+                <div
+                  key={milestone.label}
+                  className="relative flex flex-col items-center gap-1.5"
+                >
+                  <span
+                    className={clsx(
+                      "grid size-[18px] shrink-0 place-items-center rounded-full border-2 bg-canvas transition-colors duration-300",
+                      state === "done" && "border-electric bg-electric",
+                      state === "current" &&
+                        "gf-milestone-pulse border-electric",
+                      state === "upcoming" && "border-ink/15",
+                    )}
+                  >
+                    {state === "done" && (
+                      <Check
+                        className="size-2.5 text-white"
+                        strokeWidth={3.5}
+                      />
+                    )}
+                    {state === "current" && (
+                      <span
+                        className="size-1.5 rounded-full bg-electric"
+                        aria-hidden
+                      />
+                    )}
+                  </span>
+                  <span
+                    className={clsx(
+                      "text-[9px] font-black tracking-[0.06em] whitespace-nowrap uppercase",
+                      state === "upcoming" ? "text-haze" : "text-ink-soft",
+                    )}
+                  >
+                    {milestone.label}
+                  </span>
+                </div>
+              );
+            })}
           </div>
 
           {/* Screen readers still get real numeric progress — only the
