@@ -23,6 +23,7 @@ import { DEFAULT_ANSWERS } from "@/lib/goalify/plan";
 import type { QuizAnswers } from "@/lib/goalify/types";
 import { useGoalify } from "@/lib/goalify/store";
 import { trackVisit } from "@/lib/goalify/track-visit";
+import { trackMetaEvent } from "@/lib/goalify/meta-pixel";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
 import { useUiSounds } from "@/components/goalify/use-ui-sounds";
 import { hasRealPhoto, OptionPhoto } from "./option-photo";
@@ -366,6 +367,15 @@ export function QuizFlow() {
   // already has `hasAcceptedTerms: true` by the time they reach here.
   useEffect(() => {
     if (authStatus !== "authenticated" || !authReturn?.auth) return;
+    // The createUser event in auth.ts sets this cookie exactly once, only
+    // when the adapter just inserted a genuinely new user row — i.e. only
+    // for a real Google signup, never a returning sign-in. Cleared
+    // immediately after reading so a page refresh (or navigating back here
+    // later in the same short-lived window) can't fire it a second time.
+    if (document.cookie.includes("gf_new_signup=1")) {
+      trackMetaEvent("CompleteRegistration");
+      document.cookie = "gf_new_signup=; path=/; max-age=0";
+    }
     const timer = setTimeout(() => {
       if (authReturn.auth === "results") {
         router.push("/plan");

@@ -63,7 +63,11 @@ const providers: Provider[] = [
 // AUTH_GOOGLE_ID/SECRET, and some setups just use GOOGLE_ID/SECRET. Checking
 // all three means a real, correctly-set credential is never silently
 // ignored just because it landed under a name this file didn't expect.
-const GOOGLE_ID_ENV_KEYS = ["GOOGLE_CLIENT_ID", "AUTH_GOOGLE_ID", "GOOGLE_ID"] as const;
+const GOOGLE_ID_ENV_KEYS = [
+  "GOOGLE_CLIENT_ID",
+  "AUTH_GOOGLE_ID",
+  "GOOGLE_ID",
+] as const;
 const GOOGLE_SECRET_ENV_KEYS = [
   "GOOGLE_CLIENT_SECRET",
   "AUTH_GOOGLE_SECRET",
@@ -71,7 +75,7 @@ const GOOGLE_SECRET_ENV_KEYS = [
 ] as const;
 
 function firstEnv(
-  keys: readonly string[]
+  keys: readonly string[],
 ): { key: string; value: string; hadWhitespace: boolean } | null {
   for (const key of keys) {
     const raw = process.env[key];
@@ -103,8 +107,8 @@ console.log(
     [...GOOGLE_ID_ENV_KEYS, ...GOOGLE_SECRET_ENV_KEYS].map((key) => [
       key,
       Boolean(process.env[key]),
-    ])
-  )
+    ]),
+  ),
 );
 
 if (googleId && googleSecret) {
@@ -112,7 +116,7 @@ if (googleId && googleSecret) {
     Google({
       clientId: googleId.value,
       clientSecret: googleSecret.value,
-    })
+    }),
   );
   // Lengths only, never the values — but enough to catch the classic
   // "invalid_client: provided client secret is invalid" cause of a
@@ -126,8 +130,10 @@ if (googleId && googleSecret) {
             googleSecret.hadWhitespace && googleSecret.key,
           ]
             .filter(Boolean)
-            .join(" and ")} — if Google still rejects this as invalid_client, re-copy the value directly from Google Cloud Console into Vercel rather than relying on this trim.`
-        : "")
+            .join(
+              " and ",
+            )} — if Google still rejects this as invalid_client, re-copy the value directly from Google Cloud Console into Vercel rather than relying on this trim.`
+        : ""),
   );
 
   // Every real Google OAuth client ID ends in this suffix; a value that
@@ -138,12 +144,12 @@ if (googleId && googleSecret) {
   const GOOGLE_CLIENT_ID_SUFFIX = ".apps.googleusercontent.com";
   if (!googleId.value.endsWith(GOOGLE_CLIENT_ID_SUFFIX)) {
     console.error(
-      `[auth] ${googleId.key} doesn't end in "${GOOGLE_CLIENT_ID_SUFFIX}", which every real Google OAuth client ID does. Check that ${googleId.key} in Vercel actually holds the Client ID (from Google Cloud Console → APIs & Services → Credentials) and not the Client Secret or a stale/truncated value.`
+      `[auth] ${googleId.key} doesn't end in "${GOOGLE_CLIENT_ID_SUFFIX}", which every real Google OAuth client ID does. Check that ${googleId.key} in Vercel actually holds the Client ID (from Google Cloud Console → APIs & Services → Credentials) and not the Client Secret or a stale/truncated value.`,
     );
   }
   if (googleSecret.value.endsWith(GOOGLE_CLIENT_ID_SUFFIX)) {
     console.error(
-      `[auth] ${googleSecret.key} ends in "${GOOGLE_CLIENT_ID_SUFFIX}", which means it holds a Client ID, not a Client Secret. ${googleSecret.key} and ${googleId.key} are almost certainly swapped in Vercel.`
+      `[auth] ${googleSecret.key} ends in "${GOOGLE_CLIENT_ID_SUFFIX}", which means it holds a Client ID, not a Client Secret. ${googleSecret.key} and ${googleId.key} are almost certainly swapped in Vercel.`,
     );
   }
 } else if (googleId || googleSecret) {
@@ -155,12 +161,14 @@ if (googleId && googleSecret) {
     `[auth] Google OAuth misconfigured: found ${
       googleId ? `a client ID (${googleId.key})` : "no client ID"
     } but ${
-      googleSecret ? `a client secret (${googleSecret.key})` : "no client secret"
-    }. Both are required — checked ${GOOGLE_ID_ENV_KEYS.join(", ")} for the ID and ${GOOGLE_SECRET_ENV_KEYS.join(", ")} for the secret. "Continue with Google" will be unavailable until both are set to matching values in Vercel.`
+      googleSecret
+        ? `a client secret (${googleSecret.key})`
+        : "no client secret"
+    }. Both are required — checked ${GOOGLE_ID_ENV_KEYS.join(", ")} for the ID and ${GOOGLE_SECRET_ENV_KEYS.join(", ")} for the secret. "Continue with Google" will be unavailable until both are set to matching values in Vercel.`,
   );
 } else {
   console.warn(
-    `[auth] Google OAuth not configured — checked ${GOOGLE_ID_ENV_KEYS.join(", ")} for a client ID and ${GOOGLE_SECRET_ENV_KEYS.join(", ")} for a client secret, found neither. Running with the credentials (email/password) provider only.`
+    `[auth] Google OAuth not configured — checked ${GOOGLE_ID_ENV_KEYS.join(", ")} for a client ID and ${GOOGLE_SECRET_ENV_KEYS.join(", ")} for a client secret, found neither. Running with the credentials (email/password) provider only.`,
   );
 }
 
@@ -198,7 +206,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     error(error) {
       console.error(
         `[auth] ${error.name}: ${error.message}`,
-        (error as { cause?: unknown }).cause ?? ""
+        (error as { cause?: unknown }).cause ?? "",
       );
     },
   },
@@ -221,7 +229,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         "hasAcceptedTerms" in session
       ) {
         token.hasAcceptedTerms = Boolean(
-          (session as { hasAcceptedTerms?: unknown }).hasAcceptedTerms
+          (session as { hasAcceptedTerms?: unknown }).hasAcceptedTerms,
         );
         return token;
       }
@@ -231,7 +239,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // after e.g. accepting the terms waiver) and a "last seen" touch for
       // the admin dashboard's active-user count, capped to once per window
       // so routine page loads don't hammer the DB.
-      const needsProfileRefresh = trigger === "update" || token.isAdmin === undefined;
+      const needsProfileRefresh =
+        trigger === "update" || token.isAdmin === undefined;
       const lastTouch =
         typeof token.lastActiveTouch === "number" ? token.lastActiveTouch : 0;
       const activityStale = Date.now() - lastTouch > 15 * 60 * 1000;
@@ -298,9 +307,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     // runs this within that request's async context.
     async createUser({ user }) {
       if (!user.id) return;
-      const signupSource = (await cookies()).get("gf_src")?.value ?? null;
-      if (!signupSource) return;
-      await db.update(users).set({ signupSource }).where(eq(users.id, user.id));
+      const cookieStore = await cookies();
+      const signupSource = cookieStore.get("gf_src")?.value ?? null;
+      if (signupSource) {
+        await db
+          .update(users)
+          .set({ signupSource })
+          .where(eq(users.id, user.id));
+      }
+      // The client-side counterpart to the credentials signup form's own
+      // `trackMetaEvent("CompleteRegistration")` call (see auth-panel.tsx) —
+      // this event only ever fires once, right when the adapter inserts a
+      // genuinely new user row, so it's the one place that actually knows
+      // "brand-new signup" for the Google path (unlike the client, which
+      // only ever gets back an already-existing-or-not session with no
+      // signal of which). The Meta Pixel itself only runs in the browser,
+      // so this flag rides a short-lived cookie the QuizFlow's post-Google
+      // redirect effect reads once and then clears — this event handler has
+      // no window/fbq to call directly.
+      cookieStore.set("gf_new_signup", "1", { maxAge: 120, path: "/" });
     },
   },
 });
