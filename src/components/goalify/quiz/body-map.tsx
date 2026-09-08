@@ -78,23 +78,18 @@ export function BodyMapStep({
 
   return (
     <div>
-      <div className="relative mx-auto w-full max-w-[240px] lg:max-w-[300px] 2xl:max-w-[360px]">
+      {/* Plain, quiet card chrome — a bordered/blurred dark panel around
+          the real interactive body, not a photo-driven glow. The card's
+          own border/background/blur/shadow live here; the inner box right
+          below still locks to the source photo's exact aspect ratio
+          (410:842) so `object-contain` never has to letterbox it — the
+          percentage-based zone hit-targets in ZONE_SHAPES are calibrated
+          against that box's own bounds, not the outer card's. */}
+      <div className="relative mx-auto w-full max-w-sm rounded-3xl border border-white/10 bg-neutral-950/60 p-3 shadow-2xl backdrop-blur-md">
         <div
-          className="relative overflow-hidden rounded-[28px] shadow-[0_40px_90px_-32px_rgba(0,0,0,0.85)]"
+          className="relative mx-auto w-full max-w-[240px] overflow-hidden rounded-2xl lg:max-w-[300px] 2xl:max-w-[360px]"
           style={{ aspectRatio: "410 / 842", backgroundColor: "#121316" }}
         >
-          {/* A quiet spotlight, not a colored halo — dimensional without
-              being busy. Sits inside the opaque card (never bleeding past
-              its edges the way the old ambient glow did) and is faint
-              enough that it reads as depth, not decoration. */}
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse 70% 55% at 50% 32%, rgba(232,179,44,0.09), transparent 65%)",
-            }}
-            aria-hidden
-          />
           {/* Real athletic photo, head to shoes — plain, no baked-in
               zone graphics, so `contain` (never `cover`) is what keeps the
               whole figure on screen instead of letting a mismatched
@@ -184,8 +179,8 @@ export function BodyMapStep({
           the same pattern used everywhere else a set of options needs
           real text next to it. Tapping a chip is exactly equivalent to
           tapping its outline on the photo above (same toggle, same state).
-          A refined segmented-control feel — subtle tint, not a solid-fill
-          pill — instead of the previous game-badge treatment. */}
+          A simple solid pill for the selected state — filled gold, dark
+          text — rather than a translucent-tint outline. */}
       <div
         className="relative mt-8 flex flex-wrap justify-center gap-2.5"
         role="group"
@@ -204,10 +199,10 @@ export function BodyMapStep({
                 toggle(zone.value);
               }}
               className={clsx(
-                "rounded-xl border px-4 py-2.5 text-[13px] font-medium tracking-wide transition-all duration-200",
+                "rounded-full border px-5 py-2.5 text-sm font-medium transition-all duration-200",
                 active
-                  ? "border-electric/60 bg-electric/10 text-electric"
-                  : "border-white/10 bg-white/[0.02] text-mist hover:border-white/20 hover:text-ink",
+                  ? "border-transparent bg-electric text-black shadow-lg shadow-electric/20"
+                  : "border-white/10 bg-white/5 text-ink-soft hover:border-white/20",
               )}
             >
               {zone.label}
