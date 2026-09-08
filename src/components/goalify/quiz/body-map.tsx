@@ -156,7 +156,12 @@ export function BodyMapStep({
                       "relative grid place-items-center rounded-full transition-all duration-300",
                       active
                         ? "size-8 bg-electric shadow-[0_0_20px_-2px_rgba(232,179,44,0.95)]"
-                        : "size-6 border-2 border-electric/90 bg-black/35 backdrop-blur-sm",
+                        : // No fill behind the ring at rest — a filled dark
+                          // disc sat on the skin like a smudge rather than a
+                          // clean marker. Just the ring itself, with a soft
+                          // drop shadow (not a background) so it still
+                          // reads clearly against lighter skin tones too.
+                          "size-6 border-2 border-electric shadow-[0_1px_5px_rgba(0,0,0,0.65)]",
                     )}
                   >
                     {!active && (
