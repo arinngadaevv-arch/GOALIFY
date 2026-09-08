@@ -1902,6 +1902,13 @@ body.goalify-body:has(.gf-elite-scope) .gf-ambience {
 .gf-cyber-scope.gf-live-industrial {
   --color-electric: #ece4d3;
   --color-electric-soft: #f5efe2;
+  /* PoseIcon's joint markers (see ui/pose-icon.tsx) fall back to this when
+   * no real clip is uploaded for an exercise — the base cyber-scope's
+   * crimson-red reads soft/decorative as small dots on a thin limb line,
+   * which is exactly the wrong note on a screen meant to feel athletic and
+   * aggressive. Reusing this screen's own gold instead keeps the fallback
+   * figure consistent with the rest of the identity around it. */
+  --color-lime-neon: var(--gf-gold, #e2a930);
 }
 
 /* The one warm-gold accent, used only by the hub button and the progress
