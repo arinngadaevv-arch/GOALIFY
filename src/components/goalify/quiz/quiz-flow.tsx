@@ -851,10 +851,10 @@ function ChoiceStep({
     return (
       <div className="relative">
         <div
-          className="absolute top-2 bottom-2 left-[23px] w-px bg-electric/25"
+          className="absolute top-2 bottom-2 left-[38px] w-px bg-electric/25"
           aria-hidden
         />
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-3">
           {step.options.map((option) => {
             const active = String(value) === option.value;
             const OptionIcon = QUIZ_ICONS[option.icon];
@@ -865,9 +865,15 @@ function ChoiceStep({
                 aria-pressed={active}
                 disabled={locked}
                 onClick={withBurst(() => choose(option))}
+                // Same glass-card language as every other layout in this
+                // quiz (gf-card/gf-card-hover/gf-press) — plain background
+                // tints on hover read as "text that reacts," not "button,"
+                // which is exactly the feedback this got. A real bordered
+                // card with a hover lift and a press-scale makes the tap
+                // target unmistakable at rest, before anyone even touches it.
                 className={clsx(
-                  "gf-press relative flex items-start gap-4 rounded-2xl p-3 text-left transition-colors duration-200",
-                  active ? "bg-electric/8" : "hover:bg-white/[0.03]",
+                  "gf-card gf-card-hover gf-press relative flex items-start gap-4 rounded-2xl p-4 text-left",
+                  active && "gf-card-active",
                 )}
               >
                 <span
@@ -879,7 +885,9 @@ function ChoiceStep({
                   )}
                 >
                   {active ? (
-                    <Check className="size-5 text-black" strokeWidth={3.5} />
+                    <span className="gf-anim-pop grid place-items-center">
+                      <Check className="size-5 text-black" strokeWidth={3.5} />
+                    </span>
                   ) : (
                     <OptionIcon className="size-4.5" strokeWidth={2.4} />
                   )}
