@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import clsx from "clsx";
 import {
@@ -62,6 +62,27 @@ export function Paywall() {
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const planSectionRef = useRef<HTMLElement>(null);
+
+  // The pricing cards start just below the fold on most phones (see the
+  // hero + headline + plan-summary card above them) — a first-time visitor
+  // can miss that there's more to see. A small automatic nudge downward,
+  // just enough to bring the cards into view, points at them without
+  // fully snapping the page to the top of that section (which would push
+  // the "GET YOUR PLAN" headline and the personalized plan summary out of
+  // view entirely, losing the context for why these prices are what they
+  // are). `block: "nearest"` is what keeps it a small nudge instead of a
+  // hard scroll-to-top — it's a no-op once the section is already in
+  // view, e.g. on a tall viewport where nothing needs to move.
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      planSectionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }, 500);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   // Read out for the sticky footer's price line, kept in sync with
   // whichever card the user has tapped in the "Choose your plan" section.
@@ -182,8 +203,10 @@ export function Paywall() {
       <PlanSummaryCard answers={answers} targets={targets} todaysWorkout={todaysWorkout} />
 
       {/* ------------------------------------------------------ Plan selection
-          Right after the plan summary — see the file-level comment above. */}
-      <section className="gf-anim-rise relative mt-6">
+          Right after the plan summary — see the file-level comment above.
+          `planSectionRef` is what the auto-scroll effect above nudges into
+          view a half-second after mount. */}
+      <section ref={planSectionRef} className="gf-anim-rise relative mt-6">
         <p className="text-center text-[11px] font-black tracking-[0.16em] text-mist uppercase">
           Choose your plan
         </p>
