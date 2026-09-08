@@ -849,9 +849,24 @@ function ChoiceStep({
     // actually represented, and it reads as its own distinct screen
     // rather than a repeat of the tile grid one step earlier.
     return (
-      <div className="relative">
+      <div className="relative -mx-5 overflow-hidden px-5 py-2">
+        {/* An athletic backdrop behind the cards, not just flat black —
+            .gf-card's own frosted-glass blur only reads as premium when
+            there's something worth blurring behind it; over plain black it
+            has nothing to do, which is exactly what made this step feel
+            flatter/less "fitness" than every photo-forward step around it
+            despite having the same card styling. */}
+        <div className="absolute inset-0 -z-10" aria-hidden>
+          <Image
+            src="/quiz/goal-burn.png"
+            alt=""
+            fill
+            className="object-cover object-[center_20%] opacity-[0.22]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0b0e14]/30 via-[#0b0e14]/70 to-[#0b0e14]" />
+        </div>
         <div
-          className="absolute top-2 bottom-2 left-[38px] w-px bg-electric/25"
+          className="absolute top-4 bottom-4 left-[38px] w-px bg-electric/25"
           aria-hidden
         />
         <div className="flex flex-col gap-3">
