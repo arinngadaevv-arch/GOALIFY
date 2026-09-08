@@ -146,7 +146,7 @@ export const QUIZ_STEPS: QuizStep[] = [
   {
     id: "lastIdealBody",
     kind: "choice",
-    layout: "radio",
+    layout: "tile",
     chapter: "The timeline",
     title: "When was the last time you had your ideal body?",
     titleHighlight: "ideal body?",
@@ -191,7 +191,7 @@ export const QUIZ_STEPS: QuizStep[] = [
         label: "Never",
         description: "I've never had my ideal body",
         icon: "ban",
-        image: "/quiz/timeline-never-sitting.png",
+        aside: true,
       },
     ],
   },
