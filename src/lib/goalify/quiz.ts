@@ -28,6 +28,8 @@ export type ChoiceOption = {
 export type BodyZone = {
   value: string;
   label: string;
+  description: string;
+  icon: QuizIconKey;
 };
 
 export type QuizStep = {
@@ -266,14 +268,39 @@ export const QUIZ_STEPS: QuizStep[] = [
     kind: "bodyMap",
     chapter: "The blueprint",
     title: "Which areas would you like to focus on?",
-    subtitle: "Tap every zone you want transformed.",
+    subtitle: "Select every area you want to prioritize.",
     hudPhrase: "PRIORITY ZONE MAPPING",
     zones: [
-      { value: "chest", label: "Chest" },
-      { value: "arms", label: "Arms" },
-      { value: "abs", label: "Abs" },
-      { value: "glutes", label: "Glutes" },
-      { value: "legs", label: "Legs" },
+      {
+        value: "chest",
+        label: "Chest",
+        description: "Pecs & upper body definition",
+        icon: "dumbbell",
+      },
+      {
+        value: "arms",
+        label: "Arms",
+        description: "Biceps, triceps & shoulders",
+        icon: "biceps",
+      },
+      {
+        value: "abs",
+        label: "Abs & Core",
+        description: "Stomach & waistline fat loss",
+        icon: "flame",
+      },
+      {
+        value: "glutes",
+        label: "Glutes",
+        description: "Lower body toning",
+        icon: "target",
+      },
+      {
+        value: "legs",
+        label: "Legs",
+        description: "Quads, hamstrings & calves",
+        icon: "footprints",
+      },
     ],
   },
   {

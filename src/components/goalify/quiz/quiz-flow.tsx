@@ -124,15 +124,13 @@ function getMilestoneIndex(stepIndex: number): number {
   return found === -1 ? MILESTONES.length - 1 : found;
 }
 
-/** Not part of QuizStep data — body-map.tsx hardcodes this asset, so the
- * preloader below has to know it by name to warm it ahead of that step. */
-const BODY_MAP_IMAGE = "/quiz/bodymap-character-v2.png";
-
 /** Every real photo URL a step will paint, so the preloader can warm the
  * browser's image cache a step (or two) ahead of the user actually
  * reaching it — the fetch itself, not the animation, was the real source
- * of the "blank flash" on photo-heavy steps (goal, bodyFatPercent,
- * the body map). */
+ * of the "blank flash" on photo-heavy steps (goal, bodyFatPercent). The
+ * body-map step carries no photo of its own anymore (see body-map.tsx —
+ * a plain icon/label list now, not an illustrated figure), so it has
+ * nothing for this preloader to warm. */
 function stepImageUrls(step: QuizStep): string[] {
   if (step.kind === "choice") {
     const optionUrls = step.options
@@ -140,7 +138,6 @@ function stepImageUrls(step: QuizStep): string[] {
       .filter((src): src is string => hasRealPhoto(src));
     return step.heroPhoto ? [step.heroPhoto, ...optionUrls] : optionUrls;
   }
-  if (step.kind === "bodyMap") return [BODY_MAP_IMAGE];
   if (step.kind === "commit") return [step.bgPhoto];
   return [];
 }

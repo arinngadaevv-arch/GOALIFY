@@ -11,6 +11,7 @@ import {
   Crown,
   Dumbbell,
   Flame,
+  Footprints,
   Gauge,
   HeartPulse,
   HelpCircle,
@@ -74,6 +75,7 @@ export const QUIZ_ICONS = {
   utensils: Utensils,
   smile: Smile,
   ban: Ban,
+  footprints: Footprints,
 } as const satisfies Record<string, LucideIcon>;
 
 export type QuizIconKey = keyof typeof QUIZ_ICONS;
