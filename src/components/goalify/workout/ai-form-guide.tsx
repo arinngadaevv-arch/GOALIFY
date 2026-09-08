@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
+import { Loader } from "lucide-react";
 import { PoseIcon, type PoseKey } from "@/components/goalify/ui/pose-icon";
 
 /** `HTMLMediaElement.error.code` only ever comes back numeric — this is
@@ -131,6 +132,12 @@ export function AIFormGuide({
   // of the placeholder — once it's confirmed to have a real frame ready.
   const attemptingVideo = Boolean(videoSrc) && videoSrc !== failedSrc;
   const videoReady = attemptingVideo && videoSrc === loadedSrc;
+  // A real clip IS coming and is just still buffering — a small spinner
+  // reads as "loading," not as a different character taking over for a
+  // few seconds before the video swaps in. The illustrated pose figure is
+  // reserved for the case there's genuinely no clip to wait for at all
+  // (unmatched exercise name, or one that already failed to load).
+  const isBuffering = attemptingVideo && !videoReady;
 
   return (
     <div
@@ -148,7 +155,7 @@ export function AIFormGuide({
           muted
           loop
           playsInline
-          preload="metadata"
+          preload="auto"
           className={clsx(
             "absolute inset-0 z-0 h-full w-full object-cover transition-opacity duration-300",
             videoReady ? "opacity-100" : "opacity-0",
@@ -162,7 +169,14 @@ export function AIFormGuide({
         aria-hidden
       />
 
-      {!videoReady && (
+      {isBuffering && (
+        <Loader
+          className="gf-anim-spin-slow relative z-10 size-8 text-electric"
+          aria-hidden
+        />
+      )}
+
+      {!attemptingVideo && (
         <PoseIcon
           pose={pose}
           bold={bold}
