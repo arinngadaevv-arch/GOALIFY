@@ -13,18 +13,14 @@ import { fireBurst } from "./particle-burst";
 /**
  * Percentage-based hit-targets over the real photo background
  * (bodymap-character-v2.png) — a plain, unmarked photo (no baked-in panel
- * graphics or labels, unlike the previous asset), so every zone's marker
- * and label is real DOM here, not something the image already draws.
+ * graphics or labels, unlike the previous asset), so every zone's outline
+ * is real DOM here, not something the image already draws.
  */
 // Measured directly against bodymap-character-v2.png at 1%-resolution:
 // scanned every row of the image for background-vs-body pixels, took the
 // min/max x per body part across its full y-range (not eyeballed), so
-// these track the new photo's actual proportions rather than reused
-// coordinates from the old asset. Only each rect's own center is used now
-// (a small pin marker there, not a box drawn at its edges — see the
-// render below), so the old overlap concerns between neighboring
-// rects (e.g. abs/glutes) no longer matter: nothing is drawn at the
-// rect's actual bounds any more, just its midpoint.
+// these track that body's actual proportions — the outline drawn from
+// each rect below is sized to the real part, not a generic marker.
 const ZONE_SHAPES: Record<
   string,
   { left: number; top: number; width: number; height: number }[]
@@ -44,12 +40,13 @@ const ZONE_SHAPES: Record<
 
 /**
  * The interactive body-target selector, laid over a real athletic photo
- * (not an illustrated silhouette). The photo itself only ever carries a
- * bare dot per zone — no text on the skin at all, after two rounds of
- * putting some form of label directly on the photo (a boxed outline, then
- * a pin with its own tag) both read as cluttered. The actual zone names
- * live in the chip row rendered right below the photo instead, wired to
- * the same toggle so a dot and its chip always agree.
+ * (not an illustrated silhouette). Each zone draws an outline sized and
+ * positioned to that actual body part (see ZONE_SHAPES) — not a generic
+ * dot, and not text baked onto the skin either: two earlier rounds of
+ * putting some form of label directly on the photo (a boxed outline with
+ * text inside, then a pin with its own tag) both read as cluttered. The
+ * real zone names live in the chip row rendered right below the photo,
+ * wired to the same toggle so an outline and its chip always agree.
  */
 export function BodyMapStep({
   step,
@@ -135,8 +132,6 @@ export function BodyMapStep({
           {step.zones.map((zone) =>
             (ZONE_SHAPES[zone.value] ?? []).map((rect, index) => {
               const active = selected.includes(zone.value);
-              const cx = rect.left + rect.width / 2;
-              const cy = rect.top + rect.height / 2;
               return (
                 <button
                   key={`${zone.value}-${index}`}
@@ -148,37 +143,38 @@ export function BodyMapStep({
                     fireBurst(event.clientX, event.clientY, true);
                     toggle(zone.value);
                   }}
-                  className="gf-press absolute -translate-x-1/2 -translate-y-1/2"
-                  style={{ left: `${cx}%`, top: `${cy}%` }}
+                  className="gf-press absolute"
+                  style={{
+                    left: `${rect.left}%`,
+                    top: `${rect.top}%`,
+                    width: `${rect.width}%`,
+                    height: `${rect.height}%`,
+                  }}
                 >
+                  {/* Inset from the tap area's own edges so the outline
+                      hugs the limb/torso itself instead of the rect's raw
+                      bounds — drawing right at those bounds spilled onto
+                      the dark backdrop beside the body on the arms/legs. */}
                   <span
                     className={clsx(
-                      "relative grid place-items-center rounded-full transition-all duration-300",
+                      "absolute inset-[8%] rounded-full border-2 transition-all duration-300",
                       active
-                        ? "size-8 bg-electric shadow-[0_0_20px_-2px_rgba(232,179,44,0.95)]"
-                        : // No fill behind the ring at rest — a filled dark
-                          // disc sat on the skin like a smudge rather than a
-                          // clean marker. Just the ring itself, with a soft
-                          // drop shadow (not a background) so it still
-                          // reads clearly against lighter skin tones too.
-                          "size-6 border-2 border-electric shadow-[0_1px_5px_rgba(0,0,0,0.65)]",
+                        ? "border-electric bg-electric/22 shadow-[0_0_20px_-4px_rgba(232,179,44,0.9)]"
+                        : "border-electric shadow-[0_1px_5px_rgba(0,0,0,0.55)]",
                     )}
                   >
                     {!active && (
                       <span
-                        className="gf-anim-pulse absolute inset-0 rounded-full border-2 border-electric/60"
+                        className="gf-anim-pulse absolute inset-0 rounded-full border-2 border-electric/50"
                         aria-hidden
                       />
                     )}
-                    {active && (
-                      <span className="gf-anim-pop absolute inset-0 grid place-items-center">
-                        <Check
-                          className="size-3.5 text-black"
-                          strokeWidth={4}
-                        />
-                      </span>
-                    )}
                   </span>
+                  {active && (
+                    <span className="gf-anim-pop absolute top-0 right-0 grid size-6 -translate-y-1/3 translate-x-1/3 place-items-center rounded-full bg-electric text-black shadow-md">
+                      <Check className="size-3.5" strokeWidth={4} />
+                    </span>
+                  )}
                 </button>
               );
             }),
