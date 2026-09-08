@@ -62,6 +62,11 @@ export const metadata: Metadata = {
     images: ["/quiz/image-1786441857395.webp"],
   },
   robots: { index: true, follow: true },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "GOALIFY",
+  },
 };
 
 export const viewport: Viewport = {
