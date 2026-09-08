@@ -866,11 +866,11 @@ function ChoiceStep({
           <div className="absolute inset-0 bg-gradient-to-b from-[#0b0e14]/30 via-[#0b0e14]/70 to-[#0b0e14]" />
         </div>
         <div
-          className="absolute top-4 bottom-4 left-[38px] w-px bg-electric/25"
+          className="absolute top-4 bottom-4 left-10 w-px bg-electric/25"
           aria-hidden
         />
         <div className="flex flex-col gap-3">
-          {step.options.map((option) => {
+          {step.options.map((option, index) => {
             const active = String(value) === option.value;
             const OptionIcon = QUIZ_ICONS[option.icon];
             return (
@@ -886,17 +886,28 @@ function ChoiceStep({
                 // which is exactly the feedback this got. A real bordered
                 // card with a hover lift and a press-scale makes the tap
                 // target unmistakable at rest, before anyone even touches it.
+                // The staggered entrance and the oversized ghost numeral
+                // are what actually answer "boring": five identical rows
+                // with nothing but a small icon and text had no visual
+                // hierarchy or personality beyond the shared card frame.
                 className={clsx(
-                  "gf-card gf-card-hover gf-press relative flex items-start gap-4 rounded-2xl p-4 text-left",
+                  "gf-card gf-card-hover gf-press gf-anim-materialize relative flex items-start gap-4 overflow-hidden rounded-2xl p-4 text-left",
+                  `gf-delay-${index + 1}`,
                   active && "gf-card-active",
                 )}
               >
                 <span
+                  className="gf-display pointer-events-none absolute -top-3 right-2 text-6xl font-black text-white/[0.05] select-none"
+                  aria-hidden
+                >
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span
                   className={clsx(
-                    "relative z-10 grid size-11 shrink-0 place-items-center rounded-full border-2 transition-all duration-300",
+                    "relative z-10 grid size-12 shrink-0 place-items-center rounded-full transition-all duration-300",
                     active
-                      ? "border-electric bg-electric shadow-[0_0_16px_-2px_rgba(232,179,44,0.9)]"
-                      : "border-electric/40 bg-canvas text-electric/80",
+                      ? "bg-electric shadow-[0_0_16px_-2px_rgba(232,179,44,0.9)]"
+                      : "bg-electric/14 text-electric shadow-[inset_0_0_0_1.5px_rgba(232,179,44,0.35)]",
                   )}
                 >
                   {active ? (
@@ -904,10 +915,10 @@ function ChoiceStep({
                       <Check className="size-5 text-black" strokeWidth={3.5} />
                     </span>
                   ) : (
-                    <OptionIcon className="size-4.5" strokeWidth={2.4} />
+                    <OptionIcon className="size-5" strokeWidth={2.2} />
                   )}
                 </span>
-                <span className="min-w-0 flex-1 pt-2">
+                <span className="relative min-w-0 flex-1 pt-2.5">
                   <span
                     className={clsx(
                       "gf-display block text-lg leading-tight font-extrabold",
