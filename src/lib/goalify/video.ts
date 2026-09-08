@@ -18,6 +18,8 @@
  * becomes `%26` — the browser would otherwise treat the raw space as the
  * end of the URL and 404 fetching only the text before it.
  */
+import { LIBRARY, PROGRAM } from "./workouts";
+
 const RAW_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_URL = RAW_SUPABASE_URL?.replace(/\/+$/, "");
 const VIDEOS_BUCKET = "videos";
@@ -93,7 +95,10 @@ const EXERCISE_CLIPS: readonly [RegExp, string][] = [
   [/(sit[\s-]?up|crunch|hollow body|dead bug)/i, "Sit-ups.mp4"],
   [/shoulder/i, "Shoulder rotation warm-up.mp4"],
   [/arm/i, "Arm circle warm-up.mp4"],
-  [/(running in place|march in place|high knee|mountain climber|burpee)/i, "Running in place.mp4"],
+  [
+    /(running in place|march in place|high knee|mountain climber|burpee)/i,
+    "Running in place.mp4",
+  ],
 ];
 
 export function exerciseVideoUrl(name: string, focus: string): string | null {
@@ -114,7 +119,10 @@ export function exerciseVideoUrl(name: string, focus: string): string | null {
  * spaces too (e.g. an uploader creating "videos 2" instead of reusing
  * "videos").
  */
-export function customVideoUrl(bucket: string, fileName: string): string | null {
+export function customVideoUrl(
+  bucket: string,
+  fileName: string,
+): string | null {
   if (!SUPABASE_URL) return null;
   return `${SUPABASE_URL}/storage/v1/object/public/${encodeURIComponent(bucket)}/${encodeURIComponent(fileName)}`;
 }
@@ -125,14 +133,39 @@ export function customVideoUrl(bucket: string, fileName: string): string | null 
  * (200 vs 404 vs 403) instead of only knowing whether the base URL is
  * configured at all.
  */
-export function allKnownClips(): { label: string; fileName: string; url: string | null }[] {
+export function allKnownClips(): {
+  label: string;
+  fileName: string;
+  url: string | null;
+}[] {
   return [
-    { label: "Intro (first watch phase)", fileName: "start.mp4", url: videoUrl("start.mp4") },
-    { label: "Rest / recovery", fileName: "Water outage.mp4", url: videoUrl("Water outage.mp4") },
+    {
+      label: "Intro (first watch phase)",
+      fileName: "start.mp4",
+      url: videoUrl("start.mp4"),
+    },
+    {
+      label: "Rest / recovery",
+      fileName: "Water outage.mp4",
+      url: videoUrl("Water outage.mp4"),
+    },
     ...EXERCISE_CLIPS.map(([, fileName]) => ({
       label: fileName.replace(/\.mp4$/, ""),
       fileName,
       url: videoUrl(fileName),
     })),
+    // One-off uploaded workout clips (VideoLedPlayer's full-video workouts,
+    // e.g. PROGRAM's "Quick Video Workout") live in whatever bucket that
+    // upload actually went to — see customVideoUrl's own comment — so they
+    // never show up in the standard "videos" bucket list above and this
+    // panel would otherwise never catch a wrong bucket/filename for one of
+    // them at all.
+    ...[...PROGRAM, ...LIBRARY]
+      .filter((workout) => workout.video)
+      .map((workout) => ({
+        label: `${workout.title} (custom upload)`,
+        fileName: `${workout.video!.bucket}/${workout.video!.fileName}`,
+        url: customVideoUrl(workout.video!.bucket, workout.video!.fileName),
+      })),
   ];
 }
