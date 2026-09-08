@@ -4,10 +4,9 @@ import { useMemo } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import clsx from "clsx";
-import { ArrowRight, Check, Target } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import type { QuizStep } from "@/lib/goalify/quiz";
 import type { QuizAnswers } from "@/lib/goalify/types";
-import { GlowButton } from "@/components/goalify/ui/glow-button";
 import { fireBurst } from "./particle-burst";
 
 /**
@@ -79,23 +78,23 @@ export function BodyMapStep({
 
   return (
     <div>
-      <div className="relative isolate mx-auto w-full max-w-[240px] lg:max-w-[300px] 2xl:max-w-[360px]">
-        {/* A soft bloom sitting entirely outside the card's own rounded
-            edges — not blended into the photo the way the old ambient glow
-            was (see the comment below on the card's flat background),
-            which is exactly what caused the visible color-mismatch halo
-            that got stripped out before. This one never touches a single
-            photo pixel: the card in front of it is fully opaque, so the
-            glow only ever shows as depth in the empty space around the
-            card, not on it. */}
+      <div className="relative mx-auto w-full max-w-[240px] lg:max-w-[300px] 2xl:max-w-[360px]">
         <div
-          className="absolute -inset-3 -z-10 rounded-[40px] bg-electric/14 blur-2xl"
-          aria-hidden
-        />
-        <div
-          className="relative overflow-hidden rounded-[28px]"
+          className="relative overflow-hidden rounded-[28px] shadow-[0_40px_90px_-32px_rgba(0,0,0,0.85)]"
           style={{ aspectRatio: "410 / 842", backgroundColor: "#121316" }}
         >
+          {/* A quiet spotlight, not a colored halo — dimensional without
+              being busy. Sits inside the opaque card (never bleeding past
+              its edges the way the old ambient glow did) and is faint
+              enough that it reads as depth, not decoration. */}
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse 70% 55% at 50% 32%, rgba(232,179,44,0.09), transparent 65%)",
+            }}
+            aria-hidden
+          />
           {/* Real athletic photo, head to shoes — plain, no baked-in
               zone graphics, so `contain` (never `cover`) is what keeps the
               whole figure on screen instead of letting a mismatched
@@ -148,7 +147,7 @@ export function BodyMapStep({
                     fireBurst(event.clientX, event.clientY, true);
                     toggle(zone.value);
                   }}
-                  className="gf-press absolute"
+                  className="absolute"
                   style={{
                     left: `${rect.left}%`,
                     top: `${rect.top}%`,
@@ -156,28 +155,22 @@ export function BodyMapStep({
                     height: `${rect.height}%`,
                   }}
                 >
-                  {/* Inset from the tap area's own edges so the outline
+                  {/* Thin and nearly invisible at rest — a thick colored
+                      ring read as a game HUD, not a premium product.
+                      Inset from the tap area's own edges so the outline
                       hugs the limb/torso itself instead of the rect's raw
-                      bounds — drawing right at those bounds spilled onto
-                      the dark backdrop beside the body on the arms/legs. */}
+                      bounds. */}
                   <span
                     className={clsx(
-                      "absolute inset-[8%] rounded-full border-2 transition-all duration-300",
+                      "absolute inset-[8%] rounded-full border transition-all duration-200 ease-out",
                       active
-                        ? "border-electric bg-electric/22 shadow-[0_0_20px_-4px_rgba(232,179,44,0.9)]"
-                        : "border-electric shadow-[0_1px_5px_rgba(0,0,0,0.55)]",
+                        ? "border-electric/70 bg-electric/12 shadow-[0_0_22px_-8px_rgba(232,179,44,0.65)]"
+                        : "border-white/[0.09] hover:border-white/20",
                     )}
-                  >
-                    {!active && (
-                      <span
-                        className="gf-anim-pulse absolute inset-0 rounded-full border-2 border-electric/50"
-                        aria-hidden
-                      />
-                    )}
-                  </span>
+                  />
                   {active && (
-                    <span className="gf-anim-pop absolute top-0 right-0 grid size-6 -translate-y-1/3 translate-x-1/3 place-items-center rounded-full bg-electric text-black shadow-md">
-                      <Check className="size-3.5" strokeWidth={4} />
+                    <span className="absolute top-0.5 right-0.5 grid size-5 -translate-y-1/3 translate-x-1/3 place-items-center rounded-full bg-electric text-black shadow-sm transition-transform duration-200">
+                      <Check className="size-3" strokeWidth={3.5} />
                     </span>
                   )}
                 </button>
@@ -190,9 +183,11 @@ export function BodyMapStep({
       {/* The actual, legible zone names — a plain multi-select chip row,
           the same pattern used everywhere else a set of options needs
           real text next to it. Tapping a chip is exactly equivalent to
-          tapping its dot on the photo above (same toggle, same state). */}
+          tapping its outline on the photo above (same toggle, same state).
+          A refined segmented-control feel — subtle tint, not a solid-fill
+          pill — instead of the previous game-badge treatment. */}
       <div
-        className="relative mt-4 flex flex-wrap justify-center gap-2"
+        className="relative mt-8 flex flex-wrap justify-center gap-2.5"
         role="group"
         aria-label="Focus areas"
       >
@@ -209,63 +204,55 @@ export function BodyMapStep({
                 toggle(zone.value);
               }}
               className={clsx(
-                "gf-press inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-black tracking-[0.02em] uppercase transition-all duration-200",
+                "rounded-xl border px-4 py-2.5 text-[13px] font-medium tracking-wide transition-all duration-200",
                 active
-                  ? "border-electric bg-electric text-black shadow-[0_6px_18px_-6px_rgba(232,179,44,0.85)]"
-                  : "border-electric/30 bg-white/[0.04] text-mist",
+                  ? "border-electric/60 bg-electric/10 text-electric"
+                  : "border-white/10 bg-white/[0.02] text-mist hover:border-white/20 hover:text-ink",
               )}
             >
-              {active && <Check className="size-3.5" strokeWidth={3.5} />}
               {zone.label}
             </button>
           );
         })}
       </div>
 
-      <div className="relative mt-3 grid place-items-center overflow-hidden">
+      {/* Quiet helper text, not another pill competing with the CTA. */}
+      <div className="relative mt-5 grid place-items-center overflow-hidden">
         <AnimatePresence mode="popLayout" initial={false}>
-          <motion.div
+          <motion.p
             key={selected.length}
-            initial={{ opacity: 0, y: -8, scale: 0.92 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.92 }}
-            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-            className="col-start-1 row-start-1 inline-flex items-center gap-1.5 rounded-full border border-electric/30 bg-electric/10 px-3.5 py-1.5 text-xs font-bold text-mist"
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            className="col-start-1 row-start-1 text-center text-xs text-ink-soft"
           >
             {selected.length === 0 ? (
-              <>
-                <Target
-                  className="size-3.5 text-electric/70"
-                  strokeWidth={2.4}
-                />
-                Tap the areas you want to prioritize
-              </>
+              "Choose the areas that matter most to you"
             ) : (
               <>
-                <span className="gf-numeric text-sm font-black text-electric">
+                <span className="font-semibold text-electric">
                   {selected.length}
-                </span>
+                </span>{" "}
                 area{selected.length === 1 ? "" : "s"} selected
               </>
             )}
-          </motion.div>
+          </motion.p>
         </AnimatePresence>
       </div>
 
-      <GlowButton
-        variant="cyber"
-        size="lg"
-        fullWidth
-        className="group mt-2"
+      <button
+        type="button"
         disabled={selected.length === 0 || locked}
         onClick={(event) => {
           fireBurst(event.clientX, event.clientY, true);
           onPick({ [step.id]: selected } as Partial<QuizAnswers>, selected);
         }}
+        className="group mt-6 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-b from-[#f3ca5a] to-[#d9a52e] text-[15px] font-semibold text-[#1a1100] shadow-[0_12px_28px_-10px_rgba(232,179,44,0.55)] transition-all duration-200 hover:shadow-[0_16px_34px_-8px_rgba(232,179,44,0.65)] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40"
       >
         Continue
-        <ArrowRight className="size-5 transition-transform duration-150 group-active:translate-x-1" />
-      </GlowButton>
+        <ArrowRight className="size-4.5 transition-transform duration-150 group-active:translate-x-0.5" />
+      </button>
     </div>
   );
 }
