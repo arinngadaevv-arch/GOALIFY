@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import clsx from "clsx";
-import { ArrowRight, Check, Plus, Target } from "lucide-react";
+import { ArrowRight, Check, Target } from "lucide-react";
 import type { QuizStep } from "@/lib/goalify/quiz";
 import type { QuizAnswers } from "@/lib/goalify/types";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
@@ -44,11 +44,12 @@ const ZONE_SHAPES: Record<
 
 /**
  * The interactive body-target selector, laid over a real athletic photo
- * (not an illustrated silhouette). Each zone is a small map-pin-style
- * marker with its own label chip, not a big outlined box drawn on top of
- * the skin — that read as a cluttered infographic, especially where
- * neighboring zones (abs/glutes) sat close together. Tapping fills the
- * pin gold with a check mark; the label chip follows the same fill.
+ * (not an illustrated silhouette). The photo itself only ever carries a
+ * bare dot per zone — no text on the skin at all, after two rounds of
+ * putting some form of label directly on the photo (a boxed outline, then
+ * a pin with its own tag) both read as cluttered. The actual zone names
+ * live in the chip row rendered right below the photo instead, wired to
+ * the same toggle so a dot and its chip always agree.
  */
 export function BodyMapStep({
   step,
@@ -122,18 +123,18 @@ export function BodyMapStep({
             className="object-contain object-top"
           />
 
-          {step.zones.map((zone) => {
-            const active = selected.includes(zone.value);
-            const rects = ZONE_SHAPES[zone.value] ?? [];
-            return rects.map((rect, index) => {
-              // A small pin marker at the zone's center, not a big outlined
-              // box with a label baked onto the skin — the boxes read as a
-              // cluttered infographic (abs/glutes visibly touching) and
-              // never looked premium no matter how the frame itself was
-              // styled. This is the same tap area (still generously sized,
-              // see the comment on ZONE_SHAPES below), just a lighter-touch
-              // visual on top of it: a map-pin-style marker plus a small
-              // floating label, both centered in that area.
+          {/* A bare dot on the body — no text riding on the skin at all.
+              Every earlier version (an outlined box with a label baked
+              onto it, then a pin with a label chip underneath) kept
+              putting text directly on top of the photo, which is exactly
+              what kept reading as cluttered/amateurish no matter how that
+              text itself was styled. The names live in the chip row below
+              instead — a plain, well-understood list, not an infographic
+              overlay — and stay perfectly in sync with these dots since
+              both drive the exact same toggle(). */}
+          {step.zones.map((zone) =>
+            (ZONE_SHAPES[zone.value] ?? []).map((rect, index) => {
+              const active = selected.includes(zone.value);
               const cx = rect.left + rect.width / 2;
               const cy = rect.top + rect.height / 2;
               return (
@@ -147,59 +148,75 @@ export function BodyMapStep({
                     fireBurst(event.clientX, event.clientY, true);
                     toggle(zone.value);
                   }}
-                  className="gf-press absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1.5"
+                  className="gf-press absolute -translate-x-1/2 -translate-y-1/2"
                   style={{ left: `${cx}%`, top: `${cy}%` }}
                 >
                   <span
                     className={clsx(
                       "relative grid place-items-center rounded-full transition-all duration-300",
                       active
-                        ? "size-10 bg-electric shadow-[0_0_22px_-2px_rgba(232,179,44,0.95)]"
-                        : "size-8 border-2 border-electric bg-black/45 backdrop-blur-sm",
+                        ? "size-8 bg-electric shadow-[0_0_20px_-2px_rgba(232,179,44,0.95)]"
+                        : "size-6 border-2 border-electric/90 bg-black/35 backdrop-blur-sm",
                     )}
                   >
                     {!active && (
                       <span
-                        className="gf-anim-pulse absolute inset-0 rounded-full border-2 border-electric/70"
+                        className="gf-anim-pulse absolute inset-0 rounded-full border-2 border-electric/60"
                         aria-hidden
                       />
                     )}
-                    {active ? (
+                    {active && (
                       <span className="gf-anim-pop absolute inset-0 grid place-items-center">
                         <Check
-                          className="size-4.5 text-black"
-                          strokeWidth={3.5}
+                          className="size-3.5 text-black"
+                          strokeWidth={4}
                         />
                       </span>
-                    ) : (
-                      <Plus
-                        className="relative size-3.5 text-electric"
-                        strokeWidth={3}
-                      />
                     )}
-                  </span>
-                  <span
-                    className={clsx(
-                      "rounded-full px-2 py-0.5 text-[9.5px] leading-tight font-black tracking-[0.06em] uppercase backdrop-blur-sm transition-colors duration-200",
-                      active
-                        ? "bg-electric text-black"
-                        : "bg-black/55 text-white",
-                    )}
-                  >
-                    {zone.label}
                   </span>
                 </button>
               );
-            });
-          })}
+            }),
+          )}
         </div>
       </div>
 
-      {/* A self-contained chip instead of bare text floating in empty
-          space — gives the caption the same quiet-but-designed weight as
-          the corner tags on the goal-picker tiles, rather than reading as
-          an afterthought under a mostly-empty card. */}
-      <div className="relative mt-4 grid place-items-center overflow-hidden">
+      {/* The actual, legible zone names — a plain multi-select chip row,
+          the same pattern used everywhere else a set of options needs
+          real text next to it. Tapping a chip is exactly equivalent to
+          tapping its dot on the photo above (same toggle, same state). */}
+      <div
+        className="relative mt-4 flex flex-wrap justify-center gap-2"
+        role="group"
+        aria-label="Focus areas"
+      >
+        {step.zones.map((zone) => {
+          const active = selected.includes(zone.value);
+          return (
+            <button
+              key={zone.value}
+              type="button"
+              aria-pressed={active}
+              disabled={locked}
+              onClick={(event) => {
+                fireBurst(event.clientX, event.clientY, active);
+                toggle(zone.value);
+              }}
+              className={clsx(
+                "gf-press inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-black tracking-[0.02em] uppercase transition-all duration-200",
+                active
+                  ? "border-electric bg-electric text-black shadow-[0_6px_18px_-6px_rgba(232,179,44,0.85)]"
+                  : "border-electric/30 bg-white/[0.04] text-mist",
+              )}
+            >
+              {active && <Check className="size-3.5" strokeWidth={3.5} />}
+              {zone.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="relative mt-3 grid place-items-center overflow-hidden">
         <AnimatePresence mode="popLayout" initial={false}>
           <motion.div
             key={selected.length}
