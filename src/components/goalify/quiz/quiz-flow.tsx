@@ -24,6 +24,7 @@ import type { QuizAnswers } from "@/lib/goalify/types";
 import { useGoalify } from "@/lib/goalify/store";
 import { trackVisit } from "@/lib/goalify/track-visit";
 import { trackMetaEvent } from "@/lib/goalify/meta-pixel";
+import { markInstallPromptPending } from "@/lib/goalify/install-prompt";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
 import { useUiSounds } from "@/components/goalify/use-ui-sounds";
 import { hasRealPhoto, OptionPhoto } from "./option-photo";
@@ -371,6 +372,7 @@ export function QuizFlow() {
     // later in the same short-lived window) can't fire it a second time.
     if (document.cookie.includes("gf_new_signup=1")) {
       trackMetaEvent("CompleteRegistration");
+      markInstallPromptPending();
       document.cookie = "gf_new_signup=; path=/; max-age=0";
     }
     const timer = setTimeout(() => {

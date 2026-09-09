@@ -6,6 +6,7 @@ import { ChevronLeft, Loader2, Lock, ShieldCheck } from "lucide-react";
 import { Brand } from "@/components/goalify/brand";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
 import { trackMetaEvent } from "@/lib/goalify/meta-pixel";
+import { markInstallPromptPending } from "@/lib/goalify/install-prompt";
 
 /**
  * Google/email sign-up-or-in, reused in two spots with two different
@@ -96,7 +97,10 @@ export function AuthPanel({
       // a way this component can read — better to under-report than to
       // count an existing Google member signing back in as a fresh
       // registration.
-      if (mode === "signup") trackMetaEvent("CompleteRegistration");
+      if (mode === "signup") {
+        trackMetaEvent("CompleteRegistration");
+        markInstallPromptPending();
+      }
       onAuthenticated();
     } catch {
       setError("Something went wrong. Please try again.");

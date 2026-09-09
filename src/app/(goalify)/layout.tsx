@@ -10,6 +10,7 @@ import "../goalify.css";
 import { GoalifyProvider } from "@/lib/goalify/store";
 import { SessionProvider } from "@/components/session-provider";
 import { TermsGate } from "@/components/goalify/terms-gate";
+import { InstallAppPrompt } from "@/components/goalify/pwa/install-app-prompt";
 
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 const title = "Home Workouts for Overweight Men — No Gym | GOALIFY";
@@ -166,6 +167,7 @@ export default function GoalifyLayout({
           <SessionProvider>
             <GoalifyProvider>
               <TermsGate>{children}</TermsGate>
+              <InstallAppPrompt />
             </GoalifyProvider>
           </SessionProvider>
         </div>
