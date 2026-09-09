@@ -1,22 +1,43 @@
 "use client";
 
 import { useMemo } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
 import clsx from "clsx";
 import { ArrowRight, Check } from "lucide-react";
 import type { QuizStep } from "@/lib/goalify/quiz";
 import type { QuizAnswers } from "@/lib/goalify/types";
-import { QUIZ_ICONS } from "./quiz-icons";
 import { fireBurst } from "./particle-burst";
 
 /**
- * The focus-area picker — a vertical list of rows (icon, label, one-line
- * description, a checkbox on the right), not a tappable photo. Two earlier
- * rounds of an interactive body illustration (a real photo with on-skin
- * outlines, then a plain silhouette) both still needed this same list
- * underneath just to carry the actual zone names — dropping the photo
- * altogether removes the duplication and gives each zone room for real
- * copy about what it actually targets.
+ * Percent-based hotspot rects over /quiz/bodymap-character-v2.png (410x842),
+ * one entry per zone, some split into a left/right pair — measured against
+ * that exact image, so keep them as [left, top, width, height] in % if the
+ * source photo ever changes. Refined over several rounds of visual design
+ * work: markers stay visible at rest (not just on selection) so the photo
+ * reads as tappable without a label overlay, and brighten/quicken once a
+ * zone is actually picked rather than swapping to a boxed checkmark.
+ */
+const ZONE_RECTS: Record<string, [number, number, number, number][]> = {
+  chest: [[23, 21, 54, 13]],
+  arms: [
+    [2, 17, 22, 42],
+    [76, 17, 22, 42],
+  ],
+  abs: [[18, 34, 55, 15]],
+  glutes: [[22, 48, 53, 6]],
+  legs: [
+    [21, 70, 22, 20],
+    [57, 70, 23, 20],
+  ],
+};
+
+/**
+ * The focus-area picker — a tappable photo of the body with a glowing
+ * outline over each zone, not a list of rows. Selecting a zone brightens
+ * and speeds up its glow and adds a small gold checkmark badge; the list
+ * of zone names/descriptions from the step data still drives which
+ * outlines exist and what each one is labeled (aria-label only — the
+ * photo itself carries no on-screen text, by design).
  */
 export function BodyMapStep({
   step,
@@ -47,90 +68,67 @@ export function BodyMapStep({
     onSetDraft({ [step.id]: next } as Partial<QuizAnswers>);
   };
 
+  const hotspots = step.zones.flatMap((zone) =>
+    (ZONE_RECTS[zone.value] ?? []).map((rect, i) => ({
+      key: `${zone.value}-${i}`,
+      zone,
+      rect,
+      active: selected.includes(zone.value),
+    })),
+  );
+
   return (
     <div>
-      <div className="grid gap-3" role="group" aria-label="Focus areas">
-        {step.zones.map((zone) => {
-          const active = selected.includes(zone.value);
-          const Icon = QUIZ_ICONS[zone.icon];
-          return (
-            <button
-              key={zone.value}
-              type="button"
-              aria-pressed={active}
-              disabled={locked}
-              onClick={(event) => {
-                fireBurst(event.clientX, event.clientY, active);
-                toggle(zone.value);
-              }}
-              className={clsx(
-                "group flex items-center justify-between rounded-2xl border p-4 text-left transition-all duration-200",
-                active
-                  ? "border-electric/80 bg-electric/10 shadow-lg shadow-electric/10"
-                  : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.05]",
-              )}
-            >
-              <div className="flex items-center gap-4">
+      <div className="relative mx-auto w-full max-w-sm rounded-3xl border border-white/10 bg-black/40 p-3 shadow-[0_25px_50px_-18px_rgba(0,0,0,0.7)] backdrop-blur-xl">
+        <div className="relative mx-auto aspect-[410/842] w-full max-w-60 overflow-hidden rounded-2xl bg-[#121316]">
+          <Image
+            src="/quiz/bodymap-character-v2.png"
+            alt="Body diagram with tappable focus zones"
+            fill
+            unoptimized
+            priority
+            sizes="240px"
+            className="object-contain object-top saturate-[.7] sepia-[.16]"
+          />
+
+          {hotspots.map(({ key, zone, rect, active }) => {
+            const [left, top, width, height] = rect;
+            return (
+              <button
+                key={key}
+                type="button"
+                aria-label={zone.label}
+                aria-pressed={active}
+                disabled={locked}
+                onClick={(event) => {
+                  fireBurst(event.clientX, event.clientY, active);
+                  toggle(zone.value);
+                }}
+                className="absolute border-0 bg-transparent p-0"
+                style={{
+                  left: `${left}%`,
+                  top: `${top}%`,
+                  width: `${width}%`,
+                  height: `${height}%`,
+                }}
+              >
                 <span
                   className={clsx(
-                    "grid size-12 shrink-0 place-items-center rounded-xl transition-colors duration-200",
-                    active ? "bg-electric text-black" : "bg-white/5 text-mist",
+                    "pointer-events-none absolute inset-[6%] rounded-full border-[1.5px]",
+                    active
+                      ? "gf-anim-zone-glow-active"
+                      : "gf-anim-zone-glow-idle",
                   )}
-                >
-                  <Icon className="size-6" strokeWidth={2.4} />
-                </span>
-                <div className="min-w-0">
-                  <h3
-                    className={clsx(
-                      "text-base font-bold transition-colors duration-200",
-                      active ? "text-electric" : "text-ink",
-                    )}
-                  >
-                    {zone.label}
-                  </h3>
-                  <p className="mt-0.5 text-xs text-mist">{zone.description}</p>
-                </div>
-              </div>
-
-              {/* Checkbox indicator */}
-              <span
-                className={clsx(
-                  "grid size-6 shrink-0 place-items-center rounded-full border transition-all duration-200",
-                  active
-                    ? "scale-110 border-electric bg-electric text-black"
-                    : "border-white/15 bg-white/5 group-hover:border-white/25",
+                />
+                {active && (
+                  <span className="absolute top-[10%] right-[10%] flex size-[22px] translate-x-[45%] -translate-y-[45%] items-center justify-center rounded-full bg-electric text-black shadow-[0_2px_8px_rgba(0,0,0,0.35)]">
+                    <Check className="size-3" strokeWidth={3.5} />
+                  </span>
                 )}
-              >
-                {active && <Check className="size-3.5" strokeWidth={3} />}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Quiet helper text, not another pill competing with the CTA. */}
-      <div className="relative mt-5 grid place-items-center overflow-hidden">
-        <AnimatePresence mode="popLayout" initial={false}>
-          <motion.p
-            key={selected.length}
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 4 }}
-            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-            className="col-start-1 row-start-1 text-center text-xs text-ink-soft"
-          >
-            {selected.length === 0 ? (
-              "Choose the areas that matter most to you"
-            ) : (
-              <>
-                <span className="font-semibold text-electric">
-                  {selected.length}
-                </span>{" "}
-                area{selected.length === 1 ? "" : "s"} selected
-              </>
-            )}
-          </motion.p>
-        </AnimatePresence>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <button
@@ -140,7 +138,7 @@ export function BodyMapStep({
           fireBurst(event.clientX, event.clientY, true);
           onPick({ [step.id]: selected } as Partial<QuizAnswers>, selected);
         }}
-        className="group mt-6 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-b from-[#f3ca5a] to-[#d9a52e] text-[15px] font-semibold text-[#1a1100] shadow-[0_12px_28px_-10px_rgba(232,179,44,0.55)] transition-all duration-200 hover:shadow-[0_16px_34px_-8px_rgba(232,179,44,0.65)] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40"
+        className="group mt-8 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-b from-[#f3ca5a] to-[#d9a52e] text-[15px] font-semibold text-[#1a1100] shadow-[0_12px_28px_-10px_rgba(232,179,44,0.55)] transition-all duration-200 hover:shadow-[0_16px_34px_-8px_rgba(232,179,44,0.65)] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40"
       >
         Continue
         <ArrowRight className="size-4.5 transition-transform duration-150 group-active:translate-x-0.5" />

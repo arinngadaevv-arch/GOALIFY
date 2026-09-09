@@ -649,6 +649,38 @@ body.goalify-body:has(.gf-cyber-scope) .gf-ambience {
   animation: gf-wave 3.2s ease-in-out infinite;
 }
 
+/* --- Body-map hotspots: a permanently-visible pulsing outline so every
+   tappable zone reads as "live" without a static label competing with the
+   photo, brighter/faster once selected. ------------------------------- */
+@keyframes gf-zone-glow-idle {
+  0%,
+  100% {
+    box-shadow: 0 0 8px 0 rgba(232, 179, 44, 0.18);
+    border-color: rgba(232, 179, 44, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 16px 2px rgba(232, 179, 44, 0.4);
+    border-color: rgba(232, 179, 44, 0.75);
+  }
+}
+@keyframes gf-zone-glow-active {
+  0%,
+  100% {
+    box-shadow: 0 0 14px 1px rgba(232, 179, 44, 0.45);
+    border-color: #e8b32c;
+  }
+  50% {
+    box-shadow: 0 0 26px 4px rgba(232, 179, 44, 0.85);
+    border-color: #f5cb5c;
+  }
+}
+.gf-anim-zone-glow-idle {
+  animation: gf-zone-glow-idle 2.6s ease-in-out infinite;
+}
+.gf-anim-zone-glow-active {
+  animation: gf-zone-glow-active 1.8s ease-in-out infinite;
+}
+
 .gf-delay-1 {
   animation-delay: 0.07s;
 }
