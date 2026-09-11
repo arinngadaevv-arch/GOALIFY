@@ -155,14 +155,14 @@ function HeadlineTitle({
 }) {
   if (!highlight || !title.endsWith(highlight)) {
     return (
-      <h1 className="gf-display relative mt-1 text-2xl leading-[1.08] font-black text-ink sm:text-5xl">
+      <h1 className="gf-display relative mt-1 text-3xl leading-[1.06] font-black tracking-tight text-ink sm:text-6xl">
         {title}
       </h1>
     );
   }
   const lead = title.slice(0, title.length - highlight.length);
   return (
-    <h1 className="gf-display relative mt-1 text-2xl leading-[1.08] font-black text-ink sm:text-5xl">
+    <h1 className="gf-display relative mt-1 text-3xl leading-[1.06] font-black tracking-tight text-ink sm:text-6xl">
       {lead}
       <span className="text-electric">{highlight}</span>
     </h1>
@@ -702,7 +702,7 @@ export function QuizFlow() {
                   </div>
                 </div>
               ) : (
-                <h1 className="gf-display relative mt-1 text-2xl leading-[1.08] font-black text-ink sm:text-5xl">
+                <h1 className="gf-display relative mt-1 text-3xl leading-[1.06] font-black tracking-tight text-ink sm:text-6xl">
                   {step.title}
                 </h1>
               )}
