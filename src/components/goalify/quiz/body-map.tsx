@@ -79,56 +79,59 @@ export function BodyMapStep({
 
   return (
     <div>
-      <div className="relative mx-auto w-full max-w-sm rounded-3xl border border-white/10 bg-black/40 p-3 shadow-[0_25px_50px_-18px_rgba(0,0,0,0.7)] backdrop-blur-xl">
-        <div className="relative mx-auto aspect-[410/842] w-full max-w-60 overflow-hidden rounded-2xl bg-[#121316]">
-          <Image
-            src="/quiz/bodymap-character-v2.png"
-            alt="Body diagram with tappable focus zones"
-            fill
-            unoptimized
-            priority
-            sizes="240px"
-            className="object-contain object-top saturate-[.7] sepia-[.16]"
-          />
+      {/* One card, not three nested boxes — an outer translucent frame
+          around a separately-colored inner box (each a slightly different
+          shade) read as a busy "frame within a frame" instead of the photo
+          just sitting on a single clean background. This one layer both
+          holds the color and clips the photo. */}
+      <div className="relative mx-auto aspect-[410/842] w-full max-w-60 overflow-hidden rounded-3xl border border-white/10 bg-[#121316] shadow-[0_25px_50px_-18px_rgba(0,0,0,0.7)]">
+        <Image
+          src="/quiz/bodymap-character-v2.png"
+          alt="Body diagram with tappable focus zones"
+          fill
+          unoptimized
+          priority
+          sizes="240px"
+          className="object-contain object-top saturate-[.7] sepia-[.16]"
+        />
 
-          {hotspots.map(({ key, zone, rect, active }) => {
-            const [left, top, width, height] = rect;
-            return (
-              <button
-                key={key}
-                type="button"
-                aria-label={zone.label}
-                aria-pressed={active}
-                disabled={locked}
-                onClick={(event) => {
-                  fireBurst(event.clientX, event.clientY, active);
-                  toggle(zone.value);
-                }}
-                className="absolute border-0 bg-transparent p-0"
-                style={{
-                  left: `${left}%`,
-                  top: `${top}%`,
-                  width: `${width}%`,
-                  height: `${height}%`,
-                }}
-              >
-                <span
-                  className={clsx(
-                    "pointer-events-none absolute inset-[6%] rounded-full border-[1.5px]",
-                    active
-                      ? "gf-anim-zone-glow-active"
-                      : "gf-anim-zone-glow-idle",
-                  )}
-                />
-                {active && (
-                  <span className="absolute top-[10%] right-[10%] flex size-[22px] translate-x-[45%] -translate-y-[45%] items-center justify-center rounded-full bg-electric text-black shadow-[0_2px_8px_rgba(0,0,0,0.35)]">
-                    <Check className="size-3" strokeWidth={3.5} />
-                  </span>
+        {hotspots.map(({ key, zone, rect, active }) => {
+          const [left, top, width, height] = rect;
+          return (
+            <button
+              key={key}
+              type="button"
+              aria-label={zone.label}
+              aria-pressed={active}
+              disabled={locked}
+              onClick={(event) => {
+                fireBurst(event.clientX, event.clientY, active);
+                toggle(zone.value);
+              }}
+              className="absolute border-0 bg-transparent p-0"
+              style={{
+                left: `${left}%`,
+                top: `${top}%`,
+                width: `${width}%`,
+                height: `${height}%`,
+              }}
+            >
+              <span
+                className={clsx(
+                  "pointer-events-none absolute inset-[6%] rounded-full border-[1.5px]",
+                  active
+                    ? "gf-anim-zone-glow-active"
+                    : "gf-anim-zone-glow-idle",
                 )}
-              </button>
-            );
-          })}
-        </div>
+              />
+              {active && (
+                <span className="absolute top-[10%] right-[10%] flex size-[22px] translate-x-[45%] -translate-y-[45%] items-center justify-center rounded-full bg-electric text-black shadow-[0_2px_8px_rgba(0,0,0,0.35)]">
+                  <Check className="size-3" strokeWidth={3.5} />
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       <button
