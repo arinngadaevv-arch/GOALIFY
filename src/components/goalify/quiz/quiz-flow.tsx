@@ -26,6 +26,7 @@ import { trackVisit } from "@/lib/goalify/track-visit";
 import { trackMetaEvent } from "@/lib/goalify/meta-pixel";
 import { markInstallPromptPending } from "@/lib/goalify/install-prompt";
 import { GlowButton } from "@/components/goalify/ui/glow-button";
+import { ParticleField } from "@/components/goalify/ui/particles";
 import { useUiSounds } from "@/components/goalify/use-ui-sounds";
 import { hasRealPhoto, OptionPhoto } from "./option-photo";
 import { QUIZ_ICONS, QuizIconBadge, type QuizIconKey } from "./quiz-icons";
@@ -659,6 +660,15 @@ export function QuizFlow() {
             style={{ willChange: "transform, opacity" }}
             className="relative flex flex-1 flex-col"
           >
+            {/* The tile-grid steps (dream physique, training level,
+                body-fat %) are the one layout with no ambient photo
+                backdrop of their own (see showAmbientBackdrop below,
+                radio-only) — a plain drifting sparkle field behind the
+                headline and cards fills what read as dead, static space
+                above the grid without competing with the photos. */}
+            {step.kind === "choice" && step.layout === "tile" && (
+              <ParticleField className="-z-10" />
+            )}
             {/* --------------------------------------------------- Big headline */}
             <div className="relative pt-1">
               <p className="text-[11px] font-black tracking-[0.16em] text-electric uppercase">
@@ -1370,13 +1380,25 @@ function PhotoOptionCard({
       // `group-hover`/`group-active` need a shared ancestor to react to
       // the same press/hover together with the photo's own zoom.
       <div className="group relative">
+        {/* Always-on ambient breathing glow — the card's "alive" state at
+            rest, not just a static shadow. Handed off to the brighter,
+            non-animated glow below the moment a card is actually picked,
+            so the two never fight over the same opacity. */}
         <div
           aria-hidden
           className={clsx(
-            "pointer-events-none absolute -inset-2 -z-10 rounded-[28px] bg-electric/25 opacity-60 blur-lg transition-all duration-300 ease-out",
-            "group-hover:bg-electric/35 group-hover:opacity-90 group-hover:blur-xl",
-            "group-active:bg-electric/45 group-active:opacity-100 group-active:blur-xl",
-            selected && "bg-electric/45 opacity-100 blur-xl",
+            "gf-anim-tile-glow-breathe pointer-events-none absolute -inset-2 -z-10 rounded-[28px] bg-electric/25 blur-lg",
+            `gf-delay-${index + 1}`,
+            selected && "hidden",
+          )}
+        />
+        <div
+          aria-hidden
+          className={clsx(
+            "pointer-events-none absolute -inset-2 -z-10 rounded-[28px] bg-electric/45 opacity-0 blur-xl transition-opacity duration-300 ease-out",
+            "group-hover:opacity-90",
+            "group-active:opacity-100",
+            selected && "opacity-100",
           )}
         />
         <button

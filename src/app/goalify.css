@@ -681,6 +681,31 @@ body.goalify-body:has(.gf-cyber-scope) .gf-ambience {
   animation: gf-zone-glow-active 1.8s ease-in-out infinite;
 }
 
+/* A slow, gentle breathe on the physique/tile cards' idle ambient glow
+   (see quiz-flow.tsx's PhotoOptionCard) — the static version read as flat
+   next to the rest of the quiz's more animated surfaces. Each card's own
+   `gf-delay-N` (already used for its entrance stagger) offsets this too,
+   so all four don't breathe in perfect unison. */
+@keyframes gf-tile-glow-breathe {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+.gf-anim-tile-glow-breathe {
+  animation: gf-tile-glow-breathe 3.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gf-anim-tile-glow-breathe {
+    animation: none !important;
+    opacity: 0.6;
+  }
+}
+
 .gf-delay-1 {
   animation-delay: 0.07s;
 }
