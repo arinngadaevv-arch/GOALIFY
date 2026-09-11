@@ -142,14 +142,6 @@ export function VitalsStep({
           disabled={locked}
           className="mt-10"
           slider
-          compareChart={
-            <WeightCompareChart
-              currentKg={weightKg}
-              targetKg={targetWeightKg}
-              min={40}
-              max={180}
-            />
-          }
         />
 
         {/* --------------------------------------------- Metric input grid */}
@@ -236,7 +228,6 @@ function NumberField({
   hero = false,
   className,
   badge,
-  compareChart,
   slider = false,
   // Off by default in the half-width grid cells: a card that narrow can't
   // fit icon + label + both steppers + a 3-digit number without the
@@ -258,9 +249,6 @@ function NumberField({
   hero?: boolean;
   className?: string;
   badge?: React.ReactNode;
-  /** Rendered to the right of the number row, not the label row — only
-   * the current-weight hero card uses this. */
-  compareChart?: React.ReactNode;
   /** A range track underneath the number row — kept in sync with the same
    * value/onChange/onCommit contract as typing and the steppers. */
   slider?: boolean;
@@ -413,13 +401,6 @@ function NumberField({
           )}
         </div>
       </div>
-      {/* A dedicated row, not squeezed onto the number row — steppers plus
-          a 3-digit number already fill a narrow phone's width on their
-          own, so the chart always gets its own line rather than being an
-          occasional side-effect of running out of horizontal room. */}
-      {compareChart && (
-        <div className="mt-2.5 flex justify-center">{compareChart}</div>
-      )}
       {slider && (
         <input
           type="range"
@@ -442,50 +423,6 @@ function NumberField({
           aria-label={`${label} (${unit})`}
         />
       )}
-    </div>
-  );
-}
-
-/**
- * A tiny two-bar comparison — current weight vs. target weight, scaled
- * proportionally within the field's own min/max range — sitting next to
- * the current-weight number rather than just stating the gap as text
- * (see WeightGoalBadge, which does that for the target-weight card).
- * Genuine data, not decoration: both bars move live as either number
- * changes.
- */
-function WeightCompareChart({
-  currentKg,
-  targetKg,
-  min,
-  max,
-}: {
-  currentKg: number;
-  targetKg: number;
-  min: number;
-  max: number;
-}) {
-  const barHeight = (v: number) => {
-    const pct = (v - min) / (max - min);
-    return 10 + pct * 30;
-  };
-  const deltaKg = currentKg - targetKg;
-
-  return (
-    <div className="flex shrink-0 flex-col items-center gap-1.5">
-      <div className="flex h-10 items-end gap-1.5" aria-hidden>
-        <div
-          className="w-2.5 rounded-full bg-mist/30 transition-[height] duration-300 ease-out"
-          style={{ height: barHeight(currentKg) }}
-        />
-        <div
-          className="w-2.5 rounded-full bg-electric shadow-[0_0_10px_-2px_rgba(232,179,44,0.9)] transition-[height] duration-300 ease-out"
-          style={{ height: barHeight(targetKg) }}
-        />
-      </div>
-      <span className="text-[9px] font-bold whitespace-nowrap text-mist">
-        {deltaKg === 0 ? "At goal" : `${Math.abs(deltaKg)}kg to go`}
-      </span>
     </div>
   );
 }
