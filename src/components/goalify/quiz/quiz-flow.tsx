@@ -1364,86 +1364,102 @@ function PhotoOptionCard({
   if (hasPhoto) {
     const StatIcon = QUIZ_ICONS[option.icon];
     return (
-      <button
-        type="button"
-        onClick={withBurst(onClick)}
-        disabled={disabled}
-        aria-pressed={selected}
-        // The border color is inline (not a Tailwind utility class)
-        // specifically so it always wins over `.gf-cyber-scope .gf-card`'s
-        // own border-color rule, no specificity fight — a faint gold hairline
-        // at rest (never the flat "dull white frame" look), brightening to
-        // the full selected ring once picked.
-        style={{
-          borderColor: selected ? undefined : "rgba(232,179,44,0.38)",
-          borderWidth: 1.5,
-        }}
-        className={clsx(
-          base,
-          "group relative flex aspect-[10/11] flex-col justify-end overflow-hidden p-3",
-          // The static selected ring (.gf-card-active, applied via `base`)
-          // is instant — this layers a blooming neon frame on top so the
-          // pick reads as a satisfying "lock-in," not just a flat outline
-          // snapping on.
-          selected && "gf-tile-frame-pulse",
-          // A one-time staggered entrance (never looping — see the
-          // animation-philosophy note on gf-milestone-pulse) so the four
-          // cards arrive as a choreographed beat instead of a flat dump.
-          "gf-anim-materialize",
-          `gf-delay-${index + 1}`,
-        )}
-      >
-        <div className="absolute inset-0">
-          <OptionPhoto
-            src={option.image}
-            alt={option.label}
-            label={option.label}
-            icon={option.icon}
-            className="h-full w-full"
-            // A living, premium feel on hover/touch — the photo itself
-            // breathes forward while the card frame stays put, clipped by
-            // OptionPhoto's own overflow-hidden bed.
-            imageClassName="scale-100 transition-transform duration-500 ease-out group-hover:scale-110 group-active:scale-110"
-          />
-        </div>
-        {/* Deeper wash than a plain bottom fade — text needs to pop at max
-            contrast regardless of how bright the photo underneath is. */}
+      // `group` lives here, not on the button — the ambient glow below is
+      // a sibling of the button (so it can bleed past the button's own
+      // `overflow-hidden` edge instead of being clipped by it), and
+      // `group-hover`/`group-active` need a shared ancestor to react to
+      // the same press/hover together with the photo's own zoom.
+      <div className="group relative">
         <div
-          className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-black/5"
           aria-hidden
-        />
-        <div
           className={clsx(
-            "absolute inset-0 bg-gradient-to-t from-electric/50 via-electric/15 to-transparent",
-            selected
-              ? "gf-tile-select-pulse opacity-100"
-              : "opacity-0 transition-opacity duration-300 ease-out",
+            "pointer-events-none absolute -inset-2 -z-10 rounded-[28px] bg-electric/25 opacity-60 blur-lg transition-all duration-300 ease-out",
+            "group-hover:bg-electric/35 group-hover:opacity-90 group-hover:blur-xl",
+            "group-active:bg-electric/45 group-active:opacity-100 group-active:blur-xl",
+            selected && "bg-electric/45 opacity-100 blur-xl",
           )}
-          aria-hidden
         />
-        {checkBadge}
-        <span className="gf-display relative text-xl leading-tight font-extrabold text-white">
-          {option.label}
-        </span>
-        {/* Sits in the darkened gradient strip below the title, not over
+        <button
+          type="button"
+          onClick={withBurst(onClick)}
+          disabled={disabled}
+          aria-pressed={selected}
+          // The border color is inline (not a Tailwind utility class)
+          // specifically so it always wins over `.gf-cyber-scope .gf-card`'s
+          // own border-color rule, no specificity fight — a faint gold hairline
+          // at rest (never the flat "dull white frame" look), brightening to
+          // the full selected ring once picked.
+          style={{
+            borderColor: selected ? undefined : "rgba(232,179,44,0.38)",
+            borderWidth: 1.5,
+          }}
+          className={clsx(
+            base,
+            "relative flex aspect-[10/11] w-full flex-col justify-end overflow-hidden p-3",
+            // The static selected ring (.gf-card-active, applied via `base`)
+            // is instant — this layers a blooming neon frame on top so the
+            // pick reads as a satisfying "lock-in," not just a flat outline
+            // snapping on.
+            selected && "gf-tile-frame-pulse",
+            // A one-time staggered entrance (never looping — see the
+            // animation-philosophy note on gf-milestone-pulse) so the four
+            // cards arrive as a choreographed beat instead of a flat dump.
+            "gf-anim-materialize",
+            `gf-delay-${index + 1}`,
+          )}
+        >
+          <div className="absolute inset-0">
+            <OptionPhoto
+              src={option.image}
+              alt={option.label}
+              label={option.label}
+              icon={option.icon}
+              className="h-full w-full"
+              // A living, premium feel on hover/touch — the photo itself
+              // breathes forward while the card frame stays put, clipped by
+              // OptionPhoto's own overflow-hidden bed.
+              imageClassName="scale-100 transition-transform duration-500 ease-out group-hover:scale-110 group-active:scale-110"
+            />
+          </div>
+          {/* Deeper wash than a plain bottom fade — text needs to pop at max
+            contrast regardless of how bright the photo underneath is. */}
+          <div
+            className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-black/5"
+            aria-hidden
+          />
+          <div
+            className={clsx(
+              "absolute inset-0 bg-gradient-to-t from-electric/50 via-electric/15 to-transparent",
+              selected
+                ? "gf-tile-select-pulse opacity-100"
+                : "opacity-0 transition-opacity duration-300 ease-out",
+            )}
+            aria-hidden
+          />
+          {checkBadge}
+          <span className="gf-display relative text-xl leading-tight font-extrabold text-white">
+            {option.label}
+          </span>
+          {/* Sits in the darkened gradient strip below the title, not over
             the photo — a top-corner placement used to land squarely on
             top of the person's face on every one of these portraits,
             which is exactly the kind of thing that reads as sloppy rather
             than premium. One short stat, one matching icon, popped in
             with its own beat right after the card lands so it still
             catches the eye without ever covering anyone's face. */}
-        {option.socialProof && (
-          <span
-            className={clsx(
-              "gf-anim-pop relative mt-1.5 inline-flex w-fit items-center gap-1 rounded-full border border-electric/70 bg-electric/20 px-2 py-1 text-[10px] font-black tracking-wide text-electric shadow-[0_0_16px_-3px_rgba(232,179,44,0.85)] backdrop-blur-sm",
-              `gf-delay-${index + 3}`,
-            )}
-          >
-            <StatIcon className="size-2.5" strokeWidth={3} />
-            {option.socialProof}
-          </span>
-        )}
-      </button>
+          {option.socialProof && (
+            <span
+              className={clsx(
+                "gf-anim-pop relative mt-1.5 inline-flex w-fit items-center gap-1 rounded-full border border-electric/70 bg-electric/20 px-2 py-1 text-[10px] font-black tracking-wide text-electric shadow-[0_0_16px_-3px_rgba(232,179,44,0.85)] backdrop-blur-sm",
+                `gf-delay-${index + 3}`,
+              )}
+            >
+              <StatIcon className="size-2.5" strokeWidth={3} />
+              {option.socialProof}
+            </span>
+          )}
+        </button>
+      </div>
     );
   }
   return (
