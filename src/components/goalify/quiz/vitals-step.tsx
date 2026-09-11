@@ -324,13 +324,7 @@ function NumberField({
         </label>
         {badge}
       </div>
-      <div
-        className={clsx(
-          "flex items-center",
-          hero ? "mt-3" : "mt-2",
-          compareChart ? "justify-between gap-4" : "gap-2",
-        )}
-      >
+      <div className={clsx("flex items-center gap-2", hero ? "mt-3" : "mt-2")}>
         <div className={clsx("flex items-center gap-2", !steppers && "flex-1")}>
           {steppers && (
             <button
@@ -418,8 +412,14 @@ function NumberField({
             </button>
           )}
         </div>
-        {compareChart}
       </div>
+      {/* A dedicated row, not squeezed onto the number row — steppers plus
+          a 3-digit number already fill a narrow phone's width on their
+          own, so the chart always gets its own line rather than being an
+          occasional side-effect of running out of horizontal room. */}
+      {compareChart && (
+        <div className="mt-2.5 flex justify-center">{compareChart}</div>
+      )}
       {slider && (
         <input
           type="range"
