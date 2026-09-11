@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import clsx from "clsx";
+import { motion } from "framer-motion";
 import {
   Camera,
   Flame,
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 import { useGoalify, todayKey } from "@/lib/goalify/store";
 import { projectWeight, weeksToTarget } from "@/lib/goalify/plan";
+import { useCountUp } from "@/lib/goalify/use-count-up";
 import { BADGES } from "@/lib/goalify/badges";
 import { AppShell } from "./app-shell";
 import { GlassCard } from "./ui/glass-card";
@@ -41,6 +43,10 @@ export function Progress() {
   const doneInGrid = last30.filter((day) => day.done).length;
   const [selectedDayKey, setSelectedDayKey] = useState<string | null>(null);
   const selectedDay = last30.find((day) => day.key === selectedDayKey) ?? null;
+
+  const displayedCompleted = useCountUp(completed);
+  const displayedStreak = useCountUp(streak);
+  const displayedDoneInGrid = useCountUp(doneInGrid);
 
   return (
     <AppShell dark title="Progress" subtitle="The proof it's working">
@@ -98,19 +104,25 @@ export function Progress() {
 
             <div className="mt-5 grid grid-cols-3 divide-x divide-ink/8 rounded-3xl bg-black/20 p-4">
               <div className="px-2 text-center first:pl-0 last:pr-0">
-                <p className="gf-numeric text-xl font-black text-ink">{completed}</p>
+                <p className="gf-numeric text-xl font-black text-ink">
+                  {Math.round(displayedCompleted)}
+                </p>
                 <p className="mt-0.5 text-[10px] font-bold tracking-[0.08em] text-mist uppercase">
                   Sessions
                 </p>
               </div>
               <div className="px-2 text-center first:pl-0 last:pr-0">
-                <p className="gf-numeric text-xl font-black text-electric">{streak}</p>
+                <p className="gf-numeric text-xl font-black text-electric">
+                  {Math.round(displayedStreak)}
+                </p>
                 <p className="mt-0.5 text-[10px] font-bold tracking-[0.08em] text-mist uppercase">
                   Day streak
                 </p>
               </div>
               <div className="px-2 text-center first:pl-0 last:pr-0">
-                <p className="gf-numeric text-xl font-black text-ink">{doneInGrid}/30</p>
+                <p className="gf-numeric text-xl font-black text-ink">
+                  {Math.round(displayedDoneInGrid)}/30
+                </p>
                 <p className="mt-0.5 text-[10px] font-bold tracking-[0.08em] text-mist uppercase">
                   Last 30 days
                 </p>
@@ -485,14 +497,48 @@ function TrendChart({ points }: { points: { week: number; weight: number }[] }) 
           />
         ))}
 
-        <path d={area} fill="url(#gf-trend)" />
-        <path
+        <motion.path
+          d={area}
+          fill="url(#gf-trend)"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+        />
+        {/* The line draws itself in on mount instead of just appearing —
+            a chart that arrives already-finished reads as a static
+            illustration; one that traces its own path reads as momentum,
+            which is the actual point of a trendline screen. */}
+        <motion.path
           d={line}
           fill="none"
           stroke={CHART_GOLD}
-          strokeWidth="3.5"
+          strokeWidth="4"
           strokeLinecap="round"
           strokeLinejoin="round"
+          style={{ filter: "drop-shadow(0 0 7px rgba(227,193,95,0.55))" }}
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+        />
+
+        {/* "Today" dot gets a live radar ping — a looping expanding ring —
+            instead of sitting there as a flat marker, so the start of the
+            line reads as an active position, not just a chart origin. */}
+        <motion.circle
+          cx={coords[0].x}
+          cy={coords[0].y}
+          r={5}
+          fill="none"
+          stroke={CHART_GOLD}
+          strokeWidth={2}
+          initial={{ opacity: 0 }}
+          animate={{ r: [5, 15], opacity: [0.7, 0] }}
+          transition={{
+            duration: 1.8,
+            repeat: Infinity,
+            ease: "easeOut",
+            delay: 1.1,
+          }}
         />
         <circle
           cx={coords[0].x}
@@ -509,6 +555,7 @@ function TrendChart({ points }: { points: { week: number; weight: number }[] }) 
           fill={CHART_DEEP}
           stroke="#0b0e14"
           strokeWidth="3"
+          style={{ filter: "drop-shadow(0 0 6px rgba(227,193,95,0.5))" }}
         />
 
         {hoveredCoord && (

@@ -1,88 +1,79 @@
 /**
- * The daily creed bank — deliberately blunt, no-excuses lines in the same
- * voice the app's workout copy already uses.
- *
- * Selection is derived from the date, not `Math.random()`: the same day
- * always yields the same line, so it can't reshuffle on every re-render or
- * differ between the server and client render (which would hydrate-mismatch),
- * and it genuinely reads as "today's line" rather than a slot machine.
+ * The daily creed bank — toxic, sarcastic, no-mercy one-liners. Not
+ * encouragement; a roast. `DailyCreed` cycles through this list on a
+ * timer, so order doesn't matter and nothing here needs to be
+ * deterministic per day the way an earlier, gentler version of this list
+ * was.
  */
 
 export type Creed = {
   /** The punch — short enough to land in one glance. */
   line: string;
-  /** The quieter follow-through underneath it. */
+  /** The knife twist underneath it. */
   sub: string;
 };
 
-const CREEDS: Creed[] = [
+export const CREEDS: Creed[] = [
   {
-    line: "NO ZERO DAYS",
-    sub: "Twenty-four minutes beats a perfect plan you never start.",
+    line: "NOBODY'S COMING TO SAVE YOU",
+    sub: "Not your trainer, not your horoscope. Get up.",
   },
   {
-    line: "DISCIPLINE OVER MOTIVATION",
-    sub: "Motivation shows up when it feels like it. Discipline shows up anyway.",
+    line: "YOUR EXCUSES ARE BORING",
+    sub: "Honestly, even you don't believe them anymore.",
   },
   {
-    line: "OUTWORK YESTERDAY",
-    sub: "You're not competing with anyone else on this app. Only the version of you from yesterday.",
+    line: "STILL WAITING FOR MOTIVATION?",
+    sub: "Cute. It's not coming. Move anyway.",
   },
   {
-    line: "THE WORK IS THE POINT",
-    sub: "Nobody gets the result without the reps. There is no shortcut being kept from you.",
+    line: "THE MIRROR DOESN'T LIE",
+    sub: "Unlike your Instagram captions.",
   },
   {
-    line: "SHOW UP TIRED",
-    sub: "The sessions you do when you don't feel like it are the ones that actually change you.",
+    line: "THAT'S NOT TIRED, THAT'S SOFT",
+    sub: "Tired is what happens after the workout. This is just Tuesday.",
   },
   {
-    line: "SORE TODAY, STRONG TOMORROW",
-    sub: "That ache is the receipt. Keep it coming.",
+    line: "COMFORTABLE IS A CAGE",
+    sub: "You built it yourself. Here's the door.",
   },
   {
-    line: "EXCUSES DON'T BURN CALORIES",
-    sub: "You already know what today needs. Go do it.",
+    line: "YOUR BODY DOESN'T CARE ABOUT YOUR BAD DAY",
+    sub: "It just knows whether you showed up or not.",
   },
   {
-    line: "SMALL REPS, COMPOUND RESULTS",
-    sub: "One session changes nothing. A hundred sessions change everything.",
+    line: "STOP NEGOTIATING WITH YOURSELF",
+    sub: "You always let you win. That's exactly the problem.",
   },
   {
-    line: "YOUR PLATE COUNTS TOO",
-    sub: "You can't out-train what you eat. Fuel it like you mean it.",
+    line: "SAME EXCUSE, DIFFERENT DAY",
+    sub: "At least be original. Or just go train.",
   },
   {
-    line: "CONSISTENCY IS THE CHEAT CODE",
-    sub: "The people who get there aren't stronger. They just didn't stop.",
+    line: "YOUR FUTURE SELF IS EMBARRASSED",
+    sub: "Watching you scroll instead of training. Right now.",
   },
   {
-    line: "START BEFORE YOU'RE READY",
-    sub: "Ready is a feeling that arrives after you begin, never before.",
+    line: "THIS IS THE PART YOU KEEP SKIPPING",
+    sub: "It's also the only part that actually works.",
   },
   {
-    line: "PROTECT THE STREAK",
-    sub: "Missing once is an accident. Missing twice is a new habit.",
+    line: "TALK IS FREE. RESULTS AREN'T",
+    sub: "Pay up.",
   },
   {
-    line: "COMFORT IS THE ENEMY",
-    sub: "Nothing worth having sits inside the range you're already comfortable in.",
+    line: "YOU HAD ALL DAY",
+    sub: "And you're doing this now. Fine. Go.",
   },
   {
-    line: "EARN IT TODAY",
-    sub: "The body you want is downstream of the choices you make in the next hour.",
+    line: "NOBODY'S IMPRESSED YET",
+    sub: "Give them a reason to be.",
+  },
+  {
+    line: "IT'S NOT GOING TO FEEL LIKE IT",
+    sub: "It never does. Start anyway — that's the whole trick.",
   },
 ];
-
-/** Days since the epoch — stable for a whole calendar day in local time. */
-function dayIndex(date: Date): number {
-  const local = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  return Math.floor(local.getTime() / 86_400_000);
-}
-
-/** Today's creed. Rotates once per day, deterministically. */
-export function creedForDay(date = new Date()): Creed {
-  return CREEDS[((dayIndex(date) % CREEDS.length) + CREEDS.length) % CREEDS.length];
-}
 
 export const CREED_COUNT = CREEDS.length;

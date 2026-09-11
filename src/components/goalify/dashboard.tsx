@@ -154,47 +154,44 @@ export function Dashboard() {
       <ParticleBurstLayer />
 
       {/* ------------------------------------------------------- Briefing
-          One quiet line instead of a pulsing flame banner plus a scrolling
-          hype ticker — the day, the plan, and today's one job, read in a
-          glance. The streak still gets a moment (a small chip, not a
-          section) so the number isn't lost, just no longer shouting. */}
-      <div className="gf-reveal mb-7 flex flex-wrap items-start justify-between gap-3">
-        <p className="min-w-0 flex-1 text-sm leading-relaxed text-ink-soft">
-          Day {state.programDay} of your {goalLabel(answers.goal).toLowerCase()}{" "}
-          plan.{" "}
+          One status line, one job: say what day/plan/streak this is. No
+          competing call-to-action here anymore — the workout card right
+          below already owns "start the session" (its own big CTA), so a
+          second streak-flavored button up here was just duplicating it
+          with different wording ("Start your streak" vs. "Start N-min
+          session") for the same tap. Streak now reads inline as part of
+          the status line instead of as its own chip/button. */}
+      <div className="gf-reveal mb-7">
+        <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] font-bold tracking-[0.1em] text-mist uppercase">
+          <span>Day {state.programDay}</span>
+          <span className="text-mist/30">·</span>
+          <span>{goalLabel(answers.goal)} plan</span>
+          {streak > 0 && (
+            <>
+              <span className="text-mist/30">·</span>
+              <span
+                className={clsx(
+                  "flex items-center gap-1 tracking-normal text-electric normal-case",
+                  streakJustPopped && "gf-anim-pop",
+                )}
+              >
+                <FlameIcon
+                  className="gf-anim-flicker-flame size-3 fill-current"
+                  aria-hidden
+                />
+                <span className="gf-numeric font-black">
+                  {Math.round(displayedStreak)}
+                </span>
+                -day streak
+              </span>
+            </>
+          )}
+        </p>
+        <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">
           {workoutDoneToday
             ? "Today's session is done — nice work."
             : `A ${workout.durationMinutes}-minute session is waiting for you.`}
         </p>
-        {streak > 0 ? (
-          <span
-            className={clsx(
-              "gf-streak-badge flex shrink-0 items-center gap-1.5 rounded-full border border-electric/25 bg-electric/8 px-3 py-1.5",
-              streakJustPopped && "gf-anim-pop",
-            )}
-          >
-            {/* A lucide icon instead of the 🔥 emoji — the emoji renders in
-                its own native red-orange, which broke the single gold
-                accent language everywhere else on this screen. */}
-            <FlameIcon
-              className="gf-anim-flicker-flame size-3.5 fill-current text-electric"
-              aria-hidden
-            />
-            <span className="gf-numeric text-xs font-black text-ink">
-              {Math.round(displayedStreak)}
-            </span>
-          </span>
-        ) : (
-          <Link
-            href="/workout/launch"
-            className="gf-press flex shrink-0 items-center gap-1.5 rounded-full border border-electric/25 bg-electric/8 px-3 py-1.5"
-          >
-            <FlameIcon className="size-3.5 fill-current text-electric" aria-hidden />
-            <span className="text-[11px] font-black tracking-tight text-electric uppercase">
-              Start your streak
-            </span>
-          </Link>
-        )}
       </div>
 
       {/* --------------------------------------------------- Today's creed */}

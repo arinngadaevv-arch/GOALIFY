@@ -1,108 +1,74 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Flame } from "lucide-react";
-import { creedForDay } from "@/lib/goalify/motivation";
-import { GlassCard } from "./ui/glass-card";
+import { CREEDS } from "@/lib/goalify/motivation";
+
+const ROTATE_MS = 8000;
 
 /**
- * Today's creed — the app's one loud moment. Deliberately not a carousel:
- * a line that rotates every few seconds reads as decoration and gets
- * tuned out, whereas a single line that's fixed for the whole day reads
- * as something addressed to you.
+ * A rotating toxic-motivation callout — a roast, not encouragement. Cycles
+ * to the next line every `ROTATE_MS` on a plain interval; which line is
+ * showing isn't part of any persisted state, so a remount (tab switch,
+ * navigation back to Home) just starts again from index 0 — that's fine,
+ * this is background noise, not something that needs to survive a
+ * hydration boundary.
  *
- * The words animate in one at a time on mount, and a slow gold sheen
- * sweeps across the card on a loop underneath them. A giant, barely-there
- * flame watermark sits behind everything — the beat this card is going
- * for ("this one line matters today") needs something to look at even in
- * a static instant between animation frames, not just motion carrying the
- * whole effect.
- *
- * `creedForDay()` is date-derived rather than random so the server and
- * client render the same words — no hydration mismatch. Framer Motion
- * renders each `initial` state into the SSR markup and animates to
- * `animate` on hydration, so no manual mount gate is needed.
+ * Visually harder than the rest of this screen on purpose: a solid black
+ * card with a thick border and a hazard-stripe top edge instead of the
+ * soft translucent `GlassCard` used everywhere else, a stark white
+ * headline instead of a gold gradient, and a fast hard-cut transition
+ * between lines instead of a gentle staggered word reveal — this card is
+ * supposed to read as blunt, not polished.
  */
 export function DailyCreed() {
-  const creed = creedForDay();
-  const words = creed.line.split(" ");
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setIndex((i) => (i + 1) % CREEDS.length);
+    }, ROTATE_MS);
+    return () => clearInterval(id);
+  }, []);
+
+  const creed = CREEDS[index];
 
   return (
-    <GlassCard
-      tone="electric"
-      deep
-      className="gf-anim-rise relative isolate overflow-hidden p-6 text-center"
-    >
-      {/* Oversized watermark flame, cropped by the card's own edges — the
-          one piece of visual interest that's there even before anything
-          animates. */}
-      <Flame
+    <div className="relative isolate overflow-hidden rounded-2xl border-2 border-electric bg-black p-6 text-center shadow-[0_18px_40px_-18px_rgba(232,179,44,0.5)]">
+      {/* Hazard-stripe top edge — the one piece of texture that reads as
+          "warning label," not "premium glass panel." */}
+      <div
         aria-hidden
-        className="pointer-events-none absolute top-1/2 left-1/2 size-56 -translate-x-1/2 -translate-y-1/2 text-electric/[0.07]"
-        strokeWidth={1}
+        className="absolute inset-x-0 top-0 h-1.5 bg-[repeating-linear-gradient(135deg,var(--color-electric)_0px,var(--color-electric)_9px,#000_9px,#000_18px)]"
       />
 
-      {/* Slow sheen sweep — pure decoration, sits under the text. */}
-      <motion.div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 bg-gradient-to-r from-transparent via-electric/20 to-transparent"
-        animate={{ left: ["-33%", "133%"] }}
-        transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", repeatDelay: 2.5 }}
-      />
-
-      <div className="relative flex items-center justify-center gap-2">
-        <span className="gf-glow-electric grid size-6 place-items-center rounded-full bg-electric">
-          <Flame
-            className="gf-anim-flicker-flame size-3.5 text-white"
-            strokeWidth={2.8}
-          />
-        </span>
-        <p className="text-[10px] font-black tracking-[0.18em] text-electric uppercase">
-          Today&apos;s creed
+      <div className="relative flex items-center justify-center gap-2 pt-1.5">
+        <Flame className="size-4 text-electric" strokeWidth={3} />
+        <p className="text-[10px] font-black tracking-[0.22em] text-electric uppercase">
+          Reality check
         </p>
       </div>
 
-      {/* Splitting into per-word spans is what makes the stagger possible,
-          but it leaves no whitespace in the accessible name — the gap is
-          purely visual (flex gap-x), so a screen reader would announce
-          "SHOWUPTIRED". An explicit aria-label restores the real sentence
-          and the spans are hidden from the tree.
-          No `filter` in the per-word animation here — this heading also
-          carries `gf-text-electric` (a `background-clip: text` gradient),
-          and an animated `filter` on a descendant of a clipped-text
-          element is a known Chromium/WebKit compositing bug: the text
-          renders fully invisible for the element's whole lifetime, not
-          just mid-transition. Opacity + a Y shift alone gets basically
-          the same "settling into place" read without tripping it. */}
-      <h2
-        aria-label={creed.line}
-        className="gf-text-electric gf-display relative mt-3 flex flex-wrap justify-center gap-x-2 text-3xl leading-tight font-black"
-      >
-        {words.map((word, i) => (
-          <motion.span
-            key={`${creed.line}-${i}`}
-            aria-hidden
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.5,
-              delay: 0.12 + i * 0.09,
-              ease: [0.22, 1, 0.36, 1],
-            }}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={index}
+          initial={{ opacity: 0, scale: 1.03 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.98 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
+        >
+          <h2
+            aria-label={creed.line}
+            className="gf-display relative mt-3 text-3xl leading-tight font-black text-white uppercase"
           >
-            {word}
-          </motion.span>
-        ))}
-      </h2>
-
-      <motion.p
-        className="relative mt-3 text-xs leading-relaxed text-mist"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, delay: 0.15 + words.length * 0.09 }}
-      >
-        {creed.sub}
-      </motion.p>
-    </GlassCard>
+            {creed.line}
+          </h2>
+          <p className="relative mt-3 text-xs leading-relaxed text-mist">
+            {creed.sub}
+          </p>
+        </motion.div>
+      </AnimatePresence>
+    </div>
   );
 }

@@ -430,10 +430,11 @@ function NumberField({
 /**
  * The age/height picker — a big value in the center with its two
  * neighbors shown faded directly above and below, like a stopped scroll
- * wheel. Three ways to move it: scroll/trackpad over the widget, tap
- * either faded neighbor to jump straight to it, or arrow keys once
- * focused — no free-typing here, unlike the weight cards, since a rough
- * age or height is exactly what someone would rather scroll to than type.
+ * wheel. Four ways to move it: scroll/trackpad over the widget, tap either
+ * faded neighbor to jump straight to it, arrow keys once focused, or tap
+ * the center value itself to type an exact number directly — for anyone
+ * who already knows their exact age/height and would rather not scroll
+ * there one step at a time.
  */
 function WheelField({
   icon: Icon,
@@ -456,6 +457,10 @@ function WheelField({
   onCommit: () => void;
   disabled?: boolean;
 }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(() => String(value));
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const stepTo = (next: number) => {
     const clamped = Math.min(max, Math.max(min, next));
     if (clamped !== value) {
@@ -463,6 +468,25 @@ function WheelField({
       onCommit();
     }
   };
+
+  const startEditing = () => {
+    if (disabled) return;
+    setDraft(String(value));
+    setEditing(true);
+  };
+
+  const commitEdit = () => {
+    setEditing(false);
+    const trimmed = draft.trim();
+    if (trimmed === "") return;
+    const parsed = Number(trimmed);
+    if (Number.isNaN(parsed)) return;
+    stepTo(Math.round(parsed));
+  };
+
+  useEffect(() => {
+    if (editing) inputRef.current?.focus();
+  }, [editing]);
 
   const prevValue = value - 1;
   const nextValue = value + 1;
@@ -478,13 +502,14 @@ function WheelField({
     const el = wheelRef.current;
     if (!el || disabled) return;
     const handleWheel = (event: WheelEvent) => {
+      if (editing) return;
       event.preventDefault();
       stepTo(value + (event.deltaY > 0 ? -1 : 1));
     };
     el.addEventListener("wheel", handleWheel, { passive: false });
     return () => el.removeEventListener("wheel", handleWheel);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- re-binds whenever `value` moves so the closure's step always starts from the latest value.
-  }, [value, disabled, min, max]);
+  }, [value, disabled, min, max, editing]);
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-electric/25 bg-gradient-to-b from-[#161B26] to-[#0B0E14] p-5">
@@ -497,14 +522,14 @@ function WheelField({
 
       <div
         ref={wheelRef}
-        role="spinbutton"
-        aria-label={`${label} (${unit})`}
-        aria-valuenow={value}
-        aria-valuemin={min}
-        aria-valuemax={max}
-        tabIndex={disabled ? -1 : 0}
+        role={editing ? undefined : "spinbutton"}
+        aria-label={editing ? undefined : `${label} (${unit})`}
+        aria-valuenow={editing ? undefined : value}
+        aria-valuemin={editing ? undefined : min}
+        aria-valuemax={editing ? undefined : max}
+        tabIndex={disabled || editing ? -1 : 0}
         onKeyDown={(event) => {
-          if (disabled) return;
+          if (disabled || editing) return;
           if (event.key === "ArrowUp") {
             event.preventDefault();
             stepTo(value + 1);
@@ -514,11 +539,14 @@ function WheelField({
             stepTo(value - 1);
           }
         }}
-        className="mt-2 flex cursor-ns-resize flex-col items-center gap-0.5 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-electric/50"
+        className={clsx(
+          "mt-2 flex flex-col items-center gap-0.5 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-electric/50",
+          !editing && "cursor-ns-resize",
+        )}
       >
         <button
           type="button"
-          disabled={disabled || prevValue < min}
+          disabled={disabled || editing || prevValue < min}
           onClick={() => stepTo(prevValue)}
           aria-label={
             prevValue >= min ? `Set ${label} to ${prevValue}` : undefined
@@ -528,13 +556,43 @@ function WheelField({
         >
           {prevValue >= min ? prevValue : ""}
         </button>
-        <span className="gf-numeric flex items-baseline gap-1 text-4xl font-black text-[#FFC700]">
-          {value}
-          <span className="text-sm font-bold text-mist">{unit}</span>
-        </span>
+        {editing ? (
+          <input
+            ref={inputRef}
+            type="text"
+            inputMode="numeric"
+            value={draft}
+            onChange={(event) => {
+              const next = event.target.value;
+              if (next === "" || /^\d{0,3}$/.test(next)) setDraft(next);
+            }}
+            onBlur={commitEdit}
+            onKeyDown={(event) => {
+              event.stopPropagation();
+              if (event.key === "Enter") event.currentTarget.blur();
+              if (event.key === "Escape") {
+                setDraft(String(value));
+                setEditing(false);
+              }
+            }}
+            aria-label={`${label} (${unit})`}
+            className="gf-numeric w-16 bg-transparent text-center text-4xl font-black text-[#FFC700] outline-none"
+          />
+        ) : (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={startEditing}
+            aria-label={`${label}: ${value} ${unit}. Tap to type a value.`}
+            className="gf-numeric flex items-baseline gap-1 text-4xl font-black text-[#FFC700] outline-none disabled:pointer-events-none"
+          >
+            {value}
+            <span className="text-sm font-bold text-mist">{unit}</span>
+          </button>
+        )}
         <button
           type="button"
-          disabled={disabled || nextValue > max}
+          disabled={disabled || editing || nextValue > max}
           onClick={() => stepTo(nextValue)}
           aria-label={
             nextValue <= max ? `Set ${label} to ${nextValue}` : undefined
