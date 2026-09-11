@@ -193,6 +193,18 @@ type WhopAccountCheck = {
 
 const PLAN_OPTIONS: PlanTier[] = ["FREE", "PRO", "BUSINESS"];
 
+/** A paid-tier account with no `checkoutEvents` row behind it: Whop grants
+ * `plan` before the first real charge (see api/webhooks/whop's
+ * `membership.went_valid` handler), so this is the one place that
+ * distinguishes "on a free trial" from "actually paid" without any new
+ * column — it's derived from the same two signals the table already
+ * shows. Also true for a plan an admin granted by hand via the dropdown
+ * below, since that never writes a checkoutEvents row either; there's no
+ * way to tell those two apart from this data alone. */
+function isOnTrial(user: AdminUserRow) {
+  return user.plan !== "FREE" && !user.latestOrder;
+}
+
 function formatMoney(cents: number) {
   return `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
@@ -254,10 +266,16 @@ export function AdminDashboard({
   whopCheckoutConfig: WhopCheckoutConfig;
 }) {
   const [query, setQuery] = useState("");
-  const [planFilter, setPlanFilter] = useState<PlanTier | "ALL">("ALL");
+  const [planFilter, setPlanFilter] = useState<PlanTier | "ALL" | "TRIAL">(
+    "ALL",
+  );
 
   const filteredUsers = users.filter((user) => {
-    if (planFilter !== "ALL" && user.plan !== planFilter) return false;
+    if (planFilter === "TRIAL") {
+      if (!isOnTrial(user)) return false;
+    } else if (planFilter !== "ALL" && user.plan !== planFilter) {
+      return false;
+    }
     if (!query.trim()) return true;
     const needle = query.trim().toLowerCase();
     return (
@@ -587,7 +605,9 @@ export function AdminDashboard({
             </div>
             <select
               value={planFilter}
-              onChange={(event) => setPlanFilter(event.target.value as PlanTier | "ALL")}
+              onChange={(event) =>
+                setPlanFilter(event.target.value as PlanTier | "ALL" | "TRIAL")
+              }
               className="rounded-xl border border-ink/10 bg-transparent px-3 py-2 text-xs font-bold text-ink outline-none focus:border-electric/40"
             >
               <option value="ALL">All plans</option>
@@ -596,6 +616,7 @@ export function AdminDashboard({
                   {option}
                 </option>
               ))}
+              <option value="TRIAL">On trial (no payment)</option>
             </select>
           </div>
 
@@ -1673,6 +1694,14 @@ function UserRow({ user }: { user: AdminUserRow }) {
               </option>
             ))}
           </select>
+          {plan !== "FREE" && !user.latestOrder && (
+            <span
+              title="Paid-tier access with no matching payment on record — a Whop trial in progress, or granted by hand."
+              className="whitespace-nowrap rounded-lg border border-electric/30 bg-electric/10 px-2 py-1 text-[10px] font-bold text-electric"
+            >
+              Trial
+            </span>
+          )}
           {plan === "FREE" && !saving && (
             <button
               type="button"
