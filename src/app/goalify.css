@@ -1632,6 +1632,78 @@ html.goalify ::-webkit-scrollbar-thumb {
   -moz-appearance: textfield;
 }
 
+/* --- Vitals weight sliders -------------------------------------------------- */
+
+/* A native <input type="range">, restyled from scratch — the filled portion
+   of the track is painted by the element's own `background` (a hard-stop
+   linear-gradient the component recomputes to `--gf-range-percent` on every
+   value change), so the thumb always sits right at the edge of the fill
+   with no separate overlay element to keep in sync. */
+.gf-range {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  outline: none;
+}
+
+.gf-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--color-electric);
+  border: 3px solid #0b0e14;
+  box-shadow:
+    0 0 0 1px rgba(232, 179, 44, 0.6),
+    0 4px 12px -2px rgba(232, 179, 44, 0.7);
+  transition:
+    transform 0.15s ease-out,
+    box-shadow 0.15s ease-out;
+}
+
+.gf-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--color-electric);
+  border: 3px solid #0b0e14;
+  box-shadow:
+    0 0 0 1px rgba(232, 179, 44, 0.6),
+    0 4px 12px -2px rgba(232, 179, 44, 0.7);
+  transition:
+    transform 0.15s ease-out,
+    box-shadow 0.15s ease-out;
+}
+
+.gf-range:hover::-webkit-slider-thumb,
+.gf-range:focus-visible::-webkit-slider-thumb {
+  transform: scale(1.15);
+  box-shadow:
+    0 0 0 1px rgba(232, 179, 44, 0.8),
+    0 0 20px -2px rgba(232, 179, 44, 0.9);
+}
+
+.gf-range:hover::-moz-range-thumb,
+.gf-range:focus-visible::-moz-range-thumb {
+  transform: scale(1.15);
+  box-shadow:
+    0 0 0 1px rgba(232, 179, 44, 0.8),
+    0 0 20px -2px rgba(232, 179, 44, 0.9);
+}
+
+.gf-range:active::-webkit-slider-thumb {
+  transform: scale(1.25);
+}
+
+.gf-range:active::-moz-range-thumb {
+  transform: scale(1.25);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .gf-cyber-border::before,
   .gf-cyber-hype-badge,
