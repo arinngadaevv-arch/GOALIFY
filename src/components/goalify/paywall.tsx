@@ -64,16 +64,15 @@ export function Paywall() {
   const [error, setError] = useState<string | null>(null);
   const planSectionRef = useRef<HTMLElement>(null);
 
-  // The pricing cards start just below the fold on most phones (see the
-  // hero + headline + plan-summary card above them) — a first-time visitor
-  // can miss that there's more to see. A small automatic nudge downward,
-  // just enough to bring the cards into view, points at them without
-  // fully snapping the page to the top of that section (which would push
-  // the "GET YOUR PLAN" headline and the personalized plan summary out of
-  // view entirely, losing the context for why these prices are what they
-  // are). `block: "nearest"` is what keeps it a small nudge instead of a
-  // hard scroll-to-top — it's a no-op once the section is already in
-  // view, e.g. on a tall viewport where nothing needs to move.
+  // The trajectory card (what this plan actually gets someone, six months
+  // out) now sits right above pricing on purpose — see that section's own
+  // comment — so the half-second delay before this fires is what gives it
+  // a moment on screen before the page moves on. The nudge itself brings
+  // pricing into view without fully snapping to the top of that section
+  // (which would push the trajectory and plan-summary context out of view
+  // entirely). `block: "nearest"` is what keeps it a small nudge instead of
+  // a hard scroll-to-top — a no-op once pricing is already in view, e.g. on
+  // a tall viewport where nothing needs to move.
   useEffect(() => {
     const timer = window.setTimeout(() => {
       planSectionRef.current?.scrollIntoView({
@@ -202,10 +201,21 @@ export function Paywall() {
           comment above. */}
       <PlanSummaryCard answers={answers} targets={targets} todaysWorkout={todaysWorkout} />
 
+      {/* ------------------------------------- The one big visual: trajectory
+          Sits right here, before pricing, on purpose — "here's what you're
+          actually buying" has to land before "here's what it costs," or
+          the auto-scroll below carries someone straight past it into the
+          pricing cards without ever seeing it. */}
+      <TransformationCard
+        weightKg={answers.weightKg}
+        targetWeightKg={answers.targetWeightKg}
+        goal={goalLabel(answers.goal)}
+      />
+
       {/* ------------------------------------------------------ Plan selection
-          Right after the plan summary — see the file-level comment above.
-          `planSectionRef` is what the auto-scroll effect above nudges into
-          view a half-second after mount. */}
+          Right after the trajectory — see the comment above it. `planSectionRef`
+          is what the auto-scroll effect above nudges into view a half-second
+          after mount, once the trajectory has had a moment on screen. */}
       <section ref={planSectionRef} className="gf-anim-rise relative mt-6">
         <p className="text-center text-[11px] font-black tracking-[0.16em] text-mist uppercase">
           Choose your plan
@@ -335,13 +345,6 @@ export function Paywall() {
           })}
         </div>
       </section>
-
-      {/* ------------------------------------- The one big visual: trajectory */}
-      <TransformationCard
-        weightKg={answers.weightKg}
-        targetWeightKg={answers.targetWeightKg}
-        goal={goalLabel(answers.goal)}
-      />
 
       {/* ----------------------------------------------------------- Sticky CTA */}
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-electric/20 bg-[#0b0e14]/95 backdrop-blur-md">

@@ -916,7 +916,7 @@ function ChoiceStep({
                 )}
               >
                 <span
-                  className="gf-display pointer-events-none absolute -top-3 right-2 text-6xl font-black text-white/[0.05] select-none"
+                  className="gf-display pointer-events-none absolute -top-3 right-2 text-6xl font-black text-white/[0.03] select-none"
                   aria-hidden
                 >
                   {String(index + 1).padStart(2, "0")}
