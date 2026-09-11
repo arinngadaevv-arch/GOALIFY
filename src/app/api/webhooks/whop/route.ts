@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { checkoutEvents, users } from "@/lib/db/schema";
@@ -142,7 +142,17 @@ export async function POST(req: Request) {
     }
     await db
       .update(users)
-      .set({ plan: type === "membership.went_valid" ? "PRO" : "FREE" })
+      .set(
+        type === "membership.went_valid"
+          ? {
+              plan: "PRO",
+              // `coalesce` — only fills this in the first time; a later
+              // went_valid for the same user (e.g. a webhook redelivery)
+              // must never push the timestamp forward.
+              trialStartedAt: sql`coalesce(${users.trialStartedAt}, now())`,
+            }
+          : { plan: "FREE" },
+      )
       .where(eq(users.id, userId));
     return NextResponse.json({ ok: true });
   }

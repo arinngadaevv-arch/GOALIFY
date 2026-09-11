@@ -26,6 +26,7 @@ import {
 import { GlassCard } from "@/components/goalify/ui/glass-card";
 import { Pill } from "@/components/goalify/ui/stat";
 import { VisitorTrendChart, type VisitorTrend } from "./visitor-trend-chart";
+import { RevenueTrendChart } from "./revenue-trend-chart";
 import { goalLabel, levelLabel } from "@/lib/goalify/plan";
 import type { Goal, Level } from "@/lib/goalify/types";
 import { allKnownClips, diagnoseSupabaseUrl } from "@/lib/goalify/video";
@@ -41,12 +42,29 @@ export type AdminUserRow = {
   hasAcceptedTerms: boolean;
   createdAt: string;
   lastActiveAt: string | null;
-  quiz: { goal: Goal | null; level: Level | null; daysPerWeek: number | null; completedAt: string } | null;
-  latestOrder: { tierLabel: string; priceCents: number; createdAt: string } | null;
+  quiz: {
+    goal: Goal | null;
+    level: Level | null;
+    daysPerWeek: number | null;
+    completedAt: string;
+  } | null;
+  latestOrder: {
+    tierLabel: string;
+    priceCents: number;
+    createdAt: string;
+  } | null;
   /** "instagram", "tiktok", "google_search", "direct", etc. — see
    * lib/goalify/attribution.ts. Null for accounts created before this
    * shipped, or if the visitor's browser stripped the referrer entirely. */
   signupSource: string | null;
+  /** Manual admin triage — see db/schema.ts's adminFlag/adminNote. Both
+   * independent of each other and of `plan`/`latestOrder`. */
+  adminFlag: "VIP" | "PROBLEM" | null;
+  adminNote: string | null;
+  /** Set once by the Whop webhook the first time this account goes PRO —
+   * see db/schema.ts's own comment. Null for a FREE user, or a PRO one
+   * that predates this column shipping. */
+  trialStartedAt: string | null;
 };
 
 /** Same slugs `resolveTrafficSource` produces, mapped to a short label a
@@ -80,6 +98,34 @@ export type AdminStats = {
   activeUsers: number;
   totalCheckouts: number;
   projectedRevenueCents: number;
+  /** Trials (see AdminUserRow.trialStartedAt) that started in the last
+   * 24h — a "check this when you open the panel" count, not a live push
+   * notification (there's no email/SMS integration to push through). */
+  newTrials24h: number;
+};
+
+/** One bucket per day with at least a dollar of revenue — see
+ * revenueTrendQuery in admin/page.tsx. */
+export type RevenueTrendEntry = {
+  bucket: string;
+  cents: number;
+};
+
+/** A visitor who started the quiz but never reached QUIZ_COMPLETE — the
+ * per-person drill-down the aggregate quiz-step funnel chart can't give
+ * you. Real answer *content* isn't available here for anyone who never
+ * created an account: it lives only in that visitor's own browser (see
+ * lib/goalify/store.tsx) until a session exists to sync it. */
+export type AbandonedSession = {
+  visitorId: string;
+  lastStepTitle: string;
+  /** 1-based, for display ("stopped at question 4 of 9"). */
+  lastStepNumber: number;
+  totalSteps: number;
+  lastSeenAt: string;
+  source: string | null;
+  device: string | null;
+  country: string | null;
 };
 
 export type FunnelStats = {
@@ -193,6 +239,16 @@ type WhopAccountCheck = {
 
 const PLAN_OPTIONS: PlanTier[] = ["FREE", "PRO", "BUSINESS"];
 
+type AdminTab = "overview" | "users" | "quiz" | "checkout" | "reviews";
+
+const ADMIN_TABS: { key: AdminTab; label: string }[] = [
+  { key: "overview", label: "Overview" },
+  { key: "users", label: "Users & Plans" },
+  { key: "quiz", label: "Quiz & Funnel" },
+  { key: "checkout", label: "Checkout Diagnostics" },
+  { key: "reviews", label: "Reviews" },
+];
+
 /** A paid-tier account with no `checkoutEvents` row behind it: Whop grants
  * `plan` before the first real charge (see api/webhooks/whop's
  * `membership.went_valid` handler), so this is the one place that
@@ -230,7 +286,8 @@ function formatDate(iso: string) {
 function renderSafe(value: unknown): string | null {
   if (value === null || value === undefined || value === "") return null;
   if (typeof value === "string") return value;
-  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (typeof value === "number" || typeof value === "boolean")
+    return String(value);
   try {
     return JSON.stringify(value);
   } catch {
@@ -246,7 +303,9 @@ export function AdminDashboard({
   countrySplit,
   sourceSplit,
   quizStepFunnel,
+  abandonedSessions,
   visitorTrend,
+  revenueTrend,
   users,
   reviews,
   checkoutConfig,
@@ -259,7 +318,9 @@ export function AdminDashboard({
   countrySplit: CountrySplitEntry[];
   sourceSplit: SourceSplitEntry[];
   quizStepFunnel: QuizStepFunnelEntry[];
+  abandonedSessions: AbandonedSession[];
   visitorTrend: VisitorTrend;
+  revenueTrend: RevenueTrendEntry[];
   users: AdminUserRow[];
   reviews: AdminReviewRow[];
   checkoutConfig: CheckoutConfig;
@@ -269,6 +330,7 @@ export function AdminDashboard({
   const [planFilter, setPlanFilter] = useState<PlanTier | "ALL" | "TRIAL">(
     "ALL",
   );
+  const [activeTab, setActiveTab] = useState<AdminTab>("overview");
 
   const filteredUsers = users.filter((user) => {
     if (planFilter === "TRIAL") {
@@ -288,7 +350,8 @@ export function AdminDashboard({
   const pendingReviews = reviews.filter((r) => !r.approved);
   const averageRating =
     approvedReviews.length > 0
-      ? approvedReviews.reduce((sum, r) => sum + r.rating, 0) / approvedReviews.length
+      ? approvedReviews.reduce((sum, r) => sum + r.rating, 0) /
+        approvedReviews.length
       : null;
 
   return (
@@ -311,385 +374,490 @@ export function AdminDashboard({
           </div>
         </div>
 
-        {/* --------------------------------------------------------- Stats */}
-        <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatCard
-            icon={Users}
-            label="Total users"
-            value={stats.totalUsers.toLocaleString("en-US")}
-          />
-          <StatCard
-            icon={ShieldCheck}
-            label="Active (7d)"
-            value={stats.activeUsers.toLocaleString("en-US")}
-          />
-          <StatCard
-            icon={CheckCircle2}
-            label="Orders"
-            value={stats.totalCheckouts.toLocaleString("en-US")}
-          />
-          <StatCard
-            icon={CircleDollarSign}
-            label="Revenue"
-            value={formatMoney(stats.projectedRevenueCents)}
-          />
+        {/* ----------------------------------------------------- Tab nav */}
+        <div
+          className="mt-6 flex gap-1.5 overflow-x-auto border-b border-ink/8 pb-px"
+          role="tablist"
+          aria-label="Admin sections"
+        >
+          {ADMIN_TABS.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={clsx(
+                "shrink-0 rounded-t-lg border-b-2 px-3.5 py-2.5 text-xs font-bold whitespace-nowrap transition-colors",
+                activeTab === tab.key
+                  ? "border-electric text-electric"
+                  : "border-transparent text-mist hover:text-ink",
+              )}
+            >
+              {tab.label}
+              {tab.key === "overview" && stats.newTrials24h > 0 && (
+                <span className="ml-1.5 inline-flex min-w-4.5 items-center justify-center rounded-full bg-electric px-1 text-[10px] font-black text-[#1a1100]">
+                  {stats.newTrials24h}
+                </span>
+              )}
+            </button>
+          ))}
         </div>
-        <p className="mt-3 text-[11px] leading-relaxed text-haze">
-          &ldquo;Orders&rdquo; and &ldquo;Revenue&rdquo; are written only by
-          Lemon Squeezy&apos;s <code>order_created</code> webhook or Whop&apos;s{" "}
-          <code>payment.succeeded</code> webhook once a payment has actually
-          settled — nothing here reflects a checkout that was started but not
-          completed.
-        </p>
 
-        {/* ----------------------------------------------- Visitor analytics */}
-        <section className="mt-10">
-          <h2 className="gf-display text-xl font-extrabold text-ink">
-            Visitor analytics
-          </h2>
-          <p className="mt-1 text-[11px] leading-relaxed text-haze">
-            Everyone who ever loaded the landing page, tracked anonymously
-            (see <code>analytics_event</code>) — no account required. This is
-            the real top of the funnel: most people never sign up at all, so
-            &ldquo;Total users&rdquo; above only shows the ones who made it
-            all the way through the quiz.
-          </p>
-
-          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <StatCard
-              icon={Eye}
-              label="Visitors (all-time)"
-              value={visitors.allTime.toLocaleString("en-US")}
-            />
-            <StatCard
-              icon={Eye}
-              label="Visitors (30d)"
-              value={visitors.last30d.toLocaleString("en-US")}
-            />
-            <StatCard
-              icon={Smartphone}
-              label="Mobile visitors"
-              value={visitors.allTime > 0 ? `${Math.round((deviceSplit.mobile / (deviceSplit.mobile + deviceSplit.desktop || 1)) * 100)}%` : "—"}
-            />
-            <StatCard
-              icon={Laptop}
-              label="Desktop visitors"
-              value={visitors.allTime > 0 ? `${Math.round((deviceSplit.desktop / (deviceSplit.mobile + deviceSplit.desktop || 1)) * 100)}%` : "—"}
-            />
-          </div>
-
-          <div className="mt-3">
-            <h3 className="text-sm font-extrabold text-ink">
-              Landing page visitors over time
-            </h3>
-            <p className="mt-1 text-[11px] leading-relaxed text-haze">
-              Distinct visitors per bucket — hover (or tab to) any bar for the
-              exact count.
-            </p>
-            <VisitorTrendChart trend={visitorTrend} />
-          </div>
-
-          <div className="mt-6">
-            <h3 className="text-sm font-extrabold text-ink">
-              How far people get through the quiz
-            </h3>
-            <p className="mt-1 text-[11px] leading-relaxed text-haze">
-              Each bar is the number of distinct visitors who reached that
-              question or any later one — the drop between two bars is
-              exactly how many people quit on that specific question.
-            </p>
-            <QuizStepFunnelChart
-              landingVisitors={visitors.allTime}
-              steps={quizStepFunnel}
-              completed={visitors.quizCompleters}
-            />
-          </div>
-
-          <div className="mt-6">
-            <h3 className="text-sm font-extrabold text-ink">
-              Where visitors come from
-            </h3>
-            <p className="mt-1 text-[11px] leading-relaxed text-haze">
-              Distinct visitors by country, top 8 — from Vercel&apos;s edge
-              network, no IP lookup or third-party service involved.
-            </p>
-            <CountrySplitChart countries={countrySplit} />
-          </div>
-
-          <div className="mt-6">
-            <h3 className="text-sm font-extrabold text-ink">
-              How each traffic source converts
-            </h3>
-            <p className="mt-1 text-[11px] leading-relaxed text-haze">
-              Every visitor tagged with a source (Instagram, TikTok, a
-              Google search, a tagged campaign link, direct) — not just
-              people who signed up. This is the one view that can actually
-              answer &ldquo;does this channel&apos;s traffic convert, or
-              drop off in the quiz.&rdquo;
-            </p>
-            <SourceSplitChart sources={sourceSplit} />
-          </div>
-        </section>
-
-        {/* --------------------------------------------------------- Funnel */}
-        <section className="mt-10">
-          <h2 className="gf-display text-xl font-extrabold text-ink">
-            Analytics
-          </h2>
-          <p className="mt-1 text-[11px] leading-relaxed text-haze">
-            Total signups plus each real stage in between: quiz completion is
-            synced once the client posts a summary, &ldquo;reached
-            paywall&rdquo; is a fire-and-forget ping the paywall itself sends
-            on load, and &ldquo;active subscribers&rdquo; reads{" "}
-            <code>users.plan</code> — the same field the app itself gates
-            real routes on. None of these are estimated from each other.
-          </p>
-          <FunnelChart funnel={funnel} />
-        </section>
-
-        {/* ---------------------------------------------- Checkout config */}
-        <section className="mt-10">
-          <h2 className="gf-display text-xl font-extrabold text-ink">
-            Checkout config
-          </h2>
-          <p className="mt-1 text-[11px] leading-relaxed text-haze">
-            Live read of the server&apos;s env vars — the exact same check
-            api/checkout runs before it will start a checkout. A red{" "}
-            &ldquo;Missing&rdquo; here is why the paywall shows &ldquo;Checkout
-            isn&apos;t available right now&rdquo; (503), and it means the var
-            below isn&apos;t set for this deployment. If you just added it in
-            the hosting dashboard, that host still needs a fresh
-            deploy/redeploy to pick it up — saving the value alone doesn&apos;t
-            reach an already-running server.
-          </p>
-          <GlassCard deep className="mt-3 flex flex-wrap gap-2 p-4">
-            <ConfigPill label="Store ID" ok={checkoutConfig.storeId} />
-            <ConfigPill label="API key" ok={checkoutConfig.apiKey} />
-            <ConfigPill label="Webhook secret" ok={checkoutConfig.webhookSecret} />
-            {checkoutConfig.variants.map((variant) => (
-              <ConfigPill
-                key={variant.tier}
-                label={`${variant.label} variant`}
-                ok={variant.configured}
+        {activeTab === "overview" && (
+          <>
+            {/* --------------------------------------------------------- Stats */}
+            <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <StatCard
+                icon={Users}
+                label="Total users"
+                value={stats.totalUsers.toLocaleString("en-US")}
               />
-            ))}
-          </GlassCard>
-          <CheckoutDiagnosticsPanel />
-        </section>
-
-        {/* --------------------------------------------------- Whop checkout */}
-        <section className="mt-10">
-          <h2 className="gf-display text-xl font-extrabold text-ink">
-            Whop checkout
-          </h2>
-          <p className="mt-1 text-[11px] leading-relaxed text-haze">
-            API key and plan pills are the exact same check api/checkout/whop
-            runs before it will start a checkout — a red &ldquo;Missing&rdquo;
-            on any of those is why the paywall shows &ldquo;Could not start
-            checkout&rdquo;. All of those green with checkout still failing
-            points at <span className="font-mono">WHOP_COMPANY_ID</span>{" "}
-            (below, optional) or the request shape itself — see the raw error
-            from the test below for which. A{" "}
-            <span className="font-mono">401 &ldquo;Authentication failed&rdquo;</span>{" "}
-            specifically means Whop is rejecting the API key itself — check,
-            in order: a stray trailing newline or space picked up when the
-            key was copied (invisible in Vercel&apos;s env var UI — re-copy
-            just the key itself into{" "}
-            <span className="font-mono">WHOP_API_KEY</span> and redeploy);
-            then, if that 401 persists with a freshly re-copied key, whether
-            the key was created in Whop&apos;s <em>sandbox</em> environment
-            rather than production — sandbox keys are only valid against{" "}
-            <span className="font-mono">sandbox-api.whop.com</span>, a
-            completely separate host from the production{" "}
-            <span className="font-mono">api.whop.com</span> this app talks to
-            by default, and a key from one is simply invalid on the other.
-            Set <span className="font-mono">WHOP_SANDBOX=true</span> if{" "}
-            <span className="font-mono">WHOP_API_KEY</span> is a sandbox key;
-            leave it unset for a production key. The test below shows exactly
-            which host it tested against. If it still 401s against the
-            correct host, the key needs to be regenerated in the Whop
-            dashboard. The webhook secret pill is
-            separate: it&apos;s read by api/webhooks/whop, not
-            api/checkout/whop, so it has no effect on whether checkout starts
-            — it only controls whether a completed payment can be
-            auto-credited (see the note under Users &amp; plans below). If
-            you just added a var in Vercel, it still needs a fresh redeploy
-            to actually reach this already-running server — saving the value
-            alone doesn&apos;t do it.
-          </p>
-          <GlassCard deep className="mt-3 flex flex-wrap gap-2 p-4">
-            <ConfigPill label="API key" ok={whopCheckoutConfig.apiKey} />
-            {whopCheckoutConfig.plans.map((plan) => (
-              <ConfigPill
-                key={plan.tier}
-                label={`${plan.label} plan`}
-                ok={plan.configured}
+              <StatCard
+                icon={ShieldCheck}
+                label="Active (7d)"
+                value={stats.activeUsers.toLocaleString("en-US")}
               />
-            ))}
-            <ConfigPill
-              label="Company ID (optional — see WHOP_COMPANY_ID)"
-              ok={whopCheckoutConfig.companyId}
-            />
-          </GlassCard>
-          <WhopCheckoutDiagnosticsPanel />
-
-          <GlassCard deep className="mt-3 flex items-start gap-2.5 p-4">
-            <ConfigPill label="Webhook secret (auto-credit only, not checkout)" ok={whopCheckoutConfig.webhookSecret} />
-          </GlassCard>
-        </section>
-
-        {/* ------------------------------------------ Lemon Squeezy variants */}
-        <section className="mt-10">
-          <h2 className="gf-display text-xl font-extrabold text-ink">
-            Lemon Squeezy variants
-          </h2>
-          <p className="mt-1 text-[11px] leading-relaxed text-haze">
-            Pulls the real, live list of variants Lemon Squeezy has for this
-            store — a 404 from checkout means the configured variant id
-            below simply doesn&apos;t exist on this list (recreated, deleted,
-            or copied from the wrong store). Compare the configured id
-            against the real ones here and fix it directly in Vercel&apos;s
-            env vars.
-          </p>
-          <LemonSqueezyVariantsPanel />
-        </section>
-
-        {/* -------------------------------------------------- Workout videos */}
-        <section className="mt-10">
-          <h2 className="gf-display text-xl font-extrabold text-ink">
-            Workout videos
-          </h2>
-          <p className="mt-1 text-[11px] leading-relaxed text-haze">
-            If the live workout player is only showing the stick-figure
-            placeholder instead of real clips, it&apos;s always one of three
-            things: <code>NEXT_PUBLIC_SUPABASE_URL</code> isn&apos;t set (or
-            redeployed after being set — it&apos;s baked into the JS bundle
-            at build time), the Storage bucket named &ldquo;videos&rdquo;
-            isn&apos;t actually public, or an uploaded filename doesn&apos;t
-            exactly match what&apos;s expected below. This checks all three
-            directly in your browser — nothing here touches the server.
-          </p>
-          <VideoDiagnosticsPanel />
-        </section>
-
-        {/* --------------------------------------------------------- Users */}
-        <section className="mt-10">
-          <h2 className="gf-display text-xl font-extrabold text-ink">
-            Users &amp; plans
-          </h2>
-          <GlassCard deep tone="electric" className="mt-3 flex items-start gap-2.5 p-4">
-            <Zap className="mt-0.5 size-4 shrink-0 text-electric" />
-            <p className="text-[11px] leading-relaxed text-ink-soft">
-              <span className="font-bold text-ink">
-                Whop payments now activate accounts automatically
-              </span>{" "}
-              — no manual step needed for a normal purchase. The table below
-              is for the exceptions: comping someone free access, fixing a
-              payment Whop&apos;s webhook couldn&apos;t match to an account,
-              or a downgrade/refund. Find the person by name or email and use
-              the <span className="font-mono">Plan status</span> dropdown (or
-              the quick &ldquo;Grant PRO&rdquo; button) — it takes effect
-              immediately, no redeploy needed.
-            </p>
-          </GlassCard>
-
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <div className="relative flex-1 min-w-[200px]">
-              <Search className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-haze" />
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search by name or email…"
-                className="w-full rounded-xl border border-ink/10 bg-transparent py-2 pr-3 pl-8 text-sm text-ink outline-none placeholder:text-haze focus:border-electric/40"
+              <StatCard
+                icon={CheckCircle2}
+                label="Orders"
+                value={stats.totalCheckouts.toLocaleString("en-US")}
+              />
+              <StatCard
+                icon={CircleDollarSign}
+                label="Revenue"
+                value={formatMoney(stats.projectedRevenueCents)}
               />
             </div>
-            <select
-              value={planFilter}
-              onChange={(event) =>
-                setPlanFilter(event.target.value as PlanTier | "ALL" | "TRIAL")
-              }
-              className="rounded-xl border border-ink/10 bg-transparent px-3 py-2 text-xs font-bold text-ink outline-none focus:border-electric/40"
-            >
-              <option value="ALL">All plans</option>
-              {PLAN_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-              <option value="TRIAL">On trial (no payment)</option>
-            </select>
-          </div>
-
-          <GlassCard deep className="mt-3 overflow-x-auto p-0">
-            <table className="w-full min-w-[820px] border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-ink/8 text-left text-[11px] font-bold tracking-[0.08em] text-mist uppercase">
-                  <th className="px-4 py-3">Name</th>
-                  <th className="px-4 py-3">Email</th>
-                  <th className="px-4 py-3">Plan status</th>
-                  <th className="px-4 py-3">Terms</th>
-                  <th className="px-4 py-3">Quiz</th>
-                  <th className="px-4 py-3">Found us via</th>
-                  <th className="px-4 py-3">Latest order</th>
-                  <th className="px-4 py-3">Joined</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.map((user) => (
-                  <UserRow key={user.id} user={user} />
-                ))}
-                {filteredUsers.length === 0 && (
-                  <tr>
-                    <td colSpan={8} className="px-4 py-8 text-center text-mist">
-                      {users.length === 0
-                        ? "No users yet."
-                        : "No users match this search/filter."}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </GlassCard>
-        </section>
-
-        {/* -------------------------------------------------------- Reviews */}
-        <section className="mt-10">
-          <h2 className="gf-display text-xl font-extrabold text-ink">
-            Reviews
-          </h2>
-          <p className="mt-1 text-[11px] leading-relaxed text-haze">
-            Real, member-submitted ratings — this replaces the fabricated
-            &ldquo;4.9 · 1,250+ reviews&rdquo; stat that used to be hardcoded
-            in the funnel. A submission only counts toward the public
-            average below once you approve it here; nothing shows on the
-            live site until then.
-          </p>
-
-          <GlassCard deep className="mt-3 flex items-center gap-4 p-4">
-            <Star className="size-5 shrink-0 text-electric" />
-            <p className="text-xs leading-relaxed text-ink-soft">
-              <span className="font-bold text-ink">
-                {averageRating === null
-                  ? "No approved reviews yet"
-                  : `${averageRating.toFixed(1)} ⭐ · ${approvedReviews.length} review${approvedReviews.length === 1 ? "" : "s"}`}
-              </span>{" "}
-              — this is what the site will show publicly once wired up.{" "}
-              {pendingReviews.length > 0 &&
-                `${pendingReviews.length} pending your review below.`}
+            <p className="mt-3 text-[11px] leading-relaxed text-haze">
+              &ldquo;Orders&rdquo; and &ldquo;Revenue&rdquo; are written only by
+              Lemon Squeezy&apos;s <code>order_created</code> webhook or
+              Whop&apos;s <code>payment.succeeded</code> webhook once a payment
+              has actually settled — nothing here reflects a checkout that was
+              started but not completed.
             </p>
-          </GlassCard>
 
-          <div className="mt-3 space-y-2">
-            {reviews.length === 0 && (
-              <GlassCard className="p-6 text-center text-xs text-haze">
-                No reviews submitted yet.
+            {/* --------------------------------------------- Revenue trend */}
+            <section className="mt-10">
+              <h2 className="gf-display text-xl font-extrabold text-ink">
+                Revenue over time
+              </h2>
+              <p className="mt-1 text-[11px] leading-relaxed text-haze">
+                Real settled revenue per day, from the same checkout events as
+                the Revenue stat above — a webhook-confirmed payment, not a
+                trial grant (trials show up under Users &amp; plans instead).
+              </p>
+              <RevenueTrendChart trend={revenueTrend} />
+            </section>
+
+            {/* --------------------------------------------------------- Funnel */}
+            <section className="mt-10">
+              <h2 className="gf-display text-xl font-extrabold text-ink">
+                Analytics
+              </h2>
+              <p className="mt-1 text-[11px] leading-relaxed text-haze">
+                Total signups plus each real stage in between: quiz completion
+                is synced once the client posts a summary, &ldquo;reached
+                paywall&rdquo; is a fire-and-forget ping the paywall itself
+                sends on load, and &ldquo;active subscribers&rdquo; reads{" "}
+                <code>users.plan</code> — the same field the app itself gates
+                real routes on. None of these are estimated from each other.
+              </p>
+              <FunnelChart funnel={funnel} />
+            </section>
+          </>
+        )}
+
+        {activeTab === "quiz" && (
+          <>
+            {/* ----------------------------------------------- Visitor analytics */}
+            <section className="mt-10">
+              <h2 className="gf-display text-xl font-extrabold text-ink">
+                Visitor analytics
+              </h2>
+              <p className="mt-1 text-[11px] leading-relaxed text-haze">
+                Everyone who ever loaded the landing page, tracked anonymously
+                (see <code>analytics_event</code>) — no account required. This
+                is the real top of the funnel: most people never sign up at all,
+                so &ldquo;Total users&rdquo; above only shows the ones who made
+                it all the way through the quiz.
+              </p>
+
+              <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <StatCard
+                  icon={Eye}
+                  label="Visitors (all-time)"
+                  value={visitors.allTime.toLocaleString("en-US")}
+                />
+                <StatCard
+                  icon={Eye}
+                  label="Visitors (30d)"
+                  value={visitors.last30d.toLocaleString("en-US")}
+                />
+                <StatCard
+                  icon={Smartphone}
+                  label="Mobile visitors"
+                  value={
+                    visitors.allTime > 0
+                      ? `${Math.round((deviceSplit.mobile / (deviceSplit.mobile + deviceSplit.desktop || 1)) * 100)}%`
+                      : "—"
+                  }
+                />
+                <StatCard
+                  icon={Laptop}
+                  label="Desktop visitors"
+                  value={
+                    visitors.allTime > 0
+                      ? `${Math.round((deviceSplit.desktop / (deviceSplit.mobile + deviceSplit.desktop || 1)) * 100)}%`
+                      : "—"
+                  }
+                />
+              </div>
+
+              <div className="mt-3">
+                <h3 className="text-sm font-extrabold text-ink">
+                  Landing page visitors over time
+                </h3>
+                <p className="mt-1 text-[11px] leading-relaxed text-haze">
+                  Distinct visitors per bucket — hover (or tab to) any bar for
+                  the exact count.
+                </p>
+                <VisitorTrendChart trend={visitorTrend} />
+              </div>
+
+              <div className="mt-6">
+                <h3 className="text-sm font-extrabold text-ink">
+                  How far people get through the quiz
+                </h3>
+                <p className="mt-1 text-[11px] leading-relaxed text-haze">
+                  Each bar is the number of distinct visitors who reached that
+                  question or any later one — the drop between two bars is
+                  exactly how many people quit on that specific question.
+                </p>
+                <QuizStepFunnelChart
+                  landingVisitors={visitors.allTime}
+                  steps={quizStepFunnel}
+                  completed={visitors.quizCompleters}
+                />
+              </div>
+
+              <div className="mt-6">
+                <h3 className="text-sm font-extrabold text-ink">
+                  Where visitors come from
+                </h3>
+                <p className="mt-1 text-[11px] leading-relaxed text-haze">
+                  Distinct visitors by country, top 8 — from Vercel&apos;s edge
+                  network, no IP lookup or third-party service involved.
+                </p>
+                <CountrySplitChart countries={countrySplit} />
+              </div>
+
+              <div className="mt-6">
+                <h3 className="text-sm font-extrabold text-ink">
+                  How each traffic source converts
+                </h3>
+                <p className="mt-1 text-[11px] leading-relaxed text-haze">
+                  Every visitor tagged with a source (Instagram, TikTok, a
+                  Google search, a tagged campaign link, direct) — not just
+                  people who signed up. This is the one view that can actually
+                  answer &ldquo;does this channel&apos;s traffic convert, or
+                  drop off in the quiz.&rdquo;
+                </p>
+                <SourceSplitChart sources={sourceSplit} />
+              </div>
+            </section>
+
+            {/* ------------------------------------------ Abandoned quiz sessions */}
+            <section className="mt-10">
+              <h2 className="gf-display text-xl font-extrabold text-ink">
+                Abandoned quiz sessions
+              </h2>
+              <p className="mt-1 text-[11px] leading-relaxed text-haze">
+                Visitors who started the quiz but never finished it, newest
+                drop-off first — capped at 50. This shows how far each person
+                got, not what they actually answered: pre-signup answers live
+                only in that visitor&apos;s own browser and are never sent to
+                the server until an account exists, so there&apos;s nothing
+                server-side to show for anyone who never signed up.
+              </p>
+              <AbandonedSessionsTable sessions={abandonedSessions} />
+            </section>
+          </>
+        )}
+
+        {activeTab === "checkout" && (
+          <>
+            {/* ---------------------------------------------- Checkout config */}
+            <section className="mt-10">
+              <h2 className="gf-display text-xl font-extrabold text-ink">
+                Checkout config
+              </h2>
+              <p className="mt-1 text-[11px] leading-relaxed text-haze">
+                Live read of the server&apos;s env vars — the exact same check
+                api/checkout runs before it will start a checkout. A red{" "}
+                &ldquo;Missing&rdquo; here is why the paywall shows
+                &ldquo;Checkout isn&apos;t available right now&rdquo; (503), and
+                it means the var below isn&apos;t set for this deployment. If
+                you just added it in the hosting dashboard, that host still
+                needs a fresh deploy/redeploy to pick it up — saving the value
+                alone doesn&apos;t reach an already-running server.
+              </p>
+              <GlassCard deep className="mt-3 flex flex-wrap gap-2 p-4">
+                <ConfigPill label="Store ID" ok={checkoutConfig.storeId} />
+                <ConfigPill label="API key" ok={checkoutConfig.apiKey} />
+                <ConfigPill
+                  label="Webhook secret"
+                  ok={checkoutConfig.webhookSecret}
+                />
+                {checkoutConfig.variants.map((variant) => (
+                  <ConfigPill
+                    key={variant.tier}
+                    label={`${variant.label} variant`}
+                    ok={variant.configured}
+                  />
+                ))}
               </GlassCard>
-            )}
-            {reviews.map((review) => (
-              <ReviewRow key={review.id} review={review} />
-            ))}
-          </div>
-        </section>
+              <CheckoutDiagnosticsPanel />
+            </section>
+
+            {/* --------------------------------------------------- Whop checkout */}
+            <section className="mt-10">
+              <h2 className="gf-display text-xl font-extrabold text-ink">
+                Whop checkout
+              </h2>
+              <p className="mt-1 text-[11px] leading-relaxed text-haze">
+                API key and plan pills are the exact same check
+                api/checkout/whop runs before it will start a checkout — a red
+                &ldquo;Missing&rdquo; on any of those is why the paywall shows
+                &ldquo;Could not start checkout&rdquo;. All of those green with
+                checkout still failing points at{" "}
+                <span className="font-mono">WHOP_COMPANY_ID</span> (below,
+                optional) or the request shape itself — see the raw error from
+                the test below for which. A{" "}
+                <span className="font-mono">
+                  401 &ldquo;Authentication failed&rdquo;
+                </span>{" "}
+                specifically means Whop is rejecting the API key itself — check,
+                in order: a stray trailing newline or space picked up when the
+                key was copied (invisible in Vercel&apos;s env var UI — re-copy
+                just the key itself into{" "}
+                <span className="font-mono">WHOP_API_KEY</span> and redeploy);
+                then, if that 401 persists with a freshly re-copied key, whether
+                the key was created in Whop&apos;s <em>sandbox</em> environment
+                rather than production — sandbox keys are only valid against{" "}
+                <span className="font-mono">sandbox-api.whop.com</span>, a
+                completely separate host from the production{" "}
+                <span className="font-mono">api.whop.com</span> this app talks
+                to by default, and a key from one is simply invalid on the
+                other. Set <span className="font-mono">WHOP_SANDBOX=true</span>{" "}
+                if <span className="font-mono">WHOP_API_KEY</span> is a sandbox
+                key; leave it unset for a production key. The test below shows
+                exactly which host it tested against. If it still 401s against
+                the correct host, the key needs to be regenerated in the Whop
+                dashboard. The webhook secret pill is separate: it&apos;s read
+                by api/webhooks/whop, not api/checkout/whop, so it has no effect
+                on whether checkout starts — it only controls whether a
+                completed payment can be auto-credited (see the note under Users
+                &amp; plans below). If you just added a var in Vercel, it still
+                needs a fresh redeploy to actually reach this already-running
+                server — saving the value alone doesn&apos;t do it.
+              </p>
+              <GlassCard deep className="mt-3 flex flex-wrap gap-2 p-4">
+                <ConfigPill label="API key" ok={whopCheckoutConfig.apiKey} />
+                {whopCheckoutConfig.plans.map((plan) => (
+                  <ConfigPill
+                    key={plan.tier}
+                    label={`${plan.label} plan`}
+                    ok={plan.configured}
+                  />
+                ))}
+                <ConfigPill
+                  label="Company ID (optional — see WHOP_COMPANY_ID)"
+                  ok={whopCheckoutConfig.companyId}
+                />
+              </GlassCard>
+              <WhopCheckoutDiagnosticsPanel />
+
+              <GlassCard deep className="mt-3 flex items-start gap-2.5 p-4">
+                <ConfigPill
+                  label="Webhook secret (auto-credit only, not checkout)"
+                  ok={whopCheckoutConfig.webhookSecret}
+                />
+              </GlassCard>
+            </section>
+
+            {/* ------------------------------------------ Lemon Squeezy variants */}
+            <section className="mt-10">
+              <h2 className="gf-display text-xl font-extrabold text-ink">
+                Lemon Squeezy variants
+              </h2>
+              <p className="mt-1 text-[11px] leading-relaxed text-haze">
+                Pulls the real, live list of variants Lemon Squeezy has for this
+                store — a 404 from checkout means the configured variant id
+                below simply doesn&apos;t exist on this list (recreated,
+                deleted, or copied from the wrong store). Compare the configured
+                id against the real ones here and fix it directly in
+                Vercel&apos;s env vars.
+              </p>
+              <LemonSqueezyVariantsPanel />
+            </section>
+
+            {/* -------------------------------------------------- Workout videos */}
+            <section className="mt-10">
+              <h2 className="gf-display text-xl font-extrabold text-ink">
+                Workout videos
+              </h2>
+              <p className="mt-1 text-[11px] leading-relaxed text-haze">
+                If the live workout player is only showing the stick-figure
+                placeholder instead of real clips, it&apos;s always one of three
+                things: <code>NEXT_PUBLIC_SUPABASE_URL</code> isn&apos;t set (or
+                redeployed after being set — it&apos;s baked into the JS bundle
+                at build time), the Storage bucket named &ldquo;videos&rdquo;
+                isn&apos;t actually public, or an uploaded filename doesn&apos;t
+                exactly match what&apos;s expected below. This checks all three
+                directly in your browser — nothing here touches the server.
+              </p>
+              <VideoDiagnosticsPanel />
+            </section>
+          </>
+        )}
+
+        {activeTab === "users" && (
+          <>
+            {/* --------------------------------------------------------- Users */}
+            <section className="mt-10">
+              <h2 className="gf-display text-xl font-extrabold text-ink">
+                Users &amp; plans
+              </h2>
+              <GlassCard
+                deep
+                tone="electric"
+                className="mt-3 flex items-start gap-2.5 p-4"
+              >
+                <Zap className="mt-0.5 size-4 shrink-0 text-electric" />
+                <p className="text-[11px] leading-relaxed text-ink-soft">
+                  <span className="font-bold text-ink">
+                    Whop payments now activate accounts automatically
+                  </span>{" "}
+                  — no manual step needed for a normal purchase. The table below
+                  is for the exceptions: comping someone free access, fixing a
+                  payment Whop&apos;s webhook couldn&apos;t match to an account,
+                  or a downgrade/refund. Find the person by name or email and
+                  use the <span className="font-mono">Plan status</span>{" "}
+                  dropdown (or the quick &ldquo;Grant PRO&rdquo; button) — it
+                  takes effect immediately, no redeploy needed.
+                </p>
+              </GlassCard>
+
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <div className="relative flex-1 min-w-[200px]">
+                  <Search className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-haze" />
+                  <input
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Search by name or email…"
+                    className="w-full rounded-xl border border-ink/10 bg-transparent py-2 pr-3 pl-8 text-sm text-ink outline-none placeholder:text-haze focus:border-electric/40"
+                  />
+                </div>
+                <select
+                  value={planFilter}
+                  onChange={(event) =>
+                    setPlanFilter(
+                      event.target.value as PlanTier | "ALL" | "TRIAL",
+                    )
+                  }
+                  className="rounded-xl border border-ink/10 bg-transparent px-3 py-2 text-xs font-bold text-ink outline-none focus:border-electric/40"
+                >
+                  <option value="ALL">All plans</option>
+                  {PLAN_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                  <option value="TRIAL">On trial (no payment)</option>
+                </select>
+              </div>
+
+              <GlassCard deep className="mt-3 overflow-x-auto p-0">
+                <table className="w-full min-w-[940px] border-collapse text-sm">
+                  <thead>
+                    <tr className="border-b border-ink/8 text-left text-[11px] font-bold tracking-[0.08em] text-mist uppercase">
+                      <th className="px-4 py-3">Name</th>
+                      <th className="px-4 py-3">Email</th>
+                      <th className="px-4 py-3">Plan status</th>
+                      <th className="px-4 py-3">Terms</th>
+                      <th className="px-4 py-3">Quiz</th>
+                      <th className="px-4 py-3">Found us via</th>
+                      <th className="px-4 py-3">Latest order</th>
+                      <th className="px-4 py-3">Joined</th>
+                      <th className="px-4 py-3">Flag / note</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredUsers.map((user) => (
+                      <UserRow key={user.id} user={user} />
+                    ))}
+                    {filteredUsers.length === 0 && (
+                      <tr>
+                        <td
+                          colSpan={9}
+                          className="px-4 py-8 text-center text-mist"
+                        >
+                          {users.length === 0
+                            ? "No users yet."
+                            : "No users match this search/filter."}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </GlassCard>
+            </section>
+          </>
+        )}
+
+        {activeTab === "reviews" && (
+          <>
+            {/* -------------------------------------------------------- Reviews */}
+            <section className="mt-10">
+              <h2 className="gf-display text-xl font-extrabold text-ink">
+                Reviews
+              </h2>
+              <p className="mt-1 text-[11px] leading-relaxed text-haze">
+                Real, member-submitted ratings — this replaces the fabricated
+                &ldquo;4.9 · 1,250+ reviews&rdquo; stat that used to be
+                hardcoded in the funnel. A submission only counts toward the
+                public average below once you approve it here; nothing shows on
+                the live site until then.
+              </p>
+
+              <GlassCard deep className="mt-3 flex items-center gap-4 p-4">
+                <Star className="size-5 shrink-0 text-electric" />
+                <p className="text-xs leading-relaxed text-ink-soft">
+                  <span className="font-bold text-ink">
+                    {averageRating === null
+                      ? "No approved reviews yet"
+                      : `${averageRating.toFixed(1)} ⭐ · ${approvedReviews.length} review${approvedReviews.length === 1 ? "" : "s"}`}
+                  </span>{" "}
+                  — this is what the site will show publicly once wired up.{" "}
+                  {pendingReviews.length > 0 &&
+                    `${pendingReviews.length} pending your review below.`}
+                </p>
+              </GlassCard>
+
+              <div className="mt-3 space-y-2">
+                {reviews.length === 0 && (
+                  <GlassCard className="p-6 text-center text-xs text-haze">
+                    No reviews submitted yet.
+                  </GlassCard>
+                )}
+                {reviews.map((review) => (
+                  <ReviewRow key={review.id} review={review} />
+                ))}
+              </div>
+            </section>
+          </>
+        )}
       </div>
     </div>
   );
@@ -698,9 +866,21 @@ export function AdminDashboard({
 function FunnelChart({ funnel }: { funnel: FunnelStats }) {
   const stages = [
     { icon: UserPlus, label: "Signed up", value: funnel.signedUp },
-    { icon: ClipboardCheck, label: "Completed questionnaire", value: funnel.completedQuiz },
-    { icon: CreditCard, label: "Reached paywall", value: funnel.reachedPaywall },
-    { icon: Crown, label: "Active subscribers", value: funnel.activeSubscribers },
+    {
+      icon: ClipboardCheck,
+      label: "Completed questionnaire",
+      value: funnel.completedQuiz,
+    },
+    {
+      icon: CreditCard,
+      label: "Reached paywall",
+      value: funnel.reachedPaywall,
+    },
+    {
+      icon: Crown,
+      label: "Active subscribers",
+      value: funnel.activeSubscribers,
+    },
   ];
   const base = funnel.signedUp || 1;
 
@@ -783,10 +963,86 @@ function QuizStepFunnelChart({
       })}
       {landingVisitors === 0 && (
         <p className="text-center text-xs text-mist">
-          No visitor data yet — this fills in as people load the landing
-          page and go through the quiz.
+          No visitor data yet — this fills in as people load the landing page
+          and go through the quiz.
         </p>
       )}
+    </GlassCard>
+  );
+}
+
+/** Rough "how long ago" for a lastSeenAt timestamp — this list is sorted
+ * newest-first already (see abandonedRows' query), so this is only ever
+ * read at a glance, not used for sorting. */
+function timeAgo(iso: string) {
+  const ms = Date.now() - new Date(iso).getTime();
+  const minutes = Math.floor(ms / 60_000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
+function AbandonedSessionsTable({
+  sessions,
+}: {
+  sessions: AbandonedSession[];
+}) {
+  if (sessions.length === 0) {
+    return (
+      <GlassCard deep className="mt-3 p-4">
+        <p className="text-center text-xs text-mist">
+          No abandoned sessions right now — either nobody&apos;s dropped off
+          recently, or everyone who started the quiz has finished it.
+        </p>
+      </GlassCard>
+    );
+  }
+
+  return (
+    <GlassCard deep className="mt-3 overflow-x-auto p-0">
+      <table className="w-full min-w-[560px] border-collapse text-xs">
+        <thead>
+          <tr className="border-b border-ink/8 text-left font-bold tracking-[0.06em] text-mist uppercase">
+            <th className="px-3 py-2">Stopped at</th>
+            <th className="px-3 py-2">Last seen</th>
+            <th className="px-3 py-2">Source</th>
+            <th className="px-3 py-2">Device</th>
+            <th className="px-3 py-2">Country</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sessions.map((session) => (
+            <tr
+              key={session.visitorId}
+              className="border-b border-ink/6 last:border-0"
+            >
+              <td className="px-3 py-2">
+                <span className="font-bold text-ink">
+                  Q{session.lastStepNumber} of {session.totalSteps}
+                </span>
+                <span className="ml-1.5 text-mist">
+                  {session.lastStepTitle}
+                </span>
+              </td>
+              <td className="px-3 py-2 text-mist">
+                {timeAgo(session.lastSeenAt)}
+              </td>
+              <td className="px-3 py-2 text-mist">
+                {sourceLabel(session.source)}
+              </td>
+              <td className="px-3 py-2 text-mist">{session.device ?? "—"}</td>
+              <td className="px-3 py-2 text-mist">
+                {session.country
+                  ? `${flagEmoji(session.country)} ${session.country}`
+                  : "—"}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </GlassCard>
   );
 }
@@ -859,7 +1115,9 @@ function CountrySplitChart({ countries }: { countries: CountrySplitEntry[] }) {
 
 function SourceSplitChart({ sources }: { sources: SourceSplitEntry[] }) {
   const rows = sources.filter(
-    (row): row is { source: string; visitors: number; quizCompleters: number } =>
+    (
+      row,
+    ): row is { source: string; visitors: number; quizCompleters: number } =>
       Boolean(row.source),
   );
   const total = rows.reduce((sum, row) => sum + row.visitors, 0) || 1;
@@ -881,11 +1139,15 @@ function SourceSplitChart({ sources }: { sources: SourceSplitEntry[] }) {
       {top.map((row) => {
         const pct = Math.round((row.visitors / total) * 100);
         const completionPct =
-          row.visitors > 0 ? Math.round((row.quizCompleters / row.visitors) * 100) : 0;
+          row.visitors > 0
+            ? Math.round((row.quizCompleters / row.visitors) * 100)
+            : 0;
         return (
           <div key={row.source}>
             <div className="flex items-center justify-between gap-3 text-xs">
-              <span className="font-bold text-ink">{sourceLabel(row.source)}</span>
+              <span className="font-bold text-ink">
+                {sourceLabel(row.source)}
+              </span>
               <span className="gf-numeric font-extrabold text-ink">
                 {row.visitors.toLocaleString("en-US")}
                 <span className="ml-1.5 font-semibold text-mist">{pct}%</span>
@@ -899,7 +1161,9 @@ function SourceSplitChart({ sources }: { sources: SourceSplitEntry[] }) {
             </div>
             <p className="mt-1 text-[11px] text-haze">
               {row.quizCompleters.toLocaleString("en-US")} completed the quiz —{" "}
-              <span className="font-bold text-mist">{completionPct}% completion</span>
+              <span className="font-bold text-mist">
+                {completionPct}% completion
+              </span>
             </p>
           </div>
         );
@@ -911,7 +1175,11 @@ function SourceSplitChart({ sources }: { sources: SourceSplitEntry[] }) {
 function ConfigPill({ label, ok }: { label: string; ok: boolean }) {
   return (
     <Pill tone={ok ? "lime" : "neutral"}>
-      {ok ? <CheckCircle2 className="size-3" /> : <XCircle className="size-3" />}
+      {ok ? (
+        <CheckCircle2 className="size-3" />
+      ) : (
+        <XCircle className="size-3" />
+      )}
       {label} · {ok ? "Configured" : "Missing"}
     </Pill>
   );
@@ -939,7 +1207,9 @@ type TierCheck = {
 function billingSummary(variant: LemonSqueezyVariant) {
   if (!variant.interval) return "one-time";
   const count = variant.intervalCount ?? 1;
-  return count === 1 ? `every ${variant.interval}` : `every ${count} ${variant.interval}s`;
+  return count === 1
+    ? `every ${variant.interval}`
+    : `every ${count} ${variant.interval}s`;
 }
 
 type ClipCheck = {
@@ -978,7 +1248,10 @@ function VideoDiagnosticsPanel() {
       clips.map(async (clip, i) => {
         if (!clip.url) return;
         try {
-          const res = await fetch(clip.url, { method: "HEAD", cache: "no-store" });
+          const res = await fetch(clip.url, {
+            method: "HEAD",
+            cache: "no-store",
+          });
           setChecks((prev) => {
             if (!prev) return prev;
             const next = [...prev];
@@ -1018,7 +1291,11 @@ function VideoDiagnosticsPanel() {
     <div className="mt-3">
       <GlassCard deep className="flex flex-wrap items-center gap-2 p-4">
         <Pill tone={urlProblem ? "neutral" : "lime"}>
-          {urlProblem ? <XCircle className="size-3" /> : <CheckCircle2 className="size-3" />}
+          {urlProblem ? (
+            <XCircle className="size-3" />
+          ) : (
+            <CheckCircle2 className="size-3" />
+          )}
           NEXT_PUBLIC_SUPABASE_URL · {urlProblem ?? "looks valid"}
         </Pill>
       </GlassCard>
@@ -1045,9 +1322,14 @@ function VideoDiagnosticsPanel() {
             </thead>
             <tbody>
               {checks.map((check) => (
-                <tr key={check.fileName} className="border-b border-ink/6 last:border-0">
+                <tr
+                  key={check.fileName}
+                  className="border-b border-ink/6 last:border-0"
+                >
                   <td className="px-3 py-2 text-ink">{check.label}</td>
-                  <td className="px-3 py-2 font-mono text-mist">{check.fileName}</td>
+                  <td className="px-3 py-2 font-mono text-mist">
+                    {check.fileName}
+                  </td>
                   <td className="px-3 py-2">
                     {check.status === "unconfigured" && (
                       <span className="text-mist">No base URL configured</span>
@@ -1068,7 +1350,11 @@ function VideoDiagnosticsPanel() {
                           <XCircle className="size-3.5" />
                           {check.httpStatus ?? "Failed"}
                         </span>
-                        {check.detail && <span className="text-[11px] text-red-300">{check.detail}</span>}
+                        {check.detail && (
+                          <span className="text-[11px] text-red-300">
+                            {check.detail}
+                          </span>
+                        )}
                         {check.url && (
                           <a
                             href={check.url}
@@ -1139,7 +1425,9 @@ function LemonSqueezyVariantsPanel() {
       </button>
 
       {renderSafe(topLevelError) && (
-        <p className="mt-2 text-xs font-semibold text-red-400">{renderSafe(topLevelError)}</p>
+        <p className="mt-2 text-xs font-semibold text-red-400">
+          {renderSafe(topLevelError)}
+        </p>
       )}
 
       {tierChecks && (
@@ -1150,7 +1438,9 @@ function LemonSqueezyVariantsPanel() {
               deep
               className={clsx(
                 "p-3 text-xs",
-                check.existsInStore ? "border border-lime-neon/25" : "border border-red-500/30",
+                check.existsInStore
+                  ? "border border-lime-neon/25"
+                  : "border border-red-500/30",
               )}
             >
               <div className="flex items-center gap-2 font-bold text-ink">
@@ -1166,15 +1456,20 @@ function LemonSqueezyVariantsPanel() {
               </div>
               {!check.existsInStore && (
                 <p className="mt-1 text-red-300">
-                  This id doesn&apos;t exist in the store&apos;s variant list below —
-                  that&apos;s the 404.
+                  This id doesn&apos;t exist in the store&apos;s variant list
+                  below — that&apos;s the 404.
                 </p>
               )}
               {!check.existsInStore && check.suggestion && (
                 <p className="mt-1 text-mist">
                   Likely match by price ({formatMoney(check.expectedCents)}):{" "}
-                  <span className="font-bold text-ink">{check.suggestion.variantName}</span> — id{" "}
-                  <span className="font-mono">{check.suggestion.variantId}</span>
+                  <span className="font-bold text-ink">
+                    {check.suggestion.variantName}
+                  </span>{" "}
+                  — id{" "}
+                  <span className="font-mono">
+                    {check.suggestion.variantId}
+                  </span>
                 </p>
               )}
             </GlassCard>
@@ -1196,14 +1491,23 @@ function LemonSqueezyVariantsPanel() {
             </thead>
             <tbody>
               {variants.map((variant) => (
-                <tr key={variant.variantId} className="border-b border-ink/6 last:border-0">
-                  <td className="px-3 py-2 font-mono text-ink">{variant.variantId}</td>
+                <tr
+                  key={variant.variantId}
+                  className="border-b border-ink/6 last:border-0"
+                >
+                  <td className="px-3 py-2 font-mono text-ink">
+                    {variant.variantId}
+                  </td>
                   <td className="px-3 py-2 text-ink">
                     {variant.productName} — {variant.variantName}
                   </td>
                   <td className="px-3 py-2 text-mist">{variant.status}</td>
-                  <td className="px-3 py-2 text-mist">{formatMoney(variant.priceCents)}</td>
-                  <td className="px-3 py-2 text-mist">{billingSummary(variant)}</td>
+                  <td className="px-3 py-2 text-mist">
+                    {formatMoney(variant.priceCents)}
+                  </td>
+                  <td className="px-3 py-2 text-mist">
+                    {billingSummary(variant)}
+                  </td>
                 </tr>
               ))}
               {variants.length === 0 && (
@@ -1295,7 +1599,9 @@ function CheckoutDiagnosticsPanel() {
               deep
               className={clsx(
                 "p-3 text-xs",
-                result.ok ? "border border-lime-neon/25" : "border border-red-500/30",
+                result.ok
+                  ? "border border-lime-neon/25"
+                  : "border border-red-500/30",
               )}
             >
               <div className="flex items-center gap-2 font-bold text-ink">
@@ -1306,27 +1612,34 @@ function CheckoutDiagnosticsPanel() {
                 )}
                 {result.label}
                 {result.variantId && (
-                  <span className="font-normal text-haze">· variant {result.variantId}</span>
+                  <span className="font-normal text-haze">
+                    · variant {result.variantId}
+                  </span>
                 )}
               </div>
               {!result.ok && renderSafe(result.error) && (
                 <p className="mt-1 text-red-300">
                   {result.statusCode && (
-                    <span className="mr-1 font-mono font-black">{result.statusCode}</span>
+                    <span className="mr-1 font-mono font-black">
+                      {result.statusCode}
+                    </span>
                   )}
                   {renderSafe(result.error)}
                 </p>
               )}
               {!result.ok && renderSafe(result.cause) && (
-                <p className="mt-1 break-all text-haze">{renderSafe(result.cause)}</p>
-              )}
-              {result.actualCents !== undefined && result.actualCents !== null && (
-                <p className="mt-1 text-mist">
-                  Expected {formatMoney(result.expectedCents)}, Lemon Squeezy charges{" "}
-                  {formatMoney(result.actualCents)}
-                  {!result.ok && " — mismatch"}
+                <p className="mt-1 break-all text-haze">
+                  {renderSafe(result.cause)}
                 </p>
               )}
+              {result.actualCents !== undefined &&
+                result.actualCents !== null && (
+                  <p className="mt-1 text-mist">
+                    Expected {formatMoney(result.expectedCents)}, Lemon Squeezy
+                    charges {formatMoney(result.actualCents)}
+                    {!result.ok && " — mismatch"}
+                  </p>
+                )}
             </GlassCard>
           ))}
         </div>
@@ -1347,7 +1660,9 @@ function WhopCheckoutDiagnosticsPanel() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<WhopDiagnosticResult[] | null>(null);
   const [apiBaseUrl, setApiBaseUrl] = useState<string | null>(null);
-  const [accountCheck, setAccountCheck] = useState<WhopAccountCheck | null>(null);
+  const [accountCheck, setAccountCheck] = useState<WhopAccountCheck | null>(
+    null,
+  );
   const [topLevelError, setTopLevelError] = useState<string | null>(null);
 
   async function run() {
@@ -1414,9 +1729,10 @@ function WhopCheckoutDiagnosticsPanel() {
 
       {apiBaseUrl && (
         <p className="mt-2 text-[10px] font-semibold text-haze">
-          Tested against: <span className="font-mono text-ink-soft">{apiBaseUrl}</span> — a 401
-          here with an otherwise-correct key usually means the key was
-          created in the other environment (sandbox vs. production); see{" "}
+          Tested against:{" "}
+          <span className="font-mono text-ink-soft">{apiBaseUrl}</span> — a 401
+          here with an otherwise-correct key usually means the key was created
+          in the other environment (sandbox vs. production); see{" "}
           <span className="font-mono">WHOP_SANDBOX</span> above.
         </p>
       )}
@@ -1426,7 +1742,9 @@ function WhopCheckoutDiagnosticsPanel() {
           deep
           className={clsx(
             "mt-2 p-3 text-xs",
-            accountCheck.ok ? "border border-lime-neon/25" : "border border-red-500/30",
+            accountCheck.ok
+              ? "border border-lime-neon/25"
+              : "border border-red-500/30",
           )}
         >
           <div className="flex items-center gap-2 font-bold text-ink">
@@ -1435,12 +1753,13 @@ function WhopCheckoutDiagnosticsPanel() {
             ) : (
               <XCircle className="size-3.5 text-red-400" />
             )}
-            Key validity check (GET /accounts/me — no special permissions needed)
+            Key validity check (GET /accounts/me — no special permissions
+            needed)
           </div>
           {accountCheck.ok ? (
             <p className="mt-1 text-mist">
-              The key itself is valid — Whop accepted it. If every tier below still
-              401s, the key is missing one of the specific permissions
+              The key itself is valid — Whop accepted it. If every tier below
+              still 401s, the key is missing one of the specific permissions
               checkout_configurations needs (checkout_configuration:create,
               plan:create, access_pass:create, access_pass:update,
               checkout_configuration:basic:read) — add those in the Whop
@@ -1449,21 +1768,25 @@ function WhopCheckoutDiagnosticsPanel() {
                 <>
                   {" "}
                   Its company id is{" "}
-                  <span className="font-mono text-ink-soft">{accountCheck.companyId}</span> —
-                  set <span className="font-mono">WHOP_COMPANY_ID</span> to this if the
-                  pill above still shows missing.
+                  <span className="font-mono text-ink-soft">
+                    {accountCheck.companyId}
+                  </span>{" "}
+                  — set <span className="font-mono">WHOP_COMPANY_ID</span> to
+                  this if the pill above still shows missing.
                 </>
               )}
             </p>
           ) : (
             <p className="mt-1 text-red-300">
               {accountCheck.statusCode && (
-                <span className="mr-1 font-mono font-black">{accountCheck.statusCode}</span>
+                <span className="mr-1 font-mono font-black">
+                  {accountCheck.statusCode}
+                </span>
               )}
-              {renderSafe(accountCheck.error)} — this fails before checkout_configurations-specific
-              permissions even come into play, so the key itself is wrong,
-              revoked, or from the other environment. Regenerate it in the
-              Whop dashboard.
+              {renderSafe(accountCheck.error)} — this fails before
+              checkout_configurations-specific permissions even come into play,
+              so the key itself is wrong, revoked, or from the other
+              environment. Regenerate it in the Whop dashboard.
             </p>
           )}
         </GlassCard>
@@ -1477,7 +1800,9 @@ function WhopCheckoutDiagnosticsPanel() {
               deep
               className={clsx(
                 "p-3 text-xs",
-                result.ok ? "border border-lime-neon/25" : "border border-red-500/30",
+                result.ok
+                  ? "border border-lime-neon/25"
+                  : "border border-red-500/30",
               )}
             >
               <div className="flex items-center gap-2 font-bold text-ink">
@@ -1488,13 +1813,17 @@ function WhopCheckoutDiagnosticsPanel() {
                 )}
                 {result.label}
                 {result.planId && (
-                  <span className="font-normal text-haze">· plan {result.planId}</span>
+                  <span className="font-normal text-haze">
+                    · plan {result.planId}
+                  </span>
                 )}
               </div>
               {!result.ok && renderSafe(result.error) && (
                 <p className="mt-1 text-red-300">
                   {result.statusCode && (
-                    <span className="mr-1 font-mono font-black">{result.statusCode}</span>
+                    <span className="mr-1 font-mono font-black">
+                      {result.statusCode}
+                    </span>
                   )}
                   {renderSafe(result.error)}
                 </p>
@@ -1503,20 +1832,24 @@ function WhopCheckoutDiagnosticsPanel() {
                 <p className="mt-1 text-haze">
                   A 404 here (as opposed to a 401) means the key <em>is</em>{" "}
                   authenticating — Whop just can&apos;t find this exact plan id
-                  on the host shown above. Plan ids are scoped per
-                  environment same as keys: this one was most likely copied
-                  from the <em>other</em> Whop dashboard (sandbox vs.
-                  production) than the one being tested. Either copy the
-                  matching plan id from the dashboard for the tested host, or
-                  flip <span className="font-mono">WHOP_SANDBOX</span> to
-                  match wherever this plan id actually lives.
+                  on the host shown above. Plan ids are scoped per environment
+                  same as keys: this one was most likely copied from the{" "}
+                  <em>other</em> Whop dashboard (sandbox vs. production) than
+                  the one being tested. Either copy the matching plan id from
+                  the dashboard for the tested host, or flip{" "}
+                  <span className="font-mono">WHOP_SANDBOX</span> to match
+                  wherever this plan id actually lives.
                 </p>
               )}
               {!result.ok && renderSafe(result.raw) && (
-                <p className="mt-1 break-all text-haze">{renderSafe(result.raw)}</p>
+                <p className="mt-1 break-all text-haze">
+                  {renderSafe(result.raw)}
+                </p>
               )}
               {result.ok && (
-                <p className="mt-1 text-mist">Whop accepted this plan and returned a checkout URL.</p>
+                <p className="mt-1 text-mist">
+                  Whop accepted this plan and returned a checkout URL.
+                </p>
               )}
             </GlassCard>
           ))}
@@ -1568,7 +1901,9 @@ function ReviewRow({ review }: { review: AdminReviewRow }) {
   async function reject() {
     setBusy(true);
     try {
-      const res = await fetch(`/api/admin/reviews/${review.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/reviews/${review.id}`, {
+        method: "DELETE",
+      });
       if (res.ok) setRemoved(true);
     } finally {
       setBusy(false);
@@ -1583,7 +1918,10 @@ function ReviewRow({ review }: { review: AdminReviewRow }) {
         {Array.from({ length: 5 }).map((_, i) => (
           <Star
             key={i}
-            className={clsx("size-3.5", i < review.rating ? "fill-current" : "opacity-25")}
+            className={clsx(
+              "size-3.5",
+              i < review.rating ? "fill-current" : "opacity-25",
+            )}
           />
         ))}
       </div>
@@ -1639,11 +1977,22 @@ function ReviewRow({ review }: { review: AdminReviewRow }) {
 function UserRow({ user }: { user: AdminUserRow }) {
   const [name, setName] = useState(user.name ?? "");
   const [plan, setPlan] = useState<PlanTier>(user.plan);
+  const [adminFlag, setAdminFlag] = useState<"VIP" | "PROBLEM" | null>(
+    user.adminFlag,
+  );
+  const [note, setNote] = useState(user.adminNote ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
 
-  async function save(patch: Partial<{ name: string; plan: PlanTier }>) {
+  async function save(
+    patch: Partial<{
+      name: string;
+      plan: PlanTier;
+      adminFlag: "VIP" | "PROBLEM" | null;
+      adminNote: string | null;
+    }>,
+  ) {
     setSaving(true);
     setError(false);
     setJustSaved(false);
@@ -1671,7 +2020,8 @@ function UserRow({ user }: { user: AdminUserRow }) {
           onChange={(event) => setName(event.target.value)}
           onBlur={() => {
             const trimmed = name.trim();
-            if (trimmed && trimmed !== (user.name ?? "")) save({ name: trimmed });
+            if (trimmed && trimmed !== (user.name ?? ""))
+              save({ name: trimmed });
           }}
           className="w-32 rounded-lg border border-transparent bg-transparent px-2 py-1 text-sm font-semibold text-ink outline-none hover:border-ink/10 focus:border-electric/40 focus:bg-ink/4"
         />
@@ -1725,7 +2075,11 @@ function UserRow({ user }: { user: AdminUserRow }) {
             <CheckCircle2 className="size-2.5" /> Saved
           </span>
         )}
-        {error && <span className="mt-1 block text-[10px] text-red-500">Failed — try again</span>}
+        {error && (
+          <span className="mt-1 block text-[10px] text-red-500">
+            Failed — try again
+          </span>
+        )}
       </td>
       <td className="px-4 py-3">
         {user.hasAcceptedTerms ? (
@@ -1743,13 +2097,54 @@ function UserRow({ user }: { user: AdminUserRow }) {
           ? `${user.quiz.goal ? goalLabel(user.quiz.goal) : "—"} · ${user.quiz.level ? levelLabel(user.quiz.level) : "—"}${user.quiz.daysPerWeek ? ` · ${user.quiz.daysPerWeek}d/wk` : ""}`
           : "Not taken"}
       </td>
-      <td className="px-4 py-3 text-xs text-mist">{sourceLabel(user.signupSource)}</td>
+      <td className="px-4 py-3 text-xs text-mist">
+        {sourceLabel(user.signupSource)}
+      </td>
       <td className="px-4 py-3 text-xs text-mist">
         {user.latestOrder
           ? `${user.latestOrder.tierLabel} · ${formatMoney(user.latestOrder.priceCents)} · ${formatDate(user.latestOrder.createdAt)}`
           : "—"}
       </td>
-      <td className="px-4 py-3 text-xs text-mist">{formatDate(user.createdAt)}</td>
+      <td className="px-4 py-3 text-xs text-mist">
+        {formatDate(user.createdAt)}
+      </td>
+      <td className="px-4 py-3">
+        <select
+          value={adminFlag ?? "NONE"}
+          onChange={(event) => {
+            const next =
+              event.target.value === "NONE"
+                ? null
+                : (event.target.value as "VIP" | "PROBLEM");
+            setAdminFlag(next);
+            save({ adminFlag: next });
+          }}
+          className={clsx(
+            "rounded-lg border px-2 py-1 text-[10px] font-bold outline-none focus:border-electric/40",
+            adminFlag === "VIP"
+              ? "border-electric/30 bg-electric/10 text-electric"
+              : adminFlag === "PROBLEM"
+                ? "border-red-500/30 bg-red-500/10 text-red-400"
+                : "border-ink/10 bg-transparent text-mist",
+          )}
+        >
+          <option value="NONE">—</option>
+          <option value="VIP">VIP</option>
+          <option value="PROBLEM">Problem</option>
+        </select>
+        <input
+          value={note}
+          onChange={(event) => setNote(event.target.value)}
+          onBlur={() => {
+            const trimmed = note.trim();
+            if (trimmed !== (user.adminNote ?? ""))
+              save({ adminNote: trimmed || null });
+          }}
+          placeholder="Note…"
+          title={note}
+          className="mt-1 block w-28 rounded-lg border border-transparent bg-transparent px-1.5 py-0.5 text-[10px] text-ink-soft outline-none placeholder:text-haze hover:border-ink/10 focus:border-electric/40 focus:bg-ink/4"
+        />
+      </td>
     </tr>
   );
 }

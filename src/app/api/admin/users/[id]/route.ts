@@ -3,11 +3,13 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getAdminSession } from "@/lib/admin";
 import { db } from "@/lib/db";
-import { planEnum, users } from "@/lib/db/schema";
+import { adminFlagEnum, planEnum, users } from "@/lib/db/schema";
 
 const updateSchema = z.object({
   name: z.string().trim().min(1).max(80).optional(),
   plan: z.enum(planEnum.enumValues).optional(),
+  adminFlag: z.enum(adminFlagEnum.enumValues).nullable().optional(),
+  adminNote: z.string().trim().max(2000).nullable().optional(),
 });
 
 export async function PATCH(
@@ -30,7 +32,13 @@ export async function PATCH(
     .update(users)
     .set(parsed.data)
     .where(eq(users.id, id))
-    .returning({ id: users.id, name: users.name, plan: users.plan });
+    .returning({
+      id: users.id,
+      name: users.name,
+      plan: users.plan,
+      adminFlag: users.adminFlag,
+      adminNote: users.adminNote,
+    });
 
   if (!updated) {
     return NextResponse.json({ error: "User not found." }, { status: 404 });

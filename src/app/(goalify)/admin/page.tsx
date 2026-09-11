@@ -43,6 +43,26 @@ function daysAgo(days: number) {
   return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 }
 
+/** One row per day with at least one dollar of revenue — same
+ * zero-fills-client-side pattern as visitTrendQuery/VisitorTrendChart. */
+function revenueTrendQuery(since: Date) {
+  const truncated = sql.raw(`date_trunc('day', "checkout_event"."created_at")`);
+  return db
+    .select({
+      bucket: sql<string>`${truncated}`.mapWith((value) =>
+        new Date(value as string | Date).toISOString(),
+      ),
+      cents:
+        sql<number>`coalesce(sum(${checkoutEvents.priceCents}), 0)`.mapWith(
+          Number,
+        ),
+    })
+    .from(checkoutEvents)
+    .where(sql`${checkoutEvents.createdAt} >= ${since.toISOString()}`)
+    .groupBy(truncated)
+    .orderBy(truncated);
+}
+
 /** One row per bucket with at least one visitor — VisitorTrendChart fills
  * in the zero-visitor buckets client-side, since a `GROUP BY` naturally
  * omits empty groups. `unit` is interpolated directly into `date_trunc(...)`,
@@ -81,6 +101,7 @@ export default async function AdminPage() {
 
   const activeSince = activeSinceDate();
   const visitorSince = visitorSinceDate();
+  const newTrialsSince = daysAgo(1);
 
   const [
     [userTotals],
@@ -92,10 +113,12 @@ export default async function AdminPage() {
     countryRows,
     sourceRows,
     stepReachRows,
+    abandonedRows,
     hourlyVisitorRows,
     dailyVisitorRows,
     weeklyVisitorRows,
     monthlyVisitorRows,
+    dailyRevenueRows,
     reviewRows,
   ] = await Promise.all([
       db
@@ -119,6 +142,14 @@ export default async function AdminPage() {
             Number,
           ),
           activeSubscribers: sql<number>`count(*) filter (where ${users.plan} != 'FREE')`.mapWith(
+            Number,
+          ),
+          // Trials (not payments — see trialStartedAt's own schema comment)
+          // that started in the last 24h — the closest thing to a
+          // real-time "someone just started a trial" alert this panel can
+          // give without an actual push/email integration: it's a number
+          // that's true the moment you load the page, not a live push.
+          newTrials24h: sql<number>`count(*) filter (where ${users.trialStartedAt} >= ${newTrialsSince.toISOString()})`.mapWith(
             Number,
           ),
         })
@@ -146,6 +177,9 @@ export default async function AdminPage() {
           quizDaysPerWeek: users.quizDaysPerWeek,
           quizCompletedAt: users.quizCompletedAt,
           signupSource: users.signupSource,
+          adminFlag: users.adminFlag,
+          adminNote: users.adminNote,
+          trialStartedAt: users.trialStartedAt,
         })
         .from(users)
         .orderBy(desc(users.createdAt))
@@ -230,6 +264,36 @@ export default async function AdminPage() {
         .from(analyticsEvents)
         .where(eq(analyticsEvents.kind, "QUIZ_STEP"))
         .groupBy(analyticsEvents.visitorId),
+      // One row per visitor who started the quiz but never finished it —
+      // same QUIZ_STEP events as stepReachRows above, but this time also
+      // carrying *when* they were last seen and their source/device/
+      // country, and excluding anyone with a QUIZ_COMPLETE event (the
+      // `not exists` below). This is the individual, per-person view the
+      // aggregate funnel chart can't give you — "who exactly got stuck,
+      // and where." Capped at 50, newest drop-off first.
+      db
+        .select({
+          visitorId: analyticsEvents.visitorId,
+          maxStepIndex: sql<number>`max(${analyticsEvents.stepIndex})`.mapWith(
+            Number,
+          ),
+          lastSeenAt: sql<string>`max(${analyticsEvents.createdAt})`.mapWith(
+            (value) => new Date(value as string | Date).toISOString(),
+          ),
+          source: sql<string | null>`max(${analyticsEvents.source})`,
+          device: sql<string | null>`max(${analyticsEvents.device}::text)`,
+          country: sql<string | null>`max(${analyticsEvents.country})`,
+        })
+        .from(analyticsEvents)
+        .where(
+          sql`${analyticsEvents.kind} = 'QUIZ_STEP' and not exists (
+            select 1 from "analytics_event" ae2
+            where ae2.visitor_id = ${analyticsEvents.visitorId} and ae2.kind = 'QUIZ_COMPLETE'
+          )`,
+        )
+        .groupBy(analyticsEvents.visitorId)
+        .orderBy(desc(sql`max(${analyticsEvents.createdAt})`))
+        .limit(50),
       // Visitor trend chart — see VisitorTrendChart. Four separate
       // date_trunc granularities rather than one fine-grained query
       // resummed client-side, because summing daily unique-visitor counts
@@ -241,6 +305,8 @@ export default async function AdminPage() {
       visitTrendQuery("day", daysAgo(30)),
       visitTrendQuery("week", daysAgo(91)),
       visitTrendQuery("month", daysAgo(365)),
+      // Daily revenue trend — see RevenueTrendChart.
+      revenueTrendQuery(daysAgo(30)),
       // Every submitted review, newest first — the moderation queue and the
       // public average both derive from this same list (approved-only for
       // the average, all of it for the admin queue). See api/reviews and
@@ -264,6 +330,23 @@ export default async function AdminPage() {
     id: quizStep.id,
     title: quizStep.title,
     reached: stepReachRows.filter((row) => row.maxStep >= index).length,
+  }));
+
+  const abandonedSessions = abandonedRows.map((row) => ({
+    visitorId: row.visitorId,
+    lastStepTitle:
+      QUIZ_STEPS[row.maxStepIndex]?.title ?? `Step ${row.maxStepIndex + 1}`,
+    lastStepNumber: row.maxStepIndex + 1,
+    totalSteps: QUIZ_STEPS.length,
+    lastSeenAt: row.lastSeenAt,
+    source: row.source,
+    device: row.device,
+    country: row.country,
+  }));
+
+  const revenueTrend = dailyRevenueRows.map((row) => ({
+    bucket: row.bucket,
+    cents: row.cents,
   }));
 
   const deviceSplit = {
@@ -302,6 +385,11 @@ export default async function AdminPage() {
       createdAt: user.createdAt.toISOString(),
       lastActiveAt: user.lastActiveAt ? user.lastActiveAt.toISOString() : null,
       signupSource: user.signupSource,
+      adminFlag: user.adminFlag,
+      adminNote: user.adminNote,
+      trialStartedAt: user.trialStartedAt
+        ? user.trialStartedAt.toISOString()
+        : null,
       // quizGoal/quizLevel are plain `text` columns (not DB enums) — the API
       // route that writes them (api/user/quiz/route.ts) validates against
       // this same Goal/Level union before ever setting them, so the cast
@@ -359,6 +447,7 @@ export default async function AdminPage() {
         activeUsers: userTotals?.activeUsers ?? 0,
         totalCheckouts: checkoutTotals?.totalCheckouts ?? 0,
         projectedRevenueCents: checkoutTotals?.projectedRevenueCents ?? 0,
+        newTrials24h: userTotals?.newTrials24h ?? 0,
       }}
       funnel={{
         signedUp: userTotals?.totalUsers ?? 0,
@@ -375,7 +464,9 @@ export default async function AdminPage() {
       countrySplit={countryRows}
       sourceSplit={sourceRows}
       quizStepFunnel={quizStepFunnel}
+      abandonedSessions={abandonedSessions}
       visitorTrend={visitorTrend}
+      revenueTrend={revenueTrend}
       users={tableUsers}
       reviews={reviewRows.map((row) => ({
         id: row.id,

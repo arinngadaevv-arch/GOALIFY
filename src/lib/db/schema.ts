@@ -12,6 +12,9 @@ import { relations } from "drizzle-orm";
 import type { AdapterAccountType } from "next-auth/adapters";
 
 export const planEnum = pgEnum("plan", ["FREE", "PRO", "BUSINESS"]);
+// Manual admin triage tags — set from the users table in /admin, never
+// derived from real behavior. Null (the default) means untagged.
+export const adminFlagEnum = pgEnum("admin_flag", ["VIP", "PROBLEM"]);
 export const toneEnum = pgEnum("tone", [
   "FUNNY",
   "LUXURY",
@@ -98,6 +101,15 @@ export const users = pgTable("user", {
   // Mandatory Terms of Service + health liability waiver, gated in the app
   // shell before any workout/plan content is reachable (see terms-gate.tsx).
   hasAcceptedTerms: boolean("has_accepted_terms").notNull().default(false),
+  // Set once, the first time api/webhooks/whop's `membership.went_valid`
+  // handler grants this account PRO — trial or not, since Whop fires that
+  // event either way (see that route's own comment). `checkoutEvents`
+  // still only ever gets a row for a real charge, so "has this timestamp
+  // but no checkoutEvents row" is what the admin dashboard's "Trial" badge
+  // actually keys off; this column exists purely to answer "since when,"
+  // which that absence-of-a-row check can't (a trial started weeks ago
+  // looks identical to one started an hour ago without it).
+  trialStartedAt: timestamp("trial_started_at"),
   // Touched (throttled) in the NextAuth `session` callback - a real,
   // request-driven "last seen" signal for the admin dashboard's active-user
   // count, not a fabricated one.
@@ -123,6 +135,13 @@ export const users = pgTable("user", {
   // found the app, not whatever page it last came from. Null for any
   // account created before this shipped.
   signupSource: text("signup_source"),
+  // Manual admin triage — set by hand from the users table in /admin, never
+  // written anywhere else. `adminNote` is free text (refund history, a
+  // support thread, anything worth remembering about this specific
+  // account) and is independent of `adminFlag` — a note can exist with no
+  // flag set, or vice versa.
+  adminFlag: adminFlagEnum("admin_flag"),
+  adminNote: text("admin_note"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
