@@ -702,6 +702,26 @@ export function AdminDashboard({
               <LemonSqueezyVariantsPanel />
             </section>
 
+            {/* --------------------------------------------- Meta Conversions API */}
+            <section className="mt-10">
+              <h2 className="gf-display text-xl font-extrabold text-ink">
+                Meta Conversions API
+              </h2>
+              <p className="mt-1 text-[11px] leading-relaxed text-haze">
+                Both payment webhooks (Whop, Lemon Squeezy) report a real
+                Purchase event straight to Meta the moment a charge
+                settles — this is the only way an ad campaign can ever
+                optimize toward actual paying customers instead of just
+                registrations. Fire a small synthetic Purchase event below
+                to confirm it&apos;s actually wired up, without waiting
+                for (or faking) a real payment. Paste the Test Event Code
+                from Meta&apos;s Events Manager → Test Events tab to see
+                it land there instantly; without one, it still posts, just
+                into the normal (delayed) events pipeline instead.
+              </p>
+              <MetaCapiDiagnosticsPanel />
+            </section>
+
             {/* -------------------------------------------------- Workout videos */}
             <section className="mt-10">
               <h2 className="gf-display text-xl font-extrabold text-ink">
@@ -1854,6 +1874,128 @@ function WhopCheckoutDiagnosticsPanel() {
             </GlassCard>
           ))}
         </div>
+      )}
+    </div>
+  );
+}
+
+type MetaCapiDiagnosticsResult = {
+  config: { pixelId: boolean; accessToken: boolean };
+  result?: unknown;
+  error?: string;
+};
+
+/**
+ * Fires the diagnostics route's synthetic Purchase event and shows exactly
+ * what Meta's Conversions API said back — success, or the raw rejection
+ * reason — instead of the admin having to wait for (or fake) a real
+ * payment to find out whether the two payment webhooks' Purchase
+ * reporting is actually reaching Meta.
+ */
+function MetaCapiDiagnosticsPanel() {
+  const [testEventCode, setTestEventCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [response, setResponse] = useState<MetaCapiDiagnosticsResult | null>(null);
+  const [topLevelError, setTopLevelError] = useState<string | null>(null);
+
+  async function run() {
+    setLoading(true);
+    setTopLevelError(null);
+    try {
+      const url = testEventCode.trim()
+        ? `/api/admin/meta-capi-diagnostics?testEventCode=${encodeURIComponent(testEventCode.trim())}`
+        : "/api/admin/meta-capi-diagnostics";
+      const res = await fetch(url);
+      const rawText = await res.text();
+      let body: MetaCapiDiagnosticsResult | null = null;
+      try {
+        body = JSON.parse(rawText);
+      } catch {
+        // Not JSON — rawText itself is surfaced below.
+      }
+      if (!res.ok && !body?.config) {
+        setTopLevelError(
+          `HTTP ${res.status}: ${rawText.slice(0, 1000) || "(empty response)"}`,
+        );
+        setResponse(null);
+        return;
+      }
+      setResponse(body);
+    } catch (err) {
+      setTopLevelError(
+        `Request failed: ${err instanceof Error ? `${err.name}: ${err.message}` : String(err)}`,
+      );
+      setResponse(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="mt-3">
+      {response && (
+        <GlassCard deep className="mb-3 flex flex-wrap gap-2 p-4">
+          <ConfigPill label="Pixel ID" ok={response.config.pixelId} />
+          <ConfigPill
+            label="Conversions API access token"
+            ok={response.config.accessToken}
+          />
+        </GlassCard>
+      )}
+
+      <div className="flex flex-wrap items-center gap-2">
+        <input
+          value={testEventCode}
+          onChange={(event) => setTestEventCode(event.target.value)}
+          placeholder="Test Event Code (optional) — e.g. TEST12345"
+          className="min-w-[220px] flex-1 rounded-xl border border-ink/10 bg-transparent px-3 py-2 text-xs font-semibold text-ink outline-none placeholder:text-haze focus:border-electric/40"
+        />
+        <button
+          type="button"
+          onClick={run}
+          disabled={loading}
+          className="gf-press flex shrink-0 items-center gap-2 rounded-xl border border-electric/30 bg-electric/8 px-4 py-2 text-xs font-bold text-electric transition-colors hover:bg-electric/14 disabled:opacity-60"
+        >
+          {loading && <Loader2 className="size-3.5 animate-spin" />}
+          Send test Purchase event
+        </button>
+      </div>
+
+      {renderSafe(topLevelError) && (
+        <pre className="mt-2 max-h-48 overflow-auto rounded-lg bg-red-500/10 p-2 text-[11px] font-semibold whitespace-pre-wrap break-all text-red-400">
+          {renderSafe(topLevelError)}
+        </pre>
+      )}
+
+      {response && !response.config.pixelId && (
+        <p className="mt-2 text-xs text-mist">
+          <span className="font-mono">NEXT_PUBLIC_META_PIXEL_ID</span> isn&apos;t
+          set — nothing can be sent until it is (and a fresh deploy has
+          picked it up).
+        </p>
+      )}
+      {response && response.config.pixelId && !response.config.accessToken && (
+        <p className="mt-2 text-xs text-mist">
+          <span className="font-mono">META_CONVERSIONS_API_ACCESS_TOKEN</span>{" "}
+          isn&apos;t set — generate one in Events Manager → your dataset →
+          Settings → Conversions API, then redeploy.
+        </p>
+      )}
+      {response?.error && (
+        <p className="mt-2 text-xs font-semibold text-red-400">
+          {response.error}
+        </p>
+      )}
+      {response?.result != null && (
+        <pre className="mt-2 max-h-48 overflow-auto rounded-lg bg-black/30 p-2 text-[11px] whitespace-pre-wrap break-all text-mist">
+          {JSON.stringify(response.result, null, 2)}
+        </pre>
+      )}
+      {response?.result != null && testEventCode.trim() && (
+        <p className="mt-2 text-xs text-lime-deep">
+          Sent — check the Test Events tab in Meta Events Manager now, it
+          should show up within a few seconds.
+        </p>
       )}
     </div>
   );
