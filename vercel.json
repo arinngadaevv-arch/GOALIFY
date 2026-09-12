@@ -7,5 +7,11 @@
       "source": "/api/webhooks/lemonsqueezy",
       "headers": [{ "key": "Cache-Control", "value": "no-store" }]
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/checkout-reminder",
+      "schedule": "0 14 * * *"
+    }
   ]
 }

@@ -1,0 +1,1 @@
+ALTER TABLE "user" ADD COLUMN "checkout_reminder_sent_at" timestamp;

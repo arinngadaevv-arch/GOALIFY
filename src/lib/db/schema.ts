@@ -142,6 +142,12 @@ export const users = pgTable("user", {
   // flag set, or vice versa.
   adminFlag: adminFlagEnum("admin_flag"),
   adminNote: text("admin_note"),
+  // Set once, the first time api/cron/checkout-reminder emails this account
+  // about never finishing checkout — the guard that keeps the daily cron
+  // from re-sending the same nudge every day it still matches the "signed
+  // up, never paid" query. Null forever for anyone who converts (or who
+  // signed up before this shipped) before the cron ever reaches them.
+  checkoutReminderSentAt: timestamp("checkout_reminder_sent_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
