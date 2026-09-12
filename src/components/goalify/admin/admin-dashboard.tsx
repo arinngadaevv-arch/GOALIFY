@@ -722,6 +722,21 @@ export function AdminDashboard({
               <MetaCapiDiagnosticsPanel />
             </section>
 
+            {/* ------------------------------------------------- Email (Resend) */}
+            <section className="mt-10">
+              <h2 className="gf-display text-xl font-extrabold text-ink">
+                Email (Resend)
+              </h2>
+              <p className="mt-1 text-[11px] leading-relaxed text-haze">
+                Powers the daily checkout-reminder cron (accounts that signed up
+                but never paid) — and any future transactional email. Send
+                yourself a real test email below to confirm RESEND_API_KEY and
+                EMAIL_FROM are actually correct, rather than waiting for
+                tomorrow&apos;s cron run to find out.
+              </p>
+              <EmailDiagnosticsPanel />
+            </section>
+
             {/* -------------------------------------------------- Workout videos */}
             <section className="mt-10">
               <h2 className="gf-display text-xl font-extrabold text-ink">
@@ -1993,8 +2008,142 @@ function MetaCapiDiagnosticsPanel() {
       )}
       {response?.result != null && testEventCode.trim() && (
         <p className="mt-2 text-xs text-lime-deep">
-          Sent — check the Test Events tab in Meta Events Manager now, it
-          should show up within a few seconds.
+          Sent — check the Test Events tab in Meta Events Manager now, it should
+          show up within a few seconds.
+        </p>
+      )}
+    </div>
+  );
+}
+
+type EmailDiagnosticsResult = {
+  config: {
+    resendConfigured: boolean;
+    from: string;
+    fromIsPlaceholder: boolean;
+  };
+  to?: string;
+  result?: { ok: boolean; error?: string };
+  error?: string;
+};
+
+/**
+ * Sends a real Resend test email on demand and shows exactly what came
+ * back — including flagging the one specific, easy-to-miss mistake this
+ * setup invites: leaving `EMAIL_FROM` on the literal placeholder
+ * .env.example ships with, which Resend rejects outright since that
+ * domain was never verified.
+ */
+function EmailDiagnosticsPanel() {
+  const [to, setTo] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [response, setResponse] = useState<EmailDiagnosticsResult | null>(null);
+  const [topLevelError, setTopLevelError] = useState<string | null>(null);
+
+  async function run() {
+    setLoading(true);
+    setTopLevelError(null);
+    try {
+      const url = to.trim()
+        ? `/api/admin/email-diagnostics?to=${encodeURIComponent(to.trim())}`
+        : "/api/admin/email-diagnostics";
+      const res = await fetch(url);
+      const rawText = await res.text();
+      let body: EmailDiagnosticsResult | null = null;
+      try {
+        body = JSON.parse(rawText);
+      } catch {
+        // Not JSON — rawText itself is surfaced below.
+      }
+      if (!res.ok && !body?.config) {
+        setTopLevelError(
+          `HTTP ${res.status}: ${rawText.slice(0, 1000) || "(empty response)"}`,
+        );
+        setResponse(null);
+        return;
+      }
+      setResponse(body);
+    } catch (err) {
+      setTopLevelError(
+        `Request failed: ${err instanceof Error ? `${err.name}: ${err.message}` : String(err)}`,
+      );
+      setResponse(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="mt-3">
+      {response && (
+        <GlassCard deep className="mb-3 flex flex-wrap gap-2 p-4">
+          <ConfigPill
+            label="Resend API key"
+            ok={response.config.resendConfigured}
+          />
+          <Pill tone={response.config.fromIsPlaceholder ? "neutral" : "lime"}>
+            {response.config.fromIsPlaceholder ? (
+              <XCircle className="size-3" />
+            ) : (
+              <CheckCircle2 className="size-3" />
+            )}
+            From: {response.config.from}
+          </Pill>
+        </GlassCard>
+      )}
+
+      <div className="flex flex-wrap items-center gap-2">
+        <input
+          value={to}
+          onChange={(event) => setTo(event.target.value)}
+          placeholder="Send to (blank = your own admin email)"
+          className="min-w-[220px] flex-1 rounded-xl border border-ink/10 bg-transparent px-3 py-2 text-xs font-semibold text-ink outline-none placeholder:text-haze focus:border-electric/40"
+        />
+        <button
+          type="button"
+          onClick={run}
+          disabled={loading}
+          className="gf-press flex shrink-0 items-center gap-2 rounded-xl border border-electric/30 bg-electric/8 px-4 py-2 text-xs font-bold text-electric transition-colors hover:bg-electric/14 disabled:opacity-60"
+        >
+          {loading && <Loader2 className="size-3.5 animate-spin" />}
+          Send test email
+        </button>
+      </div>
+
+      {renderSafe(topLevelError) && (
+        <pre className="mt-2 max-h-48 overflow-auto rounded-lg bg-red-500/10 p-2 text-[11px] font-semibold whitespace-pre-wrap break-all text-red-400">
+          {renderSafe(topLevelError)}
+        </pre>
+      )}
+
+      {response && response.config.fromIsPlaceholder && (
+        <p className="mt-2 text-xs text-mist">
+          <span className="font-mono">EMAIL_FROM</span> is still the example
+          placeholder (noreply@yourdomain.com) — Resend will reject every
+          send until this is set to an address on a domain you&apos;ve
+          verified in Resend&apos;s Domains tab.
+        </p>
+      )}
+      {response && !response.config.resendConfigured && (
+        <p className="mt-2 text-xs text-mist">
+          <span className="font-mono">RESEND_API_KEY</span> isn&apos;t set —
+          nothing can send until it is (and a fresh deploy has picked it
+          up).
+        </p>
+      )}
+      {response?.error && (
+        <p className="mt-2 text-xs font-semibold text-red-400">
+          {response.error}
+        </p>
+      )}
+      {response?.result && !response.result.ok && (
+        <p className="mt-2 text-xs font-semibold text-red-400">
+          {renderSafe(response.result.error)}
+        </p>
+      )}
+      {response?.result?.ok && response.to && (
+        <p className="mt-2 text-xs text-lime-deep">
+          Sent to {response.to} — check that inbox now.
         </p>
       )}
     </div>
