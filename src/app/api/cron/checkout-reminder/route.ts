@@ -67,7 +67,7 @@ export async function GET(req: Request) {
     const goal = user.quizGoal ? goalLabel(user.quizGoal as Goal) : null;
     await sendEmail({
       to: user.email,
-      subject: "You started building your plan — it's still waiting",
+      subject: "Still avoiding your own plan?",
       html: checkoutReminderHtml({ name: user.name, goal, planUrl }),
     });
     await db
@@ -89,20 +89,21 @@ function checkoutReminderHtml({
   goal: string | null;
   planUrl: string;
 }): string {
-  const greeting = name ? `Hey ${name},` : "Hey,";
+  const greeting = name ? `${name}.` : "Hey.";
   const goalLine = goal
-    ? `Your ${goal.toLowerCase()} plan is built and ready — you just never hit start.`
-    : "Your plan is built and ready — you just never hit start.";
+    ? `You made it as far as signing up for the ${goal.toLowerCase()} plan. Then... nothing.`
+    : "You made it as far as signing up. Then... nothing.";
   return `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 480px; margin: 0 auto; color: #1a1100;">
-      <p style="font-size: 16px;">${greeting}</p>
+      <p style="font-size: 16px; font-weight: 700;">${greeting}</p>
       <p style="font-size: 16px; line-height: 1.5;">${goalLine}</p>
-      <p style="font-size: 16px; line-height: 1.5;">Nothing changed on our end — the plan's exactly where you left it.</p>
+      <p style="font-size: 16px; line-height: 1.5;">Nobody's coming to save your streak for you. The plan's still sitting exactly where you left it, untouched.</p>
       <p style="text-align: center; margin: 32px 0;">
         <a href="${planUrl}" style="background: #e8b32c; color: #1a1100; padding: 14px 28px; border-radius: 999px; font-weight: 800; text-decoration: none; display: inline-block;">
-          Pick up where you left off
+          FINE. LET'S GO
         </a>
       </p>
+      <p style="font-size: 12px; line-height: 1.4; color: #6b6b6b; text-align: center;">This is the only nudge you'll get about this.</p>
     </div>
   `;
 }
