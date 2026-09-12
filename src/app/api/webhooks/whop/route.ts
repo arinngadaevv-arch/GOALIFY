@@ -4,6 +4,7 @@ import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { checkoutEvents, users } from "@/lib/db/schema";
+import { sendMetaPurchaseEvent } from "@/lib/goalify/meta-capi";
 
 /**
  * The one place a Whop payment becomes a real, credited plan — mirrors
@@ -187,15 +188,30 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, unresolved: data.id });
   }
 
+  const priceCents = data.amount_after_fees
+    ? Math.round(data.amount_after_fees * 100)
+    : 0;
+
   await db.insert(checkoutEvents).values({
     userId,
     tier: "whop",
     tierLabel: "Whop checkout",
-    priceCents: data.amount_after_fees ? Math.round(data.amount_after_fees * 100) : 0,
+    priceCents,
     whopPaymentId: data.id,
   });
 
   await db.update(users).set({ plan: "PRO" }).where(eq(users.id, userId));
+
+  const [buyer] = await db
+    .select({ email: users.email })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  await sendMetaPurchaseEvent({
+    userId,
+    email: buyer?.email ?? null,
+    valueCents: priceCents,
+  });
 
   return NextResponse.json({ ok: true });
 }

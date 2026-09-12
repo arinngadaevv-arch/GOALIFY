@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { checkoutEvents, users } from "@/lib/db/schema";
+import { sendMetaPurchaseEvent } from "@/lib/goalify/meta-capi";
 
 // The one place a Lemon Squeezy checkout becomes a real, credited order —
 // nothing on the checkout/success side of the flow ever writes to
@@ -111,6 +112,17 @@ export async function POST(req: Request) {
   });
 
   await db.update(users).set({ plan: "PRO" }).where(eq(users.id, userId));
+
+  const [buyer] = await db
+    .select({ email: users.email })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  await sendMetaPurchaseEvent({
+    userId,
+    email: buyer?.email ?? null,
+    valueCents: data.attributes.total,
+  });
 
   return NextResponse.json({ ok: true });
 }
