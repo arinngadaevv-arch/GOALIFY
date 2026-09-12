@@ -90,9 +90,17 @@ export function Paywall() {
 
   // Fire-and-forget — records that this account actually reached the
   // paywall, purely for the admin funnel (see api/user/paywall-view).
-  // Never blocks rendering or the checkout flow either way.
+  // Never blocks rendering or the checkout flow either way. `keepalive`
+  // matters here specifically: without it, a plain fetch that's still
+  // in flight gets silently cancelled the instant the tab closes or
+  // navigates away, which is exactly when this fires (right on mount) —
+  // `keepalive` tells the browser to let the request finish anyway, the
+  // same guarantee `navigator.sendBeacon` gives, so a real "reached
+  // paywall" doesn't quietly go unrecorded in the admin funnel.
   useEffect(() => {
-    fetch("/api/user/paywall-view", { method: "POST" }).catch(() => {});
+    fetch("/api/user/paywall-view", { method: "POST", keepalive: true }).catch(
+      () => {},
+    );
   }, []);
 
   const checkout = async (event: React.MouseEvent) => {
