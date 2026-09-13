@@ -134,6 +134,13 @@
       "when": 1789249639151,
       "tag": "0018_equal_red_skull",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1789289374991,
+      "tag": "0019_chubby_carmella_unuscione",
+      "breakpoints": true
     }
   ]
 }

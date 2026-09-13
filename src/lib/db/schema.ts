@@ -5,6 +5,7 @@ import {
   integer,
   boolean,
   primaryKey,
+  unique,
   jsonb,
   pgEnum,
 } from "drizzle-orm/pg-core";
@@ -347,6 +348,54 @@ export const reviews = pgTable("review", {
   rating: integer("rating").notNull(),
   quote: text("quote"),
   approved: boolean("approved").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// The one server-side record that a user actually finished a workout on a
+// given day — everything else (completedDays, streak, workoutDoneToday in
+// lib/goalify/store.tsx) lives only in that browser's localStorage. This
+// table exists purely so a server-side cron (see api/cron/streak-reminder)
+// can know who to remind; the client's own streak math is untouched and
+// still the source of truth for what the user actually sees in the app.
+// `completedOn` is the exact "YYYY-MM-DD" day-key store.tsx's own
+// `todayKey()` already computes client-side (that function's own comment
+// explains why this has to be a local calendar day, not a UTC one) — sent
+// up as-is from the client rather than recomputed here, so this table
+// never disagrees with what the app itself considers "today" for that
+// user. The unique constraint is what makes re-POSTing the same day
+// (e.g. completeWorkout firing twice) a no-op instead of a duplicate row.
+export const workoutCompletions = pgTable(
+  "workout_completion",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    completedOn: text("completed_on").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [unique().on(table.userId, table.completedOn)],
+);
+
+// One row per browser/device a user has granted Notification permission
+// on and subscribed from (see lib/goalify/push.ts and api/push/subscribe) —
+// a user with the app open on two devices gets two rows, and both receive
+// every push. `endpoint` is the push service's own per-subscription URL
+// (unique per browser install), `p256dh`/`auth` are the two keys the Push
+// API's encryption needs — all three come straight from the browser's
+// PushSubscription object, verbatim, never generated here.
+export const pushSubscriptions = pgTable("push_subscription", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  endpoint: text("endpoint").notNull().unique(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

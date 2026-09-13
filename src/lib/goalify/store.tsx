@@ -256,6 +256,17 @@ export function useGoalify() {
     update((s) => {
       const today = todayKey();
       if (s.completedDays.includes(today)) return s;
+      // Mirrors this into Postgres — see api/user/workout-complete's own
+      // comment for why. `keepalive` matters here for the same reason it
+      // does on the paywall's own tracking beacon: this fires right as
+      // the completion screen mounts, exactly when a user might background
+      // the tab, and a plain fetch would get silently cancelled mid-flight.
+      fetch("/api/user/workout-complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completedOn: today }),
+        keepalive: true,
+      }).catch(() => {});
       return {
         ...s,
         completedDays: [...s.completedDays, today].sort(),

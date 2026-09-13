@@ -4,6 +4,7 @@ import clsx from "clsx";
 import {
   BatteryFull,
   Bell,
+  BellOff,
   Droplets,
   Flame,
   Signal,
@@ -12,6 +13,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
+import { usePushSubscription } from "@/lib/goalify/use-push-subscription";
 import { AppShell } from "./app-shell";
 import { GlassCard } from "./ui/glass-card";
 import { Toggle } from "./ui/toggle";
@@ -69,10 +71,42 @@ const SLOTS: Slot[] = [
 export function NotificationsPreview() {
   const { state, updateSettings } = useGoalify();
   const active = SLOTS.filter((slot) => state.settings[slot.key]);
+  const push = usePushSubscription();
 
   return (
     <AppShell dark title="Daily Reminders" subtitle="Lock-screen preview">
-      <GlassCard tone="electric" className="gf-anim-rise flex items-center gap-3 p-4">
+      {/* -------------------------------------------------- Real notifications
+          The one actual, working notification this app can send today —
+          separated from the mock preview below on purpose, so it's never
+          confused with it. Right now that's a single evening push: trained
+          yesterday, haven't yet today. The four-a-day phone mockup further
+          down is still just that, a mockup — nothing it shows is real yet. */}
+      <GlassCard deep className="gf-anim-rise p-5">
+        <Toggle
+          checked={push.status === "enabled"}
+          onChange={(next) => (next ? push.enable() : push.disable())}
+          label="Streak-risk alerts"
+          description={
+            push.status === "unsupported"
+              ? "Not supported on this browser."
+              : push.status === "denied"
+                ? "Blocked — enable notifications for this site in your browser settings."
+                : "A real push, evening-only, only when you trained yesterday but haven't yet today."
+          }
+          icon={
+            push.status === "enabled" ? (
+              <Bell className="size-4" />
+            ) : (
+              <BellOff className="size-4" />
+            )
+          }
+        />
+      </GlassCard>
+
+      <GlassCard
+        tone="electric"
+        className="gf-anim-rise mt-4 flex items-center gap-3 p-4"
+      >
         <Bell className="size-4 shrink-0 text-electric" />
         <p className="text-xs leading-relaxed text-ink-soft">
           This is exactly how GOALIFY appears on your phone. Toggle any of the

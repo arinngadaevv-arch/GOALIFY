@@ -737,6 +737,23 @@ export function AdminDashboard({
               <EmailDiagnosticsPanel />
             </section>
 
+            {/* ------------------------------------------------- Push (web push) */}
+            <section className="mt-10">
+              <h2 className="gf-display text-xl font-extrabold text-ink">
+                Push notifications
+              </h2>
+              <p className="mt-1 text-[11px] leading-relaxed text-haze">
+                Powers the daily streak-reminder cron — an evening push for
+                anyone who trained yesterday but hasn&apos;t yet today. No
+                third-party account needed (VAPID keys are self-generated,
+                see .env.example), but sending a test here only reaches
+                your own subscriptions — enable &ldquo;Streak-risk
+                alerts&rdquo; on the Daily Reminders page in this same
+                browser first, then test below.
+              </p>
+              <PushDiagnosticsPanel />
+            </section>
+
             {/* -------------------------------------------------- Workout videos */}
             <section className="mt-10">
               <h2 className="gf-display text-xl font-extrabold text-ink">
@@ -2145,6 +2162,127 @@ function EmailDiagnosticsPanel() {
         <p className="mt-2 text-xs text-lime-deep">
           Sent to {response.to} — check that inbox now.
         </p>
+      )}
+    </div>
+  );
+}
+
+type PushDiagnosticsResult = {
+  config: { vapidConfigured: boolean };
+  subscriptionCount: number;
+  results: { ok: boolean; error?: string }[];
+  error?: string;
+};
+
+/**
+ * Fires a real test push at the admin's own subscriptions (their own
+ * browsers/devices) and shows exactly what came back. Unlike the other
+ * diagnostics panels there's no "send to any address" field — a push can
+ * only ever go to a browser that's already subscribed, so this only ever
+ * tests the admin's own.
+ */
+function PushDiagnosticsPanel() {
+  const [loading, setLoading] = useState(false);
+  const [response, setResponse] = useState<PushDiagnosticsResult | null>(null);
+  const [topLevelError, setTopLevelError] = useState<string | null>(null);
+
+  async function run() {
+    setLoading(true);
+    setTopLevelError(null);
+    try {
+      const res = await fetch("/api/admin/push-diagnostics");
+      const rawText = await res.text();
+      let body: PushDiagnosticsResult | null = null;
+      try {
+        body = JSON.parse(rawText);
+      } catch {
+        // Not JSON — rawText itself is surfaced below.
+      }
+      if (!res.ok && !body?.config) {
+        setTopLevelError(
+          `HTTP ${res.status}: ${rawText.slice(0, 1000) || "(empty response)"}`,
+        );
+        setResponse(null);
+        return;
+      }
+      setResponse(body);
+    } catch (err) {
+      setTopLevelError(
+        `Request failed: ${err instanceof Error ? `${err.name}: ${err.message}` : String(err)}`,
+      );
+      setResponse(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="mt-3">
+      {response && (
+        <GlassCard deep className="mb-3 flex flex-wrap gap-2 p-4">
+          <ConfigPill label="VAPID keys" ok={response.config.vapidConfigured} />
+          <Pill tone={response.subscriptionCount > 0 ? "lime" : "neutral"}>
+            {response.subscriptionCount} of your own subscription
+            {response.subscriptionCount === 1 ? "" : "s"}
+          </Pill>
+        </GlassCard>
+      )}
+
+      <button
+        type="button"
+        onClick={run}
+        disabled={loading}
+        className="gf-press flex items-center gap-2 rounded-xl border border-electric/30 bg-electric/8 px-4 py-2 text-xs font-bold text-electric transition-colors hover:bg-electric/14 disabled:opacity-60"
+      >
+        {loading && <Loader2 className="size-3.5 animate-spin" />}
+        Send test push to yourself
+      </button>
+
+      {renderSafe(topLevelError) && (
+        <pre className="mt-2 max-h-48 overflow-auto rounded-lg bg-red-500/10 p-2 text-[11px] font-semibold whitespace-pre-wrap break-all text-red-400">
+          {renderSafe(topLevelError)}
+        </pre>
+      )}
+
+      {response && !response.config.vapidConfigured && (
+        <p className="mt-2 text-xs text-mist">
+          <span className="font-mono">VAPID_PUBLIC_KEY</span> /{" "}
+          <span className="font-mono">VAPID_PRIVATE_KEY</span> aren&apos;t
+          set — generate a pair with{" "}
+          <span className="font-mono">npx web-push generate-vapid-keys</span>{" "}
+          and add both (plus the public key again as{" "}
+          <span className="font-mono">NEXT_PUBLIC_VAPID_PUBLIC_KEY</span>).
+        </p>
+      )}
+      {response &&
+        response.config.vapidConfigured &&
+        response.subscriptionCount === 0 && (
+          <p className="mt-2 text-xs text-mist">
+            No subscriptions on this account yet — enable &ldquo;Streak-risk
+            alerts&rdquo; on the Daily Reminders page in this browser first.
+          </p>
+        )}
+      {response?.error && (
+        <p className="mt-2 text-xs font-semibold text-red-400">
+          {response.error}
+        </p>
+      )}
+      {response && response.results.length > 0 && (
+        <div className="mt-2 flex flex-col gap-1">
+          {response.results.map((result, index) => (
+            <p
+              key={index}
+              className={clsx(
+                "text-xs font-semibold",
+                result.ok ? "text-lime-deep" : "text-red-400",
+              )}
+            >
+              {result.ok
+                ? `Subscription ${index + 1}: sent — check that device now.`
+                : `Subscription ${index + 1}: ${renderSafe(result.error)}`}
+            </p>
+          ))}
+        </div>
       )}
     </div>
   );
