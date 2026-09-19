@@ -254,17 +254,20 @@ export function Dashboard() {
           }
         />
 
-        <div className="relative">
+        <div className="gf-elite-border relative rounded-glass">
           {/* Ambient glow — a soft, slowly breathing bloom behind the one
               card the whole screen is pointing at, so it reads as alive/
-              clickable instead of just another box in a list. */}
+              clickable instead of just another box in a list. Sits on this
+              outer, non-clipped wrapper (not the card itself, which needs
+              its own overflow-hidden for the image's rounded corners) so
+              the glow ring below never gets cut off at the card's edge. */}
           <div
             className="gf-glow-breathe pointer-events-none absolute -inset-4 -z-10 rounded-[2.5rem] bg-electric/18 blur-3xl"
             aria-hidden
           />
           <GlassCard
             deep
-            className="gf-reveal gf-elite-border overflow-hidden p-0 lg:flex lg:items-stretch"
+            className="gf-reveal overflow-hidden p-0 lg:flex lg:items-stretch"
           >
           <div className="relative lg:w-2/5 lg:shrink-0">
             <VisualSlot
