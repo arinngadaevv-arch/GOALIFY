@@ -712,15 +712,20 @@ export function QuizFlow() {
               className={clsx(
                 "relative flex flex-1 flex-col pt-2",
                 // The 2x2 photo-tile layout is only 4 short cards — on most
-                // screens that leaves a lot of dead space below it if just
-                // left top-aligned in this flex-1 area, unlike the longer
-                // list/radio layouts that already reach near the bottom on
-                // their own. `justify-center` is a no-op once content is
-                // already tall enough to fill the space, so this only ever
-                // affects the layout it's meant to.
+                // *phone-height* screens that leaves a lot of dead space
+                // below it if just left top-aligned in this flex-1 area,
+                // unlike the longer list/radio layouts that already reach
+                // near the bottom on their own. `justify-center` is a
+                // no-op once content is already tall enough to fill the
+                // space, so this only ever affects the layout it's meant
+                // to — but `min-h-dvh`'s remaining flex-1 space scales with
+                // the *window*, not the content, so on a desktop-height
+                // viewport the same centering leaves an even bigger gap
+                // above the cards than below. `lg:` reverts to plain top
+                // alignment there, same as every other layout.
                 step.kind === "choice" &&
                   step.layout === "tile" &&
-                  "justify-center",
+                  "justify-center lg:justify-start",
               )}
             >
               <div
