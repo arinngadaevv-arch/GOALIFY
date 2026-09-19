@@ -255,16 +255,16 @@ export function Dashboard() {
         />
 
         <div className="relative">
-          {/* Ambient glow — a soft bloom behind the one card the whole
-              screen is pointing at, so it reads as alive/clickable instead
-              of just another box in a list. */}
+          {/* Ambient glow — a soft, slowly breathing bloom behind the one
+              card the whole screen is pointing at, so it reads as alive/
+              clickable instead of just another box in a list. */}
           <div
-            className="pointer-events-none absolute -inset-4 -z-10 rounded-[2.5rem] bg-electric/18 opacity-70 blur-3xl"
+            className="gf-glow-breathe pointer-events-none absolute -inset-4 -z-10 rounded-[2.5rem] bg-electric/18 blur-3xl"
             aria-hidden
           />
           <GlassCard
             deep
-            className="gf-reveal overflow-hidden p-0 lg:flex lg:items-stretch"
+            className="gf-reveal gf-elite-border overflow-hidden p-0 lg:flex lg:items-stretch"
           >
           <div className="relative lg:w-2/5 lg:shrink-0">
             <VisualSlot
@@ -303,10 +303,22 @@ export function Dashboard() {
                 value={workout.durationMinutes}
                 suffix="min"
                 label="Duration"
+                tone="electric"
               />
-              <Stat value={workout.calories} suffix="kcal" label="Burn" />
+              <Stat
+                value={workout.calories}
+                suffix="kcal"
+                label="Burn"
+                tone="lime"
+              />
               <Stat value={workout.exercises.length} label="Moves" />
             </div>
+
+            {!workoutDoneToday && (
+              <p className="mt-4 text-center text-xs font-bold tracking-tight text-electric lg:text-left">
+                The only workout that counts is the one you actually start.
+              </p>
+            )}
 
             <GlowLink
               href={
