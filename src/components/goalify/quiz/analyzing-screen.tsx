@@ -195,12 +195,12 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
   return (
     <>
       <DesktopAmbientBackdrop />
-      <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center px-5 py-4 text-center">
+      <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center px-5 py-4 text-center lg:max-w-2xl lg:py-10">
       <ParticleField />
 
       <div className="relative flex items-center gap-2.5">
         <CoachBadge size="sm" />
-        <p className="text-[11px] font-black tracking-[0.16em] text-electric uppercase">
+        <p className="text-[11px] font-black tracking-[0.16em] text-electric uppercase lg:text-sm">
           Building your personalized plan…
         </p>
       </div>
@@ -245,7 +245,7 @@ export function AnalyzingScreen({ onDone }: { onDone: () => void }) {
         </ProgressRing>
       </div>
 
-      <h1 className="gf-display relative mt-3 text-xl font-black text-ink">
+      <h1 className="gf-display relative mt-3 text-xl font-black text-ink lg:text-3xl">
         Designing your <span className="gf-text-hype">plan</span>
       </h1>
 
