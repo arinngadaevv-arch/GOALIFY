@@ -316,6 +316,27 @@ export function useGoalify() {
 
   const updateSettings = useCallback((patch: Partial<Settings>) => {
     update((s) => ({ ...s, settings: { ...s.settings, ...patch } }));
+    // Only the four push toggles have a server-side reader (the daily-push
+    // crons — see api/user/push-preferences's own comment) — everything
+    // else in Settings stays client-only, so there's nothing worth a
+    // network round trip for on every other flip (sound effects, units...).
+    const pushPatch = {
+      ...(patch.pushMotivation !== undefined && {
+        motivation: patch.pushMotivation,
+      }),
+      ...(patch.pushNutrition !== undefined && {
+        nutrition: patch.pushNutrition,
+      }),
+      ...(patch.pushWater !== undefined && { water: patch.pushWater }),
+      ...(patch.pushWorkout !== undefined && { workout: patch.pushWorkout }),
+    };
+    if (Object.keys(pushPatch).length > 0) {
+      fetch("/api/user/push-preferences", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pushPatch),
+      }).catch(() => {});
+    }
   }, []);
 
   const addPhoto = useCallback((photo: Omit<ProgressPhoto, "id">) => {

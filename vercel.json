@@ -16,6 +16,22 @@
     {
       "path": "/api/cron/streak-reminder",
       "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/cron/daily-push?slot=motivation",
+      "schedule": "30 7 * * *"
+    },
+    {
+      "path": "/api/cron/daily-push?slot=nutrition",
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/daily-push?slot=water",
+      "schedule": "30 15 * * *"
+    },
+    {
+      "path": "/api/cron/daily-push?slot=workout",
+      "schedule": "0 19 * * *"
     }
   ]
 }

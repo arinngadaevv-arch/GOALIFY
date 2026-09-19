@@ -76,22 +76,24 @@ export function NotificationsPreview() {
   return (
     <AppShell dark title="Daily Reminders" subtitle="Lock-screen preview">
       {/* -------------------------------------------------- Real notifications
-          The one actual, working notification this app can send today —
-          separated from the mock preview below on purpose, so it's never
-          confused with it. Right now that's a single evening push: trained
-          yesterday, haven't yet today. The four-a-day phone mockup further
-          down is still just that, a mockup — nothing it shows is real yet. */}
+          This one toggle is the actual browser permission grant — nothing
+          below can send anything without it, regardless of which of the
+          four categories are left on (see use-push-subscription.ts). Once
+          it's on, the streak-risk nudge (evening-only, trained yesterday
+          but not yet today) and whichever daily categories are still
+          toggled on further down are both real, server-sent pushes — not
+          just what the phone mockup below happens to be showing. */}
       <GlassCard deep className="gf-anim-rise p-5">
         <Toggle
           checked={push.status === "enabled"}
           onChange={(next) => (next ? push.enable() : push.disable())}
-          label="Streak-risk alerts"
+          label="Push notifications"
           description={
             push.status === "unsupported"
               ? "Not supported on this browser."
               : push.status === "denied"
                 ? "Blocked — enable notifications for this site in your browser settings."
-                : "A real push, evening-only, only when you trained yesterday but haven't yet today."
+                : "Turns on real alerts for this device — the streak-risk nudge, plus whichever daily categories you leave on below."
           }
           icon={
             push.status === "enabled" ? (
@@ -110,7 +112,8 @@ export function NotificationsPreview() {
         <Bell className="size-4 shrink-0 text-electric" />
         <p className="text-xs leading-relaxed text-ink-soft">
           This is exactly how GOALIFY appears on your phone. Toggle any of the
-          four off and it disappears from the preview.
+          four off below and it stops sending for real, not just from this
+          preview.
         </p>
       </GlassCard>
 
@@ -217,8 +220,9 @@ export function NotificationsPreview() {
           ))}
         </GlassCard>
         <p className="mt-4 px-1 text-xs leading-relaxed text-haze">
-          GOALIFY never sends more than four notifications a day. No streak
-          guilt-trips, no random re-engagement spam.
+          Up to four a day from this list, plus the separate streak alert above
+          if you&apos;ve turned that on too — never anything past that, no
+          random re-engagement spam.
         </p>
       </section>
     </AppShell>

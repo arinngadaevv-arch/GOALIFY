@@ -149,6 +149,23 @@ export const users = pgTable("user", {
   // up, never paid" query. Null forever for anyone who converts (or who
   // signed up before this shipped) before the cron ever reaches them.
   checkoutReminderSentAt: timestamp("checkout_reminder_sent_at"),
+  // The one server-side mirror of Settings.pushMotivation/pushNutrition/
+  // pushWater/pushWorkout (see lib/goalify/store.tsx) — those toggles live
+  // client-side like the rest of Settings, but the daily push crons (see
+  // api/cron/daily-push) run with no browser around to read localStorage
+  // from, so each toggle flip syncs here too (api/user/push-preferences)
+  // purely so a cron has something authoritative to check. Same default
+  // (true) as the client's own INITIAL_STATE, so a never-synced account —
+  // one that signed up before this shipped, or simply hasn't touched these
+  // settings yet — still receives them rather than silently opting out.
+  pushMotivationEnabled: boolean("push_motivation_enabled")
+    .notNull()
+    .default(true),
+  pushNutritionEnabled: boolean("push_nutrition_enabled")
+    .notNull()
+    .default(true),
+  pushWaterEnabled: boolean("push_water_enabled").notNull().default(true),
+  pushWorkoutEnabled: boolean("push_workout_enabled").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

@@ -28,6 +28,7 @@ import { Pill } from "@/components/goalify/ui/stat";
 import { VisitorTrendChart, type VisitorTrend } from "./visitor-trend-chart";
 import { RevenueTrendChart } from "./revenue-trend-chart";
 import { goalLabel, levelLabel } from "@/lib/goalify/plan";
+import type { DailyPushSlot } from "@/lib/goalify/daily-push-content";
 import type { Goal, Level } from "@/lib/goalify/types";
 import { allKnownClips, diagnoseSupabaseUrl } from "@/lib/goalify/video";
 
@@ -2169,10 +2170,18 @@ function EmailDiagnosticsPanel() {
 
 type PushDiagnosticsResult = {
   config: { vapidConfigured: boolean };
+  slot: DailyPushSlot | null;
   subscriptionCount: number;
   results: { ok: boolean; error?: string }[];
   error?: string;
 };
+
+const DAILY_PUSH_SLOTS: DailyPushSlot[] = [
+  "motivation",
+  "nutrition",
+  "water",
+  "workout",
+];
 
 /**
  * Fires a real test push at the admin's own subscriptions (their own
@@ -2180,8 +2189,14 @@ type PushDiagnosticsResult = {
  * diagnostics panels there's no "send to any address" field — a push can
  * only ever go to a browser that's already subscribed, so this only ever
  * tests the admin's own.
+ *
+ * The slot picker previews any of the four daily-push categories'
+ * real, exact copy (see api/cron/daily-push) on demand, rather than
+ * waiting for its scheduled UTC time — "Generic test" just confirms the
+ * VAPID plumbing itself works, independent of any category content.
  */
 function PushDiagnosticsPanel() {
+  const [slot, setSlot] = useState<DailyPushSlot | "">("");
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<PushDiagnosticsResult | null>(null);
   const [topLevelError, setTopLevelError] = useState<string | null>(null);
@@ -2190,7 +2205,8 @@ function PushDiagnosticsPanel() {
     setLoading(true);
     setTopLevelError(null);
     try {
-      const res = await fetch("/api/admin/push-diagnostics");
+      const query = slot ? `?slot=${slot}` : "";
+      const res = await fetch(`/api/admin/push-diagnostics${query}`);
       const rawText = await res.text();
       let body: PushDiagnosticsResult | null = null;
       try {
@@ -2228,15 +2244,32 @@ function PushDiagnosticsPanel() {
         </GlassCard>
       )}
 
-      <button
-        type="button"
-        onClick={run}
-        disabled={loading}
-        className="gf-press flex items-center gap-2 rounded-xl border border-electric/30 bg-electric/8 px-4 py-2 text-xs font-bold text-electric transition-colors hover:bg-electric/14 disabled:opacity-60"
-      >
-        {loading && <Loader2 className="size-3.5 animate-spin" />}
-        Send test push to yourself
-      </button>
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          value={slot}
+          onChange={(event) =>
+            setSlot(event.target.value as DailyPushSlot | "")
+          }
+          className="rounded-lg border border-ink/10 bg-transparent px-2 py-1 text-xs font-bold text-ink outline-none focus:border-electric/40"
+        >
+          <option value="">Generic test</option>
+          {DAILY_PUSH_SLOTS.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+
+        <button
+          type="button"
+          onClick={run}
+          disabled={loading}
+          className="gf-press flex items-center gap-2 rounded-xl border border-electric/30 bg-electric/8 px-4 py-2 text-xs font-bold text-electric transition-colors hover:bg-electric/14 disabled:opacity-60"
+        >
+          {loading && <Loader2 className="size-3.5 animate-spin" />}
+          Send test push to yourself
+        </button>
+      </div>
 
       {renderSafe(topLevelError) && (
         <pre className="mt-2 max-h-48 overflow-auto rounded-lg bg-red-500/10 p-2 text-[11px] font-semibold whitespace-pre-wrap break-all text-red-400">
@@ -2258,8 +2291,9 @@ function PushDiagnosticsPanel() {
         response.config.vapidConfigured &&
         response.subscriptionCount === 0 && (
           <p className="mt-2 text-xs text-mist">
-            No subscriptions on this account yet — enable &ldquo;Streak-risk
-            alerts&rdquo; on the Daily Reminders page in this browser first.
+            No subscriptions on this account yet — enable &ldquo;Push
+            notifications&rdquo; on the Daily Reminders page in this browser
+            first.
           </p>
         )}
       {response?.error && (
