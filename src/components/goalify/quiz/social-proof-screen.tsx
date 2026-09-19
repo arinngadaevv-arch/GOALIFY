@@ -95,18 +95,18 @@ export function SocialProofScreen({ onContinue }: { onContinue: () => void }) {
   return (
     <>
       <DesktopAmbientBackdrop />
-      <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-5 pb-12 text-center">
+      <main className="gf-cyber-scope relative mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-5 pb-12 text-center lg:max-w-2xl lg:pb-16">
       <ParticleField />
 
       <div className="relative">
-        <h1 className="gf-display relative text-3xl leading-[1.15] font-black text-ink">
+        <h1 className="gf-display relative text-3xl leading-[1.15] font-black text-ink lg:text-5xl">
           Over <span className="gf-text-electric">200,000</span> happy users
           are here, looking forward to having you!
         </h1>
       </div>
 
-      <div className="relative mt-8">
-        <div className="relative overflow-hidden rounded-3xl border border-[#FFC700]/35 bg-gradient-to-b from-[#161B26] to-[#0B0E14] p-5 shadow-[0_0_0_1px_rgba(255,199,0,0.08),0_30px_70px_-30px_rgba(0,0,0,0.9),0_0_50px_-16px_rgba(255,199,0,0.35)]">
+      <div className="relative mt-8 lg:mt-12">
+        <div className="relative overflow-hidden rounded-3xl border border-[#FFC700]/35 bg-gradient-to-b from-[#161B26] to-[#0B0E14] p-5 shadow-[0_0_0_1px_rgba(255,199,0,0.08),0_30px_70px_-30px_rgba(0,0,0,0.9),0_0_50px_-16px_rgba(255,199,0,0.35)] lg:p-8">
           <AnimatePresence mode="wait" custom={direction} initial={false}>
             <motion.div
               key={index}
@@ -158,16 +158,21 @@ export function SocialProofScreen({ onContinue }: { onContinue: () => void }) {
                 </div>
               )}
 
-              <div className="mt-4 flex justify-center gap-1 text-electric">
+              <div className="mt-4 flex justify-center gap-1 text-electric lg:mt-6">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="gf-glow-electric size-4 fill-current" />
+                  <Star
+                    key={i}
+                    className="gf-glow-electric size-4 fill-current lg:size-5"
+                  />
                 ))}
               </div>
 
-              <p className="gf-display relative mt-3 text-sm leading-relaxed font-bold text-ink">
+              <p className="gf-display relative mt-3 text-sm leading-relaxed font-bold text-ink lg:mt-4 lg:text-lg">
                 &ldquo;{story.quote}&rdquo;
               </p>
-              <p className="mt-2 text-xs font-semibold text-mist">{story.handle}</p>
+              <p className="mt-2 text-xs font-semibold text-mist lg:text-sm">
+                {story.handle}
+              </p>
             </motion.div>
           </AnimatePresence>
 
