@@ -14,7 +14,7 @@ export function TopBar({
   title?: string;
   subtitle?: string;
 }) {
-  const { answers, streak, state } = useGoalify();
+  const { streak, state } = useGoalify();
   const { data: session } = useSession();
   // Every other AppShell screen passes its own title/subtitle (Nutrition,
   // Progress, Settings, ...) — the default greeting+name heading below only
@@ -71,7 +71,7 @@ export function TopBar({
             isHero ? "gf-text-electric font-black" : "font-extrabold text-ink",
           )}
         >
-          {title ?? `${name} · ${answers.daysPerWeek}-day plan`}
+          {title ?? name}
         </h1>
       </div>
 
