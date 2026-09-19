@@ -1961,27 +1961,20 @@ html.goalify ::-webkit-scrollbar-thumb {
   background-image: linear-gradient(135deg, #ffd68a 0%, #f5a623 55%, #c9780f 100%);
 }
 
-/* An animated gold border for the one card per screen meant to feel like
-   the whole point of the page — see dashboard.tsx's "Your Workout" card,
+/* A calm gold ring for the one card per screen meant to feel like the
+   whole point of the page — see dashboard.tsx's "Your Workout" card,
    where this sits on the outer wrapper (not the card itself, which needs
    its own overflow-hidden for the image's rounded corners — anything
-   inset outside that box would just get clipped). Gold/amber only (no
-   red/cyan, unlike .gf-cyber-border's sweep): the elite scope commits to
-   a single accent color.
+   inset outside that box would just get clipped).
 
-   `::before` is the crisp ring (the masked-gradient technique — `padding`
-   sets the ring's own thickness, the mask punches out everything but that
-   band) animated on two tracks: the gradient itself sweeps hue, and
-   `filter` pairs a brightness pulse with a `drop-shadow` — not
-   `box-shadow`, which would glow around the pseudo-element's full
-   rectangle regardless of the mask. `drop-shadow` follows the rendered
-   (post-mask) alpha shape instead, so the glow hugs the ring itself. That
-   distinction matters here specifically because the actual card sits on
-   `.gf-glass`, which is translucent with its own `backdrop-filter: blur`
-   (see the .gf-elite-scope .gf-glass rule) — an earlier version glowed via
-   a second, blurred full-rectangle layer sitting behind the card, and that
-   backdrop-filter sampled straight through it, washing gold across the
-   card's own text instead of just outlining it. */
+   Deliberately a single, solid gold tone with no hue movement — an
+   earlier version cycled the border through several gold/amber stops
+   (a moving gradient chasing around the ring), which read as a gaming-
+   peripheral RGB strip rather than a premium highlight. The only motion
+   left is a slow glow-intensity breathe via `drop-shadow` (not
+   `box-shadow`, which would glow around the ring pseudo-element's full
+   rectangle instead of the thin band the mask actually leaves visible) —
+   so it reads as "softly alive," not "blinking." */
 .gf-elite-scope .gf-elite-border {
   position: relative;
 }
@@ -1990,9 +1983,8 @@ html.goalify ::-webkit-scrollbar-thumb {
   position: absolute;
   inset: -2px;
   border-radius: inherit;
-  padding: 2.5px;
-  background: linear-gradient(100deg, #c9780f, #ffd68a, #f5a623, #c9780f);
-  background-size: 300% 100%;
+  padding: 2px;
+  background: #f5a623;
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
@@ -2000,31 +1992,24 @@ html.goalify ::-webkit-scrollbar-thumb {
   mask-composite: exclude;
   pointer-events: none;
   z-index: 1;
-  animation:
-    gf-elite-border-sweep 4s linear infinite,
-    gf-elite-ring-glow 2.6s ease-in-out infinite;
-}
-@keyframes gf-elite-border-sweep {
-  0% {
-    background-position: 0% 50%;
-  }
-  100% {
-    background-position: 300% 50%;
-  }
+  animation: gf-elite-ring-glow 3.2s ease-in-out infinite;
 }
 @keyframes gf-elite-ring-glow {
   0%,
   100% {
-    filter: brightness(0.95) drop-shadow(0 0 3px rgba(245, 166, 35, 0.4));
+    opacity: 0.75;
+    filter: drop-shadow(0 0 3px rgba(245, 166, 35, 0.35));
   }
   50% {
-    filter: brightness(1.25) drop-shadow(0 0 9px rgba(245, 166, 35, 0.8));
+    opacity: 1;
+    filter: drop-shadow(0 0 7px rgba(245, 166, 35, 0.65));
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .gf-elite-scope .gf-elite-border::before {
     animation: none;
-    filter: drop-shadow(0 0 5px rgba(245, 166, 35, 0.55));
+    opacity: 0.9;
+    filter: drop-shadow(0 0 4px rgba(245, 166, 35, 0.45));
   }
 }
 
