@@ -2,7 +2,11 @@
 
 import { useSearchParams } from "next/navigation";
 import { useGoalify } from "@/lib/goalify/store";
-import { findWorkout, resolveWorkout } from "@/lib/goalify/workouts";
+import {
+  findWorkout,
+  quickFixWorkout,
+  resolveWorkout,
+} from "@/lib/goalify/workouts";
 import { introVideoUrl } from "@/lib/goalify/video";
 import { poseForExercise } from "@/components/goalify/ui/pose-icon";
 import { WorkoutHeader } from "./workout-header";
@@ -24,11 +28,19 @@ export function Launchpad() {
   const { state, todaysWorkout } = useGoalify();
   const searchParams = useSearchParams();
   const selectedId = searchParams.get("workout");
-  const baseWorkout = (selectedId && findWorkout(selectedId)) || todaysWorkout;
+  const isQuickFix = searchParams.get("quick") === "1";
+  const pickedWorkout =
+    (selectedId && findWorkout(selectedId)) || todaysWorkout;
+  const baseWorkout = isQuickFix
+    ? quickFixWorkout(pickedWorkout)
+    : pickedWorkout;
   const workout = resolveWorkout(baseWorkout, state.settings.kneeSafe);
-  const isLibraryPick = baseWorkout.id !== todaysWorkout.id;
-  const liveHref = isLibraryPick
-    ? `/workout/live?workout=${baseWorkout.id}`
+  const isLibraryPick = pickedWorkout.id !== todaysWorkout.id;
+  const liveParams = new URLSearchParams();
+  if (isLibraryPick) liveParams.set("workout", pickedWorkout.id);
+  if (isQuickFix) liveParams.set("quick", "1");
+  const liveHref = liveParams.size
+    ? `/workout/live?${liveParams.toString()}`
     : "/workout/live";
 
   const firstExercise = workout.exercises[0];
@@ -44,7 +56,11 @@ export function Launchpad() {
             className="gf-launch-rise"
             category={workout.focus}
             dayLabel={
-              isLibraryPick ? "Library pick" : `Day ${state.programDay}`
+              isQuickFix
+                ? "Quick Fix"
+                : isLibraryPick
+                  ? "Library pick"
+                  : `Day ${state.programDay}`
             }
           />
           <WorkoutHero

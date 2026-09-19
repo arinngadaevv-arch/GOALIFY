@@ -577,10 +577,82 @@ export function workoutForDay(programDay: number): Workout {
   return PROGRAM[(programDay - 1) % PROGRAM.length];
 }
 
+/** One exercise's own share of the session clock — its work time (a real
+ * clock for a timed set, the same per-rep estimate LivePlayer's countdown
+ * runs on for a rep-based one) plus its trailing rest. */
+function exerciseSeconds(exercise: Exercise): number {
+  const work = exercise.kind === "time" ? exercise.amount : exercise.amount * 3;
+  return work + exercise.restSeconds;
+}
+
 /** Total session length including rest, in seconds. */
 export function workoutSeconds(workout: Workout): number {
-  return workout.exercises.reduce((total, exercise) => {
-    const work = exercise.kind === "time" ? exercise.amount : exercise.amount * 3;
-    return total + work + exercise.restSeconds;
-  }, 0);
+  return workout.exercises.reduce(
+    (total, exercise) => total + exerciseSeconds(exercise),
+    0,
+  );
+}
+
+/** A quick-fix session always keeps at most this many of the original
+ * main exercises (beyond the warm-up/cooldown) — a fixed, small cap rather
+ * than a fraction of the full session, so "quick fix" reliably means
+ * "quick" regardless of how long the original day runs. */
+const QUICK_FIX_MAIN_EXERCISE_COUNT = 2;
+const QUICK_FIX_MIN_MINUTES = 7;
+const QUICK_FIX_MAX_MINUTES = 10;
+
+/**
+ * "No time today" escape hatch — trims a full session down to a ~7-10
+ * minute one instead of the user skipping the day entirely (see Dashboard's
+ * "Short on time?" link). Always keeps the opening warm-up and closing
+ * cooldown beat if the workout has them (the moves people most need on a
+ * rushed day: get the body moving safely, then let the heart rate come back
+ * down), plus the first couple of main exercises, in their original order,
+ * so the shortened session is still a coherent mini-version of the same day
+ * rather than a random subset. Never a video-led workout (see
+ * Workout.video) — those play one fixed clip start to finish, nothing to
+ * trim.
+ *
+ * Duration/calories are scaled off the workout's own displayed
+ * `durationMinutes`/`calories`, not off exerciseSeconds — that estimate
+ * already runs well under the displayed duration for a *full* session (it
+ * only models the countdown clock, not real-world setup/breathing/form-
+ * check time), so budgeting the trim against it would barely cut anything.
+ */
+export function quickFixWorkout(workout: Workout): Workout {
+  if (workout.video) return workout;
+
+  const isWarmup = (exercise: Exercise) =>
+    /warm|mobility/i.test(exercise.focus);
+  const isCooldown = (exercise: Exercise) => /recovery/i.test(exercise.focus);
+
+  const warmup = workout.exercises.find(isWarmup);
+  const cooldown = [...workout.exercises].reverse().find(isCooldown);
+  const mainExercises = workout.exercises.filter(
+    (exercise) => exercise !== warmup && exercise !== cooldown,
+  );
+
+  const picked: Exercise[] = [
+    ...(warmup ? [warmup] : []),
+    ...mainExercises.slice(0, QUICK_FIX_MAIN_EXERCISE_COUNT),
+    ...(cooldown ? [cooldown] : []),
+  ];
+
+  const scale = picked.length / workout.exercises.length;
+  const durationMinutes = Math.min(
+    QUICK_FIX_MAX_MINUTES,
+    Math.max(
+      QUICK_FIX_MIN_MINUTES,
+      Math.round(workout.durationMinutes * scale),
+    ),
+  );
+
+  return {
+    ...workout,
+    title: `${workout.title} · Quick Fix`,
+    subtitle: "Short on time? Same day, trimmed to what actually matters.",
+    durationMinutes,
+    calories: Math.max(1, Math.round(workout.calories * scale)),
+    exercises: picked,
+  };
 }

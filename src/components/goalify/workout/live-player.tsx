@@ -15,7 +15,11 @@ import {
   Trophy,
 } from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
-import { findWorkout, resolveWorkout } from "@/lib/goalify/workouts";
+import {
+  findWorkout,
+  quickFixWorkout,
+  resolveWorkout,
+} from "@/lib/goalify/workouts";
 import { BADGES } from "@/lib/goalify/badges";
 import { currentWeekDays } from "@/lib/goalify/dates";
 import type { Exercise } from "@/lib/goalify/types";
@@ -64,9 +68,14 @@ export function LivePlayer() {
   const { state, todaysWorkout, completeWorkout } = useGoalify();
   const searchParams = useSearchParams();
   const selectedId = searchParams.get("workout");
-  const baseWorkout = useMemo(
+  const isQuickFix = searchParams.get("quick") === "1";
+  const pickedWorkout = useMemo(
     () => (selectedId && findWorkout(selectedId)) || todaysWorkout,
     [selectedId, todaysWorkout],
+  );
+  const baseWorkout = useMemo(
+    () => (isQuickFix ? quickFixWorkout(pickedWorkout) : pickedWorkout),
+    [isQuickFix, pickedWorkout],
   );
   const workout = useMemo(
     () => resolveWorkout(baseWorkout, state.settings.kneeSafe),

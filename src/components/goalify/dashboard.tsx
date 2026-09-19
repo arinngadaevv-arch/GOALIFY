@@ -27,6 +27,7 @@ import {
   useGoalify,
 } from "@/lib/goalify/store";
 import { findWorkout, resolveWorkout } from "@/lib/goalify/workouts";
+import { dailyCoachTip } from "@/lib/goalify/daily-tip";
 import { goalLabel, weeksToTarget } from "@/lib/goalify/plan";
 import { currentWeekDays } from "@/lib/goalify/dates";
 import { useHaptics } from "@/lib/goalify/use-haptics";
@@ -90,6 +91,7 @@ export function Dashboard() {
     100,
     Math.round((waterGlasses / targets.waterGlasses) * 100),
   );
+  const coachTip = dailyCoachTip(targets.protein);
 
   // Arrival animation for the headline numbers — the ring value gets a
   // one-tick-delayed commit so ProgressRing's own CSS transition actually
@@ -287,6 +289,20 @@ export function Dashboard() {
                 </>
               )}
             </GlowLink>
+
+            {/* Escape hatch for a genuinely packed day — a real ~7-10
+                minute trim of today's own session (see quickFixWorkout)
+                rather than the user skipping the day outright and losing
+                the streak. Hidden once today's already done — there's
+                nothing left to shorten. */}
+            {!workoutDoneToday && (
+              <Link
+                href="/workout/launch?quick=1"
+                className="mt-3 block text-center text-xs font-bold text-ink-soft underline-offset-4 hover:text-electric hover:underline"
+              >
+                No time today? Do a 7-10 min Quick Fix instead
+              </Link>
+            )}
           </div>
           </GlassCard>
         </div>
@@ -632,12 +648,10 @@ export function Dashboard() {
 
           <div className="mt-5 rounded-2xl bg-electric/6 p-4">
             <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-electric">
-              Today&apos;s tip
+              Today&apos;s tip · {coachTip.category}
             </p>
             <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">
-              Put {Math.round(targets.protein / 3)}g of protein in each main
-              meal. Hitting protein is what protects your muscle while the
-              weight moves.
+              {coachTip.line}
             </p>
           </div>
 
