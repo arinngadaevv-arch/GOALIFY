@@ -35,6 +35,8 @@ import { playCompletionCelebration } from "@/lib/goalify/sound";
 import { useCountUp, useRevealOnMount } from "@/lib/goalify/use-count-up";
 import { AppShell } from "./app-shell";
 import { DailyCreed } from "./daily-creed";
+import { EnergyCheckin } from "./energy-checkin";
+import { MomentumWarning } from "./momentum-warning";
 import { GlassCard } from "./ui/glass-card";
 import { GlowButton, GlowLink } from "./ui/glow-button";
 import { VisualSlot } from "./ui/visual-slot";
@@ -194,6 +196,19 @@ export function Dashboard() {
             ? "Today's session is done — nice work."
             : `A ${workout.durationMinutes}-minute session is waiting for you.`}
         </p>
+      </div>
+
+      {/* ---------------------------------------------- Morning check-in */}
+      <div className="mb-6">
+        <EnergyCheckin />
+      </div>
+
+      {/* ------------------------------------------- Slipping-momentum nudge
+          Renders nothing at all until there's an actual gap — see
+          MomentumWarning's own guard — so this costs a healthy streak
+          nothing. */}
+      <div className="mb-6">
+        <MomentumWarning />
       </div>
 
       {/* --------------------------------------------------- Today's creed */}

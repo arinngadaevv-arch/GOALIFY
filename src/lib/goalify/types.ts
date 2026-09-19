@@ -61,6 +61,11 @@ export type UserAvatar =
   | { kind: "photo"; dataUrl: string }
   | { kind: "emoji"; value: string };
 
+/** A once-a-day, one-tap self-report of how the user is feeling — not
+ * tracked over time or shown anywhere but the dashboard's own morning
+ * check-in card, just enough to tailor that one card's reaction/CTA. */
+export type EnergyLevel = "fire" | "soso" | "empty";
+
 /** Everything the app persists between sessions. */
 export type GoalifyState = {
   profile: Profile | null;
@@ -93,6 +98,11 @@ export type GoalifyState = {
    * explicitly dismissed the prompt — either way, ReviewPrompt on the
    * post-workout CompletionScreen never asks again. */
   reviewPromptDismissed: boolean;
+  /** Today's answer to the dashboard's morning energy check-in — derived
+   * back to `null` once `energyCheckedOn` isn't today (see useGoalify),
+   * same reset-at-midnight pattern as waterGlasses/steps above. */
+  energyLevel: EnergyLevel | null;
+  energyCheckedOn: string;
 };
 
 export type Settings = {
