@@ -316,7 +316,10 @@ export function Dashboard() {
               fullWidth
               pulse={!workoutDoneToday}
               variant={workoutDoneToday ? "glass" : "electric"}
-              className="mt-5 gap-2 tracking-tight"
+              className={clsx(
+                "mt-5 gap-2 tracking-tight",
+                !workoutDoneToday && "gf-cta-shine",
+              )}
             >
               {workoutDoneToday ? (
                 <>

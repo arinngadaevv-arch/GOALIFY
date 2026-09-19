@@ -639,6 +639,49 @@ body.goalify-body:has(.gf-cyber-scope) .gf-ambience {
 .gf-anim-pulse {
   animation: gf-pulse-ring 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* A soft highlight band that periodically sweeps across a solid CTA —
+   layered on top of `gf-anim-pulse`'s glow ring, not a replacement for it:
+   the ring says "alive," this says "look here." Opt-in per button (see
+   dashboard.tsx's primary workout CTA) rather than applied to every
+   GlowButton, so it stays a deliberate accent instead of app-wide motion.
+   Paused most of each cycle rather than sweeping continuously — a
+   constantly-moving highlight reads as a loading spinner, not an invite. */
+.gf-cta-shine {
+  position: relative;
+  overflow: hidden;
+}
+.gf-cta-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 65%
+  );
+  background-size: 250% 100%;
+  background-position: 150% 0;
+  animation: gf-cta-shine-sweep 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes gf-cta-shine-sweep {
+  0%,
+  22% {
+    background-position: 150% 0;
+  }
+  55%,
+  100% {
+    background-position: -50% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gf-cta-shine::after {
+    animation: none;
+    display: none;
+  }
+}
 .gf-anim-spin-slow {
   animation: gf-spin-slow 14s linear infinite;
 }
