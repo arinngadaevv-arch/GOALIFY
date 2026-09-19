@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import clsx from "clsx";
-import { ArrowRight, BatteryLow, Flame, Meh } from "lucide-react";
+import { BatteryLow, Flame, Meh } from "lucide-react";
 import { useGoalify } from "@/lib/goalify/store";
 import type { EnergyLevel } from "@/lib/goalify/types";
 import { GlassCard } from "./ui/glass-card";
@@ -17,14 +16,14 @@ const OPTIONS: {
   { level: "empty", label: "Running on empty", Icon: BatteryLow },
 ];
 
-/** One line the coach hands back once today's level is picked — the only
- * thing that actually changes behavior is "empty," which surfaces the
- * Quick Fix link right here instead of making the user go find it. */
+/** One line per pick — kept short since "empty" no longer needs to explain
+ * itself in words: the actual effect is visible right below, on today's
+ * own workout card (see dashboard.tsx's isEnergyQuickFix), which is what
+ * makes this an answer instead of small talk. */
 const REACTIONS: Record<EnergyLevel, string> = {
   fire: "Good. Don't waste it sitting here — go put it into today's session.",
   soso: "So-so still gets the session done. Show up, decide how you feel after.",
-  empty:
-    "Noted. The full session's still there if you want it — or take the short one below.",
+  empty: "Noted — today's session below just got shorter.",
 };
 
 /**
@@ -67,20 +66,9 @@ export function EnergyCheckin() {
       </div>
 
       {energyLevel && (
-        <div className="mt-4 border-t border-ink/8 pt-4">
-          <p className="text-xs leading-relaxed text-ink-soft">
-            {REACTIONS[energyLevel]}
-          </p>
-          {energyLevel === "empty" && (
-            <Link
-              href="/workout/launch?quick=1"
-              className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-electric"
-            >
-              Do the 7-10 min version instead
-              <ArrowRight className="size-3.5" />
-            </Link>
-          )}
-        </div>
+        <p className="mt-4 border-t border-ink/8 pt-4 text-xs leading-relaxed text-ink-soft">
+          {REACTIONS[energyLevel]}
+        </p>
       )}
     </GlassCard>
   );

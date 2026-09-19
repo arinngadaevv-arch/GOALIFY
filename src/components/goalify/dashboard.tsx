@@ -5,6 +5,7 @@ import Link from "next/link";
 import clsx from "clsx";
 import {
   ArrowRight,
+  BatteryLow,
   Beef,
   Bell,
   Check,
@@ -26,7 +27,11 @@ import {
   STEP_GOAL,
   useGoalify,
 } from "@/lib/goalify/store";
-import { findWorkout, resolveWorkout } from "@/lib/goalify/workouts";
+import {
+  findWorkout,
+  quickFixWorkout,
+  resolveWorkout,
+} from "@/lib/goalify/workouts";
 import { dailyCoachTip } from "@/lib/goalify/daily-tip";
 import { goalLabel, weeksToTarget } from "@/lib/goalify/plan";
 import { currentWeekDays } from "@/lib/goalify/dates";
@@ -67,6 +72,7 @@ export function Dashboard() {
     targets,
     todaysWorkout,
     workoutDoneToday,
+    energyLevel,
     setWater,
     waterGlasses,
     streak,
@@ -74,7 +80,19 @@ export function Dashboard() {
     setSteps,
   } = useGoalify();
 
-  const workout = resolveWorkout(todaysWorkout, state.settings.kneeSafe);
+  const resolvedWorkout = resolveWorkout(
+    todaysWorkout,
+    state.settings.kneeSafe,
+  );
+  // The one real effect of the morning check-in (see EnergyCheckin): saying
+  // "running on empty" swaps today's own spotlight card to its Quick Fix
+  // version by default, instead of leaving that only as a link the user has
+  // to separately notice below the button — this is the actual answer to
+  // the question just asked, not a text acknowledgment next to it.
+  const isEnergyQuickFix = energyLevel === "empty" && !workoutDoneToday;
+  const workout = isEnergyQuickFix
+    ? quickFixWorkout(resolvedWorkout)
+    : resolvedWorkout;
   // Surfaced as a small secondary pick below today's hero card — see the
   // "Day 2 Pick" section below — rather than folded into today's single
   // spotlight slot, since the daily program still owns "today".
@@ -258,6 +276,12 @@ export function Dashboard() {
             />
             <div className="absolute top-3 left-3 flex gap-2">
               <Pill tone="electric">{workout.intensity}</Pill>
+              {isEnergyQuickFix && (
+                <Pill tone="lime">
+                  <BatteryLow className="size-3" strokeWidth={3} />
+                  Shortened for today
+                </Pill>
+              )}
               {workoutDoneToday && (
                 <Pill tone="lime">
                   <Check className="size-3" strokeWidth={3} /> Done
@@ -285,7 +309,9 @@ export function Dashboard() {
             </div>
 
             <GlowLink
-              href="/workout/launch"
+              href={
+                isEnergyQuickFix ? "/workout/launch?quick=1" : "/workout/launch"
+              }
               size="lg"
               fullWidth
               pulse={!workoutDoneToday}
@@ -309,15 +335,26 @@ export function Dashboard() {
                 minute trim of today's own session (see quickFixWorkout)
                 rather than the user skipping the day outright and losing
                 the streak. Hidden once today's already done — there's
-                nothing left to shorten. */}
-            {!workoutDoneToday && (
-              <Link
-                href="/workout/launch?quick=1"
-                className="mt-3 block text-center text-xs font-bold text-ink-soft underline-offset-4 hover:text-electric hover:underline"
-              >
-                No time today? Do a 7-10 min Quick Fix instead
-              </Link>
-            )}
+                nothing left to shorten. When the energy check-in already
+                switched the card to Quick Fix above, this flips into the
+                one thing actually worth offering instead: a way back to
+                the full session, not the same offer twice. */}
+            {!workoutDoneToday &&
+              (isEnergyQuickFix ? (
+                <Link
+                  href="/workout/launch"
+                  className="mt-3 block text-center text-xs font-bold text-ink-soft underline-offset-4 hover:text-electric hover:underline"
+                >
+                  Feeling better? Do the full session instead
+                </Link>
+              ) : (
+                <Link
+                  href="/workout/launch?quick=1"
+                  className="mt-3 block text-center text-xs font-bold text-ink-soft underline-offset-4 hover:text-electric hover:underline"
+                >
+                  No time today? Do a 7-10 min Quick Fix instead
+                </Link>
+              ))}
           </div>
           </GlassCard>
         </div>
