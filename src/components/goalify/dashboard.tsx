@@ -39,7 +39,6 @@ import { useHaptics } from "@/lib/goalify/use-haptics";
 import { playCompletionCelebration } from "@/lib/goalify/sound";
 import { useCountUp, useRevealOnMount } from "@/lib/goalify/use-count-up";
 import { AppShell } from "./app-shell";
-import { DailyCreed } from "./daily-creed";
 import { EnergyCheckin } from "./energy-checkin";
 import { MomentumWarning } from "./momentum-warning";
 import { GlassCard } from "./ui/glass-card";
@@ -227,11 +226,6 @@ export function Dashboard() {
           nothing. */}
       <div className="mb-6">
         <MomentumWarning />
-      </div>
-
-      {/* --------------------------------------------------- Today's creed */}
-      <div className="mb-8">
-        <DailyCreed />
       </div>
 
       {/* ------------------------------------------------ Primary action
