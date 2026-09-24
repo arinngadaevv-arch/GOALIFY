@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
 import { useSession } from "next-auth/react";
 import type {
-  EnergyLevel,
   GoalifyState,
   ProgressPhoto,
   QuizAnswers,
@@ -77,13 +76,6 @@ const INITIAL_STATE: GoalifyState = {
   afterPhotoUrl: null,
   avatar: null,
   reviewPromptDismissed: false,
-  energyLevel: null,
-  // Deliberately not `todayKey()` — unlike waterUpdatedOn/stepsUpdatedOn
-  // (where "0 so far today" is a perfectly good starting value), an empty
-  // string here can never equal a real date, so a brand-new state always
-  // reads as "hasn't checked in today yet" rather than skipping day one's
-  // prompt by accident.
-  energyCheckedOn: "",
 };
 
 /* -------------------------------------------------------------------------
@@ -306,14 +298,6 @@ export function useGoalify() {
     }));
   }, []);
 
-  /** One-tap morning self-report — see EnergyLevel's own doc comment.
-   * Overwrites freely within the same day (changing your mind before
-   * training is fine), but the derived `energyLevel` below reads back as
-   * `null` again the moment `todayKey()` moves on. */
-  const setEnergyLevel = useCallback((level: EnergyLevel) => {
-    update((s) => ({ ...s, energyLevel: level, energyCheckedOn: todayKey() }));
-  }, []);
-
   const updateSettings = useCallback((patch: Partial<Settings>) => {
     update((s) => ({ ...s, settings: { ...s.settings, ...patch } }));
     // Only the four push toggles have a server-side reader (the daily-push
@@ -387,8 +371,6 @@ export function useGoalify() {
   const waterGlasses =
     state.waterUpdatedOn === todayKey() ? state.waterGlasses : 0;
   const steps = state.stepsUpdatedOn === todayKey() ? state.steps : 0;
-  const energyLevel =
-    state.energyCheckedOn === todayKey() ? state.energyLevel : null;
 
   return {
     state,
@@ -396,7 +378,6 @@ export function useGoalify() {
     answers,
     waterGlasses,
     steps,
-    energyLevel,
     streak: calculateStreak(state.completedDays),
     targets: nutritionTargets(answers),
     todaysWorkout: workoutForDay(state.programDay),
@@ -408,7 +389,6 @@ export function useGoalify() {
     completeWorkout,
     setWater,
     setSteps,
-    setEnergyLevel,
     updateSettings,
     addPhoto,
     setVaultPhoto,
